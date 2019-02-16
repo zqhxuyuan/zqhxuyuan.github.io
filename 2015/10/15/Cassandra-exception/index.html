@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Cassandra常见异常 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Cassandra异常   Cassandra常见异常与解决 安装 内存OOM 新添加节点表不存在 种子节点不一样导致集群分离 Request did not complete within rpc_timeout NoHostAvailableException 主机不可用导致操作超时 Not enough replica available 副本不足 fromIndex 移动文件后重启Cass">
+<meta name="keywords" content="cassandra">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cassandra常见异常">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/10/15/Cassandra-exception/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Cassandra异常   Cassandra常见异常与解决 安装 内存OOM 新添加节点表不存在 种子节点不一样导致集群分离 Request did not complete within rpc_timeout NoHostAvailableException 主机不可用导致操作超时 Not enough replica available 副本不足 fromIndex 移动文件后重启Cass">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160302205731162">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.310Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cassandra常见异常">
+<meta name="twitter:description" content="Cassandra异常   Cassandra常见异常与解决 安装 内存OOM 新添加节点表不存在 种子节点不一样导致集群分离 Request did not complete within rpc_timeout NoHostAvailableException 主机不可用导致操作超时 Not enough replica available 副本不足 fromIndex 移动文件后重启Cass">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160302205731162">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Cassandra-exception" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/10/15/Cassandra-exception/" class="article-date">
+  	<time datetime="2015-10-14T16:00:00.000Z" itemprop="datePublished">2015-10-15</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Cassandra常见异常
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/work/">work</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cassandra/">cassandra</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Cassandra异常</p>
+<!-- MarkdownTOC -->
+<ul>
+<li>Cassandra常见异常与解决<ul>
+<li>安装</li>
+<li>内存OOM</li>
+<li>新添加节点表不存在</li>
+<li>种子节点不一样导致集群分离</li>
+<li>Request did not complete within rpc_timeout</li>
+<li>NoHostAvailableException 主机不可用导致操作超时</li>
+<li>Not enough replica available 副本不足</li>
+<li>fromIndex</li>
+<li>移动文件后重启Cassandra节点：</li>
+<li>管道断开</li>
+<li>api使用Level compaction策略计算mean时<ul>
+<li>cfstats</li>
+<li>cfhistograms</li>
+</ul>
+</li>
+<li>fp空间不足，无法compcation，FileNotFoundException:</li>
+</ul>
+</li>
+</ul>
+<!-- /MarkdownTOC -->
+<a id="more"></a>
+<h2 id="Cassandra常见异常与解决">Cassandra常见异常与解决</h2><h3 id="安装">安装</h3><p>安装的时候要一个启动完了，才能启动下一个</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">Exception (java.lang.UnsupportedOperationException) encountered during startup: Other bootstrapping/leaving/moving nodes detected, cannot bootstrap while cassandra.consistent.rangemovement is true</span><br><span class="line">java.lang.UnsupportedOperationException: Other bootstrapping/leaving/moving nodes detected, cannot bootstrap while cassandra.consistent.rangemovement is true</span><br><span class="line">  at org.apache.cassandra.service.StorageService.checkForEndpointCollision(StorageService.java:571)</span><br><span class="line">  at org.apache.cassandra.service.StorageService.prepareToJoin(StorageService.java:781)</span><br><span class="line">  at org.apache.cassandra.service.StorageService.initServer(StorageService.java:709)</span><br><span class="line">  at org.apache.cassandra.service.StorageService.initServer(StorageService.java:595)</span><br><span class="line">  at org.apache.cassandra.service.CassandraDaemon.setup(CassandraDaemon.java:300)</span><br><span class="line">  at org.apache.cassandra.service.CassandraDaemon.activate(CassandraDaemon.java:516)</span><br><span class="line">  at org.apache.cassandra.service.CassandraDaemon.main(CassandraDaemon.java:625)</span><br><span class="line">ERROR 06:26:25 Exception encountered during startup</span><br><span class="line">java.lang.UnsupportedOperationException: Other bootstrapping/leaving/moving nodes detected, cannot bootstrap while cassandra.consistent.rangemovement is true</span><br><span class="line">  at org.apache.cassandra.service.StorageService.checkForEndpointCollision(StorageService.java:571) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.service.StorageService.prepareToJoin(StorageService.java:781) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.service.StorageService.initServer(StorageService.java:709) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.service.StorageService.initServer(StorageService.java:595) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.service.CassandraDaemon.setup(CassandraDaemon.java:300) [apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.service.CassandraDaemon.activate(CassandraDaemon.java:516) [apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.service.CassandraDaemon.main(CassandraDaemon.java:625) [apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">WARN  06:26:25 No local state or state is in silent shutdown, not announcing shutdown</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ERROR 06:29:09 Fatal exception during initialization</span><br><span class="line">org.apache.cassandra.exceptions.ConfigurationException: Found system keyspace files, but they couldn&apos;t be loaded!</span><br><span class="line">  at org.apache.cassandra.db.SystemKeyspace.checkHealth(SystemKeyspace.java:728) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.service.StartupChecks$9.execute(StartupChecks.java:306) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.service.StartupChecks.verify(StartupChecks.java:107) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.service.CassandraDaemon.setup(CassandraDaemon.java:162) [apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.service.CassandraDaemon.activate(CassandraDaemon.java:516) [apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.service.CassandraDaemon.main(CassandraDaemon.java:625) [apache-cassandra-2.2.6.jar:2.2.6]</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">ERROR 02:03:03 Exiting forcefully due to file system exception on startup, disk failure policy &quot;stop&quot;</span><br><span class="line">org.apache.cassandra.io.FSReadError: java.io.IOException: Channel not open for writing - cannot extend file to required size</span><br><span class="line">  at org.apache.cassandra.io.util.ChannelProxy.map(ChannelProxy.java:156) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.io.util.CompressedSegmentedFile.createMappedSegments(CompressedSegmentedFile.java:85) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.io.util.CompressedPoolingSegmentedFile.&lt;init&gt;(CompressedPoolingSegmentedFile.java:38) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.io.util.CompressedPoolingSegmentedFile$Builder.complete(CompressedPoolingSegmentedFile.java:101) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.io.util.SegmentedFile$Builder.complete(SegmentedFile.java:198) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.io.util.SegmentedFile$Builder.complete(SegmentedFile.java:189) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.io.sstable.format.SSTableReader.load(SSTableReader.java:711) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.io.sstable.format.SSTableReader.load(SSTableReader.java:672) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.io.sstable.format.SSTableReader.open(SSTableReader.java:466) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.io.sstable.format.SSTableReader.open(SSTableReader.java:371) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at org.apache.cassandra.io.sstable.format.SSTableReader$4.run(SSTableReader.java:509) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471) [na:1.7.0_51]</span><br><span class="line">  at java.util.concurrent.FutureTask.run(FutureTask.java:262) [na:1.7.0_51]</span><br><span class="line">  at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145) [na:1.7.0_51]</span><br><span class="line">  at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615) [na:1.7.0_51]</span><br><span class="line">  at java.lang.Thread.run(Thread.java:744) [na:1.7.0_51]</span><br><span class="line">Caused by: java.io.IOException: Channel not open for writing - cannot extend file to required size</span><br><span class="line">  at sun.nio.ch.FileChannelImpl.map(FileChannelImpl.java:851) ~[na:1.7.0_51]</span><br><span class="line">  at org.apache.cassandra.io.util.ChannelProxy.map(ChannelProxy.java:152) ~[apache-cassandra-2.2.6.jar:2.2.6]</span><br><span class="line">  ... 15 common frames omitted</span><br></pre></td></tr></table></figure>
+<p>修改DEBUG级别</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">DEBUG 00:11:50 Evicting cold readers for /home/admin/cassandra/data/system/sstable_activity/system-sstable_activity-ka-5688-Data.db</span><br><span class="line">ERROR 00:11:51 Exiting forcefully due to file system exception on startup, disk failure policy &quot;stop&quot;</span><br><span class="line">....</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">bin/sstablescrub --debug -s -v system sstable_activity</span><br><span class="line">Pre-scrub sstables snapshotted into snapshot pre-scrub-1468282635420</span><br><span class="line">Scrubbing BigTableReader(path=&apos;/home/admin/cassandra/data/system/sstable_activity/system-sstable_activity-ka-5688-Data.db&apos;) (348911 bytes)</span><br><span class="line">Reading row at 0</span><br><span class="line">row 000a666f72736574695f667000000c7463705f73796e5f646174610000040001b6eb00 is 125 bytes</span><br><span class="line">Reading row at 162</span><br><span class="line">row 000a666f72736574695f667000000c7463705f73796e5f646174610000040001a22400 is 125 bytes</span><br><span class="line">Reading row at 324</span><br><span class="line">row 000a666f72736574695f667000000c7463705f73796e5f64617461000004000194bd00 is 125 bytes</span><br><span class="line">...</span><br><span class="line">Reading row at 15484</span><br><span class="line">row 00094f707343656e746572000009726f6c6c757073363000000400000ba300 is 14 bytes</span><br><span class="line">Scrub of BigTableReader(path=&apos;/home/admin/cassandra/data/system/sstable_activity/system-sstable_activity-ka-5689-Data.db&apos;) complete: 118 rows in new sstable and 0 empty (tombstoned) rows dropped</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WARN  [GossipTasks:1] 2016-07-12 18:18:01,742 FailureDetector.java:258 - Not marking nodes down due to local pause of 5589128315 &gt; 5000000000</span><br></pre></td></tr></table></figure>
+<h3 id="内存OOM">内存OOM</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">ERROR [StreamReceiveTask:1345] 2016-01-11 02:04:03,305 CassandraDaemon.java (line 258) Exception in thread Thread[StreamReceiveTask:1345,5,main]</span><br><span class="line">FSReadError in /home/admin/cassandra/data/forseti/velocity_app/forseti-velocity_app-jb-620650-Index.db</span><br><span class="line">    at org.apache.cassandra.io.util.MmappedSegmentedFile$Builder.createSegments(MmappedSegmentedFile.java:200)</span><br><span class="line">    at org.apache.cassandra.io.util.MmappedSegmentedFile$Builder.complete(MmappedSegmentedFile.java:168)</span><br><span class="line">    at org.apache.cassandra.io.sstable.SSTableWriter.closeAndOpenReader(SSTableWriter.java:345)</span><br><span class="line">    at org.apache.cassandra.io.sstable.SSTableWriter.closeAndOpenReader(SSTableWriter.java:335)</span><br><span class="line">    at org.apache.cassandra.streaming.StreamReceiveTask$OnCompletionRunnable.run(StreamReceiveTask.java:126)</span><br><span class="line">    at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)</span><br><span class="line">    at java.util.concurrent.FutureTask.run(FutureTask.java:262)</span><br><span class="line">    at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)</span><br><span class="line">    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)</span><br><span class="line">    at java.lang.Thread.run(Thread.java:744)</span><br><span class="line">Caused by: java.io.IOException: Map failed</span><br><span class="line">    at sun.nio.ch.FileChannelImpl.map(FileChannelImpl.java:888)</span><br><span class="line">    at org.apache.cassandra.io.util.MmappedSegmentedFile$Builder.createSegments(MmappedSegmentedFile.java:192)</span><br><span class="line">    ... 9 more</span><br><span class="line">Caused by: java.lang.OutOfMemoryError: Map failed</span><br><span class="line">    at sun.nio.ch.FileChannelImpl.map0(Native Method)</span><br><span class="line">    at sun.nio.ch.FileChannelImpl.map(FileChannelImpl.java:885)</span><br><span class="line">    ... 10 more</span><br><span class="line">ERROR [StreamReceiveTask:1345] 2016-01-11 02:04:03,356 StorageService.java (line 377) Stopping gossiper</span><br></pre></td></tr></table></figure>
+<p>内存不足时，会默认在cassandra的安装目录生成hprof文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Java HotSpot(TM) 64-Bit Server VM warning: INFO: os::commit_memory(0x00000007fce3b000, 466944, 0) failed; error=&apos;无法分配内存&apos; (errno=12)</span><br><span class="line">#</span><br><span class="line"># There is insufficient memory for the Java Runtime Environment to continue.</span><br><span class="line"># Native memory allocation (malloc) failed to allocate 466944 bytes for committing reserved memory.</span><br><span class="line"># An error report file with more information is saved as:</span><br><span class="line"># /tmp/hs_err_pid8223.log</span><br></pre></td></tr></table></figure>
+<p>也有可能内存不足时报OOM： </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">ERROR [CompactionExecutor:48826] 2016-03-11 08:20:41,088 CassandraDaemon.java (line 258) Exception in thread Thread[CompactionExecutor:48826,1,main]</span><br><span class="line">java.lang.OutOfMemoryError</span><br><span class="line">        at sun.misc.Unsafe.allocateMemory(Native Method)</span><br><span class="line">        at org.apache.cassandra.io.util.NativeAllocator.allocate(NativeAllocator.java:43)</span><br><span class="line">        at org.apache.cassandra.io.util.Memory.&lt;init&gt;(Memory.java:51)</span><br><span class="line">        at org.apache.cassandra.io.util.Memory.allocate(Memory.java:59)</span><br><span class="line">        at org.apache.cassandra.io.sstable.IndexSummaryBuilder.build(IndexSummaryBuilder.java:77)</span><br><span class="line">        at org.apache.cassandra.io.sstable.SSTableWriter.closeAndOpenReader(SSTableWriter.java:347)</span><br><span class="line">        at org.apache.cassandra.db.compaction.CompactionTask.runMayThrow(CompactionTask.java:216)</span><br><span class="line">        at org.apache.cassandra.utils.WrappedRunnable.run(WrappedRunnable.java:28)</span><br><span class="line">        at org.apache.cassandra.db.compaction.CompactionTask.executeInternal(CompactionTask.java:60)</span><br><span class="line">        at org.apache.cassandra.db.compaction.AbstractCompactionTask.execute(AbstractCompactionTask.java:59)</span><br><span class="line">        at org.apache.cassandra.db.compaction.CompactionManager$BackgroundCompactionTask.run(CompactionManager.java:198)</span><br><span class="line">        at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)</span><br><span class="line">        at java.util.concurrent.FutureTask.run(FutureTask.java:262)</span><br><span class="line">        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)</span><br><span class="line">        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:744)</span><br></pre></td></tr></table></figure>
+<p>写入md5_id数据量很大近千亿。写到一半报错：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">ERROR [CompactionExecutor:1441] 2016-03-18 06:54:26,852 CassandraDaemon.java (line 258) Exception in thread Thread[CompactionExecutor:1441,1,main]</span><br><span class="line">java.lang.RuntimeException: Out of native memory occured, You can avoid it by increasing the system ram space or by increasing bloom_filter_fp_chance.</span><br><span class="line">        at org.apache.cassandra.utils.obs.OffHeapBitSet.&lt;init&gt;(OffHeapBitSet.java:49)</span><br><span class="line">        at org.apache.cassandra.utils.FilterFactory.createFilter(FilterFactory.java:85)</span><br><span class="line">        at org.apache.cassandra.utils.FilterFactory.getFilter(FilterFactory.java:79)</span><br><span class="line">        at org.apache.cassandra.io.sstable.SSTableWriter$IndexWriter.&lt;init&gt;(SSTableWriter.java:455)</span><br><span class="line">        at org.apache.cassandra.io.sstable.SSTableWriter.&lt;init&gt;(SSTableWriter.java:103)</span><br><span class="line">        at org.apache.cassandra.db.compaction.CompactionTask.createCompactionWriter(CompactionTask.java:316)</span><br><span class="line">        at org.apache.cassandra.db.compaction.CompactionTask.runMayThrow(CompactionTask.java:162)</span><br><span class="line">        at org.apache.cassandra.utils.WrappedRunnable.run(WrappedRunnable.java:28)</span><br><span class="line">        at org.apache.cassandra.db.compaction.CompactionTask.executeInternal(CompactionTask.java:60)</span><br><span class="line">        at org.apache.cassandra.db.compaction.AbstractCompactionTask.execute(AbstractCompactionTask.java:59)</span><br><span class="line">        at org.apache.cassandra.db.compaction.CompactionManager$BackgroundCompactionTask.run(CompactionManager.java:198)</span><br><span class="line">        at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)</span><br><span class="line">        at java.util.concurrent.FutureTask.run(FutureTask.java:262)</span><br><span class="line">        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)</span><br><span class="line">        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:744)</span><br></pre></td></tr></table></figure>
+<p>查询随机keys</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@spark047211 ~]$ nodetool -h 192.168.48.162 rangekeysample</span><br><span class="line">RangeKeySample:</span><br><span class="line">Exception in thread &quot;main&quot; java.lang.OutOfMemoryError: Java heap space</span><br><span class="line">  at java.util.Arrays.copyOf(Arrays.java:2367)</span><br><span class="line">  at java.lang.AbstractStringBuilder.expandCapacity(AbstractStringBuilder.java:130)</span><br><span class="line">  at java.lang.AbstractStringBuilder.ensureCapacityInternal(AbstractStringBuilder.java:114)</span><br><span class="line">  at java.lang.AbstractStringBuilder.append(AbstractStringBuilder.java:535)</span><br><span class="line">  at java.lang.StringBuilder.append(StringBuilder.java:204)</span><br><span class="line">  at java.io.ObjectInputStream$BlockDataInputStream.readUTFSpan(ObjectInputStream.java:3143)</span><br><span class="line">  at java.io.ObjectInputStream$BlockDataInputStream.readUTFBody(ObjectInputStream.java:3051)</span><br><span class="line">  at java.io.ObjectInputStream$BlockDataInputStream.readUTF(ObjectInputStream.java:2864)</span><br><span class="line">  at java.io.ObjectInputStream.readString(ObjectInputStream.java:1638)</span><br><span class="line">  at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1341)</span><br><span class="line">  at java.io.ObjectInputStream.readObject(ObjectInputStream.java:370)</span><br><span class="line">  at java.util.ArrayList.readObject(ArrayList.java:771)</span><br><span class="line">  at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)</span><br><span class="line">  at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)</span><br><span class="line">  at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)</span><br><span class="line">  at java.lang.reflect.Method.invoke(Method.java:606)</span><br><span class="line">  at java.io.ObjectStreamClass.invokeReadObject(ObjectStreamClass.java:1017)</span><br><span class="line">  at java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:1893)</span><br><span class="line">  at java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:1798)</span><br><span class="line">  at java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1350)</span><br><span class="line">  at java.io.ObjectInputStream.readObject(ObjectInputStream.java:370)</span><br><span class="line">  at sun.rmi.server.UnicastRef.unmarshalValue(UnicastRef.java:325)</span><br><span class="line">  at sun.rmi.server.UnicastRef.invoke(UnicastRef.java:174)</span><br><span class="line">  at com.sun.jmx.remote.internal.PRef.invoke(Unknown Source)</span><br><span class="line">  at javax.management.remote.rmi.RMIConnectionImpl_Stub.invoke(Unknown Source)</span><br><span class="line">  at javax.management.remote.rmi.RMIConnector$RemoteMBeanServerConnection.invoke(RMIConnector.java:1029)</span><br><span class="line">  at javax.management.MBeanServerInvocationHandler.invoke(MBeanServerInvocationHandler.java:292)</span><br><span class="line">  at com.sun.proxy.$Proxy0.sampleKeyRange(Unknown Source)</span><br><span class="line">  at org.apache.cassandra.tools.NodeProbe.sampleKeyRange(NodeProbe.java:902)</span><br><span class="line">  at org.apache.cassandra.tools.NodeCmd.printRangeKeySample(NodeCmd.java:1661)</span><br><span class="line">  at org.apache.cassandra.tools.NodeCmd.main(NodeCmd.java:1536)</span><br></pre></td></tr></table></figure>
+<p>sstableloader导入大量数据，服务端崩溃</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">ERROR [StreamReceiveTask:2] 2016-06-16 21:12:56,011 StreamReceiveTask.java:183 - Error applying streamed data:</span><br><span class="line">org.apache.cassandra.io.FSReadError: java.io.IOException: Map failed</span><br><span class="line">  at org.apache.cassandra.io.util.MmappedSegmentedFile$Builder.createSegments(MmappedSegmentedFile.java:399) ~[apache-cassandra-2.1.13.jar:2.1.13]</span><br><span class="line">  at org.apache.cassandra.io.util.MmappedSegmentedFile$Builder.complete(MmappedSegmentedFile.java:365) ~[apache-cassandra-2.1.13.jar:2.1.13]</span><br><span class="line">  at org.apache.cassandra.io.util.SegmentedFile$Builder.complete(SegmentedFile.java:174) ~[apache-cassandra-2.1.13.jar:2.1.13]</span><br><span class="line">  at org.apache.cassandra.io.sstable.SSTableWriter.finish(SSTableWriter.java:463) ~[apache-cassandra-2.1.13.jar:2.1.13]</span><br><span class="line">  at org.apache.cassandra.io.sstable.SSTableWriter.closeAndOpenReader(SSTableWriter.java:447) ~[apache-cassandra-2.1.13.jar:2.1.13]</span><br><span class="line">  at org.apache.cassandra.io.sstable.SSTableWriter.closeAndOpenReader(SSTableWriter.java:442) ~[apache-cassandra-2.1.13.jar:2.1.13]</span><br><span class="line">  at org.apache.cassandra.streaming.StreamReceiveTask$OnCompletionRunnable.run(StreamReceiveTask.java:141) ~[apache-cassandra-2.1.13.jar:2.1.13]</span><br><span class="line">  at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471) [na:1.7.0_51]</span><br><span class="line">  at java.util.concurrent.FutureTask.run(FutureTask.java:262) [na:1.7.0_51]</span><br><span class="line">  at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145) [na:1.7.0_51]</span><br><span class="line">  at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615) [na:1.7.0_51]</span><br><span class="line">  at java.lang.Thread.run(Thread.java:744) [na:1.7.0_51]</span><br><span class="line">Caused by: java.io.IOException: Map failed</span><br><span class="line">  at sun.nio.ch.FileChannelImpl.map(FileChannelImpl.java:888) ~[na:1.7.0_51]</span><br><span class="line">  at org.apache.cassandra.io.util.MmappedSegmentedFile$Builder.createSegments(MmappedSegmentedFile.java:392) ~[apache-cassandra-2.1.13.jar:2.1.13]</span><br><span class="line">  ... 11 common frames omitted</span><br><span class="line">Caused by: java.lang.OutOfMemoryError: Map failed</span><br><span class="line">  at sun.nio.ch.FileChannelImpl.map0(Native Method) ~[na:1.7.0_51]</span><br><span class="line">  at sun.nio.ch.FileChannelImpl.map(FileChannelImpl.java:885) ~[na:1.7.0_51]</span><br><span class="line">  ... 12 common frames omitted</span><br><span class="line">ERROR [StreamReceiveTask:2] 2016-06-16 21:12:56,026 JVMStabilityInspector.java:117 - JVM state determined to be unstable.  Exiting forcefully due to:</span><br><span class="line">java.lang.OutOfMemoryError: Map failed</span><br></pre></td></tr></table></figure>
+<p>秒杀场景OOM：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">ERROR [Reference-Reaper:1] 2016-08-03 14:38:40,274 Ref.java:187 - LEAK DETECTED: a reference (org.apache.cassandra.utils.concurrent.Ref$State@25ffeff6) to class org.apache.cassandra.io.util.ChannelProxy$Cleanup@725095737:/home/admin/data/data/realtime/flash-f2a59850520d11e68c4db36bb69e35dc/la-9-big-Data.db was not released before the reference was garbage collected</span><br><span class="line">INFO  [ScheduledTasks:1] 2016-08-03 14:38:40,301 StatusLogger.java:106 - system_traces.events                      0,0</span><br><span class="line">INFO  [Service Thread] 2016-08-03 14:38:40,302 GCInspector.java:284 - G1 Young Generation GC in 384ms.  G1 Eden Space: 1593835520 -&gt; 0; G1 Old Gen: 31711480592 -&gt; 33695096592;</span><br><span class="line">ERROR [Reference-Reaper:1] 2016-08-03 14:38:40,302 Ref.java:187 - LEAK DETECTED: a reference (org.apache.cassandra.utils.concurrent.Ref$State@2f078486) to class org.apache.cassandra.io.util.ChannelProxy$Cleanup@725095737:/home/admin/data/data/realtime/flash-f2a59850520d11e68c4db36bb69e35dc/la-9-big-Data.db was not released before the reference was garbage collected</span><br><span class="line">INFO  [ScheduledTasks:1] 2016-08-03 14:38:40,302 StatusLogger.java:106 - realtime.holmes_metrics                   0,0</span><br><span class="line">INFO  [Service Thread] 2016-08-03 14:38:40,302 StatusLogger.java:52 - Pool Name                    Active   Pending      Completed   Blocked  All Time Blocked</span><br><span class="line">ERROR [Reference-Reaper:1] 2016-08-03 14:38:40,306 Ref.java:187 - LEAK DETECTED: a reference (org.apache.cassandra.utils.concurrent.Ref$State@6a051f02) to class org.apache.cassandra.io.util.ChannelProxy$Cleanup@725095737:/home/admin/data/data/realtime/flash-f2a59850520d11e68c4db36bb69e35dc/la-9-big-Data.db was not released before the reference was garbage collected</span><br><span class="line">INFO  [ScheduledTasks:1] 2016-08-03 14:38:40,306 StatusLogger.java:106 - realtime.activity_segments                 0,0</span><br><span class="line">ERROR [Reference-Reaper:1] 2016-08-03 14:38:40,307 Ref.java:187 - LEAK DETECTED: a reference (org.apache.cassandra.utils.concurrent.Ref$State@305fddeb) to class org.apache.cassandra.io.util.ChannelProxy$Cleanup@725095737:/home/admin/data/data/realtime/flash-f2a59850520d11e68c4db36bb69e35dc/la-9-big-Data.db was not released before the reference was garbage collected</span><br><span class="line">INFO  [ScheduledTasks:1] 2016-08-03 14:38:40,307 StatusLogger.java:106 - realtime.activity_segments_v2                 0,0</span><br><span class="line">ERROR [Reference-Reaper:1] 2016-08-03 14:38:40,307 Ref.java:187 - LEAK DETECTED: a reference (org.apache.cassandra.utils.concurrent.Ref$State@5ba59704) to class org.apache.cassandra.io.util.ChannelProxy$Cleanup@1209338690:/home/admin/data/data/realtime/flash-f2a59850520d11e68c4db36bb69e35dc/la-18-big-Data.db was not released before the reference was garbage collected</span><br><span class="line">INFO  [ScheduledTasks:1] 2016-08-03 14:38:40,307 StatusLogger.java:106 - realtime.dev_activity_segments_v2                 0,0</span><br><span class="line">ERROR [Reference-Reaper:1] 2016-08-03 14:38:40,307 Ref.java:187 - LEAK DETECTED: a reference (org.apache.cassandra.utils.concurrent.Ref$State@a2ae04d) to class org.apache.cassandra.io.util.ChannelProxy$Cleanup@1209338690:/home/admin/data/data/realtime/flash-f2a59850520d11e68c4db36bb69e35dc/la-18-big-Data.db was not released before the reference was garbage collected</span><br><span class="line">INFO  [ScheduledTasks:1] 2016-08-03 14:38:40,307 StatusLogger.java:106 - realtime.dev_activity_segments   1111816,194638707</span><br><span class="line">WARN  [GossipTasks:1] 2016-08-03 14:38:40,307 FailureDetector.java:287 - Not marking nodes down due to local pause of 52801769613 &gt; 5000000000</span><br><span class="line">ERROR [Reference-Reaper:1] 2016-08-03 14:38:40,307 Ref.java:187 - LEAK DETECTED: a reference (org.apache.cassandra.utils.concurrent.Ref$State@4454d466) to class org.apache.cassandra.io.util.ChannelProxy$Cleanup@1209338690:/home/admin/data/data/realtime/flash-f2a59850520d11e68c4db36bb69e35dc/la-18-big-Data.db was not released before the reference was garbage collected</span><br><span class="line">INFO  [ScheduledTasks:1] 2016-08-03 14:38:40,308 StatusLogger.java:106 - realtime.flash                673700,11091988</span><br><span class="line">ERROR [SharedPool-Worker-283] 2016-08-03 14:38:40,308 JVMStabilityInspector.java:117 - JVM state determined to be unstable.  Exiting forcefully due to:</span><br><span class="line">java.lang.OutOfMemoryError: Java heap space</span><br></pre></td></tr></table></figure>
+<h3 id="新添加节点表不存在">新添加节点表不存在</h3><p>当新添加节点到已经存在的集群时，新节点是没有schema的，它需要从集群中同步表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"> WARN [MessagingService-Incoming-/192.168.48.161] 2016-01-22 10:22:04,665 IncomingTcpConnection.java (line 86) UnknownColumnFamilyException reading from socket; closing</span><br><span class="line">org.apache.cassandra.db.UnknownColumnFamilyException: Couldn&apos;t find cfId=06010280-2614-37de-8bfa-7588805d9347</span><br><span class="line">        at org.apache.cassandra.db.ColumnFamilySerializer.deserializeCfId(ColumnFamilySerializer.java:178)</span><br><span class="line">        at org.apache.cassandra.db.ColumnFamilySerializer.deserialize(ColumnFamilySerializer.java:103)</span><br><span class="line">        at org.apache.cassandra.db.RowMutation$RowMutationSerializer.deserializeOneCf(RowMutation.java:314)</span><br><span class="line">        at org.apache.cassandra.db.RowMutation$RowMutationSerializer.deserialize(RowMutation.java:294)</span><br><span class="line">        at org.apache.cassandra.db.RowMutation$RowMutationSerializer.deserialize(RowMutation.java:322)</span><br><span class="line">        at org.apache.cassandra.db.RowMutation$RowMutationSerializer.deserialize(RowMutation.java:264)</span><br><span class="line">        at org.apache.cassandra.net.MessageIn.read(MessageIn.java:99)</span><br><span class="line">        at org.apache.cassandra.net.IncomingTcpConnection.receiveMessage(IncomingTcpConnection.java:166)</span><br><span class="line">        at org.apache.cassandra.net.IncomingTcpConnection.receiveMessages(IncomingTcpConnection.java:148)</span><br><span class="line">        at org.apache.cassandra.net.IncomingTcpConnection.run(IncomingTcpConnection.java:77)</span><br><span class="line"></span><br><span class="line">org.apache.cassandra.db.UnknownColumnFamilyException: Got slice command for nonexistent table forseti_fp.android_device_time.  If the table was just created, this is likely due to the schema not being fully propagated.  Please wait for schema agreement on table creation.</span><br><span class="line">        at org.apache.cassandra.db.SliceFromReadCommandSerializer.deserialize(SliceFromReadCommand.java:189)</span><br><span class="line"></span><br><span class="line"> INFO [InternalResponseStage:1] 2016-01-22 10:22:04,813 ColumnFamilyStore.java (line 250) Initializing forseti.ip_ip.ip_ip_update_time_idx</span><br><span class="line">ERROR [MutationStage:44] 2016-01-22 10:22:14,504 Keyspace.java (line 366) Attempting to mutate non-existant column family 9c57333a-0557-35d8-afb0-55b40bdae534</span><br></pre></td></tr></table></figure>
+<p>问题分析：新添加节点时，如果该节点还没有创建表结构，而被添加到集群中，会导致分发到这个节点的请求无法被处理</p>
+<h3 id="种子节点不一样导致集群分离">种子节点不一样导致集群分离</h3><p>问题出现: 159节点的/data commitLog目录满了,导致进程没了,由于空间不足,也无法启动<br>删除部分文件重启节点.replay操作会将commitLog写到数据目录,最终会删除commitLog文件,释放空间.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@fp-cass048159 ~]$ df -h</span><br><span class="line">Filesystem      Size  Used Avail Use% Mounted on</span><br><span class="line">/dev/sda3       271G  256G  1.3G 100% /</span><br><span class="line">/dev/sdb1        11T  8.7T  1.2T  89% /home</span><br><span class="line"></span><br><span class="line">[qihuang.zheng@fp-cass048159 ~]$ df -h</span><br><span class="line">Filesystem      Size  Used Avail Use% Mounted on</span><br><span class="line">/dev/sda3       271G   33G  225G  13% /</span><br><span class="line">/dev/sdb1        11T  8.7T  1.2T  89% /home</span><br></pre></td></tr></table></figure>
+<p>一共有159, 160两个作为种子节点, 但是它们分别不认识对方, 是不是发生了集群分离?<br>如果种子节点不一样,是会存在集群分离的,但它们的配置文件都是一样的,即种子节点都是一样的.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@fp-cass048159 data]$ nodetool status</span><br><span class="line">--  Address         Load       Tokens  Owns   Host ID                               Rack</span><br><span class="line">UN  192.168.48.161  7.36 TB    256     25.4%  54b3a7e0-f778-4087-98c3-ac84e56f77e6  RAC1</span><br><span class="line">DN  192.168.48.160  8.24 TB    256     26.2%  18a87c56-dcba-4614-adba-804aa7761a06  RAC1</span><br><span class="line">UN  192.168.48.175  3.36 TB    256     24.3%  5bbd4400-2132-42b6-91c5-389592b75423  RAC1</span><br><span class="line">UN  192.168.48.159  8.65 TB    256     24.2%  df9a693b-efc1-41bc-9a42-cf868ea75e65  RAC1</span><br><span class="line"></span><br><span class="line">[qihuang.zheng@fp-cass048160 ~]$ nodetool status</span><br><span class="line">--  Address         Load       Tokens  Owns   Host ID                               Rack</span><br><span class="line">UN  192.168.48.161  7.22 TB    256     25.4%  54b3a7e0-f778-4087-98c3-ac84e56f77e6  RAC1</span><br><span class="line">UN  192.168.48.160  8.24 TB    256     26.2%  18a87c56-dcba-4614-adba-804aa7761a06  RAC1</span><br><span class="line">UN  192.168.48.175  3.22 TB    256     24.3%  5bbd4400-2132-42b6-91c5-389592b75423  RAC1</span><br><span class="line">DN  192.168.48.159  8.65 TB    256     24.2%  df9a693b-efc1-41bc-9a42-cf868ea75e65  RAC1</span><br></pre></td></tr></table></figure>
+<h3 id="Request_did_not_complete_within_rpc_timeout">Request did not complete within rpc_timeout</h3><p><a href="http://stackoverflow.com/questions/27340812/cassandra-timing-out-when-queried-for-key-that-have-over-10-000-rows-even-after" target="_blank" rel="noopener">http://stackoverflow.com/questions/27340812/cassandra-timing-out-when-queried-for-key-that-have-over-10-000-rows-even-after</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">cqlsh:forseti&gt;  TRACING ON;</span><br><span class="line">Now tracing requests.</span><br><span class="line">cqlsh:forseti&gt; select * from ip_account limit 1;</span><br><span class="line">Request did not complete within rpc_timeout.</span><br><span class="line"></span><br><span class="line">                                                     Seeking to partition beginning in data file | 10:59:05,049 | 192.168.47.205 |           8629</span><br><span class="line">                 Scanned over 100000 tombstones; query aborted (see tombstone_failure_threshold) | 10:59:07,064 | 192.168.47.205 |        2023597</span><br><span class="line">                                                                  Scanned 10 rows and matched 10 | 10:59:07,064 | 192.168.47.205 |        2024243</span><br><span class="line">                                        Timed out; received 0 of 1 responses for range 3 of 2561 | 10:59:20,030 | 192.168.47.202 |       15001569</span><br><span class="line">                                                                                Request complete | 10:59:20,030 | 192.168.47.202 |       15001676</span><br></pre></td></tr></table></figure>
+<p>原因分析: limit 1没有指定任何查询条件, 属于Range Query. cassandra.yaml中指定range_request_timeout_in_ms: 15000是15s.  </p>
+<h3 id="NoHostAvailableException_主机不可用导致操作超时">NoHostAvailableException 主机不可用导致操作超时</h3><p><code>All host(s) tried for query failed</code>真正的原因要查看括号里的，比如这里的操作超时。如果节点当掉了，就会出现超时。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Exception in thread &quot;main&quot; com.datastax.driver.core.exceptions.NoHostAvailableException: </span><br><span class="line">All host(s) tried for query failed (tried: /192.168.6.52:9042 (com.datastax.driver.core.OperationTimedOutException: </span><br><span class="line">[/192.168.6.52:9042] Operation timed out), /192.168.6.53:9042 (com.datastax.driver.core.OperationTimedOutException: </span><br><span class="line">[/192.168.6.53:9042] Operation timed out))</span><br></pre></td></tr></table></figure>
+<h3 id="Not_enough_replica_available_副本不足">Not enough replica available 副本不足</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CassandraClient - Not enough replica available for query at consistency ONE (1 required but only 0 alive)</span><br><span class="line">com.datastax.driver.core.exceptions.UnavailableException: Not enough replica available for query at consistency ONE (1 required but only 0 alive)</span><br></pre></td></tr></table></figure>
+<p><a href="http://stackoverflow.com/questions/27974911/not-enough-replica-available-for-query-at-consistency-one-1-required-but-only-0" target="_blank" rel="noopener">http://stackoverflow.com/questions/27974911/not-enough-replica-available-for-query-at-consistency-one-1-required-but-only-0</a></p>
+<blockquote>
+<p>If you want to be able to handle more than 1 node being unavailable, what you could do is look into<br>altering your keyspace to set a higher replication factor, preferably three in this case,<br>and then running a nodetool repair on each node to get all of your data on all nodes.<br>With this change, you would be able to survive the loss of 2 nodes to read at a consistency level of one.</p>
+</blockquote>
+<p>如果集群有3个节点, 设置副本数为3, 这样运行两个节点当掉, 在一致性级别=ONE时, 仍然可以正常读取.<br>因为副本数=3, 而集群节点数=3, 则每个节点都有一份数据.  </p>
+<p>副本数对读写的影响: <a href="http://www.ecyrd.com/cassandracalculator/" target="_blank" rel="noopener">http://www.ecyrd.com/cassandracalculator/</a><br>建表时DC大小写问题（应该不是主要问题）：<br><a href="https://issues.apache.org/jira/browse/CASSANDRA-7905" target="_blank" rel="noopener">https://issues.apache.org/jira/browse/CASSANDRA-7905</a><br><a href="https://datastax-oss.atlassian.net/browse/JAVA-37" target="_blank" rel="noopener">https://datastax-oss.atlassian.net/browse/JAVA-37</a><br><a href="https://issues.apache.org/jira/browse/CASSANDRA-5292" target="_blank" rel="noopener">https://issues.apache.org/jira/browse/CASSANDRA-5292</a>   </p>
+<p><strong>Cassandra种子节点不一致引起的写副本不足</strong></p>
+<p>fp线上批量写入时报异常: <code>Not enough replica available for query at consistency ONE (1 required but only 0 alive)</code></p>
+<p>原先的种子节点是227,228. 迁移到SSD后, 新的机器必须包含原先的种子节点, 选择了227.<br>比如159设置的种子节点是227,159.  160设置的种子节点是159,160.<br>而应用程序连接的ContactPoint是159,160. 后来将227做了下线处理. 导致有些节点的Seeds发生了冲突.<br>这样Cassandra的gossip协议在判断集群中节点的状态会出现混乱:  </p>
+<p>虽然所有的节点的DataCenter都是DC3. 但是查看下面的状态发现228和159认识不到160,161. 而且DC也不是我们配置的DC3. </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@fp-cass048159 ~]$ nodetool status</span><br><span class="line">Datacenter: DC1</span><br><span class="line">===============</span><br><span class="line">--  Address         Load       Tokens  Owns   Host ID                               Rack</span><br><span class="line">DN  192.168.48.161  ?          256     24.9%  54b3a7e0-f778-4087-98c3-ac84e56f77e6  r1</span><br><span class="line">DN  192.168.48.160  ?          256     25.8%  18a87c56-dcba-4614-adba-804aa7761a06  r1</span><br><span class="line">Datacenter: DC3</span><br><span class="line">===============</span><br><span class="line">--  Address         Load       Tokens  Owns   Host ID                               Rack</span><br><span class="line">UN  192.168.47.228  11.82 TB   256     26.3%  f3d26148-d2da-479c-ae9e-ae41aced1be9  RAC1</span><br><span class="line">UN  192.168.48.159  3.54 TB    256     23.0%  df9a693b-efc1-41bc-9a42-cf868ea75e65  RAC1</span><br></pre></td></tr></table></figure>
+<p>而160,161却可以认识到228和159.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@fp-cass048161 ~]$ nodetool status</span><br><span class="line">Datacenter: DC3</span><br><span class="line">===============</span><br><span class="line">--  Address         Load       Tokens  Owns   Host ID                               Rack</span><br><span class="line">UN  192.168.48.161  3.24 TB    256     24.9%  54b3a7e0-f778-4087-98c3-ac84e56f77e6  RAC1</span><br><span class="line">UN  192.168.48.160  1.59 TB    256     25.8%  18a87c56-dcba-4614-adba-804aa7761a06  RAC1</span><br><span class="line">UN  192.168.47.228  7.18 TB    256     26.3%  f3d26148-d2da-479c-ae9e-ae41aced1be9  RAC1</span><br><span class="line">UN  192.168.48.159  2.18 TB    256     23.0%  df9a693b-efc1-41bc-9a42-cf868ea75e65  RAC1</span><br></pre></td></tr></table></figure>
+<p>解决办法是在228和159将其他DN的节点手工removenode掉(还需要force remove).  比如在159节点把两个DN都移除掉:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@fp-cass048159 ~]$ nodetool status</span><br><span class="line">Note: Ownership information does not include topology; for complete information, specify a keyspace</span><br><span class="line">Datacenter: DC3</span><br><span class="line">===============</span><br><span class="line">--  Address         Load       Tokens  Owns   Host ID                               Rack</span><br><span class="line">UN  192.168.47.228  11.6 TB    256     50.0%  f3d26148-d2da-479c-ae9e-ae41aced1be9  RAC1</span><br><span class="line">UN  192.168.48.159  3.54 TB    256     50.0%  df9a693b-efc1-41bc-9a42-cf868ea75e65  RAC1</span><br></pre></td></tr></table></figure>
+<p>然后再把160,161重启, 这样会重新加入到228和159组成的集群中.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@fp-cass048159 ~]$ nodetool status</span><br><span class="line">Note: Ownership information does not include topology; for complete information, specify a keyspace</span><br><span class="line">Datacenter: DC3</span><br><span class="line">===============</span><br><span class="line">--  Address         Load       Tokens  Owns   Host ID                               Rack</span><br><span class="line">UN  192.168.48.161  3.24 TB    256     24.9%  54b3a7e0-f778-4087-98c3-ac84e56f77e6  RAC1</span><br><span class="line">UN  192.168.48.160  2.69 TB    256     25.8%  18a87c56-dcba-4614-adba-804aa7761a06  RAC1</span><br><span class="line">UN  192.168.47.228  11.6 TB    256     26.3%  f3d26148-d2da-479c-ae9e-ae41aced1be9  RAC1</span><br><span class="line">UN  192.168.48.159  3.54 TB    256     23.0%  df9a693b-efc1-41bc-9a42-cf868ea75e65  RAC1</span><br></pre></td></tr></table></figure>
+<p>现在查看每个节点的状态, 会发现都是一样的了. </p>
+<p>结论: 在迁移节点,下线节点, 如果涉及到种子节点, 最后集群中每个节点配置文件中的seeds种子节点一定要更新成一样的. 并重启节点.<br>虽然Gossip协议能够帮我们自动发现集群中的其他节点, 但是如果使用status查看每个节点的状态时, 如果发现不一致了, 一定要及时更改!!!</p>
+<p><strong>修改成Quorum</strong>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">com.datastax.driver.core.exceptions.UnavailableException: </span><br><span class="line">  Not enough replica available for query at consistency QUORUM (1 required but only 0 alive)</span><br></pre></td></tr></table></figure>
+<h3 id="fromIndex">fromIndex</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">ERROR [ReadStage:46463] 2016-01-11 14:51:13,903 CassandraDaemon.java (line 258) Exception in thread Thread[ReadStage:46463,5,main]</span><br><span class="line">java.lang.RuntimeException: java.lang.IllegalArgumentException: fromIndex(3000) &gt; toIndex(0)</span><br><span class="line">        at org.apache.cassandra.service.StorageProxy$DroppableRunnable.run(StorageProxy.java:2016)</span><br><span class="line">        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)</span><br><span class="line">        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:744)</span><br><span class="line">Caused by: java.lang.IllegalArgumentException: fromIndex(3000) &gt; toIndex(0)</span><br><span class="line">        at java.util.ArrayList.subListRangeCheck(ArrayList.java:964)</span><br><span class="line">        at java.util.ArrayList.subList(ArrayList.java:954)</span><br><span class="line">        at org.apache.cassandra.db.ArrayBackedSortedColumns$SlicesIterator.computeNext(ArrayBackedSortedColumns.java:405)</span><br><span class="line">        at org.apache.cassandra.db.ArrayBackedSortedColumns$SlicesIterator.computeNext(ArrayBackedSortedColumns.java:365)</span><br><span class="line">        at com.google.common.collect.AbstractIterator.tryToComputeNext(AbstractIterator.java:143)</span><br><span class="line">        at com.google.common.collect.AbstractIterator.hasNext(AbstractIterator.java:138)</span><br><span class="line">        at org.apache.cassandra.db.filter.SliceQueryFilter$1.hasNext(SliceQueryFilter.java:154)</span><br><span class="line">        at org.apache.cassandra.db.filter.QueryFilter$2.getNext(QueryFilter.java:157)</span><br><span class="line">        at org.apache.cassandra.db.filter.QueryFilter$2.hasNext(QueryFilter.java:140)</span><br><span class="line">        at org.apache.cassandra.db.filter.SliceQueryFilter.collectReducedColumns(SliceQueryFilter.java:191)</span><br><span class="line">        at org.apache.cassandra.db.filter.QueryFilter.collateOnDiskAtom(QueryFilter.java:89)</span><br><span class="line">        at org.apache.cassandra.db.ColumnFamilyStore.filterColumnFamily(ColumnFamilyStore.java:1422)</span><br><span class="line">        at org.apache.cassandra.db.ColumnFamilyStore.getColumnFamily(ColumnFamilyStore.java:1382)</span><br><span class="line">        at org.apache.cassandra.db.Keyspace.getRow(Keyspace.java:330)</span><br><span class="line">        at org.apache.cassandra.db.SliceFromReadCommand.getRow(SliceFromReadCommand.java:65)</span><br><span class="line">        at org.apache.cassandra.service.StorageProxy$LocalReadRunnable.runMayThrow(StorageProxy.java:1447)</span><br><span class="line">        at org.apache.cassandra.service.StorageProxy$DroppableRunnable.run(StorageProxy.java:2012)</span><br></pre></td></tr></table></figure>
+<h3 id="移动文件后重启Cassandra节点：">移动文件后重启Cassandra节点：</h3><p>某个节点磁盘不足，而有些文件很大（因为采用Size方式，有些文件有1T多），移动到其他节点后，在新节点重启加载这个文件，会有数据重叠的现象。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">WARN 14:14:55,720 At level 1, SSTableReader(path=&apos;/home/admin/cassandra/data/forseti/velocity_app/forseti-velocity_app-jb-1675-Data.db&apos;) </span><br><span class="line">[DecoratedKey(-2251189883765179735, 002034623334643764366665656239313330373930376365363937393130343164370000096a696564616962616f00000f6a696564616962616f5f616e64726f00000c6163636f756e744c6f67696e00), </span><br><span class="line">DecoratedKey(744337094338704937, 0006e4b8ade59bbd0000066a6975796f7500000a6a6975796f755f776562000010697041646472657373436f756e74727900)] </span><br><span class="line">overlaps SSTableReader(path=&apos;/home/admin/cassandra/data/forseti/velocity_app/forseti-velocity_app-jb-191783-Data.db&apos;) </span><br><span class="line">[DecoratedKey(-321297051577330931, 000d3136372e31342e3232352e343400000972797861617736734e00000d72797861617736734e5f77656200000969704164647265737300), </span><br><span class="line">DecoratedKey(-283124829323804542, 0009e4b88ae6b5b7e5b882000005637472697000000963747269705f77656200000d6970416464726573734369747900)].  </span><br><span class="line">This could be caused by a bug in Cassandra 1.1.0 .. 1.1.3 or due to the fact that you have dropped sstables from another node into the data directory. </span><br><span class="line">Sending back to L0.  If you didn&apos;t drop in sstables, and have not yet run scrub, you should do so since you may also have rows out-of-order within an sstable</span><br></pre></td></tr></table></figure>
+<h3 id="管道断开">管道断开</h3><p>通常如果某个节点发生严重的GC，发送到这个节点的请求无法响应时，会被断开。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"> INFO [Native-Transport-Requests:637] 2015-11-08 16:31:24,368 Message.java (line 397) Unexpected exception during request; channel = [id: 0x64da6e04, /192.168.47.75:38758 :&gt; /192.168.47.202:9042]</span><br><span class="line">java.io.IOException: 断开的管道</span><br><span class="line">    at sun.nio.ch.FileDispatcherImpl.write0(Native Method)</span><br><span class="line">    at sun.nio.ch.SocketDispatcher.write(SocketDispatcher.java:47)</span><br><span class="line">    at sun.nio.ch.IOUtil.writeFromNativeBuffer(IOUtil.java:93)</span><br><span class="line">    at sun.nio.ch.IOUtil.write(IOUtil.java:51)</span><br><span class="line">    at sun.nio.ch.SocketChannelImpl.write(SocketChannelImpl.java:487)</span><br><span class="line">    at org.jboss.netty.channel.socket.nio.SocketSendBufferPool$UnpooledSendBuffer.transferTo(SocketSendBufferPool.java:203)</span><br><span class="line">    at org.jboss.netty.channel.socket.nio.AbstractNioWorker.write0(AbstractNioWorker.java:202)</span><br><span class="line">    at org.jboss.netty.channel.socket.nio.AbstractNioWorker.writeFromTaskLoop(AbstractNioWorker.java:152)</span><br><span class="line">    at org.jboss.netty.channel.socket.nio.AbstractNioChannel$WriteTask.run(AbstractNioChannel.java:335)</span><br><span class="line">    at org.jboss.netty.channel.socket.nio.AbstractNioSelector.processTaskQueue(AbstractNioSelector.java:366)</span><br><span class="line">    at org.jboss.netty.channel.socket.nio.AbstractNioSelector.run(AbstractNioSelector.java:290)</span><br><span class="line">    at org.jboss.netty.channel.socket.nio.AbstractNioWorker.run(AbstractNioWorker.java:90)</span><br><span class="line">    at org.jboss.netty.channel.socket.nio.NioWorker.run(NioWorker.java:178)</span><br><span class="line">    at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)</span><br><span class="line">    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)</span><br><span class="line">    at java.lang.Thread.run(Thread.java:744)</span><br><span class="line"> INFO [CompactionExecutor:19230] 2015-11-08 16:31:31,036 CompactionTask.java (line 120) Compacting [SSTableReader(path=&apos;/home/admin/cassandra/data/system/hints/system-hints-jb-4140-Data.db&apos;), SSTableReader(path=&apos;/home/admin/cassandra/data/system/hints/system-hints-jb-4139-Data.db&apos;), SSTableReader(path=&apos;/home/admin/cassandra/data/system/hints/system-hints-jb-4141-Data.db&apos;)]</span><br><span class="line"> INFO [CompactionExecutor:19230] 2015-11-08 16:32:27,041 CompactionTask.java (line 299) Compacted 3 sstables to [/home/admin/cassandra/data/system/hints/system-hints-jb-4142,].  1,576,968,570 bytes to 1,557,007,102 (~98% of original) in 56,002ms = 26.514726MB/s.  5 total partitions merged to 2.  Partition merge counts were &#123;2:1, 3:1, &#125;</span><br><span class="line"> INFO [HintedHandoff:2] 2015-11-08 16:32:27,106 HintedHandOffManager.java (line 349) Started hinted handoff for host: 57eb6f83-734d-48ef-855b-e745001e8207 with IP: /192.168.47.227</span><br><span class="line"> INFO [HintedHandoff:1] 2015-11-08 16:32:27,106 HintedHandOffManager.java (line 349) Started hinted handoff for host: f3d26148-d2da-479c-ae9e-ae41aced1be9 with IP: /192.168.47.228</span><br><span class="line"></span><br><span class="line"> INFO [HintedHandoff:2] 2015-11-08 16:32:54,726 HintedHandOffManager.java (line 469) Timed out replaying hints to /192.168.47.227; aborting (468 delivered)</span><br></pre></td></tr></table></figure>
+<h3 id="api使用Level_compaction策略计算mean时">api使用Level compaction策略计算mean时</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">ERROR [CompactionExecutor:46654] 2016-03-15 09:31:59,459 CassandraDaemon.java (line 258) Exception in thread Thread[CompactionExecutor:46654,1,main]</span><br><span class="line">java.lang.IllegalStateException: Unable to compute ceiling for max when histogram overflowed</span><br><span class="line">    at org.apache.cassandra.utils.EstimatedHistogram.mean(EstimatedHistogram.java:202)</span><br><span class="line">    at org.apache.cassandra.io.sstable.SSTableMetadata.getEstimatedDroppableTombstoneRatio(SSTableMetadata.java:192)</span><br><span class="line">    at org.apache.cassandra.io.sstable.SSTableReader.getEstimatedDroppableTombstoneRatio(SSTableReader.java:1334)</span><br><span class="line">    at org.apache.cassandra.db.compaction.LeveledCompactionStrategy$1.compare(LeveledCompactionStrategy.java:341)</span><br><span class="line">    at org.apache.cassandra.db.compaction.LeveledCompactionStrategy$1.compare(LeveledCompactionStrategy.java:338)</span><br><span class="line">    at java.util.TimSort.binarySort(TimSort.java:265)</span><br><span class="line">    at java.util.TimSort.sort(TimSort.java:208)</span><br><span class="line">    at java.util.Arrays.sort(Arrays.java:727)</span><br><span class="line">    at com.google.common.collect.ImmutableSortedSet.construct(ImmutableSortedSet.java:428)</span><br><span class="line">    at com.google.common.collect.ImmutableSortedSet.copyOf(ImmutableSortedSet.java:357)</span><br><span class="line">    at com.google.common.collect.ImmutableSortedSet.copyOf(ImmutableSortedSet.java:380)</span><br><span class="line">    at org.apache.cassandra.db.compaction.LeveledManifest.getLevelSorted(LeveledManifest.java:612)</span><br><span class="line">    at org.apache.cassandra.db.compaction.LeveledCompactionStrategy.findDroppableSSTable(LeveledCompactionStrategy.java:337)</span><br><span class="line">    at org.apache.cassandra.db.compaction.LeveledCompactionStrategy.getMaximalTask(LeveledCompactionStrategy.java:125)</span><br><span class="line">    at org.apache.cassandra.db.compaction.LeveledCompactionStrategy.getNextBackgroundTask(LeveledCompactionStrategy.java:113)</span><br><span class="line">    at org.apache.cassandra.db.compaction.CompactionManager$BackgroundCompactionTask.run(CompactionManager.java:192)</span><br><span class="line">    at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)</span><br><span class="line">    at java.util.concurrent.FutureTask.run(FutureTask.java:262)</span><br><span class="line">    at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)</span><br><span class="line">    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)</span><br><span class="line">    at java.lang.Thread.run(Thread.java:744)</span><br><span class="line"> WARN [ReadStage:72] 2016-03-15 09:32:03,616 SliceQueryFilter.java (line 231) Read 1002 live and 7758 tombstone cells in forseti.velocity (see tombstone_warn_threshold). </span><br><span class="line"> 1001 columns was requested, slices=[dhgate:dh_web_seller:ip3:1455670777904:sequence_id-dhgate:!]</span><br><span class="line"></span><br><span class="line"> WARN [ReadStage:907] 2016-03-15 10:23:55,294 SliceQueryFilter.java (line 231) Read 1001 live and 6045 tombstone cells in forseti.velocity (see tombstone_warn_threshold). </span><br><span class="line"> 1000 columns was requested, slices=[dhgate-dhgate:!]</span><br><span class="line"> WARN [ReadStage:824] 2016-03-15 10:23:55,374 SliceQueryFilter.java (line 231) Read 1002 live and 5691 tombstone cells in forseti.velocity (see tombstone_warn_threshold). </span><br><span class="line"> 1001 columns was requested, slices=[dhgate:dh_web_seller:ip3:1455670777904:sequence_id-dhgate:!]</span><br></pre></td></tr></table></figure>
+<p>问题分析：<a href="https://issues.apache.org/jira/browse/CASSANDRA-8028" target="_blank" rel="noopener">https://issues.apache.org/jira/browse/CASSANDRA-8028</a> 这里说是有很大的partition导致溢出了，默认90个buckets.<br>下一步：查看EstimatedHistogram计算bucket的方式</p>
+<p>问题思路：partition很大，分布不均匀，导致默认90个的buckets不够</p>
+<h4 id="cfstats">cfstats</h4><p>使用Level Compaction策略时，查看cf的状态，会显示每个Level的sstable数量</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047202 ~]$ nodetool cfstats forseti.velocity</span><br><span class="line">Keyspace: forseti</span><br><span class="line">    Read Count: 17155706</span><br><span class="line">    Read Latency: 2.544613554872064 ms.</span><br><span class="line">    Write Count: 366320040</span><br><span class="line">    Write Latency: 0.05012879881482869 ms.</span><br><span class="line">        SSTable count: 3807</span><br><span class="line">        SSTables in each level: [4, 9, 100, 622, 3072, 0, 0, 0, 0]</span><br><span class="line">        Compacted partition minimum bytes: 104</span><br><span class="line">        Compacted partition maximum bytes: 228(G),504(M),356(K),366(B)</span><br><span class="line">        Compacted partition mean bytes: 9748</span><br></pre></td></tr></table></figure>
+<p>1.cfstats中有关于Partition被Compacted的最小值，最大值和平均值。最大的Partition有228G!<br>而Partition实际上是表的Partition Key。</p>
+<p>2.每个level的sstble数量加起来，正好等于sstable count.<br>每一个level的数量表示该level的sstable数量。L0的大小为5M,后面每个Level的大小是前一个的10倍。<br>源码位置： LeveledManifest</p>
+<p>3.按照每个Level的大小，分别为5M=4,50M=9,500M=100,5G=522,50G=3072,500G=0..<br>按文件大小查询，貌似没有那么多5G,甚至50G的文件：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find /home/admin/cassandra/data/forseti/velocity/*Data.db -size +53687091200c</span><br></pre></td></tr></table></figure>
+<p>实际上按Level来划分文件，并不是说该Level每个文件都有这么大，而是总的文件大小：<br><a href="http://stackoverflow.com/questions/29766453/how-does-the-leveled-compaction-strategy-ensure-90-of-reads-are-from-one-sstabl" target="_blank" rel="noopener">http://stackoverflow.com/questions/29766453/how-does-the-leveled-compaction-strategy-ensure-90-of-reads-are-from-one-sstabl</a>  </p>
+<ul>
+<li>Every sstable is created when a fixed (relatively small) size limit is reached. By default L0 gets 5MB files of files, and each subsequent level is 10x the size. (in L1 you’ll have 50MB of data, L2 500MB, and so on).</li>
+<li>Sstables are created with the guarantee that they don’t overlap</li>
+<li>When a level fills up, a compaction is triggered and stables from level-L are promoted to level-L+1. So, in L1 you’ll have 50MB in ~10 files, L2 500MB in ~100 files, etc..</li>
+</ul>
+<h4 id="cfhistograms">cfhistograms</h4><p>查看cfhistograms直方图，有时候会报错数组越界超过90个（第二次没有异常时请求书明显少了很多）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047202 ~]$ nodetool cfhistograms forseti velocity</span><br><span class="line">forseti/velocity histograms</span><br><span class="line"></span><br><span class="line">SSTables per Read</span><br><span class="line"> 1 sstables: 9243544</span><br><span class="line"> 2 sstables: 2447040</span><br><span class="line"> 3 sstables: 1714616</span><br><span class="line"> 4 sstables: 912563</span><br><span class="line"> 5 sstables: 430344</span><br><span class="line"> 6 sstables: 59759</span><br><span class="line"> 7 sstables: 14888</span><br><span class="line"> 8 sstables: 5128</span><br><span class="line">10 sstables: 690</span><br><span class="line"></span><br><span class="line">Write Latency (microseconds)</span><br><span class="line">Exception in thread &quot;main&quot; java.lang.ArrayIndexOutOfBoundsException: 90</span><br><span class="line">    at org.apache.cassandra.tools.NodeCmd.printHistogram(NodeCmd.java:1084)</span><br><span class="line">    at org.apache.cassandra.tools.NodeCmd.printCfHistograms(NodeCmd.java:1133)</span><br><span class="line">    at org.apache.cassandra.tools.NodeCmd.main(NodeCmd.java:1469)</span><br><span class="line"></span><br><span class="line">[qihuang.zheng@cass047202 ~]$ nodetool cfhistograms forseti velocity</span><br><span class="line">forseti/velocity histograms</span><br><span class="line"></span><br><span class="line">SSTables per Read</span><br><span class="line">1 sstables: 101</span><br><span class="line">2 sstables: 29</span><br><span class="line">3 sstables: 22</span><br><span class="line">4 sstables: 13</span><br><span class="line">5 sstables: 4</span><br><span class="line">6 sstables: 2</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>cfhistograms几个维度的意义：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">SSTables per Read : 读取的sstable数量： 请求数</span><br><span class="line">1 sstables: 300887  读取一个sstables的请求数量有30万</span><br><span class="line">2 sstables: 65075</span><br><span class="line">8 sstables: 109</span><br><span class="line"></span><br><span class="line">Write Latency (microseconds) 写入延迟毫秒：请求数</span><br><span class="line">     6 us: 13</span><br><span class="line">    42 us: 1174485 </span><br><span class="line">263210 us: 1</span><br><span class="line"></span><br><span class="line">Read Latency (microseconds) 读取延迟毫秒：请求数</span><br><span class="line">     24 us: 3</span><br><span class="line">   2759 us: 20459</span><br><span class="line">   .... us: ...</span><br><span class="line">4866323 us: 3</span><br><span class="line"></span><br><span class="line">Partition Size (bytes) Partitiond大小：请求数</span><br><span class="line">     124 bytes: 2029</span><br><span class="line">25109160 bytes: 883</span><br><span class="line"></span><br><span class="line">Cell Count per Partition 每个Partition的列数量：Partition数</span><br><span class="line">       1 cells: 2030</span><br><span class="line">25109160 cells: 13</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Cell Count per Partition 有90个</li>
+<li>Partition Size 有68个。上面Partition最大为25M，但是怎么和cfstats中最大200G联系起来。</li>
+<li>SSTables per Read中右侧的所有请求数总和 = Read Latency (microseconds) 右侧的所有请求数总和。 对于一份数据包括所有请求，分别统计这些请求读取了多少个sstable，或者每个请求的读取延迟时间。  </li>
+</ul>
+<h3 id="fp空间不足，无法compcation，FileNotFoundException:">fp空间不足，无法compcation，FileNotFoundException:</h3><p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160302205731162" alt="fp_fnf"></p>
+<p>问题分析：没有发生compaction,文件却被删除了导致找不到，比较奇怪。照理说没有compaction是不会删除原始数据的。<br>问题状态：未解决</p>
+<p>读取的时候如果找不到文件也会报错：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">ERROR [ReadStage:91] 2016-02-09 04:09:00,384 CassandraDaemon.java (line 258) Exception in thread Thread[ReadStage:91,5,main]</span><br><span class="line">java.lang.RuntimeException: java.io.FileNotFoundException: /home/admin/cassandra/data/forseti_fp/android_device_session/forseti_fp-android_device_session-jb-115318-Data.db (没有那个文件或目录)</span><br><span class="line">        at org.apache.cassandra.io.compress.CompressedRandomAccessReader.open(CompressedRandomAccessReader.java:47)</span><br><span class="line">        at org.apache.cassandra.io.util.CompressedPoolingSegmentedFile.createReader(CompressedPoolingSegmentedFile.java:48)</span><br><span class="line">        at org.apache.cassandra.io.util.PoolingSegmentedFile.getSegment(PoolingSegmentedFile.java:39)</span><br><span class="line">        at org.apache.cassandra.io.sstable.SSTableReader.getFileDataInput(SSTableReader.java:1242)</span><br><span class="line">        at org.apache.cassandra.db.columniterator.SimpleSliceReader.&lt;init&gt;(SimpleSliceReader.java:57)</span><br><span class="line">        at org.apache.cassandra.db.columniterator.SSTableSliceIterator.createReader(SSTableSliceIterator.java:65)</span><br><span class="line">        at org.apache.cassandra.db.columniterator.SSTableSliceIterator.&lt;init&gt;(SSTableSliceIterator.java:42)</span><br><span class="line">        at org.apache.cassandra.db.filter.SliceQueryFilter.getSSTableColumnIterator(SliceQueryFilter.java:173)</span><br><span class="line">        at org.apache.cassandra.db.filter.QueryFilter.getSSTableColumnIterator(QueryFilter.java:62)</span><br><span class="line">        at org.apache.cassandra.db.CollationController.collectAllData(CollationController.java:250)</span><br><span class="line">        at org.apache.cassandra.db.CollationController.getTopLevelColumns(CollationController.java:53)</span><br><span class="line">        at org.apache.cassandra.db.ColumnFamilyStore.getTopLevelColumns(ColumnFamilyStore.java:1567)</span><br><span class="line">        at org.apache.cassandra.db.ColumnFamilyStore.getColumnFamily(ColumnFamilyStore.java:1386)</span><br><span class="line">        at org.apache.cassandra.db.Keyspace.getRow(Keyspace.java:330)</span><br><span class="line">        at org.apache.cassandra.db.SliceFromReadCommand.getRow(SliceFromReadCommand.java:65)</span><br><span class="line">        at org.apache.cassandra.db.ReadVerbHandler.doVerb(ReadVerbHandler.java:47)</span><br><span class="line">        at org.apache.cassandra.net.MessageDeliveryTask.run(MessageDeliveryTask.java:62)</span><br><span class="line">        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)</span><br><span class="line">        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:744)</span><br><span class="line">Caused by: java.io.FileNotFoundException: /home/admin/cassandra/data/forseti_fp/android_device_session/forseti_fp-android_device_session-jb-115318-Data.db (没有那个文件或目录)</span><br><span class="line">        at java.io.RandomAccessFile.open(Native Method)</span><br><span class="line">        at java.io.RandomAccessFile.&lt;init&gt;(RandomAccessFile.java:241)</span><br><span class="line">        at org.apache.cassandra.io.util.RandomAccessReader.&lt;init&gt;(RandomAccessReader.java:58)</span><br><span class="line">        at org.apache.cassandra.io.compress.CompressedRandomAccessReader.&lt;init&gt;(CompressedRandomAccessReader.java:76)</span><br><span class="line">        at org.apache.cassandra.io.compress.CompressedRandomAccessReader.open(CompressedRandomAccessReader.java:43)</span><br><span class="line">        ... 19 more</span><br></pre></td></tr></table></figure>
+<p>某天169上大量报错FNF，重启后仍然没有解决，查看sstable数量非常多（正常的只有30个左右）。手工做compact报错FNF：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass048169 ~]$ nodetool cfstats forseti.velocity_app | grep &quot;SSTable count&quot;</span><br><span class="line">        SSTable count: 5746</span><br><span class="line">[qihuang.zheng@cass048169 ~]$ nodetool compact forseti velocity_app</span><br><span class="line">Error occurred during compaction</span><br><span class="line">java.util.concurrent.ExecutionException: java.lang.RuntimeException: java.io.FileNotFoundException: /home/admin/cassandra/data/forseti/velocity_app/forseti-velocity_app-jb-1014038-Data.db (没有那个文件或目录)</span><br><span class="line">    at java.util.concurrent.FutureTask.report(FutureTask.java:122)</span><br><span class="line">    at java.util.concurrent.FutureTask.get(FutureTask.java:188)</span><br><span class="line">    at org.apache.cassandra.db.compaction.CompactionManager.performMaximal(CompactionManager.java:288)</span><br><span class="line">    at org.apache.cassandra.db.ColumnFamilyStore.forceMajorCompaction(ColumnFamilyStore.java:1990)</span><br><span class="line">    at org.apache.cassandra.service.StorageService.forceKeyspaceCompaction(StorageService.java:2205)</span><br><span class="line">    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)</span><br><span class="line">    at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)</span><br><span class="line">    at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)</span><br><span class="line">    at java.lang.reflect.Method.invoke(Method.java:606)</span><br><span class="line">    at sun.reflect.misc.Trampoline.invoke(MethodUtil.java:75)</span><br><span class="line">    at sun.reflect.GeneratedMethodAccessor12.invoke(Unknown Source)</span><br><span class="line">    at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)</span><br><span class="line">    at java.lang.reflect.Method.invoke(Method.java:606)</span><br><span class="line">    at sun.reflect.misc.MethodUtil.invoke(MethodUtil.java:279)</span><br><span class="line">    at com.sun.jmx.mbeanserver.StandardMBeanIntrospector.invokeM2(StandardMBeanIntrospector.java:112)</span><br><span class="line">    at com.sun.jmx.mbeanserver.StandardMBeanIntrospector.invokeM2(StandardMBeanIntrospector.java:46)</span><br><span class="line">    at com.sun.jmx.mbeanserver.MBeanIntrospector.invokeM(MBeanIntrospector.java:237)</span><br><span class="line">    at com.sun.jmx.mbeanserver.PerInterface.invoke(PerInterface.java:138)</span><br><span class="line">    at com.sun.jmx.mbeanserver.MBeanSupport.invoke(MBeanSupport.java:252)</span><br><span class="line">    at com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.invoke(DefaultMBeanServerInterceptor.java:819)</span><br><span class="line">    at com.sun.jmx.mbeanserver.JmxMBeanServer.invoke(JmxMBeanServer.java:801)</span><br><span class="line">    at javax.management.remote.rmi.RMIConnectionImpl.doOperation(RMIConnectionImpl.java:1487)</span><br><span class="line">    at javax.management.remote.rmi.RMIConnectionImpl.access$300(RMIConnectionImpl.java:97)</span><br><span class="line">    at javax.management.remote.rmi.RMIConnectionImpl$PrivilegedOperation.run(RMIConnectionImpl.java:1328)</span><br><span class="line">    at javax.management.remote.rmi.RMIConnectionImpl.doPrivilegedOperation(RMIConnectionImpl.java:1420)</span><br><span class="line">    at javax.management.remote.rmi.RMIConnectionImpl.invoke(RMIConnectionImpl.java:848)</span><br><span class="line">    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)</span><br><span class="line">    at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)</span><br><span class="line">    at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)</span><br><span class="line">    at java.lang.reflect.Method.invoke(Method.java:606)</span><br><span class="line">    at sun.rmi.server.UnicastServerRef.dispatch(UnicastServerRef.java:322)</span><br><span class="line">    at sun.rmi.transport.Transport$1.run(Transport.java:177)</span><br><span class="line">    at sun.rmi.transport.Transport$1.run(Transport.java:174)</span><br><span class="line">    at java.security.AccessController.doPrivileged(Native Method)</span><br><span class="line">    at sun.rmi.transport.Transport.serviceCall(Transport.java:173)</span><br><span class="line">    at sun.rmi.transport.tcp.TCPTransport.handleMessages(TCPTransport.java:556)</span><br><span class="line">    at sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(TCPTransport.java:811)</span><br><span class="line">    at sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(TCPTransport.java:670)</span><br><span class="line">    at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)</span><br><span class="line">    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)</span><br><span class="line">    at java.lang.Thread.run(Thread.java:744)</span><br><span class="line">Caused by: java.lang.RuntimeException: java.io.FileNotFoundException: /home/admin/cassandra/data/forseti/velocity_app/forseti-velocity_app-jb-1014038-Data.db (没有那个文件或目录)</span><br><span class="line">    at org.apache.cassandra.io.compress.CompressedThrottledReader.open(CompressedThrottledReader.java:52)</span><br><span class="line">    at org.apache.cassandra.io.sstable.SSTableReader.openDataReader(SSTableReader.java:1402)</span><br><span class="line">    at org.apache.cassandra.io.sstable.SSTableScanner.&lt;init&gt;(SSTableScanner.java:67)</span><br><span class="line">    at org.apache.cassandra.io.sstable.SSTableReader.getScanner(SSTableReader.java:1208)</span><br><span class="line">    at org.apache.cassandra.io.sstable.SSTableReader.getScanner(SSTableReader.java:1220)</span><br><span class="line">    at org.apache.cassandra.db.compaction.AbstractCompactionStrategy.getScanners(AbstractCompactionStrategy.java:273)</span><br><span class="line">    at org.apache.cassandra.db.compaction.AbstractCompactionStrategy.getScanners(AbstractCompactionStrategy.java:279)</span><br><span class="line">    at org.apache.cassandra.db.compaction.CompactionTask.runMayThrow(CompactionTask.java:131)</span><br><span class="line">    at org.apache.cassandra.utils.WrappedRunnable.run(WrappedRunnable.java:28)</span><br><span class="line">    at org.apache.cassandra.db.compaction.CompactionTask.executeInternal(CompactionTask.java:60)</span><br><span class="line">    at org.apache.cassandra.db.compaction.AbstractCompactionTask.execute(AbstractCompactionTask.java:59)</span><br><span class="line">    at org.apache.cassandra.db.compaction.CompactionManager$6.runMayThrow(CompactionManager.java:303)</span><br><span class="line">    at org.apache.cassandra.utils.WrappedRunnable.run(WrappedRunnable.java:28)</span><br><span class="line">    at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471)</span><br><span class="line">    at java.util.concurrent.FutureTask.run(FutureTask.java:262)</span><br><span class="line">    ... 3 more</span><br><span class="line">Caused by: java.io.FileNotFoundException: /home/admin/cassandra/data/forseti/velocity_app/forseti-velocity_app-jb-1014038-Data.db (没有那个文件或目录)</span><br><span class="line">    at java.io.RandomAccessFile.open(Native Method)</span><br><span class="line">    at java.io.RandomAccessFile.&lt;init&gt;(RandomAccessFile.java:241)</span><br><span class="line">    at org.apache.cassandra.io.util.RandomAccessReader.&lt;init&gt;(RandomAccessReader.java:58)</span><br><span class="line">    at org.apache.cassandra.io.compress.CompressedRandomAccessReader.&lt;init&gt;(CompressedRandomAccessReader.java:76)</span><br><span class="line">    at org.apache.cassandra.io.compress.CompressedThrottledReader.&lt;init&gt;(CompressedThrottledReader.java:34)</span><br><span class="line">    at org.apache.cassandra.io.compress.CompressedThrottledReader.open(CompressedThrottledReader.java:48)</span><br><span class="line">    ... 17 more</span><br></pre></td></tr></table></figure>
+<p>又重启了一次（歇了会儿没有立即重启），就可以compact了。</p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/10/15/Cassandra-exception/">Cassandra常见异常</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年10月15日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/10/15/Cassandra-exception/" title="Cassandra常见异常">http://github.com/zqhxuyuan/2015/10/15/Cassandra-exception/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/10/15/Cassandra-exception/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/10/15/Cassandra-Operation/">
+        Cassandra操作
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/10/15/Cassandra-Stress/">
+        Cassandra压力测试
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Cassandra常见异常与解决"><span class="toc-number">1.</span> <span class="toc-text">Cassandra常见异常与解决</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#安装"><span class="toc-number">1.1.</span> <span class="toc-text">安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#内存OOM"><span class="toc-number">1.2.</span> <span class="toc-text">内存OOM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#新添加节点表不存在"><span class="toc-number">1.3.</span> <span class="toc-text">新添加节点表不存在</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#种子节点不一样导致集群分离"><span class="toc-number">1.4.</span> <span class="toc-text">种子节点不一样导致集群分离</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Request_did_not_complete_within_rpc_timeout"><span class="toc-number">1.5.</span> <span class="toc-text">Request did not complete within rpc_timeout</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NoHostAvailableException_主机不可用导致操作超时"><span class="toc-number">1.6.</span> <span class="toc-text">NoHostAvailableException 主机不可用导致操作超时</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Not_enough_replica_available_副本不足"><span class="toc-number">1.7.</span> <span class="toc-text">Not enough replica available 副本不足</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#fromIndex"><span class="toc-number">1.8.</span> <span class="toc-text">fromIndex</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#移动文件后重启Cassandra节点："><span class="toc-number">1.9.</span> <span class="toc-text">移动文件后重启Cassandra节点：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#管道断开"><span class="toc-number">1.10.</span> <span class="toc-text">管道断开</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#api使用Level_compaction策略计算mean时"><span class="toc-number">1.11.</span> <span class="toc-text">api使用Level compaction策略计算mean时</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#cfstats"><span class="toc-number">1.11.1.</span> <span class="toc-text">cfstats</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#cfhistograms"><span class="toc-number">1.11.2.</span> <span class="toc-text">cfhistograms</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#fp空间不足，无法compcation，FileNotFoundException:"><span class="toc-number">1.12.</span> <span class="toc-text">fp空间不足，无法compcation，FileNotFoundException:</span></a></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/10/15/Cassandra-exception/" data-title="Cassandra常见异常" data-url="http://github.com/zqhxuyuan/2015/10/15/Cassandra-exception/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/10/15/Cassandra-Operation/" title="上一篇: Cassandra操作">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/10/15/Cassandra-Stress/" title="下一篇: Cassandra压力测试">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

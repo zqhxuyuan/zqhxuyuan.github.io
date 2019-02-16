@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Meet Hadoop | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Apache Hadoop 2.x 单机/伪分布式模式">
+<meta name="keywords" content="hadoop">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Meet Hadoop">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/05/01/2015-05-01-Meet-Hadoop/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Apache Hadoop 2.x 单机/伪分布式模式">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.166Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Meet Hadoop">
+<meta name="twitter:description" content="Apache Hadoop 2.x 单机/伪分布式模式">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-05-01-Meet-Hadoop" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/05/01/2015-05-01-Meet-Hadoop/" class="article-date">
+  	<time datetime="2015-04-30T16:00:00.000Z" itemprop="datePublished">2015-05-01</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Meet Hadoop
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/bigdata/">bigdata</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hadoop/">hadoop</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Apache Hadoop 2.x 单机/伪分布式模式<br><a id="more"></a></p>
+<h2 id="Hadoop_单机伪分布式(Ubuntu)">Hadoop 单机伪分布式(Ubuntu)</h2><h3 id="配置本机_ssh_互信">配置本机 ssh 互信</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get install ssh rsync openssh-server</span><br><span class="line">$ ssh-keygen -t rsa -P &quot;&quot;</span><br><span class="line">$ cp ~/.ssh/id_rsa.pub ~/.ssh/authorized_keys</span><br><span class="line">$ ssh localhost 第一次输入 yes, 后面就不用了 </span><br><span class="line"></span><br><span class="line">hadoop@hadoop:~$ ssh localhost</span><br><span class="line">Welcome to Ubuntu 14.10 (GNU/Linux 3.16.0-24-generic x86_64)</span><br><span class="line">* Documentation: https://help.ubuntu.com/</span><br><span class="line">67 packages can be updated.</span><br><span class="line">31 updates are security updates.</span><br><span class="line">Last login: Mon Nov 10 09:27:25 2014 from localhost hadoop@hadoop:~$</span><br></pre></td></tr></table></figure>
+<h3 id="设置环境变量:_/etc/profile_或者-bashrc">设置环境变量: /etc/profile 或者.bashrc</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">export LD_LIBRARY_PATH=/usr/local/lib/</span><br><span class="line">unset GNOME_DESKTOP_SESSION_ID</span><br><span class="line"># Oracle</span><br><span class="line">export ORACLE_HOME=/usr/lib/oracle/11.2/client64</span><br><span class="line">export LD_LIBRARY_PATH=$ORACLE_HOME/lib:$LD_LIBRARY_PATH export TNS_ADMIN=$ORACLE_HOME/network/admin</span><br><span class="line">export PATH=$PATH:$ORACLE_HOME/bin</span><br><span class="line"># Maven ANT IVY</span><br><span class="line">export M2_HOME=/home/hadoop/soft/apache-maven-3.0.4 export MAVEN_OPTS=&quot;-Xms256m -Xmx512m&quot;</span><br><span class="line">export ANT_HOME=/home/hadoop/soft/apache-ant-1.8.4 export IVY_HOME=/home/hadoop/soft/apache-ivy-2.3.0 export ANT_LIB=$ANT_HOME/lib</span><br><span class="line"># JAVA SCALA ERLANG GO</span><br><span class="line">export JAVA_HOME=/home/hadoop/soft/jdk1.7.0_67</span><br><span class="line">export SCALA_HOME=/home/hadoop/soft/scala-2.10.4</span><br><span class="line">export GRADLE_HOME=/home/hadoop/soft/gradle-1.12</span><br><span class="line">export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar export ERL_HOME=/home/hadoop/soft/otp_src_R16B03-1</span><br><span class="line">export GOROOT=/home/hadoop/soft/go</span><br><span class="line">export GOPATH=/home/hadoop/data/go</span><br><span class="line"># HADOOP SPARK STORM</span><br><span class="line">#export HADOOP_HOME=/home/hadoop/soft/hadoop-0.20.2 #export HADOOP_HOME=/home/hadoop/soft/hadoop-1.0.4 #export HADOOP_HOME=/home/hadoop/soft/hadoop-2.2.0 #export HBASE_HOME=/home/hadoop/soft/hbase-0.96.0-hadoop2 #export PIG_HOME=/home/hadoop/soft/pig-0.12.0</span><br><span class="line">#export HIVE_HOME=/home/hadoop/soft/hive-0.12.0 #export ZK_HOME=/home/hadoop/soft/zookeeper-3.4.5</span><br><span class="line">#export HADOOP_HOME=/home/hadoop/soft/cdh4.6.0/hadoop-2.0.0-cdh4.6.0</span><br><span class="line">#export HBASE_HOME=/home/hadoop/soft/cdh4.6.0/hbase-0.94.15-cdh4.6.0 #export HIVE_HOME=/home/hadoop/soft/cdh4.6.0/hive-0.10.0-cdh4.6.0 #export ZK_HOME=/home/hadoop/soft/cdh4.6.0/zookeeper-3.4.5-cdh4.6.0 #export HADOOP_HOME=/home/hadoop/soft/cdh5.1.2/hadoop-2.3.0-cdh5.1.2 #export HBASE_HOME=/home/hadoop/soft/cdh5.1.2/hbase-0.98.1-cdh5.1.2 #export HIVE_HOME=/home/hadoop/soft/cdh5.1.2/hive-0.12.0-cdh5.1.2 #export ZK_HOME=/home/hadoop/soft/cdh5.1.2/zookeeper-3.4.5-cdh5.1.2 #export SPARK_HOME=/home/hadoop/soft/spark-1.1.0-bin-hadoop2.3</span><br><span class="line">export HADOOP_HOME=/home/hadoop/soft/cdh5.2.0/hadoop-2.5.0-cdh5.2.0</span><br><span class="line">export HBASE_HOME=/home/hadoop/soft/cdh5.2.0/hbase-0.98.6-cdh5.2.0</span><br><span class="line">export HIVE_HOME=/home/hadoop/soft/cdh5.2.0/hive-0.13.1-cdh5.2.0</span><br><span class="line">export ZK_HOME=/home/hadoop/soft/cdh5.2.0/zookeeper-3.4.5-cdh5.2.0</span><br><span class="line">export SPARK_HOME=/home/hadoop/soft/cdh5.2.0/spark-1.1.0-cdh5.2.0</span><br><span class="line">export FLUME_HOME=/home/hadoop/soft/cdh5.2.0/apache-flume-1.5.0-cdh5.2.0-bin export CRUNCH_HOME=/home/hadoop/soft/cdh5.2.0/crunch-0.11.0-cdh5.2.0</span><br><span class="line">export DATAFU_HOME=/home/hadoop/soft/cdh5.2.0/datafu-1.1.0</span><br><span class="line">#export HBASE_INDEXER_HOME=/home/hadoop/soft/cdh5.2.0/hbase-solr-1.5-cdh5.2.0 export HUE_HOME=/home/hadoop/soft/cdh5.2.0/hue-3.6.0-cdh5.2.0</span><br><span class="line">export KITE_HOME=/home/hadoop/soft/cdh5.2.0/kite-0.15.0-cdh5.2.0</span><br><span class="line">export MAHOUT_HOME=/home/hadoop/soft/cdh5.2.0/mahout-0.9-cdh5.2.0</span><br><span class="line">export OOZIE_HOME=/home/hadoop/soft/cdh5.2.0/oozie-4.0.0-cdh5.2.0</span><br><span class="line">export PIG_HOME=/home/hadoop/soft/cdh5.2.0/pig-0.12.0-cdh5.2.0</span><br><span class="line">export SOLR_HOME=/home/hadoop/soft/cdh5.2.0/solr-4.4.0-cdh5.2.0</span><br><span class="line">export SQOOP2_HOME=/home/hadoop/soft/cdh5.2.0/sqoop2-1.99.3-cdh5.2.0</span><br><span class="line">export HADOOP_MAPRED_HOME=$&#123;HADOOP_HOME&#125; export HADOOP_COMMON_HOME=$&#123;HADOOP_HOME&#125; export HADOOP_HDFS_HOME=$&#123;HADOOP_HOME&#125; export YARN_HOME=$&#123;HADOOP_HOME&#125;</span><br><span class="line">export HADOOP_YARN_HOME=$&#123;HADOOP_HOME&#125;</span><br><span class="line">export HADOOP_CONF_DIR=$&#123;HADOOP_HOME&#125;/etc/hadoop export HDFS_CONF_DIR=$&#123;HADOOP_HOME&#125;/etc/hadoop export YARN_CONF_DIR=$&#123;HADOOP_HOME&#125;/etc/hadoop</span><br><span class="line">export STORM_HOME=/home/hadoop/soft/apache-storm-0.9.1-incubating export JSTORM_HOME=/home/hadoop/soft/jstorm-0.9.2</span><br><span class="line">export KAFKA_HOME=/home/hadoop/soft/kafka_2.10-0.8.1</span><br><span class="line">export PATH=$JAVA_HOME/bin:$PATH:$M2_HOME/bin:$ANT_HOME/bin</span><br><span class="line">export PATH=$PATH:$SCALA_HOME/bin:$GRADLE_HOME/bin</span><br><span class="line">export PATH=$PATH:$ERL_HOME/bin:$GOROOT/bin:$GOPATH</span><br><span class="line">export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$HBASE_HOME/bin:$HIVE_HOME/bin:$ZK_HOME/bin export PATH=$PATH:$STORM_HOME/bin:$JSTORM_HOME/bin:$KAFKA_HOME/bin:$SPARK_HOME/bin:$SPARK_HOME/sbin export PATH=$PATH:$FLUME_HOME/bin:$MAHOUT_HOME/bin:$OOZIE_HOME/bin:$PIG_HOME/bin:$SQOOP2_HOME/bin export HTTP_CLIENT=&quot;wget --no-check-certificate -O&quot;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>1: HADOOP_HOME/bin 下放的是 hadoop,hdfs 命令; HADOOP_HOME/sbin 下放的是启动集群的命令都要加入 PATH</p>
+</blockquote>
+<h3 id="配置文件">配置文件</h3><h4 id="hadoop-0-20-x_|_hadoop-1-x">hadoop-0.20.x | hadoop-1.x</h4><p><em>conf/core-site.xml</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt; </span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;fs.default.name&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;hdfs://localhost:9000&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
+<p><em>conf/hadoop-env.sh</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export JAVA_HOME=/home/hadoop/soft/jdk1.7.0_67</span><br></pre></td></tr></table></figure>
+<p><em>conf/hdfs-site.xml</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt; </span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;dfs.name.dir&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;/home/hadoop/data/hadoop1/nn&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;dfs.data.dir&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;/home/hadoop/data/hadoop1/dn&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;dfs.replication&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;1&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
+<p><em>conf/mapred-site.xml</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt; </span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;mapred.job.tracker&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;localhost:9001&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="Hadoop-2-x_|_chd4-x_|_cdh5-x">Hadoop-2.x | chd4.x | cdh5.x</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ cd $HADOOP_HOME/etc/hadoop</span><br></pre></td></tr></table></figure>
+<p><em>hadoop-env.sh</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export JAVA_HOME=/usr/local/java/jdk1.7.0_67</span><br></pre></td></tr></table></figure>
+<p><em>core-site.xml</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt; </span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;fs.defaultFS&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;hdfs://localhost:9000&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hadoop.tmp.dir&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;/home/hadoop/data/cdh520/tmp&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt; </span><br><span class="line">        &lt;name&gt;fs.trash.interval&lt;/name&gt; </span><br><span class="line">        &lt;value&gt;10080&lt;/value&gt;</span><br><span class="line">    &lt;/property&gt; </span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;fs.trash.checkpoint.interval&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;10080&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注 1: 完全分布式模式下,要将 localhost 改成 namenode 的地址或主机名,下同.</p>
+</blockquote>
+<p><em>hdfs-site.xml</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt; </span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;dfs.namenode.name.dir&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;/home/hadoop/data/cdh520/nn&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;dfs.datanode.data.dir&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;/home/hadoop/data/cdh520/dn&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;dfs.replication&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;1&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt; </span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;dfs.namenode.http-address&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;localhost:50070&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;dfs.namenode.secondary.http-address&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;localhost:50090&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;dfs.webhdfs.enabled&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;true&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
+<p><em>mapred-site.xml</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt; </span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;mapreduce.framework.name&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;yarn&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;mapreduce.map.memory.mb&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;512&lt;/value&gt;</span><br><span class="line">    &lt;/property&gt; </span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;mapreduce.reduce.memory.mb&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;512&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt; </span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;mapreduce.jobhistory.address&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;localhost:10020&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;mapreduce.jobhistory.webapp.address&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;localhost:19888&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
+<p><em>yarn-site.xml</em></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt; </span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;mapreduce_shuffle&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;yarn.nodemanager.aux-services.mapreduce.shuffle.class&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;org.apache.hadoop.mapred.ShuffleHandler&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;yarn.resourcemanager.scheduler.address&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;localhost:8030&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;yarn.resourcemanager.resource-tracker.address&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;localhost:8031&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;yarn.resourcemanager.address&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;localhost:8032&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;yarn.resourcemanager.admin.address&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;localhost:8033&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;yarn.resourcemanager.webapp.address&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;localhost:8088&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;yarn.application.classpath&lt;/name&gt; </span><br><span class="line">        &lt;value&gt;</span><br><span class="line">            $HADOOP_CONF_DIR,$HADOOP_COMMON_HOME/share/hadoop/common/*, $HADOOP_COMMON_HOME/share/hadoop/common/lib/*,</span><br><span class="line">            $HADOOP_HDFS_HOME/share/hadoop/hdfs/*,$HADOOP_HDFS_HOME/share/hadoop/hdfs/lib/*, $YARN_HOME/share/hadoop/yarn/*,</span><br><span class="line">            $YARN_HOME/share/hadoop/yarn/lib/*, $YARN_HOME/share/hadoop/mapreduce/*,$YARN_HOME/share/hadoop/mapreduce/lib/*</span><br><span class="line">        &lt;/value&gt;</span><br><span class="line">    &lt;/property&gt; </span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;yarn.nodemanager.local-dirs&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;/home/hadoop/data/cdh520/yarn/local&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;yarn.nodemanager.log-dirs&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;/home/hadoop/data/cdh520/yarn/logs&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;yarn.nodemanager.remote-app-log-dir&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;/home/hadoop/data/cdh520/yarn/logs&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;yarn.app.mapreduce.am.staging-dir&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;/home/hadoop/data&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注 2: apache 原始版本配置项要改成 mapreduce_shuffle</p>
+</blockquote>
+<h3 id="创建目录结构:">创建目录结构:</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/home/hadoop/data/cdh520/</span><br><span class="line">                        |---dn </span><br><span class="line">                        |---nn </span><br><span class="line">                        |---tmp </span><br><span class="line">                        |---yarn </span><br><span class="line">                        |---logs </span><br><span class="line">                        |---local</span><br></pre></td></tr></table></figure>
+<h3 id="格式化_NameNode_并启动_Hadoop">格式化 NameNode 并启动 Hadoop</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ hadoop namenode -format</span><br><span class="line">$ start-dfs.sh</span><br><span class="line">$ start-yarn.sh</span><br><span class="line">$ mr-jobhistory-daemon.sh start historyserver</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注 3: 3)4)步骤可以在任何位置执行,因为配置了 HADOOP_HOME/bin 和 HADOOP_HOME/sbin 到 PATH 下,按 tab 键能自动补全<br>注4: 和 hadoop-1.x 不同,start-dfs.sh 在 sbin 下,所以也要把 sbin 加入 PATH<br>注5: 第一次使用时需要对NameNode格式化,后面就不需要了. 如果要重新格式化,要确保先将DataNode的目录清空.否则DN无法启动  </p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">zqhxuyuan@zqh:~$ jps 25191 DataNode</span><br><span class="line">25518 SecondaryNameNode 26789 Jps</span><br><span class="line">24924 NameNode</span><br><span class="line">25992 NodeManager 25718 ResourceManager 360 JobHistoryServer</span><br></pre></td></tr></table></figure>
+<h3 id="停止_Hadoop">停止 Hadoop</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ stop-yarn.sh</span><br><span class="line">$ stop-dfs.sh</span><br></pre></td></tr></table></figure>
+<h3 id="浏览器查看">浏览器查看</h3><p>集群: <a href="http://127.0.0.1:8088/cluster" target="_blank" rel="noopener">http://127.0.0.1:8088/cluster</a><br>文件系统: <a href="http://localhost:50070/dfshealth.jsp" target="_blank" rel="noopener">http://localhost:50070/dfshealth.jsp</a></p>
+<h3 id="测试MapReduce">测试MapReduce</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir input</span><br><span class="line">$ cp etc/hadoop/*.xml input</span><br><span class="line">$ bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.3.jar grep file:///Users/zhengqh/Soft/hadoop-2.7.3/input output &apos;dfs[a-z.]+&apos;</span><br></pre></td></tr></table></figure>
+<h2 id="Meet_CDH-4-6-0">Meet CDH-4.6.0</h2><h3 id="1-_env">1. env</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">HADOOP_HOME ZK_HOME HBASE_HOME HIVE_HOME</span><br><span class="line">scp .bashrc h2:~/</span><br><span class="line">scp .bashrc h3:~/</span><br><span class="line">source .bashrc</span><br></pre></td></tr></table></figure>
+<h3 id="Hadoop">Hadoop</h3><p>参考 02.Hadoop 集群分布式(CentOS)安装指南, 并启动 start-dfs.sh start-yarn.sh </p>
+<h3 id="ZooKeeper">ZooKeeper</h3><p>1). zoo.cfg</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[hadoop@h1 ~]$ tar zxf zookeeper-3.4.5-cdh4.6.0.tar.gz </span><br><span class="line">[hadoop@h1 ~]$ cd zookeeper-3.4.5/conf</span><br><span class="line">[hadoop@h1 conf]$ vi zoo.cfg</span><br><span class="line">￼</span><br><span class="line">tickTime=2000</span><br><span class="line">initLimit=10</span><br><span class="line">syncLimit=5 </span><br><span class="line">dataDir=/home/hadoop/data/zookeeper </span><br><span class="line">clientPort=2181 </span><br><span class="line">server.1=h1:2888:3888 </span><br><span class="line">server.2=h2:2888:3888 </span><br><span class="line">server.3=h3:2888:3888</span><br></pre></td></tr></table></figure>
+<p>2). dataDir &amp; myid</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir /home/hadoop/data/zookeeper</span><br><span class="line">$ echo “1” &gt; /home/hadoop/data/zookeeper/myid</span><br></pre></td></tr></table></figure>
+<p>3). 同步 zk 到其他节点</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">scp -r zookeeper-3.4.5-cdh4.6.0 h2:</span><br><span class="line">scp -r zookeeper-3.4.5-cdh4.6.0 h3:</span><br></pre></td></tr></table></figure>
+<p>4) 在 h2, h3 的/home/hadoop/data/zookeeper/myid 分别修改值为 2, 3</p>
+<p>5) 在每个节点分别执行 zkServer.sh start, 通过 jps 查看进程, 通过 zkServer.sh status 查看 zk 状态(是 leader 还是 follower) </p>
+<p>6). zookeeper 客户端测试</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ zkCli.sh</span><br></pre></td></tr></table></figure>
+<h3 id="HBase">HBase</h3><p>1). hbase-env.sh</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export JAVA_HOME=/usr/local/java/jdk1.7.0_04 </span><br><span class="line">export HBASE_MANAGES_ZK=false</span><br></pre></td></tr></table></figure>
+<p>2). hbase-site.xml</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt; </span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hbase.rootdir&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;hdfs://h1:9000/hbase&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hbase.master&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;h1:60000&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hbase.cluster.distributed&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;true&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt; </span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hbase.zookeeper.quorum&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;h1,h2,h3&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hbase.zookeeper.property.dataDir&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;/home/hadoop/data/zookeeper&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
+<p>$ sudo vi regionserver</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">h1</span><br><span class="line">h2 </span><br><span class="line">h3</span><br></pre></td></tr></table></figure>
+<p>3). 同步 hbase 到其他节点</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">scp -r hbase-0.94.15-cdh4.6.0 h2: </span><br><span class="line">scp -r hbase-0.94.15-cdh4.6.0 h2:</span><br></pre></td></tr></table></figure>
+<p>4). 在主节点 h1 上启动 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hbase $ start-hbase.sh</span><br></pre></td></tr></table></figure>
+<p>5). hbase 客户端测试 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ hbase shell</span><br><span class="line">&gt; create &apos;table&apos;,&apos;cf&apos;</span><br><span class="line">&gt; list</span><br><span class="line">&gt; put &apos;table&apos;,&apos;rowkey1&apos;,&apos;cf:column&apos;,&apos;value&apos; </span><br><span class="line">&gt; scan &apos;table&apos;</span><br><span class="line">&gt; get &apos;table&apos;,&apos;rowkey1&apos;</span><br></pre></td></tr></table></figure>
+<h3 id="5-_Hive">5. Hive</h3><p>1). 安装 MySQL</p>
+<p>创建 hive 元数据数据库 hivedb, 当然先不创建也可以. 只不过这里主要是设置数据库的编码. </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ mysql -u root -p 密码输入 root</span><br><span class="line">mysql&gt; create database hive default character set latin1; </span><br><span class="line">mysql&gt; create user &apos;hive&apos;@&apos;localhost&apos; identified by &apos;hive&apos;; </span><br><span class="line">mysql&gt; grant all on hive.* to &apos;hive&apos;@&apos;localhost&apos;;</span><br><span class="line">mysql&gt; flush privileges;</span><br></pre></td></tr></table></figure>
+<p>可以不用创建 hive 用户. 如果创建了 hive 用户, 可以使用 mysql -u hive -p 输入密码 hive 登陆查看是否有 hivedb 数据库 如果没有事先设置数据库的编码, 可以在后期手动设置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; alter database hive character set latin1;</span><br></pre></td></tr></table></figure>
+<p>2). 在 h1 中配置 hive</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">$ cd $HIVE_HOME/conf </span><br><span class="line">$ vi hive-site.xml</span><br><span class="line"></span><br><span class="line">&lt;?xml version=&quot;1.0&quot;?&gt;</span><br><span class="line">&lt;?xml-stylesheet type=&quot;text/xsl&quot; href=&quot;configuration.xsl&quot;?&gt; </span><br><span class="line">&lt;configuration&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hive.metastore.local&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;false&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;javax.jdo.option.ConnectionURL&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;jdbc:mysql://h1:3306/hive?createDatabaseIfNotExist=true&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;javax.jdo.option.ConnectionDriverName&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;com.mysql.jdbc.Driver&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;javax.jdo.option.ConnectionUserName&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;root&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt; </span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;javax.jdo.option.ConnectionPassword&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;root&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt; </span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hive.metastore.uris&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;thrift://h1:9083&lt;/value&gt; </span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
+<p>3). 在$HIVE_HOME/bin 下启动呢 metastore 和 hiveserver </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ hive --service metastore &amp;</span><br><span class="line">$ hive --service hiveserver2 &amp;</span><br></pre></td></tr></table></figure>
+<p>实际上因为$HIVE_HOME/bin 加入到 PATH 中. 而上面的两个脚本也是在$HIVE_HOME/bin 下. 因此可在任何路径启动上面两个服务</p>
+<p>5). hive 客户端测试 $ hive</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt; show tables;</span><br><span class="line">&gt; create table records(year STRING, temp INT, quality INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY &apos;\t&apos;; </span><br><span class="line">&gt; LOAD DATA LOCAL INPATH &apos;hadoop-book-2e/input/ncdc/micro-tab/sample.txt&apos; overwrite into table records;</span><br><span class="line">&gt; select * from records;</span><br><span class="line">&gt; select year, max(temp) from records where temp != 9999</span><br><span class="line">&gt; and (quality =0 or quality=1 or quality=4 or quality=5 or quality=9) group by year;</span><br></pre></td></tr></table></figure>
+<p>注意上面加载本地数据, hadoop-book-2e 应该在执行 hive 客户端命令的同一目录, 如果不是可以使用绝对路径或相对路径<br>查看 h1:50070 上的 hdfs 是否有 hdfs://h1:9000/user/hive/warehouse/records/sample.txt</p>
+<p>6). 验证 hive 元数据<br>查看 MySQL 是否生成 hivedb 数据库, 这里保存的是 hive 的元数据</p>
+<p>7). hiveserver2 使用 beeline<br>启动 hive 服务要使用 hiveserver2: </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hive --service hiveserver2</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/05/01/2015-05-01-Meet-Hadoop/">Meet Hadoop</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年05月01日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/05/01/2015-05-01-Meet-Hadoop/" title="Meet Hadoop">http://github.com/zqhxuyuan/2015/05/01/2015-05-01-Meet-Hadoop/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/05/01/2015-05-01-Meet-Hadoop/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/05/01/hello-world/">
+        Hello World
+      </a>
+    </div>
+  
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Hadoop_单机伪分布式(Ubuntu)"><span class="toc-number">1.</span> <span class="toc-text">Hadoop 单机伪分布式(Ubuntu)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#配置本机_ssh_互信"><span class="toc-number">1.1.</span> <span class="toc-text">配置本机 ssh 互信</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#设置环境变量:_/etc/profile_或者-bashrc"><span class="toc-number">1.2.</span> <span class="toc-text">设置环境变量: /etc/profile 或者.bashrc</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#配置文件"><span class="toc-number">1.3.</span> <span class="toc-text">配置文件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#hadoop-0-20-x_|_hadoop-1-x"><span class="toc-number">1.3.1.</span> <span class="toc-text">hadoop-0.20.x | hadoop-1.x</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Hadoop-2-x_|_chd4-x_|_cdh5-x"><span class="toc-number">1.3.2.</span> <span class="toc-text">Hadoop-2.x | chd4.x | cdh5.x</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建目录结构:"><span class="toc-number">1.4.</span> <span class="toc-text">创建目录结构:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#格式化_NameNode_并启动_Hadoop"><span class="toc-number">1.5.</span> <span class="toc-text">格式化 NameNode 并启动 Hadoop</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#停止_Hadoop"><span class="toc-number">1.6.</span> <span class="toc-text">停止 Hadoop</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#浏览器查看"><span class="toc-number">1.7.</span> <span class="toc-text">浏览器查看</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#测试MapReduce"><span class="toc-number">1.8.</span> <span class="toc-text">测试MapReduce</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Meet_CDH-4-6-0"><span class="toc-number">2.</span> <span class="toc-text">Meet CDH-4.6.0</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-_env"><span class="toc-number">2.1.</span> <span class="toc-text">1. env</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hadoop"><span class="toc-number">2.2.</span> <span class="toc-text">Hadoop</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ZooKeeper"><span class="toc-number">2.3.</span> <span class="toc-text">ZooKeeper</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase"><span class="toc-number">2.4.</span> <span class="toc-text">HBase</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-_Hive"><span class="toc-number">2.5.</span> <span class="toc-text">5. Hive</span></a></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/05/01/2015-05-01-Meet-Hadoop/" data-title="Meet Hadoop" data-url="http://github.com/zqhxuyuan/2015/05/01/2015-05-01-Meet-Hadoop/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+    <div class="post-nav-button">
+    <a href="/2015/05/01/hello-world/" title="上一篇: Hello World">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/" title="回到主页"><i class="fa fa-home"></i></a>
+    </div>
+  
+  
+    
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

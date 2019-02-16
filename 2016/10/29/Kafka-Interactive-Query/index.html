@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>译：Kafka交互式查询和流处理的统一 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Unifying Stream Processing and Interactive Queries in Apache Kafkahttp://www.confluent.io/blog/unifying-stream-processing-and-interactive-queries-in-apache-kafka/">
+<meta name="keywords" content="kafka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="译：Kafka交互式查询和流处理的统一">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/10/29/Kafka-Interactive-Query/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Unifying Stream Processing and Interactive Queries in Apache Kafkahttp://www.confluent.io/blog/unifying-stream-processing-and-interactive-queries-in-apache-kafka/">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://www.confluent.io/wp-content/uploads/2016/10/IQueries-Blog-Diagrams-2-1-1024x381.png">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.350Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="译：Kafka交互式查询和流处理的统一">
+<meta name="twitter:description" content="Unifying Stream Processing and Interactive Queries in Apache Kafkahttp://www.confluent.io/blog/unifying-stream-processing-and-interactive-queries-in-apache-kafka/">
+<meta name="twitter:image" content="http://www.confluent.io/wp-content/uploads/2016/10/IQueries-Blog-Diagrams-2-1-1024x381.png">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Kafka-Interactive-Query" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/10/29/Kafka-Interactive-Query/" class="article-date">
+  	<time datetime="2016-10-28T16:00:00.000Z" itemprop="datePublished">2016-10-29</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      译：Kafka交互式查询和流处理的统一
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/kafka/">kafka</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/">kafka</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Unifying Stream Processing and Interactive Queries in Apache Kafka<br><a href="http://www.confluent.io/blog/unifying-stream-processing-and-interactive-queries-in-apache-kafka/" target="_blank" rel="noopener">http://www.confluent.io/blog/unifying-stream-processing-and-interactive-queries-in-apache-kafka/</a><br><a id="more"></a></p>
+<p>Interactive Queries allows you to get more than just processing from streaming. It allows you to treat the stream processing layer as a lightweight, embedded database and directly query the state of your stream processing application, without needing to materialize that state to external databases or storage. Apache Kafka maintains and manages that state and guarantees high availability and fault tolerance. As such, this new feature enables the hyper-convergence of processing and storage into one easy-to-use application that uses the Apache Kafka’s Streams API.</p>
+<blockquote>
+<p>交互式查询（Interactive Queries）并不仅仅是对流数据进行处理（stream processing），它相当于将流处理这一层看做是一个轻量级的、内置的数据库、直接查询流处理应用程序的状态，它不需要将状态（数据）物化（materialize）到外部数据库或存储系统中。Kafka会自己维护和管理状态，并且保证了高可用、容错。这个新特性使得处理逻辑变得高度聚合，并且可以使用Kafka的Streams API存储（状态）到一个易用的应用程序中。  </p>
+</blockquote>
+<p>The idea behind Interactive Queries is not new; a similar concept actually originated in traditional databases where it’s often known as “materialized views.” Though materialized views are very useful, the way they are implemented in databases is not suitable for modern application development – they force you to write your code all in SQL and deploy it into the database server. With our database background combined with our stream processing experience, we visited a key question: can the concept behind materialized views be applied to a modern stream processing engine to create a powerful and general purpose construct for building stateful applications and microservices? In this blog post, we show how Apache Kafka, through Interactive Queries, helps us do exactly that.</p>
+<blockquote>
+<p>交互式查询背后的思想并不新鲜，在传统的数据库中相似的概念是“物化视图”，尽管物化视图非常有用，但是数据库的这种实现方式对现代的应用程序开发并不适合（因为他们会强制你在SQL中编写所有的代码，并部署到服务端）。结合数据库的背景知识和流处理的体验，我们在思考一个关键的问题：物化视图是否如果应用到现代的流处理引擎，就可以构建出一个强壮的、通用的，有状态的应用程序（或者微服务），本篇博文我们会向你展示Apache Kafka如何通过交互式查询帮助我们实现了这个目标。  </p>
+</blockquote>
+<p>When we set out to design the stream processing API for Apache Kafka – Kafka Streams – a key motivation was to rethink the existing solution space for stream processing. Here, our vision has been to move stream processing out of the big data niche and make it available as a mainstream application development model. For us, the key to executing that vision is to radically simplify how users can process data at any scale – small, medium, large – and in fact, one of our mantras is “Build Applications, Not Clusters!” In the past, we wrote about three ways Apache Kafka simplifies the stream processing architecture – by eliminating the need for a separate cluster, having good abstractions for streams and tables and keeping the overall architecture simple. Interactive Queries is another feature to enable this vision.</p>
+<blockquote>
+<p>在为Kafka设计流式处理API时（即Kafka Streams），一个重要的动机是重新思考已有的流处理系统的局限性，我们的焦点已经从大数据领域转到了流处理，并且将其作为可用的主流的应用程序开发模型。执行这个愿景的关键是从根本上简化用户如何处理数据的扩展性问题（不管是小批量的数据、中等规模的、大规模的数据），实际上我们的一个口号是：“构建应用程序，不要集群！”。之前的博文中我们写了Kafka简化流处理的<a href="http://www.confluent.io/blog/introducing-kafka-streams-stream-processing-made-simple/" target="_blank" rel="noopener">三种模式</a>：不需要单独的集群、对Streams和Table进行良好的抽象、保持整体架构的简洁。现在，交互式查询是这个愿景的另一个特性。</p>
+</blockquote>
+<p>In this blog post, we’ll start by digging deeper into the motivation behind Interactive Queries through a concrete example that outlines its applicability. Then we will describe how Interactive Queries works under the hood and provide a summary of related resources for further reading.</p>
+<blockquote>
+<p>本篇文章我们会先通过一个示例深入研究交互式查询的背后动机，然后会描述交互式是如何工作的。</p>
+</blockquote>
+<h2 id="示例：实时风险管理">示例：实时风险管理</h2><p>Let’s use an end-to-end example to pick up where we left off in our previous article on why stream processing applications need state. In that article, we described some simple stateful operations, e.g., if you are grouping data by some field and counting, then the state you maintain would be the counts that have accumulated so far. Or if you are joining two streams, the state would be the rows in each stream waiting to find a match in the other stream.</p>
+<blockquote>
+<p>在<a href="https://www.oreilly.com/ideas/why-local-state-is-a-fundamental-primitive-in-stream-processing" target="_blank" rel="noopener">流处理为什么需要状态</a>文章中，我们描述了一些简单的状态操作，比如根据一些字段分组和计数，那么你维护的状态就是目前为止收集到的所有数据的数量。或者如果将两个流进行合并，状态就会是在两个流中找出互相匹配的一行记录（由于流数据的顺序性，一个流要等待另一个流，才能最终获得完整的合并数据）。</p>
+</blockquote>
+<p>Now as a driving example in this blog, consider a financial institution, like a wealth management firm or a hedge fund, that maintains positions in assets held by the firm and/or its client investors. Maintaining positions means that the bank needs to keep track of the risk associated with those particular assets. The bank continuously collects business events and other data that could potentially influence the risk associated with a given position. This data includes market data fluctuations on the price of the asset, foreign exchange rates, research, or even news information that could influence the reputation of people involved with the asset. Any time this data changes, the risk position needs to be recalculated in order to keep a real-time view of the risk associated with each individual asset as well as on entire portfolios of investments.</p>
+<p>Real-time risk management is an example of a stateful application. At a minimum, state is needed to keep track of the latest position for every asset. State is also needed inside the stream processing engine to keep track of various aggregate statistics, like the number of times an asset is traded in a day and the average bid/ask spread. The collected state needs to be continuously updated and queried.</p>
+<blockquote>
+<p>本篇博文举例的是一个金融场景，比如财富管理机构或者对冲基金（投资者）会维护资产的仓位。维护仓位意味着银行会跟踪这些资产的风险。银行会持续地收集商业事件以及其他可能会影响指定仓位风险的数据。这些数据包括资产的市场波动，外汇交换比率，研究机构，甚至是有声望的名人的新闻。任何时候只要数据变化，风险的仓位就需要被重新计算，这样才能对单独的资产，甚至整个投资组合都能够保持实时的风险视图。<br>实时风控管理是有状态的应用程序的一个示例，最小的需求是：状态需要能够跟踪每种资产的最近仓位。状态在流处理引擎中为了跟踪不同的聚合逻辑也是必须的，比如一天中资产的交易次数，平均出价(bid/ask)速度。收集到的状态需要被持续地更新和查询。  </p>
+</blockquote>
+<h2 id="现在的做法">现在的做法</h2><p>在没有Kafka Streams之前，典型的架构图如下：<br><img src="http://www.confluent.io/wp-content/uploads/2016/10/IQueries-Blog-Diagrams-2-1-1024x381.png" alt="arch before"></p>
+<p>图中业务事件会被Kafka捕获，上部分是Hadoop/Spark批处理系统，下部分是流处理系统，这种混合部署模式也被称作Lambda架构，它的缺点也很明显：需要维护监控两套系统，总结现在的通用做法：  </p>
+<ol>
+<li>一个额外的Hadoop集群重复处理数据</li>
+<li>在流处理层也要维护存储，因为流处理需要查询和聚合</li>
+<li>流处理作业和批处理作业的输出都需要维护存储和数据库</li>
+<li>写放大无法避免，</li>
+</ol>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/10/29/Kafka-Interactive-Query/">译：Kafka交互式查询和流处理的统一</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年10月29日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/10/29/Kafka-Interactive-Query/" title="译：Kafka交互式查询和流处理的统一">http://github.com/zqhxuyuan/2016/10/29/Kafka-Interactive-Query/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/10/29/Kafka-Interactive-Query/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/11/02/Kafka-Streams-cn/">
+        Kafka Streams中文翻译
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/10/27/Kafka-Definitive-Guide-cn-04/">
+        译：Kafka权威指南-第四章-消费者
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#示例：实时风险管理"><span class="toc-number">1.</span> <span class="toc-text">示例：实时风险管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#现在的做法"><span class="toc-number">2.</span> <span class="toc-text">现在的做法</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/10/29/Kafka-Interactive-Query/" data-title="译：Kafka交互式查询和流处理的统一" data-url="http://github.com/zqhxuyuan/2016/10/29/Kafka-Interactive-Query/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/11/02/Kafka-Streams-cn/" title="上一篇: Kafka Streams中文翻译">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/10/27/Kafka-Definitive-Guide-cn-04/" title="下一篇: 译：Kafka权威指南-第四章-消费者">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

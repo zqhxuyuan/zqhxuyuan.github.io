@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Apache Apex 流处理和批处理统一框架 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Apache Apex: Industry’s only open source, enterprise-grade unified stream and batch processing engine. http://apex.incubator.apache.org/">
+<meta name="keywords" content="apex">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Apache Apex 流处理和批处理统一框架">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/12/09/2015-12-09-Apache-Apex/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Apache Apex: Industry’s only open source, enterprise-grade unified stream and batch processing engine. http://apex.incubator.apache.org/">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://docs.datatorrent.com/operators/images/dimensions_computation/image000.png">
+<meta property="og:image" content="http://docs.datatorrent.com/images/application_development/ApplicationDeveloperGuide.html-image00.png">
+<meta property="og:image" content="http://docs.datatorrent.com/images/application_development/ApplicationDeveloperGuide.html-image02.png">
+<meta property="og:image" content="http://docs.datatorrent.com/images/application_development/ApplicationDeveloperGuide.html-image01.png">
+<meta property="og:image" content="http://docs.datatorrent.com/images/application_development/ApplicationDeveloperGuide.html-image04.png">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.205Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Apache Apex 流处理和批处理统一框架">
+<meta name="twitter:description" content="Apache Apex: Industry’s only open source, enterprise-grade unified stream and batch processing engine. http://apex.incubator.apache.org/">
+<meta name="twitter:image" content="http://docs.datatorrent.com/operators/images/dimensions_computation/image000.png">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-12-09-Apache-Apex" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/12/09/2015-12-09-Apache-Apex/" class="article-date">
+  	<time datetime="2015-12-08T16:00:00.000Z" itemprop="datePublished">2015-12-09</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Apache Apex 流处理和批处理统一框架
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/bigdata/">bigdata</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/apex/">apex</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Apache Apex: Industry’s only open source, enterprise-grade unified stream and batch processing engine. <a href="http://apex.incubator.apache.org/" target="_blank" rel="noopener">http://apex.incubator.apache.org/</a></p>
+<a id="more"></a>
+<h2 id="Hello_Apex">Hello Apex</h2><h3 id="Key_Concepts">Key Concepts</h3><p><strong>Key set</strong></p>
+<p>A key set is a set of fields in the incoming tuple that is used to combine data for aggregation.<br>聚合计算时如何组合数据, 比如不同记录但是相同key,则会被组合起来一起计算,比如SQL中要进行group by的字段.  </p>
+<p><strong>Value set</strong></p>
+<p>A value set is the set of fields in the incoming tuple on which Aggregator(s) are applied.<br>聚合计算的计算字段.上面的key类似于dimension维度,而value则类似于metrics指标,要进行聚合计算的字段,比如count(id)中的id.  </p>
+<p><strong>Aggregator</strong></p>
+<p>An aggregator is a mathematical function that is applied on value fields in an incoming tuple. Examples of aggregators are SUM, COUNT, MAX, MIN, and AVERAGE.<br>聚合方式,常见的有求和,计数,最值,平均数. 比如count(id)中的count.   </p>
+<p><strong>Aggregates</strong></p>
+<p>Aggregates are objects containing the aggregated values for a configured value set and key combination.<br>聚合操作包括了配置的value set的聚合结果,以及key的组合. 比如<code>select type,count(id) from tbl group by type</code>中的<code>type,count(id)</code>.    </p>
+<p><strong>Time buckets</strong></p>
+<p>Time buckets indicate the duration for which the floor time is calculated. For example, for a time bucket of 1 minute, the floor time-value for both 12:01:34 and 12:01:59 will be 12:01:00. Similarly, for an hourly time bucket, floor time-value for 15:02:34 and 15:34:00 will be 15:00:00.<br>时间桶是对原始的时间按照桶的方式进行划分. 如果桶的大小是一分钟,则在同一分钟的记录都会被分到同一个桶里面.  </p>
+<p>After calculating the floor value for a duration, the time-value becomes a key. Currently supported time buckets are: 1 second, 1 minute, 1 hour, and 1 day.<br>对时间进行floor操作后, <code>time-value</code>会成为一个key, 即<code>Key set</code>中要进行group by的字段.  </p>
+<blockquote>
+<p>疑问: 如果计算过去一分钟,假设当前时间是12:01:15,则过去一分钟的范围应该是:12:00:15开始的. 按照上面的分桶方式,就会存在12:00:00和12:01:00两个桶!  </p>
+</blockquote>
+<p><strong>Combinations</strong></p>
+<p>Combinations indicate a group of the keys that are used for aggregate computations.</p>
+<p><strong>Incremental Aggregators</strong></p>
+<p>Incremental aggregators are aggregate functions for which computations are possible only by using previous aggregate value and the new value. For example,<br>增量聚合也是一种聚合计算的方式(类似于COUNT等): 直接使用上一次的聚合结果,再结合本次的值进行增量计算.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SUM = &#123;Previous_SUM&#125; + &#123;Current_Value&#125;</span><br><span class="line">COUNT = &#123;Previous_COUNT&#125;  + 1</span><br><span class="line">MIN = ( &#123;Current_Value&#125; &lt; &#123;Previous_MIN&#125; ) ? &#123;Current_Value&#125; : &#123;Previous_MIN&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>On-the-fly Aggregators (OTF Aggregators)</strong></p>
+<p>On-the-fly aggregators are the aggregate functions that use the result of multiple incremental aggregators, and can be calculated on-the-fly if necessary. For example,<br>即时聚合会使用多个增量聚合算子的结果,比如求平均数利用了上面两个增量算子:Current_SUM和Current_COUNT再进一步计算.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Current_SUM = &#123;Previous_SUM&#125; + &#123;Current_Value&#125;      ⬅️incremental aggregator</span><br><span class="line">Current_COUNT = &#123;Previous_COUNT&#125;  + 1</span><br><span class="line"></span><br><span class="line">AVERAGE = &#123;Current_SUM&#125; / &#123;Current_COUNT&#125;           ⬅️use the result of multiple incremental aggregators</span><br></pre></td></tr></table></figure>
+<p><strong>DimensionsComputation operator</strong></p>
+<p>The DimensionsComputation operator is an Operator that performs intermediate aggregations using incremental aggregators.<br>维度计算算子只会使用增量聚合算子进行中间的聚合操作. 为什么是中间的? 因为它是不连续的. 最终要通过DimensionStore计算出累积的结果.   </p>
+<blockquote>
+<p>中间,不连续. 实际上因为维度计算算子的作用范围只是在一个应用程序窗口内的. 而这个窗口本身是一段一段的(每一段之间没有重叠).  </p>
+</blockquote>
+<p>the DimensionsComputation operator applies incremental aggregators on the value set of the tuple data within a boundary of an application window. At the end of the application window, the aggregate value is reset to calculate the new aggregates. Thus, discrete aggregates are generated by DimensionsComputation operator for every application window. This output is used by the DimensionStore operator (labeled as Store in DAG) for calculating cumulative aggregates.<br>DimensionsComputation算子会在一个<code>应用程序窗口</code>的范围内对tupe data的value set运用增量聚合操作. 窗口结束后,聚合结果被重置用来计算新的聚合操作.<br>因此在每一次的应用程序窗口中通过DimensionsComputation都会生成不连续的聚合结果. 它的输出会被DimensionStore使用,被用来计算累积的聚合结果.  </p>
+<p><strong>DimensionsStore operator</strong></p>
+<p>The DimensionsStore operator is an Operator that performs transient and final aggregations on the data generated by the Dimensions Computations operator. It maintains the historical data for aggregates to ensure a meaningful historical view.<br>维度存储算子会使用维度计算算子生成的数据进行临时的或者最终的聚合. 它维护了历史数据的聚合,确保输出有意义的历史视图.   </p>
+<blockquote>
+<p>因为维度计算算子输出的是一段一段时间的结果, 所以维度存储算子需要对每一段的结果进行合并,确保结果是连续的.  </p>
+</blockquote>
+<p>The DimensionsStore operator uses the discrete aggregates generated by the DimensionsComputation operator to generate cumulative aggregates in turn. Because the aggregates generated by the DimensionsComputation operator are incremental aggregates, the sum of multiple such aggregates provides cumulative aggregates as follows:<br>因为维度计算生成的是不连续的,而且是增量的聚合. 维度存储算子做的工作就是对多个这样的聚合结果进行累积操作.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SUM1 = SUM(Value11, Value12, ...)</span><br><span class="line">SUM2 = SUM(Value21, Value22, ...)</span><br><span class="line"></span><br><span class="line">&#123;Cumulative_SUM&#125; = SUM1 + SUM2</span><br></pre></td></tr></table></figure>
+<p>The DimensionsStore operator also stores transient aggregates in a persistent proprietary store called HDHT. The DimensionsStore operator uses HDHT to present the requested historical data.<br>对于临时的聚合,维度存储算子会保存在一个持久化的专有存储系统HDHT中. 当请求历史数据时,维度存储算子会呈现HDHT中的数据. <code>final聚合的结果存储在哪里?</code>  </p>
+<blockquote>
+<p>存储算子,需要存储最终结果. 而计算算子,则只负责计算每一部分的数据, 最后汇总到存储算子做最终的聚合.  </p>
+</blockquote>
+<p><strong>Query</strong></p>
+<p>Queries are parsed by the Query operator and passed onto DimensionsStore to fetch data from HDHT Store.<br>查询请求会被Query算子解析, 并传送给DimensionStore算子去从HDHT存储系统中获取数据. <code>这是不是说临时的和final的都存储在HDHT中?</code>  </p>
+<p><strong>DAG</strong></p>
+<p><img src="http://docs.datatorrent.com/operators/images/dimensions_computation/image000.png" alt="apex-dag"></p>
+<p><strong>Partitioning</strong></p>
+<p>The Dimensions Computation operator can be statically partitioned for higher processing throughput.   </p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>dt.operator.DimensionsComputations.attr.PARTITIONER<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">value</span>&gt;</span>com.datatorrent.common.partitioner.StatelessPartitioner:8<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>This attribute creates a StatelessPartitioner for the DimensionsComputation operator. The parameter of 8 is going to partition the operator 8 times. The StatelessPartitioner ensures that the operators are clones of each other. The tuples passed to individual clones of operators are decided based on the hashCode of the tuple.<br>使用Partitioner可以增加处理能力. StatelessPartitioner可以确保复制的每个operator都是一样的. tupe转发到哪个operator处理通过hash.  </p>
+<p><strong>Unifier</strong></p>
+<p>A unifier which combines all the intermediate results from individual DimensionsComputation operators into a single stream. This stream is then passed to Dimensions Store. Following code needs to be added in populateDAG for adding an Unifier:<br>unifier(统一者)会合并所有DimensionsComputation的中间结果成一个单独的流. 这个流会传送到DimensionsStore</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DimensionsComputationFlexibleSingleSchemaPOJO dimensions = dag.addOperator(&quot;DimensionsComputation&quot;, DimensionsComputationFlexibleSingleSchemaPOJO.class);</span><br><span class="line">dimensions.setUnifier(new DimensionsComputationUnifierImpl&lt;InputEvent, Aggregate&gt;());</span><br></pre></td></tr></table></figure>
+<p><strong>Dimensions Computation Configuration Example</strong></p>
+<p>假设input tuple有如下的字段, 则publisher,advertiser,location当做维度字段,其他数值类型的当做指标字段.    </p>
+<table>
+<thead>
+<tr>
+<th>publisher</th>
+<th>advertiser</th>
+<th>location</th>
+<th>impressions</th>
+<th>clicks</th>
+<th>cost</th>
+<th>revenue</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>google.com</td>
+<td>tongdun</td>
+<td>hangzhou</td>
+<td>10</td>
+<td>99</td>
+<td>0.5</td>
+<td>10</td>
+</tr>
+</tbody>
+</table>
+<p>维度计算算子的配置示例, 分别使用到了上面的keys(分组/维度字段),values(计算/指标字段),时间分桶.  </p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"keys"</span>:[&#123;<span class="attr">"name"</span>:<span class="string">"publisher"</span>,<span class="attr">"type"</span>:<span class="string">"string"</span>,<span class="attr">"enumValues"</span>:[<span class="string">"twitter"</span>,<span class="string">"facebook"</span>,<span class="string">"yahoo"</span>]&#125;,</span><br><span class="line">         &#123;<span class="attr">"name"</span>:<span class="string">"advertiser"</span>,<span class="attr">"type"</span>:<span class="string">"string"</span>,<span class="attr">"enumValues"</span>:[<span class="string">"starbucks"</span>,<span class="string">"safeway"</span>,<span class="string">"mcdonalds"</span>]&#125;,</span><br><span class="line">         &#123;<span class="attr">"name"</span>:<span class="string">"location"</span>,<span class="attr">"type"</span>:<span class="string">"string"</span>,<span class="attr">"enumValues"</span>:[<span class="string">"N"</span>,<span class="string">"LREC"</span>,<span class="string">"SKY"</span>,<span class="string">"AL"</span>,<span class="string">"AK"</span>]&#125;],</span><br><span class="line"> <span class="attr">"timeBuckets"</span>:[<span class="string">"1m"</span>,<span class="string">"1h"</span>,<span class="string">"1d"</span>],</span><br><span class="line"> <span class="attr">"values"</span>:</span><br><span class="line">  [&#123;<span class="attr">"name"</span>:<span class="string">"impressions"</span>,<span class="attr">"type"</span>:<span class="string">"long"</span>,<span class="attr">"aggregators"</span>:[<span class="string">"SUM"</span>,<span class="string">"COUNT"</span>,<span class="string">"AVG"</span>]&#125;,</span><br><span class="line">   &#123;<span class="attr">"name"</span>:<span class="string">"clicks"</span>,<span class="attr">"type"</span>:<span class="string">"long"</span>,<span class="attr">"aggregators"</span>:[<span class="string">"SUM"</span>,<span class="string">"COUNT"</span>,<span class="string">"AVG"</span>]&#125;,</span><br><span class="line">   &#123;<span class="attr">"name"</span>:<span class="string">"cost"</span>,<span class="attr">"type"</span>:<span class="string">"double"</span>,<span class="attr">"aggregators"</span>:[<span class="string">"SUM"</span>,<span class="string">"COUNT"</span>,<span class="string">"AVG"</span>]&#125;,</span><br><span class="line">   &#123;<span class="attr">"name"</span>:<span class="string">"revenue"</span>,<span class="attr">"type"</span>:<span class="string">"double"</span>,<span class="attr">"aggregators"</span>:[<span class="string">"SUM"</span>,<span class="string">"COUNT"</span>,<span class="string">"AVG"</span>]&#125;],</span><br><span class="line"> <span class="attr">"dimensions"</span>:</span><br><span class="line">  [&#123;<span class="attr">"combination"</span>:[]&#125;,</span><br><span class="line">   &#123;<span class="attr">"combination"</span>:[<span class="string">"location"</span>]&#125;,</span><br><span class="line">   &#123;<span class="attr">"combination"</span>:[<span class="string">"advertiser"</span>], <span class="attr">"additionalValues"</span>:[<span class="string">"impressions:MIN"</span>, <span class="string">"clicks:MIN"</span>, <span class="string">"cost:MIN"</span>, <span class="string">"revenue:MIN"</span>, <span class="string">"impressions:MAX"</span>, <span class="string">"clicks:MAX"</span>, <span class="string">"cost:MAX"</span>, <span class="string">"revenue:MAX"</span>]&#125;,</span><br><span class="line">   &#123;<span class="attr">"combination"</span>:[<span class="string">"publisher"</span>], <span class="attr">"additionalValues"</span>:[<span class="string">"impressions:MIN"</span>, <span class="string">"clicks:MIN"</span>, <span class="string">"cost:MIN"</span>, <span class="string">"revenue:MIN"</span>, <span class="string">"impressions:MAX"</span>, <span class="string">"clicks:MAX"</span>, <span class="string">"cost:MAX"</span>, <span class="string">"revenue:MAX"</span>]&#125;,</span><br><span class="line">   &#123;<span class="attr">"combination"</span>:[<span class="string">"advertiser"</span>,<span class="string">"location"</span>]&#125;,</span><br><span class="line">   &#123;<span class="attr">"combination"</span>:[<span class="string">"publisher"</span>,<span class="string">"location"</span>]&#125;,</span><br><span class="line">   &#123;<span class="attr">"combination"</span>:[<span class="string">"publisher"</span>,<span class="string">"advertiser"</span>]&#125;,</span><br><span class="line">   &#123;<span class="attr">"combination"</span>:[<span class="string">"publisher"</span>,<span class="string">"advertiser"</span>,<span class="string">"location"</span>]&#125;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>dimensions: - This defines the combinations of keys that are used for grouping data for aggregate calculations. This can be mentioned in combination with the JSON key.<br>维度集合, 是key的组合(key就是维度哦), 用来分组数组. 因为一条原始数据, 可能要根据不同的维度字段进行不同聚合操作.<br>比如上面的广告数据, 聚合计算可能是: 按照地区分组, 按照广告商分组, 按照发布者分组, 按照发布者和广告商分组等等.  </p>
+<blockquote>
+<p>keys只是定义了都有哪些维度字段,但是并不是所有的维度字段都必须参与到group by分组中(那样就只有最后一个combination).虽然给定这些维度字段,<br>但是实际的聚合操作可能只需要其中的一两个, 或者像第一个combination根本就没有分组字段. 所以用dimensions来表示用户的自定义聚合字段.  </p>
+</blockquote>
+<p>additionalValues can be used for mentioning additional aggregators for any value. For example, impressions:MIN indicates that for a given combination, calculate “MIN” for value “impression” as well. By default, the down time rounded off to the next value as per time bucket is always considered as one of the keys.  </p>
+<h3 id="Application_Development">Application Development</h3><p><strong>1.聚合需求</strong></p>
+<ul>
+<li>报价Quote: 包括了最近的交易价格, 最近的交易时间, 当天的交易量</li>
+<li>每分钟图表: 最高的交易价格, 最低的交易价格, 这一分钟的交易量</li>
+<li>简单的滑动平均数: 过去5分钟的平均交易价格</li>
+</ul>
+<p><img src="http://docs.datatorrent.com/images/application_development/ApplicationDeveloperGuide.html-image00.png" alt="yahoo-fin"></p>
+<ul>
+<li>StockTickerInput读取实时数据的输入算子.输出字段:股票编号,价格,<strong>增量</strong>交易量,最近交易时间.  </li>
+<li>股票编号symbol是作为KeyValuePair的key, 输入算子输出三个OutputPort. 输入算子通过输出Port将数据传递到下一个算子中.  </li>
+<li>由于Operators会被序列化,所有的input和output ports都应该声明为transient,因为ports是无状态的,不应该被序列化(有状态的才需要序列化). </li>
+</ul>
+<p><strong>2.输入算子</strong></p>
+<p>emitTuples() emits the data to the output ports of the operator.<br>emitTuples() will be called one or more times within one application window as long as time is allowed within the window.<br>emitTuples方法将数据发送到输入算子的output ports中. 在一个应用程序的窗口内会调用多次emitTuples,只要时间在这个窗口内是允许的.<br>因为假设应用程序的窗口是1分钟,而emitTuples读取数据源是每隔5秒钟读取一次,则在一分钟内,显然会调用60/5=12次emitTuples.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StockTickInput</span> <span class="keyword">implements</span> <span class="title">InputOperator</span> </span>&#123;</span><br><span class="line">  <span class="meta">@OutputPortFieldAnnotation</span>(optional = <span class="keyword">true</span>) <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">transient</span> DefaultOutputPort&lt;KeyValPair&lt;String, Double&gt;&gt; price = <span class="keyword">new</span> DefaultOutputPort&lt;KeyValPair&lt;String, Double&gt;&gt;();</span><br><span class="line">  <span class="meta">@OutputPortFieldAnnotation</span>(optional = <span class="keyword">true</span>) <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">transient</span> DefaultOutputPort&lt;KeyValPair&lt;String, Long&gt;&gt; volume = <span class="keyword">new</span> DefaultOutputPort&lt;KeyValPair&lt;String, Long&gt;&gt;();</span><br><span class="line">  <span class="meta">@OutputPortFieldAnnotation</span>(optional = <span class="keyword">true</span>) <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">transient</span> DefaultOutputPort&lt;KeyValPair&lt;String, String&gt;&gt; time = <span class="keyword">new</span> DefaultOutputPort&lt;KeyValPair&lt;String, String&gt;&gt;();</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">emitTuples</span><span class="params">()</span></span>&#123;</span><br><span class="line">    price.emit(<span class="keyword">new</span> KeyValPair&lt;String, Double&gt;(symbol, currentPrice));</span><br><span class="line">    volume.emit(<span class="keyword">new</span> KeyValPair&lt;String, Long&gt;(symbol, vol));</span><br><span class="line">    time.emit(<span class="keyword">new</span> KeyValPair&lt;String, String&gt;(symbol, timeStamp));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>计算当天总的交易量, 由于每次模拟的输入数据是当前的交易量,所以在第一次交易量之后,都要保存上一次的交易量,计算增量时以当前值-上次交易量.<br>因为当前的交易量数据包含了上一次的交易量,所以如果获取的这个交易量数据没有时间窗口的概念,则必然下一次的交易量比上一次的要大(或者相等).  </p>
+</blockquote>
+<p><strong>3.聚合算子</strong></p>
+<ul>
+<li>当天的交易总量, 增量求和算子, 设置Cumulative=true, 表示求和是以累积的方式. 设置类型为Long,表示交易量是Long类型. </li>
+<li>每一分钟的交易量. 设置应用程序的时间窗口, 只在当前这一分钟的最后一个事件才发送这一分钟的求和结果</li>
+<li>每一分钟的最值. 同样设置时间窗口, 由于是求最大值和最小值, 使用RangeKeyVal算子. 设置类型为Double,表示的是最小值和最大值都是Double的价格.  </li>
+<li>报价由三个来源组成: 首先要表示哪支股票(String), 最近交易价格(Double), 当天的交易量(Long), 最近交易时间(String). </li>
+<li>图表由两个来源组成: 首先也是哪支股票(String), 最值交易价格(HighLow), 当前一分钟的交易量(Long)</li>
+<li>过去五分钟的平均交易价格. 设置滑动窗口的大小使用setWindowSize.  </li>
+</ul>
+<blockquote>
+<p>每个算子的第一个元素都是Key, 都要表示当前处理的是哪条记录,比如示例中是哪一只股票,类型都是String.   </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//This sends total daily volume by adding volumes from each ticks.</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> SumKeyVal&lt;String, Long&gt; <span class="title">getDailyVolumeOperator</span><span class="params">(String name, DAG dag)</span> </span>&#123;</span><br><span class="line">  SumKeyVal&lt;String, Long&gt; oper = dag.addOperator(name, <span class="keyword">new</span> SumKeyVal&lt;String, Long&gt;());</span><br><span class="line">  oper.setType(Long.class);   <span class="comment">//每支股票的当天交易量,值为交易量</span></span><br><span class="line">  oper.setCumulative(<span class="keyword">true</span>);   <span class="comment">//累积,因为Input的输出是增量,所以要累积求和</span></span><br><span class="line">  <span class="keyword">return</span> oper;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//Get aggregated volume of 1 minute and send at the end window of 1 minute.</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> SumKeyVal&lt;String, Long&gt; <span class="title">getMinuteVolumeOperator</span><span class="params">(String name, DAG dag, <span class="keyword">int</span> appWindowCount)</span> </span>&#123;</span><br><span class="line">  SumKeyVal&lt;String, Long&gt; oper = dag.addOperator(name, <span class="keyword">new</span> SumKeyVal&lt;String, Long&gt;());</span><br><span class="line">  oper.setType(Long.class);</span><br><span class="line">  oper.setEmitOnlyWhenChanged(<span class="keyword">true</span>); </span><br><span class="line">  dag.getOperatorMeta(name).getAttributes().put(OperatorContext.APPLICATION_WINDOW_COUNT,appWindowCount);   <span class="comment">//一分钟的时间窗口</span></span><br><span class="line">  <span class="keyword">return</span> oper;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//Get High-low range for 1 minute.</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> RangeKeyVal&lt;String, Double&gt; <span class="title">getHighLowOperator</span><span class="params">(String name, DAG dag, <span class="keyword">int</span> appWindowCount)</span> </span>&#123;</span><br><span class="line">  RangeKeyVal&lt;String, Double&gt; oper = dag.addOperator(name, <span class="keyword">new</span> RangeKeyVal&lt;String, Double&gt;());</span><br><span class="line">  dag.getOperatorMeta(name).getAttributes().put(OperatorContext.APPLICATION_WINDOW_COUNT,appWindowCount);</span><br><span class="line">  oper.setType(Double.class);</span><br><span class="line">  <span class="keyword">return</span> oper;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//1.Quote (Merge price, daily volume, time)</span></span><br><span class="line"><span class="keyword">public</span> ConsolidatorKeyVal&lt;String,Double,Long,String,?,?&gt; getQuoteOperator(String name, DAG dag)&#123;</span><br><span class="line">  ConsolidatorKeyVal&lt;String,Double,Long,String,?,?&gt; oper = dag.addOperator(name, <span class="keyword">new</span> ConsolidatorKeyVal&lt;String,Double,Long,String,Object,Object&gt;());</span><br><span class="line">  <span class="keyword">return</span> oper;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//2.Chart (Merge minute volume and minute high-low)</span></span><br><span class="line"><span class="keyword">public</span> ConsolidatorKeyVal&lt;String,HighLow,Long,?,?,?&gt; getChartOperator(String name, DAG dag) &#123;</span><br><span class="line">  ConsolidatorKeyVal&lt;String,HighLow,Long,?,?,?&gt; oper = dag.addOperator(name, <span class="keyword">new</span> ConsolidatorKeyVal&lt;String,HighLow,Long,Object,Object,Object&gt;());</span><br><span class="line">  <span class="keyword">return</span> oper;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//3.Get simple moving average of price.</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> SimpleMovingAverage&lt;String, Double&gt; <span class="title">getPriceSimpleMovingAverageOperator</span><span class="params">(String name, DAG dag, <span class="keyword">int</span> appWindowCount)</span> </span>&#123;</span><br><span class="line">  SimpleMovingAverage&lt;String, Double&gt; oper = dag.addOperator(name, <span class="keyword">new</span> SimpleMovingAverage&lt;String, Double&gt;());</span><br><span class="line">  oper.setWindowSize(appWindowCount);</span><br><span class="line">  oper.setType(Double.class);</span><br><span class="line">  <span class="keyword">return</span> oper;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>SimpleMovingAverage keeps track of the data of the previous N application windows in a sliding manner.<br>For each end window event, it provides the average of the data in those application windows.<br>Moving算子会以滑动的行为跟踪前面N个应用程序窗口的数据. 在每个窗口的最后一个事件(这个事件标记了窗口结束),它提供了所有这N个窗口的平均值.  </p>
+<blockquote>
+<p>OperatorContext.APPLICATION_WINDOW_COUNT可以理解为跳动窗口,窗口之间不重叠. WindowSize表示滑动窗口的大小,窗口之间会重叠   </p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">跳动窗口(WINDOW_COUNT)                    滑动窗口(WindowSize)</span><br><span class="line">--------------------------&gt;             ---------------------------&gt;  Tuple</span><br><span class="line">|-------|                               |-------|</span><br><span class="line">        |-------|                           |-------|</span><br><span class="line">                |-------|                       |-------|</span><br></pre></td></tr></table></figure>
+<p><strong>4.构造DAG</strong></p>
+<p>Connecting the operators together and constructing the DAG: Now that we know the operators used, we will create the DAG, set the streaming window size, instantiate the operators, and connect the operators together by adding streams that connect the output ports with the input ports among those operators.<br>将所有的算子连接起来构造DAG: 设置流窗口大小,实例化算子,为算子之间添加stream,连接算子之间的输入ports和输出ports.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">populateDAG</span><span class="params">(DAG dag, Configuration conf)</span></span>&#123;</span><br><span class="line">  <span class="comment">//实例化各个算子,然后将算子使用stream进行连接</span></span><br><span class="line">  dag.addStream(<span class="string">"price"</span>, tick.price, quoteOperator.in1, highlow.data, priceSMA.data);</span><br><span class="line">  dag.addStream(<span class="string">"vol"</span>, tick.volume, dailyVolume.data, minuteVolume.data);</span><br><span class="line">  dag.addStream(<span class="string">"time"</span>, tick.time, quoteOperator.in3);</span><br><span class="line">  dag.addStream(<span class="string">"daily_vol"</span>, dailyVolume.sum, quoteOperator.in2);</span><br><span class="line"></span><br><span class="line">  dag.addStream(<span class="string">"quote_data"</span>, quoteOperator.out, getConsole(<span class="string">"quoteConsole"</span>, dag, <span class="string">"QUOTE"</span>));</span><br><span class="line"></span><br><span class="line">  dag.addStream(<span class="string">"high_low"</span>, highlow.range, chartOperator.in1);</span><br><span class="line">  dag.addStream(<span class="string">"vol_1min"</span>, minuteVolume.sum, chartOperator.in2);</span><br><span class="line">  dag.addStream(<span class="string">"chart_data"</span>, chartOperator.out, getConsole(<span class="string">"chartConsole"</span>, dag, <span class="string">"CHART"</span>));</span><br><span class="line"></span><br><span class="line">  dag.addStream(<span class="string">"sma_price"</span>, priceSMA.doubleSMA, getConsole(<span class="string">"priceSMAConsole"</span>, dag, <span class="string">"Price SMA"</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Apache_Apex_Platform_Overview">Apache Apex Platform Overview</h2><h3 id="Streaming_Computational_Model_流计算模型">Streaming Computational Model 流计算模型</h3><ul>
+<li>应用程序运行在Apex平台中, 由operators算子和streams流组成的DAG表示.</li>
+<li>输入数据都会在内存中被计算, 并且可以选择非阻塞地将输出保存到HDFS</li>
+<li>在operators之间流动的数据是原子性的/不可变的, 每个data element和它的类型定义/schema组成一个Tuple</li>
+<li>应用程序设计成这些tuples流经合适的计算单元,并得到最终的计算结果</li>
+<li>消息队列(buffer server)会在不同的流程中管理计算单元之间的tuples streaming</li>
+</ul>
+<p><strong>Streaming Windows &amp; Application Window</strong></p>
+<p>streaming platform的一个基础构件是将一个stream流分成(breaking up into)等价的有限的时间切片: 叫做streaming windows.<br>每个streaming window是一小批数据: micro-batch. 一般一个窗口的大小是500ms. 即每隔500ms形成一个micro-batch-window.<br>虽然Apex平台是以tuple级别来处理计算的, 只有在window的边界才会记录. –&gt; 以每个window为边界处理这个窗口中一批的tuples.<br>以窗口为边界处理一批一批的tuples,所以一整个窗口内的计算对于platform是一个原子事件.  </p>
+<blockquote>
+<p>计算单元针对的是tuple元组, 但是并不是每一个元组过来了就记录一次, 而是等一个窗口满了之后,一起处理这个窗口内的所有有序tuples.<br>假设一秒中收到了1000个tuples,如果一个tuple就记录一次,需要记录1000次. 而以一秒的窗口为时间单位,则只需要记录一次.  </p>
+</blockquote>
+<p><img src="http://docs.datatorrent.com/images/application_development/ApplicationDeveloperGuide.html-image02.png" alt="micro-batch"></p>
+<p>Application Window是应用程序的窗口,比如滑动窗口为5min, 则对于每秒钟的streaming window而言, 会有5*60=300个streaming windows.  </p>
+<p>A streaming window is an abstraction of many tuples into a higher atomic event for easier management.<br>An application window is a group of consecutive streaming windows used for data aggregation on a per operator level.<br>StreamingWindow是将多个tuples抽象成一个更高级的原子事件,为了便于管理. ApplicationWindow是一组连续的StreamingWindow.<br>ApplicationWindow是在每个operator级别上的数据聚合操作. 一个operator的聚合会在多个StreamingWindow上的tuples一批批地计算.   </p>
+<p>上图的每个Window都是以一个begin_window事件开始,以一个end_window事件结束. 由于计算是并行执行的为了流程序最快完成, 每个operator无法<br>精确地预测它发送出去的tuples什么时候会被下游operator处理. 能保证的是: 上游Operator在处理当前或往后的window, 下游Operator处理的则是<br>当前或往前一个Window. 当任意Operator的一个StreamingWindow处理完成时, 所有它的上游算子都必须已经处理完这个Window了(begin并没有这个限制).  </p>
+<blockquote>
+<p>begin和end_window事件用来表示一个StreamingWindow的边界触发条件. 如果当前算子的这个窗口结束了,则当前算子的所有上游算子<br>都已经完全处理完这个窗口的数据,否则如果还有上游算子在这个窗口上的tuple没有处理完, 当前算子是没办法结束这个窗口的.<br>对于同一个StreamingWindow, 多个算子之间是存在关联关系的. 即上游算子在某个窗口的处理结果会发送给下游算子继续在这个窗口处理.   </p>
+</blockquote>
+<h3 id="Streaming_Application_Manager_(STRAM)_流应用程序管理">Streaming Application Manager (STRAM) 流应用程序管理</h3><p>STRAM是YARN中的ApplicationMaster. 在YARN上可以运行MapReduce,Spark,Storm等.所以Apex也是运行在YARN之上的一个流处理框架.<br>应用程序用DAG构成, 最终要被YARN框架调度, 都要经过逻辑计划-物理计划(partition)-执行计划(fragments), 最后在YARN的Container上运行任务.  </p>
+<p>下图是以Container的角色对应到DAG拓扑图的每个算子:  </p>
+<p><img src="http://docs.datatorrent.com/images/application_development/ApplicationDeveloperGuide.html-image01.png" alt="stram_container"></p>
+<p>下图是应用程序的Quote的执行计划的生成过程:  </p>
+<p><img src="http://docs.datatorrent.com/images/application_development/ApplicationDeveloperGuide.html-image04.png" alt="stram_plan"></p>
+<blockquote>
+<p>各个计划的组成部分都是构成DAG的算子, 每个算子在DAG中都被唯一编号,如果算子分区,会以运行的Container编号再次区分.  </p>
+</blockquote>
+<h2 id="参考文档">参考文档</h2><p><a href="http://docs.datatorrent.com/application_development/" target="_blank" rel="noopener">http://docs.datatorrent.com/application_development/</a></p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/12/09/2015-12-09-Apache-Apex/">Apache Apex 流处理和批处理统一框架</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年12月09日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/12/09/2015-12-09-Apache-Apex/" title="Apache Apex 流处理和批处理统一框架">http://github.com/zqhxuyuan/2015/12/09/2015-12-09-Apache-Apex/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/12/09/2015-12-09-Apache-Apex/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/12/11/2015-12-11-Apache-Ignite/">
+        Apache Ignite 内存网格数据库
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/12/08/2015-12-08-Druid-source/">
+        Druid源码解析(1) Guice和Realtime流程
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Hello_Apex"><span class="toc-number">1.</span> <span class="toc-text">Hello Apex</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Key_Concepts"><span class="toc-number">1.1.</span> <span class="toc-text">Key Concepts</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Application_Development"><span class="toc-number">1.2.</span> <span class="toc-text">Application Development</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Apache_Apex_Platform_Overview"><span class="toc-number">2.</span> <span class="toc-text">Apache Apex Platform Overview</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Streaming_Computational_Model_流计算模型"><span class="toc-number">2.1.</span> <span class="toc-text">Streaming Computational Model 流计算模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Streaming_Application_Manager_(STRAM)_流应用程序管理"><span class="toc-number">2.2.</span> <span class="toc-text">Streaming Application Manager (STRAM) 流应用程序管理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考文档"><span class="toc-number">3.</span> <span class="toc-text">参考文档</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/12/09/2015-12-09-Apache-Apex/" data-title="Apache Apex 流处理和批处理统一框架" data-url="http://github.com/zqhxuyuan/2015/12/09/2015-12-09-Apache-Apex/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/12/11/2015-12-11-Apache-Ignite/" title="上一篇: Apache Ignite 内存网格数据库">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/12/08/2015-12-08-Druid-source/" title="下一篇: Druid源码解析(1) Guice和Realtime流程">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

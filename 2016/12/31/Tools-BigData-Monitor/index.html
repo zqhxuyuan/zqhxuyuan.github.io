@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>监控工具集锦 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="监控工具：ZooKeeper，Kafka，Cassandra…">
+<meta name="keywords" content="ops">
+<meta property="og:type" content="article">
+<meta property="og:title" content="监控工具集锦">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/12/31/Tools-BigData-Monitor/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="监控工具：ZooKeeper，Kafka，Cassandra…">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160516095143332">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160516094813768">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160516094831940">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160516102612129">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160519131446630">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160519131501802">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160519131513286">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.387Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="监控工具集锦">
+<meta name="twitter:description" content="监控工具：ZooKeeper，Kafka，Cassandra…">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160516095143332">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Tools-BigData-Monitor" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/12/31/Tools-BigData-Monitor/" class="article-date">
+  	<time datetime="2016-12-30T16:00:00.000Z" itemprop="datePublished">2016-12-31</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      监控工具集锦
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/work/">work</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ops/">ops</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>监控工具：ZooKeeper，Kafka，Cassandra…<br><a id="more"></a></p>
+<h2 id="ZooKeeper">ZooKeeper</h2><h3 id="node-zk-browser">node-zk-browser</h3><p>依赖条件：nodejs, npm</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ git <span class="built_in">clone</span> https://github.com/killme2008/node-zk-browser.git</span><br><span class="line">$ <span class="built_in">cd</span> node-zk-browser</span><br><span class="line">$ cat package.json</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">"name"</span>: <span class="string">"node-zk-browser"</span>,</span><br><span class="line">  <span class="string">"version"</span>: <span class="string">"0.0.2"</span>,</span><br><span class="line">  <span class="string">"dependencies"</span>: &#123;</span><br><span class="line">    <span class="string">"ejs"</span>: <span class="string">"0.7.2"</span>,</span><br><span class="line">    <span class="string">"express"</span>: <span class="string">"3.2.6"</span>,</span><br><span class="line">    <span class="string">"zookeeper"</span>:<span class="string">"*"</span>,</span><br><span class="line">    <span class="string">"express-namespace"</span>:<span class="string">"0.1.1"</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">$ npm install -d</span><br><span class="line">$ node app.js</span><br><span class="line">Express server listening on port 3000</span><br><span class="line">zk session established, id=154a418d5dd000b</span><br></pre></td></tr></table></figure>
+<p><a href="http://localhost:3000" target="_blank" rel="noopener">http://localhost:3000</a> admin:admin</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160516095143332" alt="node-zk"></p>
+<h3 id="zkui">zkui</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ git <span class="built_in">clone</span> https://github.com/DeemOpen/zkui.git</span><br><span class="line">$ mvn clean install</span><br><span class="line">$ cp target/zkui-2.0-SNAPSHOT-jar-with-dependencies.jar .</span><br><span class="line">$ java -jar zkui-2.0-SNAPSHOT-jar-with-dependencies.jar</span><br></pre></td></tr></table></figure>
+<p><a href="http://localhost:9090/" target="_blank" rel="noopener">http://localhost:9090/</a>  admin:manager</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160516094813768" alt="zkui"></p>
+<h3 id="zk-web">zk-web</h3><p>依赖条件：lein</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ git clone https://github.com/qiuxiafei/zk-web</span><br><span class="line">$ cd zk-web</span><br><span class="line">$ lein deps</span><br><span class="line">$ lein run</span><br></pre></td></tr></table></figure>
+<p><a href="http://localhost:9090/" target="_blank" rel="noopener">http://localhost:9090/</a> admin:hello</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160516094831940" alt="zkweb"></p>
+<h2 id="Kafka">Kafka</h2><h3 id="trifecta">trifecta</h3><p>下载<a href="https://github.com/ldaniels528/trifecta/releases">https://github.com/ldaniels528/trifecta/releases</a>中的zip包（web ui）， jar是命令行工具（trifecta_cli）。</p>
+<p>依赖条件：scalascript</p>
+<p><strong>编译并发布scalascript</strong>  </p>
+<p>需要先将scalascript发布到本地仓库，默认sbt会发布到ivy下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">➜  git clone https://github.com/ldaniels528/scalascript.git</span><br><span class="line">➜  cd scalascript </span><br><span class="line"></span><br><span class="line">修改sbt版本为当前安装的sbt版本，否则如果没有修改，会去下载，尽量使用已有的</span><br><span class="line">➜  cat project/build.properties  </span><br><span class="line">sbt.version=0.13.9</span><br><span class="line">➜  sbt publish-local  </span><br><span class="line">Getting org.scala-sbt sbt 0.13.9 ...</span><br><span class="line">downloading http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt/0.13.9/jars/sbt.jar ...</span><br><span class="line">    [SUCCESSFUL ] org.scala-sbt#sbt;0.13.9!sbt.jar (5084ms)</span><br><span class="line"></span><br><span class="line">使用0.13.11就不会下载了</span><br><span class="line">➜  sbt publish-local</span><br><span class="line">[info] Loading global plugins from /Users/zhengqh/.sbt/0.13/plugins</span><br><span class="line">[info] Loading project definition from /Users/zhengqh/Soft/scalascript/project</span><br><span class="line">[info] Packaging /Users/zhengqh/Soft/scalascript/target/scala-2.11/scalascript_sjs0.6_2.11-0.2.20.jar ...</span><br><span class="line">[info] Done packaging.</span><br><span class="line">[info]  published scalascript_sjs0.6_2.11 to /Users/zhengqh/.ivy2/local/com.github.ldaniels528/scalascript_sjs0.6_2.11/0.2.20/poms/scalascript_sjs0.6_2.11.pom</span><br><span class="line">[info]  published scalascript_sjs0.6_2.11 to /Users/zhengqh/.ivy2/local/com.github.ldaniels528/scalascript_sjs0.6_2.11/0.2.20/jars/scalascript_sjs0.6_2.11.jar</span><br><span class="line">[info]  published scalascript_sjs0.6_2.11 to /Users/zhengqh/.ivy2/local/com.github.ldaniels528/scalascript_sjs0.6_2.11/0.2.20/srcs/scalascript_sjs0.6_2.11-sources.jar</span><br><span class="line">[info]  published scalascript_sjs0.6_2.11 to /Users/zhengqh/.ivy2/local/com.github.ldaniels528/scalascript_sjs0.6_2.11/0.2.20/docs/scalascript_sjs0.6_2.11-javadoc.jar</span><br><span class="line">[info]  published ivy to /Users/zhengqh/.ivy2/local/com.github.ldaniels528/scalascript_sjs0.6_2.11/0.2.20/ivys/ivy.xml</span><br><span class="line">[success] Total time: 71 s, completed 2016-5-16 10:11:20</span><br></pre></td></tr></table></figure>
+<p><strong>编译并发布trifecta</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">➜  git clone https://github.com/ldaniels528/trifecta.git</span><br><span class="line">➜  cd trifecta</span><br><span class="line">➜  sbt publish-local</span><br><span class="line">[info]  published trifecta_cli_2.11 to /Users/zhengqh/.ivy2/local/com.github.ldaniels528/trifecta_cli_2.11/0.20.0/poms/trifecta_cli_2.11.pom</span><br><span class="line">[info]  published trifecta_cli_2.11 to /Users/zhengqh/.ivy2/local/com.github.ldaniels528/trifecta_cli_2.11/0.20.0/jars/trifecta_cli_2.11.jar</span><br><span class="line">[info]  published trifecta_cli_2.11 to /Users/zhengqh/.ivy2/local/com.github.ldaniels528/trifecta_cli_2.11/0.20.0/srcs/trifecta_cli_2.11-sources.jar</span><br><span class="line">[info]  published trifecta_cli_2.11 to /Users/zhengqh/.ivy2/local/com.github.ldaniels528/trifecta_cli_2.11/0.20.0/docs/trifecta_cli_2.11-javadoc.jar</span><br><span class="line">[info]  published ivy to /Users/zhengqh/.ivy2/local/com.github.ldaniels528/trifecta_cli_2.11/0.20.0/ivys/ivy.xml</span><br><span class="line">[success] Total time: 75 s, completed 2016-5-16 9:51:09</span><br></pre></td></tr></table></figure>
+<p>现在已经编译好了trifecta_cli_2.11，这和release的cli.jar是一样的。 不过我们想要编译ui的话：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">➜  sbt &quot;project trifecta_ui&quot; dist</span><br><span class="line">[info] Loading global plugins from /Users/zhengqh/.sbt/0.13/plugins</span><br><span class="line">[info] Loading project definition from /Users/zhengqh/Soft/trifecta/project</span><br><span class="line">[info] Set current project to trifecta_core (in build file:/Users/zhengqh/Soft/trifecta/)</span><br><span class="line">[info] Set current project to trifecta_cli (in build file:/Users/zhengqh/Soft/trifecta/)</span><br><span class="line">[info] Set current project to trifecta_ui (in build file:/Users/zhengqh/Soft/trifecta/)</span><br><span class="line">...</span><br><span class="line">[info] Done packaging.</span><br><span class="line">[info]</span><br><span class="line">[info] Your package is ready in /Users/zhengqh/Soft/trifecta/app-play/target/universal/trifecta_ui-0.20.0.zip</span><br><span class="line">[info]</span><br><span class="line">[success] Total time: 109 s, completed 2016-5-16 10:15:01</span><br><span class="line"></span><br><span class="line">➜  unzip /Users/zhengqh/Soft/trifecta/app-play/target/universal/trifecta_ui-0.20.0.zip</span><br><span class="line">Archive:  /Users/zhengqh/Soft/trifecta/app-play/target/universal/trifecta_ui-0.20.0.zip</span><br><span class="line">➜  cd trifecta_ui-0.20.0/bin</span><br><span class="line">➜  ./trifecta_ui</span><br><span class="line">[info] p.a.l.c.ActorSystemProvider - Starting application default Akka system: application</span><br><span class="line">[info] application - Application has started</span><br><span class="line">[info] play.api.Play$ - Application started (Prod)</span><br><span class="line">[info] p.c.s.NettyServer$ - Listening for HTTP on /0:0:0:0:0:0:0:0:9000</span><br><span class="line">[info] application - Loading Trifecta configuration...</span><br><span class="line">[info] application - Starting Zookeeper client...</span><br><span class="line">[info] application - created actor com.github.ldaniels528.trifecta.actors.SSEClientHandlingActor</span><br><span class="line">[info] application - Registering new SSE session &apos;8d82b54dc125406f875c98e9f05e4a4f&apos;...</span><br><span class="line">[info] application - GET /api/sse/connect ~&gt; 200 [927.0 ms]</span><br></pre></td></tr></table></figure>
+<p><a href="http://localhost:9000" target="_blank" rel="noopener">http://localhost:9000</a></p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160516102612129" alt="trifecta"></p>
+<h3 id="Kafka_Offset_Monitor(https://github-com/quantifind/KafkaOffsetMonitor)">Kafka Offset Monitor(<a href="https://github.com/quantifind/KafkaOffsetMonitor">https://github.com/quantifind/KafkaOffsetMonitor</a>)</h3><h3 id="Kafka_Monitor()">Kafka Monitor()</h3><h2 id="Cassandra">Cassandra</h2><h3 id="Riemman">Riemman</h3><h4 id="准备工作">准备工作</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">rvm install 1.9.3 --with-gcc=clang</span><br><span class="line">rvm 1.9.3 --default</span><br><span class="line">rvm list</span><br><span class="line">ruby -v</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">wget https://aphyr.com/riemann/riemann-0.2.11.tar.bz2</span><br><span class="line">tar xvfj riemann-0.2.11.tar.bz2</span><br><span class="line">cd riemann-0.2.11</span><br><span class="line"></span><br><span class="line">➜  riemann-0.2.11 bin/riemann etc/riemann.config</span><br><span class="line">INFO [2016-05-19 11:50:49,069] main - riemann.bin - PID 70661</span><br><span class="line">INFO [2016-05-19 11:50:49,078] main - riemann.bin - Loading /Users/zhengqh/Soft/riemann-0.2.11/etc/riemann.config</span><br><span class="line">INFO [2016-05-19 11:50:49,334] clojure-agent-send-off-pool-1 - riemann.transport.websockets - Websockets server 127.0.0.1 5556 online</span><br><span class="line">INFO [2016-05-19 11:50:49,629] clojure-agent-send-off-pool-2 - riemann.transport.udp - UDP server 127.0.0.1 5555 16384 -1 online</span><br><span class="line">INFO [2016-05-19 11:50:49,656] clojure-agent-send-off-pool-3 - riemann.transport.tcp - TCP server 127.0.0.1 5555 online</span><br><span class="line">INFO [2016-05-19 11:50:49,659] main - riemann.core - Hyperspace core online</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">gem install riemann-client riemann-tools riemann-dash</span><br><span class="line"></span><br><span class="line">➜  ~ riemann-dash</span><br><span class="line">DEPRECATION WARNING:</span><br><span class="line">Sass 3.5 will no longer support Ruby 1.9.3.</span><br><span class="line">Please upgrade to Ruby 2.0.0 or greater as soon as possible.</span><br><span class="line"></span><br><span class="line">No configuration loaded; using defaults.</span><br><span class="line">[2016-05-19 12:12:35] INFO  WEBrick 1.3.1</span><br><span class="line">[2016-05-19 12:12:35] INFO  ruby 1.9.3 (2014-11-13) [x86_64-darwin14.1.1]</span><br><span class="line">== Sinatra (v1.4.7) has taken the stage on 4567 for development with backup from WEBrick</span><br><span class="line">[2016-05-19 12:12:35] INFO  WEBrick::HTTPServer#start: pid=20843 port=4567</span><br></pre></td></tr></table></figure>
+<p>Mac下command并单击某个区域，这部分会变成深灰色</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160519131446630" alt="rieman1"></p>
+<p>按快捷键e，出现编辑页面</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160519131501802" alt="rieman2"></p>
+<p>点击Apply后，按Esc键，会退出编辑状态，深灰色变为正常颜色</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160519131513286" alt="rieman3"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">➜  ~ riemann-health</span><br></pre></td></tr></table></figure>
+<p>打包：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">➜  riemann-cassandra git:(master) ✗ mvn package</span><br><span class="line">[INFO] Replacing /Users/zhengqh/Github/riemann-cassandra/target/riemann-cassandra-0.0.3.jar with </span><br><span class="line">/Users/zhengqh/Github/riemann-cassandra/target/riemann-cassandra-0.0.3-shaded.jar</span><br></pre></td></tr></table></figure>
+<p>启动客户端：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">java -jar target/riemann-cassandra-0.0.3.jar \</span><br><span class="line">    -riemann_host localhost \</span><br><span class="line">    -riemann_port 5555 \</span><br><span class="line">    -cassandra_host localhost \</span><br><span class="line">    -jmx_port 7199 \</span><br><span class="line">    -jmx_username null \</span><br><span class="line">    -jmx_password null \</span><br><span class="line">    -interval_seconds 5</span><br><span class="line"></span><br><span class="line">success start riemann-cassandra-client............@Thu May 19 14:50:04 CST 2016</span><br><span class="line">^Cclosed riemann-cassandra-client@Thu May 19 16:14:28 CST 2016</span><br></pre></td></tr></table></figure>
+<p>Event的格式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123; </span><br><span class="line">    host: &quot;www1&quot;, </span><br><span class="line">    service: &quot;http req&quot;, </span><br><span class="line">    metric: 2.53, </span><br><span class="line">    state: &quot;critical&quot;, </span><br><span class="line">    description: &quot;Request took 2.53 seconds.&quot;, </span><br><span class="line">    tags: [&quot;http&quot;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对应的riemann后台日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">INFO [2016-05-19 14:01:46,512] Thread-7 - riemann.config - expired </span><br><span class="line">&#123;:host www1, :service http req, :state expired, :time 365909426627/250, :ttl 60&#125;</span><br></pre></td></tr></table></figure>
+<p>riemann-cassandra中的事件格式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123; </span><br><span class="line">    host: &quot;localhost&quot;, </span><br><span class="line">    service: &quot;cassandra.db.forseti.velocity_global.max_row_size_ob&quot;, </span><br><span class="line">    metric: 148,</span><br><span class="line">    tags: [&quot;cassandra&quot;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>riemann服务端后台日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">INFO [2016-05-19 16:47:54,195] Thread-7 - riemann.config - expired </span><br><span class="line">&#123;:host 10.57.2.36, :service cassandra.db.forseti.velocity_partner.mean_row_size_kb, :state expired, :time 292729534839/200, :ttl 60&#125;</span><br></pre></td></tr></table></figure>
+<p>查询所有表的read_latency, query中支持不同的查询</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tagged &quot;cassandra&quot;  and service =~ &quot;cassandra.db.forseti.%.read_%&quot;</span><br></pre></td></tr></table></figure>
+<h2 id="Tracing">Tracing</h2><ul>
+<li><a href="http://htrace.incubator.apache.org/" target="_blank" rel="noopener">http://htrace.incubator.apache.org/</a></li>
+<li><a href="https://github.com/naver/pinpoint">https://github.com/naver/pinpoint</a></li>
+<li></li>
+</ul>
+<h3 id="zipkin">zipkin</h3><p>准备环境</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">alias npm=&quot;npm --registry=https://registry.npm.taobao.org --disturl=https://npm.taobao.org/mirrors/node&quot;</span><br><span class="line">yum install npm -y</span><br><span class="line">git clone https://github.com/creationix/nvm.git</span><br><span class="line">source nvm/install.sh</span><br><span class="line">node -v &amp;&amp; npm -v &amp;&amp; nvm -v</span><br><span class="line">nvm install v5.5.0</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ tar zxf zipkin-1.40.1.tar.gz</span><br><span class="line">$ cd zipkin-1.40.1</span><br><span class="line">$ bin/query</span><br></pre></td></tr></table></figure>
+<p>vi zipkin-ui/webpack.config.js</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">:zipkin-ui:npmBuild</span><br><span class="line"></span><br><span class="line">&gt; zipkin-ui@0.0.0 build /home/qihuang.zheng/zipkin-1.40.1/zipkin-ui</span><br><span class="line">&gt; node node_modules/webpack/bin/webpack.js --bail</span><br><span class="line"></span><br><span class="line">ModuleBuildError: Module build failed: Error: /home/qihuang.zheng/zipkin-1.40.1/zipkin-ui/node_modules/node-sass/vendor/linux-x64-47/binding.node: ELF load command past end of file</span><br><span class="line">npm ERR! Linux 3.10.96-1.el6.elrepo.x86_64</span><br><span class="line">npm ERR! argv &quot;/home/qihuang.zheng/zipkin-1.40.1/zipkin-ui/build/nodejs/node-v5.5.0-linux-x64/bin/node&quot; &quot;/home/qihuang.zheng/zipkin-1.40.1/zipkin-ui/build/nodejs/node-v5.5.0-linux-x64/lib/node_modules/npm/bin/npm-cli.js&quot; &quot;run-script&quot; &quot;build&quot;</span><br><span class="line">npm ERR! node v5.5.0</span><br><span class="line">npm ERR! npm  v3.3.12</span><br><span class="line">npm ERR! code ELIFECYCLE</span><br><span class="line">npm ERR! zipkin-ui@0.0.0 build: `node node_modules/webpack/bin/webpack.js --bail`</span><br><span class="line">npm ERR! Exit status 1</span><br></pre></td></tr></table></figure>
+<h3 id="cat">cat</h3><h3 id="HTrace">HTrace</h3><h2 id="Operation">Operation</h2><h3 id="FrameGraph">FrameGraph</h3><p>git clone <a href="https://github.com/brendangregg/FlameGraph">https://github.com/brendangregg/FlameGraph</a><br>cd FlameGraph<br>sudo perf record –call-graph dwarf -p $(pgrep scylla)<br>sudo perf script | <code>pwd</code>/stackcollapse-perf.pl | <code>pwd</code>/flamegraph.pl &gt; flame.svg</p>
+<p><a href="http://blog.csdn.net/justlinux2010/article/details/11520829" target="_blank" rel="noopener">http://blog.csdn.net/justlinux2010/article/details/11520829</a></p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/12/31/Tools-BigData-Monitor/">监控工具集锦</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年12月31日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/12/31/Tools-BigData-Monitor/" title="监控工具集锦">http://github.com/zqhxuyuan/2016/12/31/Tools-BigData-Monitor/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/12/31/Tools-BigData-Monitor/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2017/01/01/Tools-Build/">
+        开发者构建工具
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/12/31/Daily/">
+        Daily Work
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ZooKeeper"><span class="toc-number">1.</span> <span class="toc-text">ZooKeeper</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#node-zk-browser"><span class="toc-number">1.1.</span> <span class="toc-text">node-zk-browser</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#zkui"><span class="toc-number">1.2.</span> <span class="toc-text">zkui</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#zk-web"><span class="toc-number">1.3.</span> <span class="toc-text">zk-web</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kafka"><span class="toc-number">2.</span> <span class="toc-text">Kafka</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#trifecta"><span class="toc-number">2.1.</span> <span class="toc-text">trifecta</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Kafka_Offset_Monitor(https://github-com/quantifind/KafkaOffsetMonitor)"><span class="toc-number">2.2.</span> <span class="toc-text">Kafka Offset Monitor(https://github.com/quantifind/KafkaOffsetMonitor)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Kafka_Monitor()"><span class="toc-number">2.3.</span> <span class="toc-text">Kafka Monitor()</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Cassandra"><span class="toc-number">3.</span> <span class="toc-text">Cassandra</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Riemman"><span class="toc-number">3.1.</span> <span class="toc-text">Riemman</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#准备工作"><span class="toc-number">3.1.1.</span> <span class="toc-text">准备工作</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Tracing"><span class="toc-number">4.</span> <span class="toc-text">Tracing</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#zipkin"><span class="toc-number">4.1.</span> <span class="toc-text">zipkin</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cat"><span class="toc-number">4.2.</span> <span class="toc-text">cat</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HTrace"><span class="toc-number">4.3.</span> <span class="toc-text">HTrace</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Operation"><span class="toc-number">5.</span> <span class="toc-text">Operation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#FrameGraph"><span class="toc-number">5.1.</span> <span class="toc-text">FrameGraph</span></a></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/12/31/Tools-BigData-Monitor/" data-title="监控工具集锦" data-url="http://github.com/zqhxuyuan/2016/12/31/Tools-BigData-Monitor/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2017/01/01/Tools-Build/" title="上一篇: 开发者构建工具">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/12/31/Daily/" title="下一篇: Daily Work">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

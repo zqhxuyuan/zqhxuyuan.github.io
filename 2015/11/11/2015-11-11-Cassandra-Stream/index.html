@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Cassandra源码分析之Stream | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="大数据源码阅读系列之ApacheCassandra: sstable的stream流程">
+<meta name="keywords" content="cassandra">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cassandra源码分析之Stream">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/11/11/2015-11-11-Cassandra-Stream/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="大数据源码阅读系列之ApacheCassandra: sstable的stream流程">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.189Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cassandra源码分析之Stream">
+<meta name="twitter:description" content="大数据源码阅读系列之ApacheCassandra: sstable的stream流程">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-11-11-Cassandra-Stream" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/11/11/2015-11-11-Cassandra-Stream/" class="article-date">
+  	<time datetime="2015-11-10T16:00:00.000Z" itemprop="datePublished">2015-11-11</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Cassandra源码分析之Stream
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Source/">Source</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cassandra/">cassandra</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>大数据源码阅读系列之ApacheCassandra: sstable的stream流程</p>
+<a id="more"></a>
+<h2 id="sstableloader流程">sstableloader流程</h2><p>BulkLoader主方法创建SSTableLoader,调用stream开始流式传输:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Future操作,非阻塞的. 把长时间执行的任务封装在Future里, 程序主逻辑继续往下执行, 通过future.get获取结果</span></span><br><span class="line">StreamResultFuture future = loader.stream(options.ignores);</span><br><span class="line"><span class="comment">//如果没有获取到结果, 会一直阻塞下去, 直到任务完成, 才退出</span></span><br><span class="line">future.get();</span><br></pre></td></tr></table></figure>
+<p>SSTableLoader.stream方法返回Future才能让调用者在Future上调用get.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> StreamResultFuture <span class="title">stream</span><span class="params">(Set&lt;InetAddress&gt; toIgnore, StreamEventHandler... listeners)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//初始化, 客户端为BulkLoader创建的ExternalClient. </span></span><br><span class="line">    client.init(keyspace);</span><br><span class="line">    <span class="comment">//构造一个流传输的执行计划. 流可以看做是流动,或者流式</span></span><br><span class="line">    StreamPlan plan = <span class="keyword">new</span> StreamPlan(<span class="string">"Bulk Load"</span>).connectionFactory(client.getConnectionFactory());</span><br><span class="line">    <span class="comment">//在初始化之后, 能得到目标集群每个节点对一个的TokenRange集合. 因为一个节点有256个vnodes,所以一个节点会有很多个Token!</span></span><br><span class="line">    Map&lt;InetAddress, Collection&lt;Range&lt;Token&gt;&gt;&gt; endpointToRanges = client.getEndpointToRangesMap();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//打开sstables... 会生成streamingDetails, 下面进一步处理streamingDetails, 转换结构</span></span><br><span class="line">    openSSTables(endpointToRanges);</span><br><span class="line">    <span class="comment">//上面的openSSTables是以一个个的SSTable为视觉, 现在回到stream主方法,需要以目标节点为视觉</span></span><br><span class="line">    <span class="keyword">for</span> (Map.Entry&lt;InetAddress, Collection&lt;Range&lt;Token&gt;&gt;&gt; entry : endpointToRanges.entrySet()) &#123;</span><br><span class="line">        InetAddress remote = entry.getKey();</span><br><span class="line">        List&lt;StreamSession.SSTableStreamingSections&gt; endpointDetails = <span class="keyword">new</span> LinkedList&lt;&gt;();</span><br><span class="line">        <span class="comment">// transferSSTables assumes references have been acquired.  streamingDetails是从openSSTables中得到的</span></span><br><span class="line">        <span class="keyword">for</span> (StreamSession.SSTableStreamingSections details : streamingDetails.get(remote)) &#123;</span><br><span class="line">            endpointDetails.add(details);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//标记remote endpoint节点需要处理这些stream sections</span></span><br><span class="line">        plan.transferFiles(remote, endpointDetails);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//监听器,比如进度条ProgressIndicator</span></span><br><span class="line">    plan.listeners(<span class="keyword">this</span>, listeners);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//真正开始执行StreamPlan</span></span><br><span class="line">    <span class="keyword">return</span> plan.execute();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>先调用StreamPlan的transferFiles, 等所有endpoints都遍历完才开始execute. 在transferFiles会准备一些execute必备的数据比如sessions.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> StreamPlan <span class="title">transferFiles</span><span class="params">(InetAddress to, Collection&lt;StreamSession.SSTableStreamingSections&gt; sstableDetails)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//节点to对应的Session如果已经存在则直接获取,没有就创建</span></span><br><span class="line">    StreamSession session = getOrCreateSession(to, to);</span><br><span class="line">    <span class="comment">//为这个Session添加任务: 要传输的sstable文件</span></span><br><span class="line">    session.addTransferFiles(sstableDetails);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> StreamSession <span class="title">getOrCreateSession</span><span class="params">(InetAddress peer, InetAddress preferred)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//sessions是怎么来的? 只有在这个方法里put进去的. 所以调用该方法,如果不在sessions就会new一个并放进来</span></span><br><span class="line">    <span class="comment">//peer有可能是from节点,比如目标节点/接收数据的节点. peer也可能是to节点,目标节点,要传输到这个目标节点.</span></span><br><span class="line">    <span class="comment">//那么from和to就有可能是同一个节点.比如执行sstable命令的节点是源,则接收数据to/请求数据from的节点是目标节点</span></span><br><span class="line">    StreamSession session = sessions.get(peer);</span><br><span class="line">    <span class="keyword">if</span> (session == <span class="keyword">null</span>) &#123;</span><br><span class="line">        session = <span class="keyword">new</span> StreamSession(peer, preferred, connectionFactory);</span><br><span class="line">        sessions.put(peer, session);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> session;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>StreamPlan.execute返回的是一个全局唯一的StreamResultFuture,基于Future.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> StreamResultFuture <span class="title">execute</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">//只有一个StreamPlan,但是有好多个StreamSession. 要开始一起开始吧</span></span><br><span class="line">    <span class="keyword">return</span> StreamResultFuture.init(planId, description, sessions.values(), handlers);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>初始化StreamResultFuture会创建StreamResultFuture并注册到StreamManager,然后把它传递给所有StreamSession的初始化方法, 最后启动每个StreamSession:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//初始化异步返回结果器. 一个StreamPlan只有一个StreamResultFuture,有多个StreamSessions, 所有的StreamSessions共用一个StreamResultFuture</span></span><br><span class="line"><span class="comment">//因为一次Stream只需要最后的一个结果来表示所有(节点)的StreamSession是否都已经完成. 一个StreamSession对应一个节点的传输.</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> StreamResultFuture <span class="title">init</span><span class="params">(UUID planId, String description, Collection&lt;StreamSession&gt; sessions, Collection&lt;StreamEventHandler&gt; listeners)</span> </span>&#123;</span><br><span class="line">    StreamResultFuture future = createAndRegister(planId, description, sessions);</span><br><span class="line">    <span class="keyword">if</span> (listeners != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">//给异步执行结果添加监听器</span></span><br><span class="line">        <span class="keyword">for</span> (StreamEventHandler listener : listeners)</span><br><span class="line">            future.addEventListener(listener);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    logger.info(<span class="string">"[Stream #&#123;&#125;] Executing streaming plan for &#123;&#125;"</span>, planId,  description);</span><br><span class="line">    <span class="comment">// start sessions</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">final</span> StreamSession session : sessions) &#123;</span><br><span class="line">        logger.info(<span class="string">"[Stream #&#123;&#125;] Beginning stream session with &#123;&#125;"</span>, planId, session.peer);</span><br><span class="line">        <span class="comment">//StreamPlan的execute会启动同一个StreamPlan的所有StreamSession. 最后实际执行的还是要交给StreamSession</span></span><br><span class="line">        session.init(future);</span><br><span class="line">        <span class="comment">//启动每一个节点的StreamSession任务</span></span><br><span class="line">        session.start();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//为什么要返回Future:对于异步执行的任务需要返回Future,这样调用者才能使用future.get来获得结果</span></span><br><span class="line">    <span class="keyword">return</span> future;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>由于在execute前已经transferFiles,所以每个StreamSession的transfers都是有数据的,当然也可能是requests. 然后用线程池启动任务 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">//请求或者传输必选其一,否则说明这个Session已经完成了</span></span><br><span class="line">    <span class="keyword">if</span> (requests.isEmpty() &amp;&amp; transfers.isEmpty())&#123;</span><br><span class="line">        closeSession(State.COMPLETE);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    streamExecutor.execute(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="comment">//准备好ConnectionHandler</span></span><br><span class="line">            handler.initiate();</span><br><span class="line">            <span class="comment">//初始化完毕</span></span><br><span class="line">            onInitializationComplete();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>初始化ConnectionHandler创建输入和输出的消息处理器. handler管理这两个线程.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initiate</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    Socket incomingSocket = session.createConnection();</span><br><span class="line">    incoming.start(incomingSocket, StreamMessage.CURRENT_VERSION);</span><br><span class="line">    incoming.sendInitMessage(incomingSocket, <span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line">    Socket outgoingSocket = session.createConnection();</span><br><span class="line">    outgoing.start(outgoingSocket, StreamMessage.CURRENT_VERSION);</span><br><span class="line">    outgoing.sendInitMessage(outgoingSocket, <span class="keyword">false</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输入和输出MessageHandler都继承MessageHandler抽象线程类,初始化时都发送InitMessage:    </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendInitMessage</span><span class="params">(Socket socket, <span class="keyword">boolean</span> isForOutgoing)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    <span class="comment">//创建初始化消息, 并转化为ByteBuffer, 由WriteChannel发送出去(即写入到WriteChannel中)</span></span><br><span class="line">    <span class="comment">//WriteChannel是由Socket创建的, 表示要写入到Socket这个地址创建的写入通道中</span></span><br><span class="line">    StreamInitMessage message = <span class="keyword">new</span> StreamInitMessage(FBUtilities.getBroadcastAddress(), session.planId(), session.description(), isForOutgoing);</span><br><span class="line">    ByteBuffer messageBuf = message.createMessage(<span class="keyword">false</span>, protocolVersion);</span><br><span class="line">    <span class="keyword">while</span> (messageBuf.hasRemaining())</span><br><span class="line">        getWriteChannel(socket).write(messageBuf);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>初始化完毕StreamSession.start开始发送PREPARE准备消息:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onInitializationComplete</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// send prepare message</span></span><br><span class="line">    state(State.PREPARING);</span><br><span class="line">    PrepareMessage prepare = <span class="keyword">new</span> PrepareMessage();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//消息中附带了requests请求或者传输任务transfers(任务一开始只是Summary)</span></span><br><span class="line">    prepare.requests.addAll(requests);</span><br><span class="line">    <span class="keyword">for</span> (StreamTransferTask task : transfers.values())</span><br><span class="line">        prepare.summaries.add(task.getSummary());</span><br><span class="line"></span><br><span class="line">    <span class="comment">//发送消息</span></span><br><span class="line">    handler.sendMessage(prepare);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// if we don't need to prepare for receiving stream, start sending files immediately</span></span><br><span class="line">    <span class="keyword">if</span> (requests.isEmpty())</span><br><span class="line">        startStreamingFiles();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>发送消息放到OutgoingMessageHandler.messageQueue队列中. 与此同时输出线程从队列中获取消息并序列化消息到out写入通道中:<br>StreamMessage是消息的抽象类,各类消息需要有自己的序列化实现器,因为不同类型的消息里面的内容是不一样的.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//发送消息, 需要序列化消息</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">sendMessage</span><span class="params">(WritableByteChannel out, StreamMessage message)</span> </span>&#123;</span><br><span class="line">    StreamMessage.serialize(message, out, protocolVersion, session);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在假设往out发送了PrepareMessage消息, 与此同时ConnectionHandler的输入线程IncomingMessageHandler收到了这条消息进行反序列化:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ReadableByteChannel in = getReadChannel(socket);</span><br><span class="line">    <span class="keyword">while</span> (!isClosed()) &#123;</span><br><span class="line">        <span class="comment">// receive message</span></span><br><span class="line">        StreamMessage message = StreamMessage.deserialize(in, protocolVersion, session);</span><br><span class="line">        <span class="comment">// Might be null if there is an error during streaming (see FileMessage.deserialize). It's ok to ignore here since we'll have asked for a retry.</span></span><br><span class="line">        <span class="keyword">if</span> (message != <span class="keyword">null</span>) &#123;</span><br><span class="line">            session.messageReceived(message);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>StreamSession负责处理消息,如果是PrepareMessage,从中获取出附带的requests和transfers调用prepare方法:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">messageReceived</span><span class="params">(StreamMessage message)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (message.type) &#123;</span><br><span class="line">        <span class="keyword">case</span> PREPARE:</span><br><span class="line">            PrepareMessage msg = (PrepareMessage) message;</span><br><span class="line">            prepare(msg.requests, msg.summaries);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> FILE:</span><br><span class="line">            receive((IncomingFileMessage) message);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> RECEIVED:</span><br><span class="line">            ReceivedMessage received = (ReceivedMessage) message;</span><br><span class="line">            received(received.cfId, received.sequenceNumber);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>PREPARE后就上开始传输文件了:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startStreamingFiles</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    streamResult.handleSessionPrepared(<span class="keyword">this</span>);</span><br><span class="line"></span><br><span class="line">    state(State.STREAMING);</span><br><span class="line">    <span class="keyword">for</span> (StreamTransferTask task : transfers.values()) &#123;</span><br><span class="line">        Collection&lt;OutgoingFileMessage&gt; messages = task.getFileMessages();</span><br><span class="line">        <span class="keyword">if</span> (messages.size() &gt; <span class="number">0</span>)</span><br><span class="line">            handler.sendMessages(messages);</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            taskCompleted(task); <span class="comment">// there is no file to send</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在StreamPlan的transferFiless中会调用StreamSession.addTransferFiles将要传输的文件加入到StreamTransferTask:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//为Session添加要传输的文件列表, 添加到TransferTask中</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addTransferFiles</span><span class="params">(Collection&lt;SSTableStreamingSections&gt; sstableDetails)</span> </span>&#123;</span><br><span class="line">    Iterator&lt;SSTableStreamingSections&gt; iter = sstableDetails.iterator();</span><br><span class="line">    <span class="keyword">while</span> (iter.hasNext()) &#123;</span><br><span class="line">        SSTableStreamingSections details = iter.next();</span><br><span class="line">        <span class="comment">//每张表应该都有一个唯一的ID, 而且ID是不会变的吧对于同一张表而言</span></span><br><span class="line">        UUID cfId = details.sstable.metadata.cfId;</span><br><span class="line">        StreamTransferTask task = transfers.get(cfId);</span><br><span class="line">        <span class="keyword">if</span> (task == <span class="keyword">null</span>) &#123;</span><br><span class="line">            task = <span class="keyword">new</span> StreamTransferTask(<span class="keyword">this</span>, cfId);</span><br><span class="line">            transfers.put(cfId, task);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//针对同一张表,只会有一个TransferTask.但是这个Task的tables文件会很多</span></span><br><span class="line">        task.addTransferFile(details.sstable, details.estimatedKeys, details.sections);</span><br><span class="line">        <span class="comment">//SSTableStreamingSections阅后即焚</span></span><br><span class="line">        iter.remove();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>传输文件的类型是OutgoingFileMessage, 所以上面startStreamingFiles开始传输的消息是Collection<outgoingfilemessage>,<br>因为一个Task可以调用多次addTransferFile就有多个要传输的文件(上面的cfId是CF表的编号,则sstableloader一次一个表就只有一个StreamTransferTask了):     </outgoingfilemessage></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">addTransferFile</span><span class="params">(SSTableReader sstable, <span class="keyword">long</span> estimatedKeys, List&lt;Pair&lt;Long, Long&gt;&gt; sections)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//每一个要传输的文件都包装成输出文件消息, 序列号可以表示文件编号,因为调用一次就增加1. 其他信息sstable,sections都是从一开始沿袭过来的.</span></span><br><span class="line">    OutgoingFileMessage message = <span class="keyword">new</span> OutgoingFileMessage(sstable, sequenceNumber.getAndIncrement(), estimatedKeys, sections);</span><br><span class="line">    files.put(message.header.sequenceNumber, message);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>OutgoingFileMessage的类型是FILE,对应messageReceived的会将消息转换为IncommingFileMessage并调用receive:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">OutgoingFileMessage</span><span class="params">(SSTableReader sstable, <span class="keyword">int</span> sequenceNumber, <span class="keyword">long</span> estimatedKeys, List&lt;Pair&lt;Long, Long&gt;&gt; sections)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>(Type.FILE);</span><br><span class="line">    <span class="keyword">this</span>.sstable = sstable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>实际上IncommingFileMessage的StreamMessage也是FILE. 这样Incomming和Outgoing各司其职: Outgoing输出负责序列化,Incomming输入负责反序列化.  </p>
+<ul>
+<li>输出消息OutgoingFileMessage的sstable是SSTableReader, 通过封装成StreamWriter输出.  </li>
+<li>读取消息IncomingFileMessage通过构造StreamReader读取输入流<code>reader.read(in)</code>最终形成SSTableWriter.  </li>
+<li><code>SSTableReader</code>和<code>SSTableWriter</code>均继承<code>SSTable</code>,用于读写SSTable文件, 但是<code>StreamReader</code>和<code>StreamWriter</code>提供的是流的读写/传输. </li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//对输出消息进行序列化(output, write, serialize)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Serializer&lt;OutgoingFileMessage&gt; serializer = <span class="keyword">new</span> Serializer&lt;OutgoingFileMessage&gt;() &#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">serialize</span><span class="params">(OutgoingFileMessage message, WritableByteChannel out, <span class="keyword">int</span> version, StreamSession session)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        DataOutput output = <span class="keyword">new</span> DataOutputStream(Channels.newOutputStream(out));</span><br><span class="line">        FileMessageHeader.serializer.serialize(message.header, output, version);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//包装在OutgoingFileMessage里的sstable是SSTableReader, 最早是在SSTableLoader:SSTableReader.openForBatch打开的.  </span></span><br><span class="line">        <span class="keyword">final</span> SSTableReader reader = message.sstable;</span><br><span class="line">        <span class="comment">//转换成StreamWriter, 为什么不直接是SSTableWriter? 因为要进行序列化和反序列化,用字节流形式即StreamWriter更快.  </span></span><br><span class="line">        StreamWriter writer = message.header.compressionInfo == <span class="keyword">null</span> ? <span class="keyword">new</span> StreamWriter(reader, message.header.sections, session) :</span><br><span class="line">                <span class="keyword">new</span> CompressedStreamWriter(reader, message.header.sections, message.header.compressionInfo, session);</span><br><span class="line">        writer.write(out);</span><br><span class="line">        session.fileSent(message.header);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//读取输入消息反序列化(input, read, deserialize)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Serializer&lt;IncomingFileMessage&gt; serializer = <span class="keyword">new</span> Serializer&lt;IncomingFileMessage&gt;() &#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> IncomingFileMessage <span class="title">deserialize</span><span class="params">(ReadableByteChannel in, <span class="keyword">int</span> version, StreamSession session)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        DataInputStream input = <span class="keyword">new</span> DataInputStream(Channels.newInputStream(in));</span><br><span class="line">        FileMessageHeader header = FileMessageHeader.serializer.deserialize(input, version);</span><br><span class="line">        StreamReader reader = header.compressionInfo == <span class="keyword">null</span> ? <span class="keyword">new</span> StreamReader(header, session) : <span class="keyword">new</span> CompressedStreamReader(header, session);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> IncomingFileMessage(reader.read(in), header);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>FileMessage</th>
+<th>SSTable</th>
+<th>Stream</th>
+<th>IN/OUT</th>
+<th>SER/DESER</th>
+<th>read/write</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OutgoingFileMessage</td>
+<td>SSTableReader</td>
+<td>StreamWriter</td>
+<td>Output</td>
+<td>serialize</td>
+<td>writer.write(out)</td>
+</tr>
+<tr>
+<td>IncomingFileMessage</td>
+<td>SSTableWriter</td>
+<td>StreamReader</td>
+<td>Input</td>
+<td>deserialize</td>
+<td>reader.read(in)</td>
+</tr>
+</tbody>
+</table>
+<p>StreamSession的receive将IncomingFileMessage转换为ReceivedMessage:   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">receive</span><span class="params">(IncomingFileMessage message)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// send back file received message</span></span><br><span class="line">    handler.sendMessage(<span class="keyword">new</span> ReceivedMessage(message.header.cfId, message.header.sequenceNumber));</span><br><span class="line">    receivers.get(message.header.cfId).received(message.sstable);   <span class="comment">//这里message里的sstable是SSTableWriter.  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>receivers相关的StreamReceiveTask是在prepareReceiving创建并加入的(通过StreamSummary,即PREPARE附带的Summary信息).<br>接下来的流程交给了StreamReceiveTask.received方法, 而ReceivedMessage的处理是StreamTransferTask.complete发送方的工作接近完成了.<br>接收sstable文件的方式是用SSTableWriter关闭并打开SSTableReader, 加入到ColumnFamilyStore中,可能的话创建二级索引.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Pair&lt;String, String&gt; kscf = Schema.instance.getCF(task.cfId);</span><br><span class="line">    ColumnFamilyStore cfs = Keyspace.open(kscf.left).getColumnFamilyStore(kscf.right);</span><br><span class="line"></span><br><span class="line">    List&lt;SSTableReader&gt; readers = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    <span class="keyword">for</span> (SSTableWriter writer : task.sstables)</span><br><span class="line">        readers.add(writer.closeAndOpenReader());</span><br><span class="line">    <span class="comment">// add sstables and build secondary indexes</span></span><br><span class="line">    cfs.addSSTables(readers);</span><br><span class="line">    cfs.indexManager.maybeBuildSecondaryIndexes(readers, cfs.indexManager.allIndexesNames());</span><br><span class="line"></span><br><span class="line">    task.session.taskCompleted(task);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/11/11/2015-11-11-Cassandra-Stream/">Cassandra源码分析之Stream</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年11月11日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/11/11/2015-11-11-Cassandra-Stream/" title="Cassandra源码分析之Stream">http://github.com/zqhxuyuan/2015/11/11/2015-11-11-Cassandra-Stream/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/11/11/2015-11-11-Cassandra-Stream/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/11/17/2015-11-17-Cassandra-BulkLoad/">
+        Cassandra Migration Tool
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/11/10/2015-11-10-Cassandra-Client/">
+        Cassandra Client查询优化
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#sstableloader流程"><span class="toc-number">1.</span> <span class="toc-text">sstableloader流程</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/11/11/2015-11-11-Cassandra-Stream/" data-title="Cassandra源码分析之Stream" data-url="http://github.com/zqhxuyuan/2015/11/11/2015-11-11-Cassandra-Stream/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/11/17/2015-11-17-Cassandra-BulkLoad/" title="上一篇: Cassandra Migration Tool">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/11/10/2015-11-10-Cassandra-Client/" title="下一篇: Cassandra Client查询优化">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

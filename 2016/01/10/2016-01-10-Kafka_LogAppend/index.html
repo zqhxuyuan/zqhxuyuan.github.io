@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Kafka源码分析 KafkaApis(LogAppend) | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="KafkaApis源码分析">
+<meta name="keywords" content="kafka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka源码分析 KafkaApis(LogAppend)">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/01/10/2016-01-10-Kafka_LogAppend/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="KafkaApis源码分析">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160119150948872">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160111130308041">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160111182528354">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160111120400346">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160111135542050">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160111143238708">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160112084940190">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160112084837929">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160112084739593">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160111165015556">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160112085010724">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160202163004021">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160112110329315">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.231Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kafka源码分析 KafkaApis(LogAppend)">
+<meta name="twitter:description" content="KafkaApis源码分析">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160119150948872">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2016-01-10-Kafka_LogAppend" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/01/10/2016-01-10-Kafka_LogAppend/" class="article-date">
+  	<time datetime="2016-01-09T16:00:00.000Z" itemprop="datePublished">2016-01-10</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kafka源码分析 KafkaApis(LogAppend)
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Source/">Source</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/">kafka</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>KafkaApis源码分析<br><a id="more"></a></p>
+<h2 id="KafkaApis">KafkaApis</h2><p>上篇KafkaRequestHandler会将Request请求转发给KafkaApis处理:根据不同的请求类型调用不同的方法进行处理.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">KafkaApis</span>(<span class="params">val requestChannel: <span class="type">RequestChannel</span>, val replicaManager: <span class="type">ReplicaManager</span>, val coordinator: <span class="type">GroupCoordinator</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">                val controller: <span class="type">KafkaController</span>, val zkUtils: <span class="type">ZkUtils</span>, val brokerId: <span class="type">Int</span>, val config: <span class="type">KafkaConfig</span>, </span></span></span><br><span class="line"><span class="class"><span class="params">                val metadataCache: <span class="type">MetadataCache</span>, val metrics: <span class="type">Metrics</span>, val authorizer: <span class="type">Option</span>[<span class="type">Authorizer</span>]</span>) </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">handle</span></span>(request: <span class="type">RequestChannel</span>.<span class="type">Request</span>) &#123;</span><br><span class="line">    <span class="type">ApiKeys</span>.forId(request.requestId) <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="type">ApiKeys</span>.<span class="type">PRODUCE</span> =&gt; handleProducerRequest(request)</span><br><span class="line">      <span class="keyword">case</span> <span class="type">ApiKeys</span>.<span class="type">FETCH</span> =&gt; handleFetchRequest(request)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>SocketChannel的RequestChannel用于KafkaApis,因为响应和请求都需要放到RequestChannel的队列中被处理.<br>比如在handle出现异常时,会将Response加入到requestChannel的请求队列中(closeConnection也是一种Resp).</p>
+<h2 id="handleProducerRequest">handleProducerRequest</h2><p>有两个Callback函数定义,但是真正调用是通过①<code>replicaManager.appendMessages</code>触发的:<br>②sendResponseCallback-&gt;③produceResponseCallback-&gt;④ProducerResponse-&gt;⑤requestChannel.sendResponse<br>真正的发送ProducerResponse是在produceResponseCallback中:如果不需要ack,则这一整条链路都不会调用.<br>sendResponseCallback的参数responseStatus是响应状态,所以①中要确保会生成它,然后使用回调的函数调用.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">handleProducerRequest</span></span>(request: <span class="type">RequestChannel</span>.<span class="type">Request</span>) &#123;</span><br><span class="line">  <span class="keyword">val</span> produceRequest = request.requestObj.asInstanceOf[<span class="type">ProducerRequest</span>]</span><br><span class="line">  <span class="keyword">val</span> numBytesAppended = produceRequest.sizeInBytes</span><br><span class="line"></span><br><span class="line">  <span class="comment">//partition是对Map分成两组:有授权的(true)和没有授权的(false).返回值类型是Map(TopicAndPartition-&gt;MessageSet),因为是根据data进行分区的</span></span><br><span class="line">  <span class="keyword">val</span> (authorizedRequestInfo, unauthorizedRequestInfo) =  produceRequest.data.partition  &#123;</span><br><span class="line">    <span class="comment">//data是TopicAndPartition-&gt;MessageSet, 在判断是否授权时不需要MessageSet  </span></span><br><span class="line">    <span class="keyword">case</span> (topicAndPartition, _) =&gt; authorize(request.session, <span class="type">Write</span>, <span class="keyword">new</span> <span class="type">Resource</span>(<span class="type">Topic</span>, topicAndPartition.topic))</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// *************************************************************************</span></span><br><span class="line">  <span class="comment">// ② the callback for sending a produce response 发送Producer的Response的回调函数</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">sendResponseCallback</span></span>(responseStatus: <span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">ProducerResponseStatus</span>]) &#123;</span><br><span class="line">    <span class="comment">// ③ 生成Response的Callback, 即将Response放入RequestChannel的responseQueue中  </span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">produceResponseCallback</span></span>(delayTimeMs: <span class="type">Int</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (produceRequest.requiredAcks == <span class="number">0</span>) &#123;  </span><br><span class="line">        <span class="keyword">if</span> (errorInResponse) &#123;</span><br><span class="line">          requestChannel.closeConnection(request.processor, request)</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          requestChannel.noOperation(request.processor, request)</span><br><span class="line">        &#125;          </span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;  </span><br><span class="line">        <span class="comment">// ④ Producer请求需要等待ack(1,-1), 创建ProducerResponse, 其中mergedResponseStatus来自于responseStatus</span></span><br><span class="line">        <span class="keyword">val</span> response = <span class="type">ProducerResponse</span>(produceRequest.correlationId, mergedResponseStatus, produceRequest.versionId, delayTimeMs)</span><br><span class="line">        <span class="comment">// ⑤ 将响应信息推入到请求通道中, 最后会发送给Producer客户端</span></span><br><span class="line">        requestChannel.sendResponse(<span class="keyword">new</span> <span class="type">RequestChannel</span>.<span class="type">Response</span>(request, <span class="keyword">new</span> <span class="type">RequestOrResponseSend</span>(request.connectionId, response)))</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ③ quotaManagers会调用produceResponseCallback, 它本身做了一些quota限额的工作</span></span><br><span class="line">    quotaManagers(<span class="type">ApiKeys</span>.<span class="type">PRODUCE</span>.id).recordAndMaybeThrottle(produceRequest.clientId, numBytesAppended, produceResponseCallback)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// *************************************************************************</span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">// ① 将回调函数传给replicaManager.appendMessages方法, 所以回调函数真正的调用是在这里的</span></span><br><span class="line">  <span class="keyword">if</span> (authorizedRequestInfo.isEmpty) sendResponseCallback(<span class="type">Map</span>.empty)  <span class="comment">//authorizedRequestInfo是个Map,为空的话,说明没有消息,就不需要append</span></span><br><span class="line">  <span class="keyword">else</span> &#123; <span class="comment">// call the replica manager to append messages to the replicas</span></span><br><span class="line">    replicaManager.appendMessages(produceRequest.ackTimeoutMs.toLong, produceRequest.requiredAcks, internalTopicsAllowed, authorizedRequestInfo, sendResponseCallback)</span><br><span class="line">    produceRequest.emptyData()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>handleProducerRequest处理Producer的请求: 将Request请求转换为ProducerRequest.<br>ProducerRequest含有生产者的<code>Partition-&gt;消息集</code>:authorizedRequestInfo,会被写入到日志中.  </p>
+<p>Producer端的<code>request.required.acks</code>配置项,用来控制什么时候返回响应给客户端:  </p>
+<table>
+<thead>
+<tr>
+<th>acks</th>
+<th>what happen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>The producer never waits for an ack 生产者不会等待一个ack,收到消息后直接返回给客户端</td>
+</tr>
+<tr>
+<td>1</td>
+<td>The producer gets an ack after the leader replica has received the data 当写Leader成功后就返回,其他的replica都是通过fetcher去同步的,所以kafka是异步写</td>
+</tr>
+<tr>
+<td>-1</td>
+<td>The producer gets an ack after all ISRs receive the data 要等待所有的replicas都成功后才能返回. </td>
+</tr>
+</tbody>
+</table>
+<h3 id="responseCallback">responseCallback</h3><p>responseCallback作为参数传入appendMessages方法中,是因为首先要把生产者的消息写到本地日志后,才能判断是否要发送响应给客户端.<br>接着还有一种情况是延迟的操作,则回调函数的调用又会被拖后到DelayedOperation.onComplete时.<br>由于responseCallback回到函数需要一个表示响应状态的参数,因此这里要负责生成responseStatus.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">appendMessages</span></span>(timeout: <span class="type">Long</span>, requiredAcks: <span class="type">Short</span>, internalTopicsAllowed: <span class="type">Boolean</span>, </span><br><span class="line">                   messagesPerPartition: <span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">MessageSet</span>], </span><br><span class="line">                   responseCallback: <span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">ProducerResponseStatus</span>] =&gt; <span class="type">Unit</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (isValidRequiredAcks(requiredAcks)) &#123;</span><br><span class="line">    <span class="comment">// 首先追加到本地日志中... appendToLocalLog, 然后判断是否要立即返回响应给客户端. 对于acks=-1, 需要延迟.</span></span><br><span class="line">    <span class="keyword">if</span> (delayedRequestRequired(requiredAcks, messagesPerPartition, localProduceResults)) &#123;</span><br><span class="line">      <span class="comment">// 创建延迟的DelayedProduce, 在完成后, 调用onComplete, 也会触发responseCallback的回调</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// we can respond immediately 对于acks=0,1的情况, 现在可以返回响应给客户端了</span></span><br><span class="line">      <span class="keyword">val</span> produceResponseStatus = produceStatus.mapValues(status =&gt; status.responseStatus)</span><br><span class="line">      responseCallback(produceResponseStatus)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160119150948872" alt="k_resp_callback"></p>
+<h3 id="ReplicaManager-appendMessages">ReplicaManager.appendMessages</h3><ul>
+<li>将消息追加到Partition的leader replicas, 并且等待它们复制到其他副本上.</li>
+<li>回调函数只有在超时或者需要acks时才会被调用</li>
+</ul>
+<p>由于Producer客户端在发送ClientRequest的时候已经根据Partition找到了所属的Leader,<br>所以ClientRequest一定是发送给Leader节点的SocketServer的(也是KafkaServer节点),<br>所以接收ProducerRequest一定是消息的Partition对应的Leader节点,可以放心地往本地写数据.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">appendMessages</span></span>(timeout: <span class="type">Long</span>, requiredAcks: <span class="type">Short</span>, internalTopicsAllowed: <span class="type">Boolean</span>, </span><br><span class="line">                   messagesPerPartition: <span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">MessageSet</span>], </span><br><span class="line">                   responseCallback: <span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">ProducerResponseStatus</span>] =&gt; <span class="type">Unit</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (isValidRequiredAcks(requiredAcks)) &#123;</span><br><span class="line">    <span class="comment">// 添加到本地日志(为什么是本地? 本地指的是KafkaServer节点, 同时也是TopicAndPartition的Leader节点)   </span></span><br><span class="line">    <span class="keyword">val</span> localProduceResults = appendToLocalLog(internalTopicsAllowed, messagesPerPartition, requiredAcks)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 下面是response的一些处理, 数据在appendToLocalLog方法中已经被成功地写入到Leader节点了...</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>messagesPerPartition因为是TopicAndPartition到消息集的映射, topic用于验证是否能够允许写.<br>Partition是消息最终存储的所在文件夹,调用partition.appendMessagesToLeader(messages),<br>表示将消息messages追加到指定的这个partition(而这个Partition一定是Leader replicas).  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">appendToLocalLog</span></span>(internalTopicsAllowed: <span class="type">Boolean</span>, </span><br><span class="line">                             messagesPerPartition: <span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">MessageSet</span>],</span><br><span class="line">                             requiredAcks: <span class="type">Short</span>): <span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">LogAppendResult</span>] = &#123;</span><br><span class="line">  messagesPerPartition.map &#123; <span class="keyword">case</span> (topicAndPartition, messages) =&gt;</span><br><span class="line">    <span class="comment">// reject appending to internal topics if it is not allowed. </span></span><br><span class="line">    <span class="keyword">if</span> (!<span class="type">Topic</span>.<span class="type">InternalTopics</span>.contains(topicAndPartition.topic) || internalTopicsAllowed) &#123;</span><br><span class="line">        <span class="keyword">val</span> partitionOpt = getPartition(topicAndPartition.topic, topicAndPartition.partition)</span><br><span class="line">        <span class="keyword">val</span> info = partitionOpt <span class="keyword">match</span> &#123;</span><br><span class="line">          <span class="keyword">case</span> <span class="type">Some</span>(partition) =&gt; partition.appendMessagesToLeader(messages.asInstanceOf[<span class="type">ByteBufferMessageSet</span>], requiredAcks)</span><br><span class="line">        &#125;</span><br><span class="line">        (topicAndPartition, <span class="type">LogAppendResult</span>(info))</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>topicAndPartition的源头是由Producer客户端构造的,服务端需要根据topic和partitionId构造出属于自己的Partition用于写日志<br>Partition是怎么来的:getOrCreatePartition的调用链=<code>becomeLeaderOrFollower</code>&lt;-KafkaApis.handleLeaderAndIsrRequest</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> allPartitions = <span class="keyword">new</span> <span class="type">Pool</span>[(<span class="type">String</span>, <span class="type">Int</span>), <span class="type">Partition</span>]</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getOrCreatePartition</span></span>(topic: <span class="type">String</span>, partitionId: <span class="type">Int</span>): <span class="type">Partition</span> = &#123;</span><br><span class="line">  <span class="keyword">var</span> partition = allPartitions.get((topic, partitionId))</span><br><span class="line">  <span class="keyword">if</span> (partition == <span class="literal">null</span>) &#123;</span><br><span class="line">    allPartitions.putIfNotExists((topic, partitionId), <span class="keyword">new</span> <span class="type">Partition</span>(topic, partitionId, time, <span class="keyword">this</span>))</span><br><span class="line">    partition = allPartitions.get((topic, partitionId))</span><br><span class="line">  &#125;</span><br><span class="line">  partition</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getPartition</span></span>(topic: <span class="type">String</span>, partitionId: <span class="type">Int</span>): <span class="type">Option</span>[<span class="type">Partition</span>] = &#123;</span><br><span class="line">  <span class="keyword">val</span> partition = allPartitions.get((topic, partitionId))</span><br><span class="line">  <span class="keyword">if</span> (partition == <span class="literal">null</span>) <span class="type">None</span> <span class="keyword">else</span> <span class="type">Some</span>(partition)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Partition-appendMessagesToLeader">Partition.appendMessagesToLeader</h3><p>消息写到Partition的Leader replica,在确定Partition的Replica后,往Replication的Log实例追加数据.<br>调用链从ReplicationManager -&gt; Partition -&gt; Replica -&gt; Log, 消息messages最终写到日志文件中.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160111130308041" alt="k_append"></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">appendMessagesToLeader</span></span>(messages: <span class="type">ByteBufferMessageSet</span>, requiredAcks: <span class="type">Int</span> = <span class="number">0</span>) = &#123;</span><br><span class="line">  <span class="keyword">val</span> (info, leaderHWIncremented) = inReadLock(leaderIsrUpdateLock) &#123;</span><br><span class="line">    <span class="keyword">val</span> leaderReplicaOpt = leaderReplicaIfLocal()</span><br><span class="line">    leaderReplicaOpt <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="type">Some</span>(leaderReplica) =&gt;</span><br><span class="line">        <span class="keyword">val</span> log = leaderReplica.log.get</span><br><span class="line">        <span class="keyword">val</span> minIsr = log.config.minInSyncReplicas</span><br><span class="line">        <span class="keyword">val</span> inSyncSize = inSyncReplicas.size</span><br><span class="line">        <span class="comment">// Avoid writing to leader if there are not enough insync replicas to make it safe</span></span><br><span class="line">        <span class="keyword">if</span> (inSyncSize &lt; minIsr &amp;&amp; requiredAcks == <span class="number">-1</span>) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">NotEnoughReplicasException</span>(<span class="string">"Number of insync replicas below required minimum"</span>)</span><br><span class="line">        <span class="keyword">val</span> info = log.append(messages, assignOffsets = <span class="literal">true</span>)</span><br><span class="line">        replicaManager.tryCompleteDelayedFetch(<span class="keyword">new</span> <span class="type">TopicPartitionOperationKey</span>(<span class="keyword">this</span>.topic, <span class="keyword">this</span>.partitionId))</span><br><span class="line">        (info, maybeIncrementLeaderHW(leaderReplica))</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (leaderHWIncremented) tryCompleteDelayedRequests()   <span class="comment">// some delayed operations may be unblocked after HW changed</span></span><br><span class="line">  info</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>leaderReplicaIfLocal</strong>  </p>
+<p>判断leaderReplica是否是本地的, 是比较leaderReplicaIdOpt(这个变量是volatile)和localBrokerId是否相同.<br>localBrokerId在Kafka节点启动时就是确定的,即同一个KafkaServer节点的所有Partition的BrokerId都是相等的.<br>而leaderReplicaIdOpt会在<code>makeLeader</code>和<code>makeFollower</code>中被修改(也都被becomeLeaderOrFollower调用)  </p>
+<p>assignedReplicaMap(AR)是一个Map:<code>&lt;BrokerId, Replica&gt;</code>.因为一个Partition的Replication有Leader和Follower.<br>它们都是分布在不同的Broker节点上.所以Partition持有所有这些Replication,就可以知道Replication的分布情况.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Partition</span>(<span class="params">val topic: <span class="type">String</span>, val partitionId: <span class="type">Int</span>, time: <span class="type">Time</span>, replicaManager: <span class="type">ReplicaManager</span></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> localBrokerId = replicaManager.config.brokerId    <span class="comment">//KafkaServer当前节点的BrokerId</span></span><br><span class="line">  <span class="meta">@volatile</span> <span class="keyword">var</span> leaderReplicaIdOpt: <span class="type">Option</span>[<span class="type">Int</span>] = <span class="type">None</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> assignedReplicaMap = <span class="keyword">new</span> <span class="type">Pool</span>[<span class="type">Int</span>, <span class="type">Replica</span>]</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">leaderReplicaIfLocal</span></span>(): <span class="type">Option</span>[<span class="type">Replica</span>] = &#123;</span><br><span class="line">    leaderReplicaIdOpt <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="type">Some</span>(leaderReplicaId) =&gt; <span class="keyword">if</span> (leaderReplicaId == localBrokerId) getReplica(localBrokerId) <span class="keyword">else</span> <span class="type">None</span></span><br><span class="line">      <span class="keyword">case</span> <span class="type">None</span> =&gt; <span class="type">None</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;  </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">getReplica</span></span>(replicaId: <span class="type">Int</span> = localBrokerId): <span class="type">Option</span>[<span class="type">Replica</span>] = &#123;</span><br><span class="line">    <span class="keyword">val</span> replica = assignedReplicaMap.get(replicaId)</span><br><span class="line">    <span class="keyword">if</span> (replica == <span class="literal">null</span>) <span class="type">None</span> <span class="keyword">else</span> <span class="type">Some</span>(replica)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>问题: 具体Replica是如何被创建出来的, 以及local和remote的含义分别是什么? 会在下一篇介绍.  </p>
+</blockquote>
+<h3 id="Log-append">Log.append</h3><p>将消息转换为LogAppendInfo,并交给Log中最新的Segment处理,因为一个Partition的Log分成多个Segment.<br>追加消息只到最新的Segment中,旧的Segment一旦关闭后,就不能再添加数据.所以必要的话会创建新的Segment.  </p>
+<ul>
+<li>① LogOffsetMetadata(Log的Offset元数据)的当前值作为本次LogAppendInfo的firstOffset</li>
+<li>② 给MessageSet分配Offset: 每条消息的offset都是单调递增的</li>
+<li>③ LogAppendInfo的lastOffset是这一批消息的最后一条消息的offset</li>
+<li>④ 添加消息到当前或者新创建的Segment</li>
+<li>⑤ 更新Log End Offset为当前最后一条消息的offset的下一条</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@volatile</span> <span class="keyword">var</span> nextOffsetMetadata = <span class="keyword">new</span> <span class="type">LogOffsetMetadata</span>(activeSegment.nextOffset(), activeSegment.baseOffset, activeSegment.size.toInt)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">append</span></span>(messages: <span class="type">ByteBufferMessageSet</span>, assignOffsets: <span class="type">Boolean</span> = <span class="literal">true</span>): <span class="type">LogAppendInfo</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> appendInfo = analyzeAndValidateMessageSet(messages)</span><br><span class="line">  <span class="comment">// trim any invalid bytes or partial messages before appending it to the on-disk log</span></span><br><span class="line">  <span class="keyword">var</span> validMessages = trimInvalidBytes(messages, appendInfo)</span><br><span class="line">  appendInfo.firstOffset = nextOffsetMetadata.messageOffset   <span class="comment">// ① 第一条消息的offset</span></span><br><span class="line">  <span class="keyword">if</span>(assignOffsets) &#123;                                         <span class="comment">// ② assign offsets to the message set 每条消息的offset都是递增的</span></span><br><span class="line">    <span class="keyword">val</span> offset = <span class="keyword">new</span> <span class="type">AtomicLong</span>(nextOffsetMetadata.messageOffset)</span><br><span class="line">    validMessages = validMessages.validateMessagesAndAssignOffsets(offset, appendInfo.sourceCodec, appendInfo.targetCodec, config.compact)</span><br><span class="line">    appendInfo.lastOffset = offset.get - <span class="number">1</span>                    <span class="comment">// ③ 最后一条消息的offset</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">val</span> segment = maybeRoll(validMessages.sizeInBytes)          <span class="comment">// maybe roll the log if this segment is full</span></span><br><span class="line">  segment.append(appendInfo.firstOffset, validMessages)       <span class="comment">// ④ now append to the log</span></span><br><span class="line">  updateLogEndOffset(appendInfo.lastOffset + <span class="number">1</span>)               <span class="comment">// ⑤ increment the log end offset      </span></span><br><span class="line">  <span class="keyword">if</span>(unflushedMessages &gt;= config.flushInterval) flush()       <span class="comment">// 刷新</span></span><br><span class="line">  appendInfo</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 直接修改nextOffsetMetadata实例, 获取messageOffset时比读取文件要快</span></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">updateLogEndOffset</span></span>(messageOffset: <span class="type">Long</span>) &#123;</span><br><span class="line">  nextOffsetMetadata = <span class="keyword">new</span> <span class="type">LogOffsetMetadata</span>(messageOffset, activeSegment.baseOffset, activeSegment.size.toInt)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>追加一批消息,开始时从LogOffsetMetadata获取最新的messageoffset,<br>最后更新LogOffsetMetadata的messageOffset为<code>最后一条消息的offset+1</code>,<br>这样下一次从LogOffsetMetadata获取的messageOffset是紧接着上一次的offset之后.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160111182528354" alt="k_messageoffset"></p>
+<h4 id="MessageSet">MessageSet</h4><p><code>MessageSet</code>: A set of messages with offsets. The format of each message is as follows:</p>
+<ul>
+<li>8 byte message <code>offset</code> number</li>
+<li>4 byte <code>size</code> containing an integer N</li>
+<li>N byte <code>message</code></li>
+</ul>
+<p><code>Message</code>: The format of an N byte message is the following:</p>
+<ul>
+<li>4 byte CRC32 of the message</li>
+<li>1 byte “magic” identifier to allow format changes, value is 0 currently</li>
+<li>1 byte “attributes” identifier(compression enabled, type of codec used)</li>
+<li>4 byte <code>key length</code>, containing length K</li>
+<li>K byte <code>key</code></li>
+<li>4 byte <code>payload length</code>, containing length V</li>
+<li>V byte <code>payload</code></li>
+</ul>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160111120400346" alt="k_messageset"></p>
+<p>ByteBufferMessageSet的shallowIterator返回MessageAndOffset迭代器,验证集合中的每条消息是否合法.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">shallowIterator</span></span>: <span class="type">Iterator</span>[<span class="type">MessageAndOffset</span>] = internalIterator(<span class="literal">true</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">internalIterator</span></span>(isShallow: <span class="type">Boolean</span> = <span class="literal">false</span>): <span class="type">Iterator</span>[<span class="type">MessageAndOffset</span>] = &#123;</span><br><span class="line">  <span class="keyword">new</span> <span class="type">IteratorTemplate</span>[<span class="type">MessageAndOffset</span>] &#123;</span><br><span class="line">    <span class="keyword">var</span> topIter = buffer.slice()                      <span class="comment">// buffer是MessageSetByteBuffer</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">makeNextOuter</span></span>: <span class="type">MessageAndOffset</span> = &#123;</span><br><span class="line">      <span class="keyword">if</span> (topIter.remaining &lt; <span class="number">12</span>) <span class="keyword">return</span> allDone()    <span class="comment">// if there isn't at least an offset and size, we are done. 至少要有8+4=12bytes</span></span><br><span class="line">      <span class="keyword">val</span> offset = topIter.getLong()                  <span class="comment">// 读取8bytes(Long类型)的offset的值</span></span><br><span class="line">      <span class="keyword">val</span> size = topIter.getInt()                     <span class="comment">// 读取4bytes(Int类型)的size的值, 这个值是Message的字节大小</span></span><br><span class="line">      <span class="keyword">if</span>(size &lt; <span class="type">Message</span>.<span class="type">MinHeaderSize</span>) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="type">InvalidMessageException</span>()    <span class="comment">// Message的Header部分(除了Key,Value的内容). 即size必须&gt;=HeaderSize</span></span><br><span class="line">      <span class="keyword">if</span>(topIter.remaining &lt; size) <span class="keyword">return</span> allDone()   <span class="comment">// we have an incomplete message</span></span><br><span class="line">      <span class="keyword">val</span> message = topIter.slice()                   <span class="comment">// read the current message and check correctness</span></span><br><span class="line">      message.limit(size)                             <span class="comment">// size表示消息的大小(N)</span></span><br><span class="line">      topIter.position(topIter.position + size)       <span class="comment">// 通过上面的slice,已经定位到这条消息的头部,再加上size, 定位到的是下一条消息的位置</span></span><br><span class="line">      <span class="keyword">val</span> newMessage = <span class="keyword">new</span> <span class="type">Message</span>(message)           <span class="comment">// 已经得到了Message的完整内容了(ByteBuffer)</span></span><br><span class="line">      <span class="keyword">new</span> <span class="type">MessageAndOffset</span>(newMessage, offset)        <span class="comment">// Message和offset组合成MessageAndOffset</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">makeNext</span></span>(): <span class="type">MessageAndOffset</span> = makeNextOuter</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="analyzeAndValidateMessageSet">analyzeAndValidateMessageSet</h4><p>除了检查每条消息是否和CRC匹配,消息的大小是否有效,还返回了如下信息:  </p>
+<ul>
+<li>First offset in the message set 消息集中第一个offset</li>
+<li>Last offset in the message set 消息集中最后一个offset</li>
+<li>Number of messages 消息数量</li>
+<li>Number of valid bytes 有效字节数</li>
+<li>Whether the offsets are monotonically increasing 偏移量是否单调递增</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">analyzeAndValidateMessageSet</span></span>(messages: <span class="type">ByteBufferMessageSet</span>): <span class="type">LogAppendInfo</span> = &#123;</span><br><span class="line">  <span class="keyword">var</span> shallowMessageCount = <span class="number">0</span>             <span class="comment">// 消息数量</span></span><br><span class="line">  <span class="keyword">var</span> validBytesCount = <span class="number">0</span>                 <span class="comment">// 有效字节数</span></span><br><span class="line">  <span class="keyword">var</span> firstOffset, lastOffset = <span class="number">-1</span>L       <span class="comment">// 第一条消息和最后一条(在循环时表示上一条消息的offset)消息的offset</span></span><br><span class="line">  <span class="keyword">var</span> monotonic = <span class="literal">true</span>                    <span class="comment">// 是否单调变化(单调递增)</span></span><br><span class="line">  <span class="keyword">for</span>(messageAndOffset &lt;- messages.shallowIterator) &#123;</span><br><span class="line">    <span class="keyword">if</span>(firstOffset &lt; <span class="number">0</span>) firstOffset = messageAndOffset.offset     <span class="comment">// update the first offset if on the first message</span></span><br><span class="line">    <span class="keyword">if</span>(lastOffset &gt;= messageAndOffset.offset) monotonic = <span class="literal">false</span>   <span class="comment">// check that offsets are monotonically increasing</span></span><br><span class="line">    lastOffset = messageAndOffset.offset                          <span class="comment">// update the last offset seen</span></span><br><span class="line">    <span class="keyword">val</span> m = messageAndOffset.message</span><br><span class="line">    <span class="keyword">val</span> messageSize = <span class="type">MessageSet</span>.entrySize(m)                     <span class="comment">// Check if the message sizes are valid.</span></span><br><span class="line">    m.ensureValid()                                               <span class="comment">// check the validity of the message by checking CRC      </span></span><br><span class="line">    shallowMessageCount += <span class="number">1</span></span><br><span class="line">    validBytesCount += messageSize</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="type">LogAppendInfo</span>(firstOffset, lastOffset, sourceCodec, targetCodec, shallowMessageCount, validBytesCount, monotonic)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>因为MessageSet包含多条Message.firstoOffset&lt;0只会在第一条消息时执行,firstOffset=第一条消息的offset.<br>lastOffset在遍历每条消息时,都更改为当前消息的offset. 初始时为-1,不执行if, 并赋值为第一条消息的offset,<br>第二条消息时,lastOffset是第一条消息的offset,messageAndOffset现在是第二条消息,如果是单调递增的offset,<br>越往后消息的offset都比前一条offset要高,则if语句同样都不会执行.直到最后一条消息的offset设置为lastOffset.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160111135542050" alt="k_msgvalid"></p>
+<h4 id="validateMessagesAndAssignOffsets">validateMessagesAndAssignOffsets</h4><p>LogAppendInfo的firstOffset虽然上面已经计算出来了,但是真正是由LogOffsetMetadata.messageOffset确定的<br>lastOffset也要根据初始化值重新计算:<code>offsetCounter</code>在循环每条消息时不断递增1,代表的是下一条消息的offset.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160111143238708" alt="k_offsetcounter"></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[kafka] <span class="function"><span class="keyword">def</span> <span class="title">validateMessagesAndAssignOffsets</span></span>(offsetCounter: <span class="type">AtomicLong</span>, sourceCodec: <span class="type">CompressionCodec</span>, targetCodec: <span class="type">CompressionCodec</span>, compactedTopic: <span class="type">Boolean</span> = <span class="literal">false</span>): <span class="type">ByteBufferMessageSet</span> = &#123;</span><br><span class="line">  <span class="keyword">if</span>(sourceCodec == <span class="type">NoCompressionCodec</span> &amp;&amp; targetCodec == <span class="type">NoCompressionCodec</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> messagePosition = <span class="number">0</span></span><br><span class="line">    buffer.mark()         <span class="comment">// 先标记</span></span><br><span class="line">    <span class="keyword">while</span>(messagePosition &lt; sizeInBytes - <span class="type">MessageSet</span>.<span class="type">LogOverhead</span>) &#123;</span><br><span class="line">      buffer.position(messagePosition)                            <span class="comment">// 定位到MessageSet中代表每条消息的开头位置,从0开始</span></span><br><span class="line">      buffer.putLong(offsetCounter.getAndIncrement())             <span class="comment">// offsetCounter是每条消息都增加1(8bytes), 现在指针到了size的开头</span></span><br><span class="line">      <span class="keyword">val</span> messageSize = buffer.getInt()                           <span class="comment">// offset后面跟的是消息的大小size(4bytes), 读取出值=是消息的字节数</span></span><br><span class="line">      <span class="keyword">val</span> positionAfterKeySize = buffer.position + <span class="type">Message</span>.<span class="type">KeySizeOffset</span> + <span class="type">Message</span>.<span class="type">KeySizeLength</span>  <span class="comment">// pos是Message消息的位置,就size的末尾 </span></span><br><span class="line">      <span class="keyword">if</span> (compactedTopic &amp;&amp; positionAfterKeySize &lt; sizeInBytes) &#123;  </span><br><span class="line">        buffer.position(buffer.position() + <span class="type">Message</span>.<span class="type">KeySizeOffset</span>)<span class="comment">// 放到Message消息的Key-Length的开头     </span></span><br><span class="line">        <span class="keyword">val</span> keySize = buffer.getInt()                             <span class="comment">// 读取4bytes,即key-length的内容 </span></span><br><span class="line">      &#125;</span><br><span class="line">      messagePosition += <span class="type">MessageSet</span>.<span class="type">LogOverhead</span> + messageSize     <span class="comment">// 更新messagePosition为下一条消息做准备(8+消息大小表示MessageSet中一条完整的消息)</span></span><br><span class="line">    &#125;</span><br><span class="line">    buffer.reset()        <span class="comment">// 重置的时候, 回到最开始标记的地方</span></span><br><span class="line">    <span class="keyword">this</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在遍历完MessageSet后,offset的值是初始值+所有消息数量, 最后更新下LogAppendInfo的lastOffset.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">appendInfo.firstOffset = nextOffsetMetadata.messageOffset</span><br><span class="line"><span class="keyword">if</span>(assignOffsets) &#123; <span class="comment">// assign offsets to the message set</span></span><br><span class="line">  <span class="keyword">val</span> offset = <span class="keyword">new</span> <span class="type">AtomicLong</span>(nextOffsetMetadata.messageOffset)</span><br><span class="line">  validMessages = validMessages.validateMessagesAndAssignOffsets(offset, appendInfo.sourceCodec, appendInfo.targetCodec, config.compact)</span><br><span class="line">  appendInfo.lastOffset = offset.get - <span class="number">1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>为什么在最后要减去1: 因为每条消息的offsetCounter在获取后就递增1,所以它表示的是下一条消息的offset.<br>假设初始值nextOffsetMetadata的offset=10,第一条消息的offset=10,递增1;第二条消息的offset=11,递增1.<br>假设有5条消息,最后的offset返回值=15,而实际上最有一条消息的offset=lastOffset应该是15-1=14  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">            |message1|message2|message3|message4|message5</span><br><span class="line">offset      10        11       12       13       14   &lt;- lastOffset</span><br><span class="line">increment   11        12       13       14       15   &lt;- offsetCounter</span><br></pre></td></tr></table></figure>
+<h4 id="LogSegment_Roll">LogSegment Roll</h4><p>发生Roll是有一定时机的:  </p>
+<ul>
+<li>当前Segment+本次需要追加的消息大小超过Segment的阈值</li>
+<li>索引满了(Segment是由log和index组成, 不仅log满了要Roll, index满了也要Roll)</li>
+<li>离上次创建Segment的时间到达一定需要滚动的时间</li>
+</ul>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160112084940190" alt="k_segment_roll"></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> segments: <span class="type">ConcurrentNavigableMap</span>[java.lang.<span class="type">Long</span>, <span class="type">LogSegment</span>] = <span class="keyword">new</span> <span class="type">ConcurrentSkipListMap</span>[java.lang.<span class="type">Long</span>, <span class="type">LogSegment</span>]</span><br><span class="line">loadSegments()        <span class="comment">// 加载Segments,会填充到segments链式Map中(因为Map是无序的,而Segment是有序的,所以要使用List)</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">activeSegment</span> </span>= segments.lastEntry.getValue               <span class="comment">// The active segment that is currently taking appends 最后一个Segment是当前活动的</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">logEndOffset</span></span>: <span class="type">Long</span> = nextOffsetMetadata.messageOffset     <span class="comment">// The offset of the next message that will be appended to the log 添加到日志中下一条消息的offset</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">maybeRoll</span></span>(messagesSize: <span class="type">Int</span>): <span class="type">LogSegment</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> segment = activeSegment     <span class="comment">// segments中最后一个Segment, 总是以最后一个Segment看是否到达Roll条件       </span></span><br><span class="line">  <span class="keyword">if</span> (segment.size &gt; config.segmentSize - messagesSize || segment.index.isFull || segment.size &gt; <span class="number">0</span> &amp;&amp; time.milliseconds - segment.created &gt; config.segmentMs - segment.rollJitterMs) &#123;</span><br><span class="line">    roll()            <span class="comment">// 创建新的Segment, 此时如果调用activeSegment(这是一个方法哦), 得到的就是这个新创建的Segment</span></span><br><span class="line">  &#125; <span class="keyword">else</span> segment      <span class="comment">// 使用当前的Segment,不需要创建新的Segment</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当需要(滚动地)创建一个新的Segment,以当前的<code>logEndOffset</code>为起点,作为新Segment的<code>segmentBaseOffset</code>.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">roll</span></span>(): <span class="type">LogSegment</span> = &#123;</span><br><span class="line">  lock synchronized &#123;</span><br><span class="line">    <span class="keyword">val</span> newOffset = logEndOffset                      <span class="comment">// 最新的offset</span></span><br><span class="line">    <span class="keyword">val</span> logFile = logFilename(dir, newOffset)         <span class="comment">// Segment包括了log数据文件和index索引文件         </span></span><br><span class="line">    <span class="keyword">val</span> indexFile = indexFilename(dir, newOffset)     <span class="comment">// Segment的baseOffset会作为这个Segment的log文件和index文件的文件名称</span></span><br><span class="line">  </span><br><span class="line">    segments.lastEntry() <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="literal">null</span> =&gt;                                    <span class="comment">// 新创建的Segment</span></span><br><span class="line">      <span class="keyword">case</span> entry =&gt; &#123;</span><br><span class="line">        entry.getValue.index.trimToValidSize()        <span class="comment">// 对index和log都trim截断</span></span><br><span class="line">        entry.getValue.log.trim()</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">val</span> segment = <span class="keyword">new</span> <span class="type">LogSegment</span>(dir,  startOffset = newOffset, ...)</span><br><span class="line">    <span class="keyword">val</span> prev = addSegment(segment)                    <span class="comment">// 将新创建的Segment添加到segments Map中</span></span><br><span class="line">    <span class="comment">// We need to update the segment base offset and append position data of the metadata when log rolls. The next offset should not change.</span></span><br><span class="line">    updateLogEndOffset(nextOffsetMetadata.messageOffset)</span><br><span class="line">    <span class="comment">// schedule an asynchronous flush of the old segment</span></span><br><span class="line">    scheduler.schedule(<span class="string">"flush-log"</span>, () =&gt; flush(newOffset), delay = <span class="number">0</span>L)</span><br><span class="line">    segment</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Add the given segment to the segments in this log. If this segment replaces an existing segment, delete it.</span></span><br><span class="line"><span class="comment">// segments的Key是每个Segment的baseOffset, 所以一个Partition中所有Segment的baseOffset都是不同的,代表了它的第一条消息在Partition中的绝对offset</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">addSegment</span></span>(segment: <span class="type">LogSegment</span>) = <span class="keyword">this</span>.segments.put(segment.baseOffset, segment)</span><br></pre></td></tr></table></figure>
+<p>每个Segment由log和index组成,log是FileMessageSet,含有真正的消息.index是OffsetIndex:逻辑的offset到物理文件位置的索引.<br>Segment间有这样的关系:之前任何的segment的offset &lt; 每个Segment的baseOffset &lt;= 当前Segment任何消息最小的offset.  </p>
+<ul>
+<li>当前Segment的第一条消息的offset会作为这个Segment中所有消息的segmentBaseOffset  </li>
+<li>所以右边的式子成立,最小的offset=segmentBaseOffset, 后面消息的offset一定大于这个值</li>
+<li>每个Segment都是按照时间顺序创建的,后面的Segment的最小的baseOffset一定大于前面的Segment的最大的offset</li>
+</ul>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160112084837929" alt="k_segment_order"></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LogSegment</span>(<span class="params">val log: <span class="type">FileMessageSet</span>, val index: <span class="type">OffsetIndex</span>, </span></span></span><br><span class="line"><span class="class"><span class="params">                 val baseOffset: <span class="type">Long</span>,  val indexIntervalBytes: <span class="type">Int</span>, val rollJitterMs: <span class="type">Long</span>, time: <span class="type">Time</span></span>)</span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">this</span></span>(dir: <span class="type">File</span>, startOffset: <span class="type">Long</span>, indexIntervalBytes: <span class="type">Int</span>, maxIndexSize: <span class="type">Int</span>, rollJitterMs: <span class="type">Long</span>, time: <span class="type">Time</span>, fileAlreadyExists: <span class="type">Boolean</span> = <span class="literal">false</span>, initFileSize: <span class="type">Int</span> = <span class="number">0</span>, preallocate: <span class="type">Boolean</span> = <span class="literal">false</span>) =</span><br><span class="line">    <span class="keyword">this</span>(<span class="keyword">new</span> <span class="type">FileMessageSet</span>(file = <span class="type">Log</span>.logFilename(dir, startOffset), fileAlreadyExists = fileAlreadyExists, initFileSize = initFileSize, preallocate = preallocate),</span><br><span class="line">         <span class="keyword">new</span> <span class="type">OffsetIndex</span>(file = <span class="type">Log</span>.indexFilename(dir, startOffset), baseOffset = startOffset, maxIndexSize = maxIndexSize),</span><br><span class="line">         startOffset, indexIntervalBytes, rollJitterMs, time)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>updateLogEndOffset</strong>  </p>
+<p>有两个地方调用了updateLogEndOffset, 第一次就是上面在addSegment之后(貌似取值后又设置进去,没啥变化),<br>第二次是在往Segment添加消息之后(更新为LogAppendInfo.lastOffset+1,即最后一条消息的offset的下一个)  </p>
+<p>实际上在addSegment之后,activeSegment会变成新创建的那个Segment.虽然messageOffset没有变化,但是后面两个都变了.    </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">updateLogEndOffset</span></span>(messageOffset: <span class="type">Long</span>) &#123;</span><br><span class="line">  nextOffsetMetadata = <span class="keyword">new</span> <span class="type">LogOffsetMetadata</span>(messageOffset, activeSegment.baseOffset, activeSegment.size.toInt)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也就是说追加到roll segment,发生了两次updateLogEndOffset,而如果是已有的Segment,则只有一次update操作.<br>每次update操作都是新创建一个LogOffsetMetadata对象,nextOffsetMetadata是一个var变量,表示下一个offset的元数据.  </p>
+<p>虽然LogOffsetMetadata创建的时机不是很稳定的, 但是它的作用域仍然是整个<code>Partition</code>范围的.<br>因为它的messageOffset要不断地更新:即使没有创建Segment,在每次追加数据到已有Segment后都要<br>执行<code>updateLogEndOffset(appendInfo.lastOffset + 1)</code>, 将messages最后一条消息的下一个作为其<br>messageOffset,正如变量名<code>nextOffsetMetadata</code>,表示的是下一个offset:<code>nextOffset</code>的元数据信息</p>
+<blockquote>
+<p>注意:在同一批messages中,并不需要每条消息都要更新LogEndOffset,只有不同批次的messages才需要更新.</p>
+</blockquote>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160112084739593" alt="k_updateLogEndOffset"></p>
+<h4 id="LogOffsetMetadata">LogOffsetMetadata</h4><ul>
+<li>[1] the message offset 消息的偏移量,可以认为是绝对偏移量,即同一个Partition的所有Segment的绝对偏移位置</li>
+<li>[2] the base message offset of the located segment 当前Segment的base offset.可以认为是相对偏移量</li>
+<li>[3] the physical position on the located segment 在Segment中的物理位置,用于读取消息的具体内容</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">LogOffsetMetadata</span>(<span class="params">messageOffset: <span class="type">Long</span>, segmentBaseOffset: <span class="type">Long</span> = <span class="type">LogOffsetMetadata</span>.<span class="type">UnknownSegBaseOffset</span>, relativePositionInSegment: <span class="type">Int</span> = <span class="type">LogOffsetMetadata</span>.<span class="type">UnknownFilePosition</span></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// check if this offset is already on an older segment compared with the given offset</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">offsetOnOlderSegment</span></span>(that: <span class="type">LogOffsetMetadata</span>): <span class="type">Boolean</span> = <span class="keyword">this</span>.segmentBaseOffset &lt; that.segmentBaseOffset</span><br><span class="line">  <span class="comment">// check if this offset is on the same segment with the given offset</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">offsetOnSameSegment</span></span>(that: <span class="type">LogOffsetMetadata</span>): <span class="type">Boolean</span> = <span class="keyword">this</span>.segmentBaseOffset == that.segmentBaseOffset</span><br><span class="line"></span><br><span class="line">  <span class="comment">// check if this offset is before the given offset</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">precedes</span></span>(that: <span class="type">LogOffsetMetadata</span>): <span class="type">Boolean</span> = <span class="keyword">this</span>.messageOffset &lt; that.messageOffset</span><br><span class="line">  <span class="comment">// compute the number of messages between this offset to the given offset</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">offsetDiff</span></span>(that: <span class="type">LogOffsetMetadata</span>): <span class="type">Long</span> = <span class="keyword">this</span>.messageOffset - that.messageOffset</span><br><span class="line"></span><br><span class="line">  <span class="comment">// compute the number of bytes between this offset to the given offset if they are on the same segment and this offset precedes the given offset</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">positionDiff</span></span>(that: <span class="type">LogOffsetMetadata</span>): <span class="type">Int</span> = <span class="keyword">this</span>.relativePositionInSegment - that.relativePositionInSegment</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>因为baseOffset是是第一条消息的offset,所以同一个Segment的所有消息的baseOffset都是一样的.  </p>
+<ul>
+<li>messageOffset: 针对Partition全局的绝对偏移量</li>
+<li>segmentBaseOffset: 每个Segment的第一条消息在Partition的messageOffset</li>
+<li>relativePositionInSegment: 只有在同一个Segment中,两个offset相减,表示两个offset之间的字节数</li>
+</ul>
+<p>原先以为在同一个Segment中每条消息的segmentBaseOffset表示这条消息对于最开始消息的<code>相对偏移量</code>,其实是错的.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160111165015556" alt="k_baseoffset_wrong"></p>
+<p>实际上每条消息的offset都是单调递增1的(连续的).而relativePositionInSegment是不连续的(因为每条消息的长度不同)</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160112085010724" alt="k_base_offset"></p>
+<h3 id="LogSegment_append">LogSegment append</h3><p>messages追加到Segment,写入数据到log文件的同时,还要间隔indexIntervalBytes大小写入一条索引条目.<br>服务端每次执行一次append操作,都会写入到Log文件中(FileMessageSet),但并不是每次调用都要写索引记录的.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160202163004021" alt="k_logappend_log_index"></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Append the given messages starting with the given offset. Add an entry to the index if needed.</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">append</span></span>(offset: <span class="type">Long</span>, messages: <span class="type">ByteBufferMessageSet</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (messages.sizeInBytes &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span>(bytesSinceLastIndexEntry &gt; indexIntervalBytes) &#123;</span><br><span class="line">      index.append(offset, log.sizeInBytes())             <span class="comment">// append an entry to the index (if needed)</span></span><br><span class="line">      <span class="keyword">this</span>.bytesSinceLastIndexEntry = <span class="number">0</span>                   <span class="comment">// 成功写一次索引后,重置为0</span></span><br><span class="line">    &#125;</span><br><span class="line">    log.append(messages)                                  <span class="comment">// append the messages</span></span><br><span class="line">    <span class="keyword">this</span>.bytesSinceLastIndexEntry += messages.sizeInBytes <span class="comment">// 统计值增加,用于判断是否需要写索引</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="FileMessageSet">FileMessageSet</h4><p>创建LogSegment时,知道segmentBaseOffset,得到log和index的文件名,创建log文件,获取文件的FileChannel.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">append</span></span>(messages: <span class="type">ByteBufferMessageSet</span>) &#123;</span><br><span class="line">  <span class="keyword">val</span> written = messages.writeTo(channel, <span class="number">0</span>, messages.sizeInBytes)</span><br><span class="line">  _size.getAndAdd(written)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sizeInBytes</span></span>(): <span class="type">Int</span> = _size.get()</span><br></pre></td></tr></table></figure>
+<p>ByteBufferMessageSet提供了写数据的方法,writeTo提供的<code>offset,size</code>是为了让channel从指定的offset开始写,<br>一共写入size大小(不是MessageSet中的offset和size概念!). 而这里需要把全部数据都写入channel中.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ByteBufferMessageSet</span>(<span class="params">val buffer: <span class="type">ByteBuffer</span></span>) <span class="keyword">extends</span> <span class="title">MessageSet</span> </span>&#123;</span><br><span class="line">  <span class="comment">// Ignore offset and size from input. We just want to write the whole buffer to the channel.</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">writeTo</span></span>(channel: <span class="type">GatheringByteChannel</span>, offset: <span class="type">Long</span>, size: <span class="type">Int</span>): <span class="type">Int</span> = &#123;</span><br><span class="line">    buffer.mark()</span><br><span class="line">    <span class="keyword">var</span> written = <span class="number">0</span></span><br><span class="line">    <span class="keyword">while</span>(written &lt; sizeInBytes) written += channel.write(buffer)</span><br><span class="line">    buffer.reset()</span><br><span class="line">    written</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>FileMessageSet的构造函数有start和end,提供这两个参数可以返回消息文件的子集/切片.<br>searchFor()给定<code>目标offset</code>和<code>起始位置</code>,返回<code>&gt;=目标offset最近</code>的文件位置.<br>它的作用是给定一个offset,要拉取这个offset之后的消息(这部分消息就是一个子集).  </p>
+<blockquote>
+<p>要确保startingPosition位于消息的边界,不过一般startPos=0,而不是文件随便某个位置.<br>FileMessageSet存储消息内容,因此没有offset的绝对和相对一说,不过它是有保存offset的值.   </p>
+</blockquote>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">searchFor</span></span>(targetOffset: <span class="type">Long</span>, startingPosition: <span class="type">Int</span>): <span class="type">OffsetPosition</span> = &#123;</span><br><span class="line">  <span class="keyword">var</span> position = startingPosition</span><br><span class="line">  <span class="keyword">val</span> buffer = <span class="type">ByteBuffer</span>.allocate(<span class="type">MessageSet</span>.<span class="type">LogOverhead</span>)    <span class="comment">// LogOverhead=8+4=12</span></span><br><span class="line">  <span class="keyword">val</span> size = sizeInBytes()                                    <span class="comment">// 这是FileMessageSet的消息大小</span></span><br><span class="line">  <span class="keyword">while</span>(position + <span class="type">MessageSet</span>.<span class="type">LogOverhead</span> &lt; size) &#123;</span><br><span class="line">    buffer.rewind()   <span class="comment">// 在循环的过程中, 由于读取buffer, 指针后移, 所以开始读取前,要位于buffer的头部</span></span><br><span class="line">    channel.read(buffer, position)                            <span class="comment">// 要确保startPos位于消息的边界</span></span><br><span class="line">    buffer.rewind()   <span class="comment">// 从文件的postiion位置读取数据到buffer中, 读取后位于buffer的末尾, 调用rewind回到buffer的开始</span></span><br><span class="line">    <span class="keyword">val</span> offset = buffer.getLong()                             <span class="comment">// 这条消息的offset,8个字节</span></span><br><span class="line">    <span class="keyword">if</span>(offset &gt;= targetOffset) <span class="keyword">return</span> <span class="type">OffsetPosition</span>(offset, position)    <span class="comment">// Got You!</span></span><br><span class="line">    <span class="keyword">val</span> messageSize = buffer.getInt()                         <span class="comment">// size字段存储的是这条message的大小,它本身占用了4个字节</span></span><br><span class="line">    position += <span class="type">MessageSet</span>.<span class="type">LogOverhead</span> + messageSize          <span class="comment">// 在MessageSet中的一条完整的消息(offset,size,message)</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="literal">null</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>OffsetPosition是这条消息的逻辑log偏移量和在日志文件中的物理位置(即在文件中的位置)<br>因为MessageSet中每条消息的大小都存在size中,所以不必真正读取这条消息就可以找到需要的offset.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160112110329315" alt="k_buffer_search"></p>
+<h4 id="OffsetIndex">OffsetIndex</h4><p>OffsetIndex和FileMessageSet都是在创建LogSegment时同时创建.OffsetIndex还需要baseOffset=segmentBaseOffset.  </p>
+<ul>
+<li>索引文件映射offset到文件的物理位置(类似上面的OffsetPosition),它不会对每条消息都索引,所以是稀疏的.</li>
+<li>由于offset和position的值不像消息内容变长, 所以每个索引条目都固定为8bytes.即offset和position分别4byte</li>
+<li>MessageSet中是8byte的offset,而索引中是4byte,所以索引中存储的offset是减去segmentBaseOffset的值才放的下</li>
+<li>由于是稀疏索引,所以可以把索引文件通过内存映射的方式将整个索引文件都放入内存中,可以加快offset的查询</li>
+<li>因为offset是有序的,所以查询指定的offset时,使用二分查找就可以确定offset在哪个位置(当然也知道position了)</li>
+<li>可能指定的offset在索引文件中(0,5,8)不存在,但是可以找到小于等于指定offset(6)的最大offset(5)</li>
+<li>由于索引文件随着消息的追加而不断变化,打开索引文件:<code>空</code>的允许<code>追加</code>的<code>可变</code>索引或<code>不可变</code>的<code>只读</code>的索引文件</li>
+<li>当索引文件发生roll时,索引文件都不会变化了(类似日志文件的滚动),这时可以把可变的索引文件转为不可变的索引文件</li>
+</ul>
+<p>OffsetIndex中每个条目的物理格式是4字节的<code>相对</code>offset和4字节的文件位置(消息在log中的物理位置).<br>已经知道绝对offset和position的对应关系的(OffsetPosition),绝对offset-baseOffst=相对offset  </p>
+<p>假设baseOffset=50, 消息1的offset=55(这是一个绝对offset,针对partition范围), 相对offset=55-50=5<br>消息2的offset=56,相对offset=56-50=6,即索引条目中的offset都是相对于segmentBaseOffset的差值.<br>这样只需要4个字节就可以放的下,而且每条消息的offset是单调递增的,以一个基线为准,存储的数据量就会少很多.<br>带来的额外工作是需要将相对offset转换为全局/绝对offset,因为外部给的offset一定是一个绝对offset.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Append an entry for the given offset/location pair to the index. This entry must have a larger offset than all subsequent entries.</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">append</span></span>(offset: <span class="type">Long</span>, position: <span class="type">Int</span>) &#123;</span><br><span class="line">  inLock(lock) &#123;</span><br><span class="line">    <span class="keyword">if</span> (size.get == <span class="number">0</span> || offset &gt; lastOffset) &#123;</span><br><span class="line">      <span class="keyword">this</span>.mmap.putInt((offset - baseOffset).toInt)   <span class="comment">// 相对于segmentBaseOffset的偏移量</span></span><br><span class="line">      <span class="keyword">this</span>.mmap.putInt(position)                      <span class="comment">// offset对应的position</span></span><br><span class="line">      <span class="keyword">this</span>.size.incrementAndGet()</span><br><span class="line">      <span class="keyword">this</span>.lastOffset = offset</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>mmap是基于内存的直接映射MappedByteBuffer,因此可以将整个索引文件放到内存中,索引文件本来是不大的.  </p>
+</blockquote>
+<p>二分查找,先将目标offset减去baseOffset得到的是相对offset,因为索引存的都是相对offset,这样查询和索引就对上了.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">lookup</span></span>(targetOffset: <span class="type">Long</span>): <span class="type">OffsetPosition</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> idx = mmap.duplicate  <span class="comment">//有可能在lookup的时候mmap会发生变化,所以这里拷贝一个出来</span></span><br><span class="line">  <span class="keyword">val</span> slot = indexSlotFor(idx, targetOffset)    <span class="comment">//将offset转换为相对offset(因为index文件存储的都是相对值),然后二分查找</span></span><br><span class="line">  <span class="keyword">if</span>(slot == <span class="number">-1</span>) <span class="type">OffsetPosition</span>(baseOffset, <span class="number">0</span>)  <span class="comment">//注意targetOffset并不一定和OffsetPosition的绝对offset相同.</span></span><br><span class="line">  <span class="keyword">else</span> <span class="type">OffsetPosition</span>(baseOffset + relativeOffset(idx, slot), physical(idx, slot))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Find the slot in which the largest offset less than or equal to the given target offset is stored.</span></span><br><span class="line"><span class="comment">// -1 if the least entry in the index is larger than the target offset or the index is empty</span></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">indexSlotFor</span></span>(idx: <span class="type">ByteBuffer</span>, targetOffset: <span class="type">Long</span>): <span class="type">Int</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> relOffset = targetOffset - baseOffset           <span class="comment">// we only store the difference from the base offset so calculate that</span></span><br><span class="line">  <span class="keyword">if</span>(entries == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">-1</span>                          <span class="comment">// check if the index is empty</span></span><br><span class="line">  <span class="keyword">if</span>(relativeOffset(idx, <span class="number">0</span>) &gt; relOffset) <span class="keyword">return</span> <span class="number">-1</span>    <span class="comment">// check if the target offset is smaller than the least offset</span></span><br><span class="line">  <span class="comment">// binary search for the entry 二分查找的一个前提是数组是有序的,如果offset比第一个元素还要来的小,说明一定不再这里</span></span><br><span class="line">  <span class="keyword">var</span> lo = <span class="number">0</span></span><br><span class="line">  <span class="keyword">var</span> hi = entries<span class="number">-1</span></span><br><span class="line">  <span class="keyword">while</span>(lo &lt; hi) &#123;</span><br><span class="line">    <span class="keyword">val</span> mid = ceil(hi/<span class="number">2.0</span> + lo/<span class="number">2.0</span>).toInt</span><br><span class="line">    <span class="keyword">val</span> found = relativeOffset(idx, mid)  <span class="comment">//可以把idx看做数组,idx[mid]取值</span></span><br><span class="line">    <span class="keyword">if</span>(found == relOffset) <span class="keyword">return</span> mid     <span class="comment">//找到了</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(found &lt; relOffset) lo = mid   <span class="comment">//要找的比mid大,在mid右边,设置lo为mid</span></span><br><span class="line">    <span class="keyword">else</span> hi = mid - <span class="number">1</span>                     <span class="comment">//要找的比mid小,在mid左边,设置hi为mid-1</span></span><br><span class="line">  &#125;   <span class="comment">//如果没有找到,返回最接近它的那个offset,比如1,3,5,7,9,要找的offset=4,会返回3所在的位置</span></span><br><span class="line">  lo  <span class="comment">//第一次循环,found=5&gt;4,hi=mid-1=2-1=1; mid=1, found=3&lt;4, lo=mid=1, 即index=1,offset=3    </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Ref">Ref</h2><ul>
+<li><a href="http://www.cnblogs.com/fxjwind/p/4913703.html" target="_blank" rel="noopener">http://www.cnblogs.com/fxjwind/p/4913703.html</a></li>
+<li><a href="http://www.cnblogs.com/huxi2b/p/4583249.html" target="_blank" rel="noopener">http://www.cnblogs.com/huxi2b/p/4583249.html</a></li>
+</ul>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/01/10/2016-01-10-Kafka_LogAppend/">Kafka源码分析 KafkaApis(LogAppend)</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年01月10日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/01/10/2016-01-10-Kafka_LogAppend/" title="Kafka源码分析 KafkaApis(LogAppend)">http://github.com/zqhxuyuan/2016/01/10/2016-01-10-Kafka_LogAppend/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/01/10/2016-01-10-Kafka_LogAppend/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/01/13/Redis-TS_cn/">
+        Redis Time Series
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/01/08/2016-01-08-Kafka_SocketServer/">
+        Kafka源码分析 SocketServer
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#KafkaApis"><span class="toc-number">1.</span> <span class="toc-text">KafkaApis</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#handleProducerRequest"><span class="toc-number">2.</span> <span class="toc-text">handleProducerRequest</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#responseCallback"><span class="toc-number">2.1.</span> <span class="toc-text">responseCallback</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ReplicaManager-appendMessages"><span class="toc-number">2.2.</span> <span class="toc-text">ReplicaManager.appendMessages</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Partition-appendMessagesToLeader"><span class="toc-number">2.3.</span> <span class="toc-text">Partition.appendMessagesToLeader</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Log-append"><span class="toc-number">2.4.</span> <span class="toc-text">Log.append</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#MessageSet"><span class="toc-number">2.4.1.</span> <span class="toc-text">MessageSet</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#analyzeAndValidateMessageSet"><span class="toc-number">2.4.2.</span> <span class="toc-text">analyzeAndValidateMessageSet</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#validateMessagesAndAssignOffsets"><span class="toc-number">2.4.3.</span> <span class="toc-text">validateMessagesAndAssignOffsets</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#LogSegment_Roll"><span class="toc-number">2.4.4.</span> <span class="toc-text">LogSegment Roll</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#LogOffsetMetadata"><span class="toc-number">2.4.5.</span> <span class="toc-text">LogOffsetMetadata</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LogSegment_append"><span class="toc-number">2.5.</span> <span class="toc-text">LogSegment append</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#FileMessageSet"><span class="toc-number">2.5.1.</span> <span class="toc-text">FileMessageSet</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#OffsetIndex"><span class="toc-number">2.5.2.</span> <span class="toc-text">OffsetIndex</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ref"><span class="toc-number">3.</span> <span class="toc-text">Ref</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/01/10/2016-01-10-Kafka_LogAppend/" data-title="Kafka源码分析 KafkaApis(LogAppend)" data-url="http://github.com/zqhxuyuan/2016/01/10/2016-01-10-Kafka_LogAppend/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/01/13/Redis-TS_cn/" title="上一篇: Redis Time Series">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/01/08/2016-01-08-Kafka_SocketServer/" title="下一篇: Kafka源码分析 SocketServer">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>StreamCQL源码阅读(1) 提交任务 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="大数据上的流式SQL引擎—StreamCQL: http://www.csdn.net/article/2015-11-13/2826204http://www.csdn.net/article/2015-12-22/2826541">
+<meta name="keywords" content="storm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="StreamCQL源码阅读(1) 提交任务">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/11/24/2015-11-24-StreamCQL-task/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="大数据上的流式SQL引擎—StreamCQL: http://www.csdn.net/article/2015-11-13/2826204http://www.csdn.net/article/2015-12-22/2826541">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151125162710289">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151125162722310">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151126091936179">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151125203206771">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.192Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="StreamCQL源码阅读(1) 提交任务">
+<meta name="twitter:description" content="大数据上的流式SQL引擎—StreamCQL: http://www.csdn.net/article/2015-11-13/2826204http://www.csdn.net/article/2015-12-22/2826541">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151125162710289">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-11-24-StreamCQL-task" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/11/24/2015-11-24-StreamCQL-task/" class="article-date">
+  	<time datetime="2015-11-23T16:00:00.000Z" itemprop="datePublished">2015-11-24</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      StreamCQL源码阅读(1) 提交任务
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Source/">Source</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/storm/">storm</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>大数据上的流式SQL引擎—StreamCQL: <a href="http://www.csdn.net/article/2015-11-13/2826204" target="_blank" rel="noopener">http://www.csdn.net/article/2015-11-13/2826204</a><br><a href="http://www.csdn.net/article/2015-12-22/2826541" target="_blank" rel="noopener">http://www.csdn.net/article/2015-12-22/2826541</a><br><a id="more"></a></p>
+<h1 id="Introduce">Introduce</h1><p>CQL（Continuous Query Language），持续查询语言，用于数据流上的查询语言。相对于传统的SQL，CQL加入了窗口的概念，使得数据可以一直保存在内存中，由此可以快速进行大量内存计算，CQL的输出结果为数据流在某一时刻的计算结果。  </p>
+<p>CQL是建立在Storm基础上的类SQL查询语言，它解决了Storm原生API使用复杂，上手难度高，很多基本功能缺失的问题，提升了流处理产品的易用性。  </p>
+<p>在CQL设计语法之初，通过参考市面上现有的CEP产品的语法，发现这些产品都不算是全部的SQL语句，即仅仅使用SQL语句还不能运行，还必须依靠一些客户端的代码。 这样就给使用带来了一些不便， 用户必须学习客户端API，比较繁琐，上手难度也比较大。  </p>
+<p>所以，CQL设计目标就是，用纯粹的SQL语句再加上一些命令，就可以完成所有的任务发布以及执行，这样，就可以通过SQL接口，直接进行任务的下发，统一了客户端接口。对于有一定SQL基础的用户，只需要掌握一些CQL比较特殊的语法，比如窗口或者流定义的语法，就可以写出可运行的CQL程序，大大降低了上手难度。  </p>
+<p><strong>关键概念</strong></p>
+<p><strong>Stream(流)</strong>：流是一组（无穷）元素的集合，流上的每个元素都属于同一个schema；每个元素都和逻辑时间有关；即流包含了元组和时间的双重属性。留上的任何一个元素，都可以用Element&lt;tuple,Time&gt;的方式来表示，tuple是元组，包含了数据结构和数据内容，Time就是该数据的逻辑时间。</p>
+<p><strong>Window(窗口)</strong>：窗口是流处理中解决事件的无边界（unbounded）及流动性的一种重要手段，把事件流在某一时刻变成静态的视图，以便进行类似数据库表的各种查询操作。在stream上可以定义window，窗口有两种类型，时间窗口（time-based）和记录窗口（row-based）。两种窗口都支持两种模式，滑动（slide）和跳动（tumble）。</p>
+<p><strong>Expression(表达式)</strong>：符号和运算符的一种组合，CQL解析引擎处理该组合以获取单个值。简单表达式可以是常量、变量或者函数，可以用运算符将两个或者多个简单表达式联合起来构成更复杂的表达式。</p>
+<h1 id="QuickStart">QuickStart</h1><p>1.startup zk and storm local  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">zkServer.sh start</span><br><span class="line"></span><br><span class="line">nohup bin/storm nimbus &amp;</span><br><span class="line">nohup bin/storm ui &amp;</span><br><span class="line">nohup bin/storm supervisor &amp;</span><br></pre></td></tr></table></figure>
+<p>2.build and run cql client</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cd StreamCQL</span><br><span class="line">mvn clean install</span><br><span class="line">cd cql-binary/target</span><br><span class="line">tar xvf stream-cql-bianry-1.0.tar.gz</span><br><span class="line">cd stream-cql-bianry-1.0</span><br><span class="line">bin/cql</span><br></pre></td></tr></table></figure>
+<p>3.create first topology:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">CREATE INPUT STREAM s(id INT, name STRING, type INT)</span><br><span class="line">SOURCE randomgen PROPERTIES ( timeUnit = &quot;SECONDS&quot;, period = &quot;1&quot;, eventNumPerperiod = &quot;1&quot;, isSchedule = &quot;true&quot; );</span><br><span class="line"></span><br><span class="line">CREATE OUTPUT STREAM rs(type INT, cc INT)</span><br><span class="line">SINK consoleOutput;</span><br><span class="line"></span><br><span class="line">INSERT INTO STREAM rs SELECT type, COUNT(id) as cc</span><br><span class="line">FROM s[RANGE 20 SECONDS BATCH]</span><br><span class="line">WHERE id &gt; 5 GROUP BY type;</span><br><span class="line"></span><br><span class="line">SUBMIT APPLICATION example;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>输入流: 随机数,每秒生成一个事件<br>输出流: 控制台, 每隔20秒输出一次, 只统计id&gt;5,根据type分组,求和<br>提交应用程序, 相当于创建了一个Storm的Topology.  </p>
+</blockquote>
+<p>4.A complicate topology:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">CREATE INPUT STREAM s1(name STRING)</span><br><span class="line">SOURCE RANDOMGEN PROPERTIES ( timeUnit = &quot;SECONDS&quot;, period = &quot;1&quot;, eventNumPerperiod = &quot;1&quot;, isSchedule = &quot;true&quot; );</span><br><span class="line"></span><br><span class="line">CREATE OUTPUT STREAM s2(c1 STRING)</span><br><span class="line">SINK kafakOutput PROPERTIES ( topic = &quot;cqlOut&quot;, zookeepers = &quot;127.0.0.1:2181&quot;, brokers = &quot;127.0.0.1:9092&quot; );</span><br><span class="line"></span><br><span class="line">CREATE INPUT STREAM s3( c1 STRING)</span><br><span class="line">SOURCE KafkaInput PROPERTIES (groupid = &quot;cqlClient&quot;, topic = &quot;cqlInput&quot;, zookeepers = &quot;127.0.0.1:2181&quot;, brokers = &quot;127.0.0.1:9092&quot; )</span><br><span class="line"></span><br><span class="line">CREATE OUTPUT STREAM s4(c1 STRING)</span><br><span class="line">SINK consoleOutput;</span><br><span class="line"></span><br><span class="line">INSERT INTO STREAM s2 SELECT * FROM s1;</span><br><span class="line">INSERT INTO STREAM s4 SELECT * FROM s3;</span><br><span class="line"></span><br><span class="line">SUBMIT APPLICATION cql_kafka_example;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>输入流s1 发射数据 到kafka输出流s2<br>kafka输入流 发射数据 到控制台输出流s4</p>
+</blockquote>
+<p>5.查看拓扑: <a href="http://localhost:8080" target="_blank" rel="noopener">http://localhost:8080</a> </p>
+<h1 id="Architecture">Architecture</h1><p>StreamCQL的代码由三部分组成: cql,streaming,adapter分别对应下面的三个组件.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151125162710289" alt="stream-arch"></p>
+<blockquote>
+<p>客户端提交的<code>CQL语句</code>会由执行计划生成器<code>ExecutorPlanGenerator</code>生成<code>可运行的任务</code>,最终由<code>Storm适配器</code>组装Topology提交执行.</p>
+</blockquote>
+<p>StreamCQL对应的Storm拓扑:  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151125162722310" alt="stream-storm"></p>
+<blockquote>
+<p>至少有一个输入和输出. Component之间可以组合比如Select,Join等.  </p>
+</blockquote>
+<p>Window example:  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">--按照type对窗口内数据进行分组,每组容量为10</span></span><br><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> transformEvent[<span class="keyword">ROWS</span> <span class="number">10</span> SLIDE <span class="keyword">PARTITION</span> <span class="keyword">BY</span> <span class="keyword">TYPE</span>]; </span><br><span class="line"></span><br><span class="line"><span class="comment">--时间排序窗,一般用来解决数据乱序问题</span></span><br><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> transformEvent[<span class="keyword">RANGE</span> <span class="number">1000</span> MILLISECONDS <span class="keyword">SORT</span> <span class="keyword">BY</span> dte];</span><br><span class="line"></span><br><span class="line"><span class="comment">--事件驱动时间滑动窗</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> STREAM rs <span class="keyword">sum</span>(OrderPrice),<span class="keyword">avg</span>(OrderPrice),<span class="keyword">count</span>(OrderPrice)</span><br><span class="line"><span class="keyword">FROM</span> transformEvent[<span class="keyword">RANGE</span> <span class="number">10</span> <span class="keyword">SECONDS</span> SLIDE <span class="keyword">TRIGGER</span> <span class="keyword">by</span> TS <span class="keyword">EXCLUDE</span> <span class="keyword">now</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">--保存周期为一个自然天的分组窗</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> STREAM rs <span class="keyword">select</span> <span class="keyword">id</span>,<span class="keyword">name</span>,<span class="keyword">count</span>(<span class="keyword">id</span>)</span><br><span class="line"><span class="keyword">FROM</span> transformEvent[<span class="keyword">RANGE</span> TODAY ts <span class="keyword">PARTITION</span> <span class="keyword">BY</span> <span class="keyword">TYPE</span>] </span><br><span class="line"><span class="keyword">WHERE</span> <span class="keyword">id</span> &gt; <span class="number">5</span> <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="keyword">TYPE</span> <span class="keyword">HAVING</span> <span class="keyword">id</span> &gt; <span class="number">10</span>;</span><br></pre></td></tr></table></figure>
+<p>Split example:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">FROM teststream</span><br><span class="line">  <span class="keyword">INSERT</span> <span class="keyword">INTO</span> STREAM s1 <span class="keyword">SELECT</span> *</span><br><span class="line">  <span class="keyword">INSERT</span> <span class="keyword">INTO</span> STREAM s2 <span class="keyword">SELECT</span> a</span><br><span class="line">  <span class="keyword">INSERT</span> <span class="keyword">INTO</span> STREAM s3 <span class="keyword">SELECT</span> <span class="keyword">id</span>, <span class="keyword">name</span> <span class="keyword">WHERE</span> <span class="keyword">id</span> &gt; <span class="number">10</span></span><br><span class="line">PRARLLEL <span class="number">4</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151126091936179" alt="stream-split"></p>
+<blockquote>
+<p>原始的spout输入流会分成三个输出流. 所以中间用一个SplitBolt来作为中间介质.  </p>
+</blockquote>
+<h1 id="From_log_to_see_StreamCQL">From log to see StreamCQL</h1><blockquote>
+<p>熟悉一个开源框架的流程, 可以先跑一个测试例子, 查看打印的日志信息, 通过日志的顺序, 可以大致熟悉整体的流程.<br>当然要求框架本身的日志信息足够明了, StreamCQL做的不错. 这种方式的优点是不至于不知道要从哪里看起来. </p>
+</blockquote>
+<h2 id="CQLClient_to_Driver">CQLClient to Driver</h2><p><code>bin/cql</code>会开启一个CQLClient客户端, 当输入<code>;</code>表示一个语句的终结时,就会触发一次CQL语句的编译执行等.</p>
+<p>Driver.run是CQL的运行起点</p>
+<ul>
+<li>1、编译</li>
+<li>2、语义分析</li>
+<li>3、命令执行</li>
+<li>4、返回结果</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">(String cql)</span> </span>&#123;</span><br><span class="line">    ParseContext parseContext = parser.parse(cql);  <span class="comment">//CQL解析 ⬅️</span></span><br><span class="line">    saveAllChangeableCQLs(cql, parseContext);</span><br><span class="line">    preDriverRun(context, parseContext);</span><br><span class="line">    executeTask(parseContext);                      <span class="comment">//执行任务</span></span><br><span class="line">    postDriverRun(context, parseContext);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">executeTask</span><span class="params">(ParseContext parseContext)</span> </span>&#123;</span><br><span class="line">    mergeConfs();</span><br><span class="line">    Task task = TaskFactory.createTask(context, parseContext, config, analyzeHooks);</span><br><span class="line">    task.execute(parseContext);                     <span class="comment">//执行任务 ⬅️</span></span><br><span class="line">    context.setQueryResult(task.getResult());       <span class="comment">//返回结果(查询性的命令比如show,get会有结果,其他没有结果)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>初始的语法解析类是ApplicationParser. parse方法采用visitor访问者模式遍历CQL语句. 感兴趣的可以进入CQLParser查看具体的解析过程.     </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">IParser (com.huawei.streaming.cql.semanticanalyzer.parser)</span><br><span class="line">    |-- OrderbyClauseParser </span><br><span class="line">    |-- GroupbyClauseParser </span><br><span class="line">    |-- ApplicationParser                   ⬅️</span><br><span class="line">    |-- SelectClauseParser </span><br><span class="line">    |-- DataSourceArgumentsParser</span><br></pre></td></tr></table></figure>
+<p>ParseContext的实现类很多,基本上CQL语法的每一部分都会对应一个语法解析器.    </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ParseContext (com.huawei.streaming.cql.semanticanalyzer.parser.context)</span><br><span class="line">    |-- CreateStreamStatementContext        语句</span><br><span class="line">            |-- CreatePipeStatementContext </span><br><span class="line">            |-- CreateInputStatementContext </span><br><span class="line">            |-- CreateOutputStatementContext </span><br><span class="line">    |-- FromClauseContext                   子句</span><br><span class="line">    |-- RangeWindowContext                  窗口</span><br><span class="line">    |-- ...</span><br></pre></td></tr></table></figure>
+<h2 id="Input,Output,Insert">Input,Output,Insert</h2><p>ApplicationParser.parse返回的ParseContext具体针对特定的CQL语句返回的是什么类型? 这个类型对于创建什么类型的任务非常重要.<br>因为这个是创建一个新的Stream, 所以ParseContext是<code>CreateInputStatementContext</code>.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">2015-11-25 02:32:19 | INFO  | [main] | start to parse cql : CREATE INPUT STREAM s</span><br><span class="line">    (id INT, name STRING, type INT)</span><br><span class="line">SOURCE randomgen</span><br><span class="line">    PROPERTIES ( timeUnit = &quot;SECONDS&quot;, period = &quot;1&quot;,</span><br><span class="line">        eventNumPerperiod = &quot;1&quot;, isSchedule = &quot;true&quot; ) | com.huawei.streaming.cql.semanticanalyzer.parser.ApplicationParser (ApplicationParser.java:44)</span><br><span class="line">2015-11-25 02:32:19 | INFO  | [main] | Parse Completed | com.huawei.streaming.cql.semanticanalyzer.parser.ApplicationParser (ApplicationParser.java:69)</span><br><span class="line">2015-11-25 02:32:19 | INFO  | [main] | start to execute CREATE INPUT STREAM s (id INT, name STRING, type INT) SOURCE randomgen PROPERTIES ( &apos;timeUnit&apos; = &apos;SECONDS&apos;, &apos;period&apos; = &apos;1&apos;, &apos;eventNumPerperiod&apos; = &apos;1&apos;, &apos;isSchedule&apos; = &apos;true&apos; ) | com.huawei.streaming.cql.tasks.LazyTask (LazyTask.java:62)</span><br></pre></td></tr></table></figure>
+<p>CreateStreamStatementContext.createTask创建的是LazyTask. 它的execute方法只是把当前ParseContext加入到DriverContext的parseContexts中.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(ParseContext parseContext)</span> </span>&#123;</span><br><span class="line">    context.addParseContext(parseContext);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>同样输出流经过ApplicationParser.parse返回的是<code>CreateOutputStatementContext</code>,它也继承了CreateStreamStatementContext.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">2015-11-25 02:32:20 | INFO  | [main] | start to parse cql : CREATE OUTPUT STREAM rs</span><br><span class="line">    (type INT, cc INT)</span><br><span class="line">SINK consoleOutput | com.huawei.streaming.cql.semanticanalyzer.parser.ApplicationParser (ApplicationParser.java:44)</span><br><span class="line">2015-11-25 02:32:20 | INFO  | [main] | Parse Completed | com.huawei.streaming.cql.semanticanalyzer.parser.ApplicationParser (ApplicationParser.java:69)</span><br><span class="line">2015-11-25 02:32:20 | INFO  | [main] | start to execute CREATE OUTPUT STREAM rs (type INT, cc INT) SINK consoleOutput | com.huawei.streaming.cql.tasks.LazyTask (LazyTask.java:62)</span><br></pre></td></tr></table></figure>
+<p>insert语句是<code>InsertStatementContext</code>, 输入输出插入这些都是延迟执行的任务,并不需要立即执行,因为需要根据上下文构造一个完整的DAG拓扑图.   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">2015-11-25 02:32:20 | INFO  | [main] | start to parse cql : INSERT INTO STREAM rs SELECT type, COUNT(id) as cc</span><br><span class="line">    FROM s[RANGE 20 SECONDS BATCH]</span><br><span class="line">    WHERE id &gt; 5 GROUP BY type | com.huawei.streaming.cql.semanticanalyzer.parser.ApplicationParser (ApplicationParser.java:44)</span><br><span class="line">2015-11-25 02:32:20 | INFO  | [main] | Parse Completed | com.huawei.streaming.cql.semanticanalyzer.parser.ApplicationParser (ApplicationParser.java:69)</span><br><span class="line">2015-11-25 02:32:20 | INFO  | [main] | start to execute INSERT INTO STREAM rs SELECT type, count(id) AS cc FROM s[RANGE 20 SECONDS BATCH] WHERE id &gt; 5 GROUP BY type | com.huawei.streaming.cql.tasks.LazyTask (LazyTask.java:62)</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="Submit">Submit</h2><p>提交应用程序,经过parse返回的是<code>SubmitApplicationContext</code>,创建的Task是SubmitTask.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">2015-11-25 02:32:23 | INFO  | [main] | start to parse cql : SUBMIT APPLICATION example | com.huawei.streaming.cql.semanticanalyzer.parser.ApplicationParser (ApplicationParser.java:44)</span><br><span class="line">2015-11-25 02:32:23 | INFO  | [main] | Parse Completed | com.huawei.streaming.cql.semanticanalyzer.parser.ApplicationParser (ApplicationParser.java:69)</span><br><span class="line">2015-11-25 02:32:24 | INFO  | [main] | combine all split contexts | com.huawei.streaming.cql.builder.operatorsplitter.OperatorSplitter (OperatorCombiner.java:101)</span><br></pre></td></tr></table></figure>
+<h3 id="Task_&amp;_SemanticAnalyzer">Task &amp; SemanticAnalyzer</h3><p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151125203206771" alt="stream-createTask"></p>
+<blockquote>
+<p>可以看到对于前面的输入流,输出流,insert语句,并没有对应的Task实现类,所以它们都使用LazyTask.  </p>
+</blockquote>
+<p>Driver.executeTask会根据ParseContext具体的实现类由TaskFactory创建对应的Task.  ParseContext抽象类除了创建Task,还会创建SemanticAnalyzer  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//创建对应语句的执行task</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> Task <span class="title">createTask</span><span class="params">(DriverContext driverContext, List&lt;SemanticAnalyzeHook&gt; analyzeHooks)</span> <span class="keyword">throws</span> CQLException</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//创建语义分析执行解析器</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> SemanticAnalyzer <span class="title">createAnalyzer</span><span class="params">()</span> <span class="keyword">throws</span> SemanticAnalyzerException</span>;</span><br></pre></td></tr></table></figure>
+<p>比如SubmitApplicationContext创建的分析器是SubmitApplicationAnalyzer. CreateStreamStatementContext也是个抽象类,<br>有三个子类CreateInputStatementContext,CreateOutputStatementContext,CreatePipeStatementContext,它们创建的分析器分别是:<br>CreateInputStreamAnalyzer, CreateOutputStreamAnalyzer, CreatePipeStreamAnalyzer 它们都继承了CreateStreamAnalyzer.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ParseContext ------|--SubmitApplicationContext</span><br><span class="line">                   |--CreateStreamStatementContext--|</span><br><span class="line">                                                    |---CreateInputStatementContext</span><br><span class="line">                                                    |---CreateOutputStatementContext</span><br><span class="line">                                                    |---CreatePipeStatementContext</span><br><span class="line">                                                            </span><br><span class="line">SemanticAnalyzer --|--SubmitApplicationAnalyzer</span><br><span class="line">                   |--CreateStreamAnalyzer ---------|</span><br><span class="line">                                                    |---CreateInputStreamAnalyzer</span><br><span class="line">                                                    |---CreateOutputStreamAnalyzer</span><br><span class="line">                                                    |---CreatePipeStreamAnalyzer</span><br></pre></td></tr></table></figure>
+<p>SemanticAnalyzer的创建方式和创建Task一样都是使用工厂类<code>SemanticAnalyzerFactory</code>. 在创建完之后都调用了init初始化.   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Task <span class="title">createTask</span><span class="params">(DriverContext driverContext, ParseContext parseContext, StreamingConfig config, List&lt;SemanticAnalyzeHook&gt; analyzeHooks)</span> </span>&#123;</span><br><span class="line">    Task task = parseContext.createTask(driverContext, analyzeHooks);   <span class="comment">// 创建Task ⬅️</span></span><br><span class="line">    task.init(driverContext, config, analyzeHooks);</span><br><span class="line">    <span class="keyword">return</span> task;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> SemanticAnalyzer <span class="title">createAnalyzer</span><span class="params">(ParseContext parseContext, List&lt;Schema&gt; schemas)</span> </span>&#123;</span><br><span class="line">    SemanticAnalyzer analyzer = parseContext.createAnalyzer();          <span class="comment">// 创建语义解析器 ⬅️</span></span><br><span class="line">    analyzer.init(schemas);</span><br><span class="line">    <span class="keyword">return</span> analyzer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="SubmitTask">SubmitTask</h3><h4 id="parseSubmit">parseSubmit</h4><p>SubmitTask执行应用程序提交的execute方法和前面的LazyTask有点复杂, 因为它要把前面创建的LazyTask都组合起来,组成一个完整的应用程序.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(ParseContext parseContext)</span> </span>&#123;   <span class="comment">//这里的parseContext是SubmitApplicationContext</span></span><br><span class="line">    parseSubmit(parseContext);  <span class="comment">//解析  ⬅️ </span></span><br><span class="line">    createApplication();        <span class="comment">//创建应用程序</span></span><br><span class="line">    dropApplicationIfAllow();   <span class="comment">//如果允许的话先删除应用程序</span></span><br><span class="line">    submitApplication();        <span class="comment">//提交应用程序</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//解析Submit,创建对应的语义解析器:SubmitApplicationAnalyzer</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseSubmit</span><span class="params">(ParseContext parseContext)</span> </span>&#123;</span><br><span class="line">    SemanticAnalyzer analyzer = SemanticAnalyzerFactory.createAnalyzer(parseContext, EMPTY_SCHEMAS);</span><br><span class="line">    submitContext = (SubmitApplicationAnalyzeContext)analyzer.analyze();    <span class="comment">// 创建完语义解析器, 就要进行语义解析 ⬅️</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里面几个对象的创建关系是(Parser语法解析器-&gt;Context-&gt;Analyzer语义分析器-&gt;AnalyzerContext):  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ApplicationParser.parse() --&gt; SubmitApplicationContext : ParseContext</span><br><span class="line">                                    |--createTask: SubmitTask</span><br><span class="line">                                    |--createAnalyzer: SubmitApplicationAnalyzer</span><br><span class="line">                                                               |--createAnalyzeContext: SubmitApplicationAnalyzeContext</span><br></pre></td></tr></table></figure>
+<h4 id="createApplication">createApplication</h4><p>创建Application,如果有路径的话,直接加载物理执行计划,否则创建一个API用的Application并设置到DriverContext中.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> Application <span class="title">createAPIApplication</span><span class="params">(String appName)</span> </span>&#123;</span><br><span class="line">    Application app = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">if</span> (context.getApp() == <span class="keyword">null</span>) &#123;             <span class="comment">//创建Application</span></span><br><span class="line">        semanticAnalyzerLazyContexts();         <span class="comment">//准备analyzeContexts ⬅️</span></span><br><span class="line">        app = <span class="keyword">new</span> ApplicationBuilder().build(appName, analyzeContexts, context);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        app = context.getApp();</span><br><span class="line">    &#125;</span><br><span class="line">    app.setApplicationId(appName);</span><br><span class="line">    <span class="keyword">return</span> app;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建APIApplication, 记得前面的那些LazyTask吗, 都要用语义分析分析一遍,对应的AnalyzeContext会被ApplicationBuilder用到.<br>因为LazyTask的execute方法只是简单地把当前的ParseContext实现类加入到DriverContext中,所以下面的for循环能从DriverContext获取出所有ParseContext.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">semanticAnalyzerLazyContexts</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (ParseContext parseContext : context.getParseContexts()) &#123;</span><br><span class="line">        preAnalyze(context, parseContext);</span><br><span class="line">        SemanticAnalyzer analyzer = SemanticAnalyzerFactory.createAnalyzer(parseContext, context.getSchemas());</span><br><span class="line">        AnalyzeContext analyzeContext = analyzer.analyze();</span><br><span class="line">        postAnalyze(context, analyzeContext, parseContext);</span><br><span class="line">        analyzeContexts.add(analyzeContext);    <span class="comment">//将各自的分析器分析的结果AnalyzeContext实现类加入到analyzeContexts</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>像SubmitTask一样都要先创建SemanticAnalyzer,然后调用analyze方法, 这些没有调用的方法都要调用. 验证了那句话:<code>人在江湖漂,哪有不挨刀.该来的总是会来的</code>. </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ApplicationParser.parse() --&gt; CreateInputStatementContext|CreateOutputStatementContext : ParseContext</span><br><span class="line">                                                         |--createTask: LazyTask</span><br><span class="line">                                                         |--createAnalyzer: CreateInputStreamAnalyzer|CreateOutputStreamAnalyzer</span><br><span class="line">                                                                                                     |--createAnalyzeContext: CreateStreamAnalyzeContext</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意Input,Output的StatementContext,SemanticAnalyzer都有各自的实现类,并都继承了Stream的相关父类,但是AnalyzeContext没有各自的实现类,都是一样的了.   </p>
+</blockquote>
+<h3 id="ApplicationBuilder">ApplicationBuilder</h3><p>ApplicationBuilder的构建需要每个分析器分析的结果AnalyzeContext(parseContexts): 专门用来完成从多个解析内容到应用程序的转换<br>buildApplication()将整个应用程序的构建分成:  1、各个算子的构建;  2、将完成拆分的应用程序解析成为Application  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Application <span class="title">build</span><span class="params">(String appName, List&lt;AnalyzeContext&gt; parContexts, DriverContext driverContext)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.applicationName = appName;     <span class="comment">//应用程序名称</span></span><br><span class="line">    <span class="keyword">this</span>.parseContexts = parContexts;   <span class="comment">//一系列CQL语句的解析结果</span></span><br><span class="line">    </span><br><span class="line">    executeLogicOptimizer();            <span class="comment">//在构建应用程序之前，要先执行逻辑优化器. 目前貌似还没实现.</span></span><br><span class="line">    buildApplication();                 <span class="comment">//构建应用程序</span></span><br><span class="line">    executePhysicOptimizer();           <span class="comment">//在构建应用程序之后，要先执行物理优化器</span></span><br><span class="line">    parseDriverContext(driverContext);  <span class="comment">//将DriverContext的的值设置到Application中,比如UserConf,UserFile,UDF</span></span><br><span class="line">    <span class="keyword">return</span> app;                         <span class="comment">//构建完成的应用程序</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>逻辑计划包含的功能:<br>1、SQL语句的重写，比如将where中的聚合filter调整到having中等等<br>2、count(a+b),count(*),count(a) 的优化，全部改成count(1)<br>3、Join的调整，将不等值Join改为Innerjoin<br>4、将where条件中的等值表达式提升到On上面去。  </p>
+<p>物理优化器的优化内容：<br>1、OrderBy优化，实现sorted-merge排序。<br>2、limit优化，上一个算子中加入limit。<br>3、算子替换，将功能比较简单的算子，替换为Filter算子或者functor算子<br>4、移除无意义的filter算子</p>
+<p>逻辑计划和物理计划中间的步骤是构建Application. 在这里才开始new一个Application.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">buildApplication</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    app = <span class="keyword">new</span> Application(applicationName);                         <span class="comment">//创建Application</span></span><br><span class="line">    parseSchemas();                                                 <span class="comment">//设置所有AnalyzeContext的CreatedSchemas到app的schemas</span></span><br><span class="line">    List&lt;SplitContext&gt; splitContexts = splitOperators();            <span class="comment">//拆分算子</span></span><br><span class="line">    SplitContext splitContext = combineOperators(splitContexts);    <span class="comment">//合并算子</span></span><br><span class="line">    changeUnionOperators(splitContext);</span><br><span class="line">    changeSchemaAfterAggregate(splitContext);</span><br><span class="line">    app.setOperators(splitContext.getOperators());                  <span class="comment">//将拆分|合并算子的operators和transitions设置到Application里</span></span><br><span class="line">    app.setOpTransition(splitContext.getTransitions());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>预告: SemanticAnalyzer.analyze()和具体的CQL语法相关,下一篇我们就来看看CQL的语法和语义解析是怎么工作的.  </p>
+</blockquote>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/11/24/2015-11-24-StreamCQL-task/">StreamCQL源码阅读(1) 提交任务</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年11月24日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/11/24/2015-11-24-StreamCQL-task/" title="StreamCQL源码阅读(1) 提交任务">http://github.com/zqhxuyuan/2015/11/24/2015-11-24-StreamCQL-task/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/11/24/2015-11-24-StreamCQL-task/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/11/26/2015-11-26-StreamCQL-schema/">
+        StreamCQL源码阅读(2) 语法和语义解析
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/11/17/2015-11-17-Cassandra-BulkLoad/">
+        Cassandra Migration Tool
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Introduce"><span class="toc-number">1.</span> <span class="toc-text">Introduce</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#QuickStart"><span class="toc-number">2.</span> <span class="toc-text">QuickStart</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Architecture"><span class="toc-number">3.</span> <span class="toc-text">Architecture</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#From_log_to_see_StreamCQL"><span class="toc-number">4.</span> <span class="toc-text">From log to see StreamCQL</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#CQLClient_to_Driver"><span class="toc-number">4.1.</span> <span class="toc-text">CQLClient to Driver</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Input,Output,Insert"><span class="toc-number">4.2.</span> <span class="toc-text">Input,Output,Insert</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Submit"><span class="toc-number">4.3.</span> <span class="toc-text">Submit</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Task_&_SemanticAnalyzer"><span class="toc-number">4.3.1.</span> <span class="toc-text">Task &amp; SemanticAnalyzer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SubmitTask"><span class="toc-number">4.3.2.</span> <span class="toc-text">SubmitTask</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#parseSubmit"><span class="toc-number">4.3.2.1.</span> <span class="toc-text">parseSubmit</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#createApplication"><span class="toc-number">4.3.2.2.</span> <span class="toc-text">createApplication</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ApplicationBuilder"><span class="toc-number">4.3.3.</span> <span class="toc-text">ApplicationBuilder</span></a></li></ol></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/11/24/2015-11-24-StreamCQL-task/" data-title="StreamCQL源码阅读(1) 提交任务" data-url="http://github.com/zqhxuyuan/2015/11/24/2015-11-24-StreamCQL-task/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/11/26/2015-11-26-StreamCQL-schema/" title="上一篇: StreamCQL源码阅读(2) 语法和语义解析">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/11/17/2015-11-17-Cassandra-BulkLoad/" title="下一篇: Cassandra Migration Tool">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

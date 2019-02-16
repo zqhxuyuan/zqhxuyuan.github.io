@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Introduce Kafka | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Introduce Kafka">
+<meta name="keywords" content="kafka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Introduce Kafka">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/01/04/Kafka-Intro/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Introduce Kafka">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://kafka.apache.org/images/consumer-groups.png">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.352Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Introduce Kafka">
+<meta name="twitter:description" content="Introduce Kafka">
+<meta name="twitter:image" content="http://kafka.apache.org/images/consumer-groups.png">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Kafka-Intro" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/01/04/Kafka-Intro/" class="article-date">
+  	<time datetime="2016-01-03T16:00:00.000Z" itemprop="datePublished">2016-01-04</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Introduce Kafka
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/mq/">mq</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/">kafka</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Introduce Kafka<br><a id="more"></a></p>
+<h2 id="Background">Background</h2><p><strong>MQ的通讯模式</strong>  </p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Feature</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>点对点通讯</td>
+<td>点对点方式是最为传统和常见的通讯方式，它支持一对一、一对多、多对多、多对一等多种配置方式，支持树状、网状等多种拓扑结构。</td>
+</tr>
+<tr>
+<td>多点广播</td>
+<td>MQ 适用于不同类型的应用。其中重要的，也是正在发展中的是”多点广播”应用，即能够将消息发送到多个目标站点 (Destination List)。可以使用一条 MQ 指令将单一消息发送到多个目标站点，并确保为每一站点可靠地提供信息。MQ 不仅提供了多点广播的功能，而且还拥有智能消息分发功能，在将一条消息发送到同一系统上的多个用户时，MQ 将消息的一个复制版本和该系统上接收者的名单发送到目标 MQ 系统。目标 MQ 系统在本地复制这些消息，并将它们发送到名单上的队列，从而尽可能减少网络的传输量。</td>
+</tr>
+<tr>
+<td>发布/订阅(Publish/Subscribe)模式</td>
+<td>发布/订阅功能使消息的分发可以突破目的队列地理指向的限制，使消息按照特定的主题甚至内容进行分发，用户或应用程序可以根据主题或内容接收到所需要的消息。发布/订阅功能使得发送者和接收者之间的耦合关系变得更为松散，发送者不必关心接收者的目的地址，而接收者也不必关心消息的发送地址，而只是根据消息的主题进行消息的收发。</td>
+</tr>
+<tr>
+<td>群集 (Cluster)</td>
+<td>为了简化点对点通讯模式中的系统配置，MQ 提供 Cluster(群集) 的解决方案。群集类似于一个域 (Domain)，群集内部的队列管理器之间通讯时，不需要两两之间建立消息通道，而是采用群集 (Cluster) 通道与其它成员通讯，从而大大简化了系统配置。此外，群集中的队列管理器之间能够自动进行负载均衡，当某一队列管理器出现故障时，其它队列管理器可以接管它的工作，从而大大提高系统的高可靠性。</td>
+</tr>
+</tbody>
+</table>
+<p><strong>关键概念</strong></p>
+<table>
+<thead>
+<tr>
+<th>Concepts</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Topic</td>
+<td>用于划分Message的逻辑概念，一个Topic可以分布在多个Broker上。</td>
+</tr>
+<tr>
+<td>Partition</td>
+<td>是Kafka中横向扩展和一切并行化的基础，每个Topic都至少被切分为1个Partition。</td>
+</tr>
+<tr>
+<td>Offset</td>
+<td>消息在Partition中的编号，编号顺序不跨Partition(在Partition内有序)。</td>
+</tr>
+<tr>
+<td>Consumer</td>
+<td>用于从Broker中取出/消费Message。</td>
+</tr>
+<tr>
+<td>Producer</td>
+<td>用于往Broker中发送/生产Message。</td>
+</tr>
+<tr>
+<td>Replication</td>
+<td>Kafka支持以Partition为单位对Message进行冗余备份，每个Partition都可以配置至少1个Replication(当仅1个Replication时即仅该Partition本身)。</td>
+</tr>
+<tr>
+<td>Leader</td>
+<td>每个Replication集合中的Partition都会选出一个唯一的Leader，所有的读写请求都由Leader处理。其他Replicas从Leader处把数据更新同步到本地。</td>
+</tr>
+<tr>
+<td>Broker</td>
+<td>Kafka中使用Broker来接受Producer和Consumer的请求，并把Message持久化到本地磁盘。每个Cluster当中会选举出一个Broker来担任Controller，负责处理Partition的Leader选举，协调Partition迁移等工作。</td>
+</tr>
+<tr>
+<td>ISR</td>
+<td>In-Sync Replica,是Replicas的一个子集，表示目前Alive且与Leader能够“Catch-up”的Replicas集合。由于读写都是首先落到Leader上，所以一般来说通过同步机制从Leader上拉取数据的Replica都会和Leader有一些延迟(包括了延迟时间和延迟条数两个维度)，任意一个超过阈值都会把该Replica踢出ISR。每个Leader Partition都有它自己独立的ISR。</td>
+</tr>
+</tbody>
+</table>
+<p><strong>设计思想</strong></p>
+<table>
+<thead>
+<tr>
+<th>Concepts</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Consumergroup</td>
+<td>各个consumer可以组成一个组，每个消息只能被组中的一个consumer消费，如果一个消息可以被多个consumer消费的话，那么这些consumer必须在不同的组。</td>
+</tr>
+<tr>
+<td>消息状态</td>
+<td>在Kafka中，消息的状态被保存在consumer中，broker不会关心哪个消息被消费了被谁消费了，只记录一个offset值（指向partition中下一个要被消费的消息位置），这就意味着如果consumer处理不好的话，broker上的一个消息可能会被消费多次。</td>
+</tr>
+<tr>
+<td>消息持久化</td>
+<td>Kafka中会把消息持久化到本地文件系统中，并且保持极高的效率。</td>
+</tr>
+<tr>
+<td>消息有效期</td>
+<td>Kafka会长久保留其中的消息，以便consumer可以多次消费，当然其中很多细节是可配置的。</td>
+</tr>
+<tr>
+<td>批量发送</td>
+<td>Kafka支持以消息集合为单位进行批量发送，以提高push效率。</td>
+</tr>
+<tr>
+<td>push-and-pull</td>
+<td>Kafka中的Producer和consumer采用的是push-and-pull模式，即Producer只管向broker push消息，consumer只管从broker pull消息，两者对消息的生产和消费是异步的。</td>
+</tr>
+<tr>
+<td>Broker之间的关系</td>
+<td>不是主从关系，各个broker在集群中地位一样，我们可以随意的增加或删除任何一个broker节点。</td>
+</tr>
+<tr>
+<td>负载均衡</td>
+<td>Kafka提供了一个 metadata API来管理broker之间的负载（对Kafka0.8.x而言，对于0.7.x主要靠zookeeper来实现负载均衡）。</td>
+</tr>
+<tr>
+<td>同步异步</td>
+<td>Producer采用异步push方式，极大提高Kafka系统的吞吐率（可以通过参数控制是采用同步还是异步方式）。</td>
+</tr>
+<tr>
+<td>分区机制partition</td>
+<td>Kafka的broker端支持消息分区，Producer可以决定把消息发到哪个分区，在一个分区中消息的顺序就是Producer发送消息的顺序，一个主题中可以有多个分区，具体分区的数量是可配置的。分区的意义很重大，后面的内容会逐渐体现。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="Kafka_Replication">Kafka Replication</h2><p>The leader maintains a set of in-sync replicas (ISR): the set of replicas that have fully caught up with the leader.<br>For each partition, we store in Zookeeper the current leader and the current ISR.  </p>
+<blockquote>
+<p>Leader维护了ISR(能完全赶得上Leader的副本集).每个Partition当前的Leader和ISR信息会记录在ZooKeeper中.  </p>
+</blockquote>
+<blockquote>
+<p>问题:为什么是由Leader来维护ISR?<br>背景:Leader会跟踪与其保持同步的Replica列表，该列表称为ISR。如果一个Follower宕机，或者落后太多，Leader将把它从ISR中移除.<br>答案:只有Leader才能知道哪些Replica能够及时完全赶得上.所有Follower都会和Leader通信获取最新的消息.<br>但是Follower之间并不互相知道彼此的信息.所以由Leader来管理ISR最合适了.Leader还可以决定移除落后太多的Replicas. </p>
+</blockquote>
+<p>Each replica stores messages in a local log and maintains a few important offset positions in the log.<br>The log end offset (LEO) represents the tail of the log.<br>The high watermark (HW) is the offset of the last committed message.  </p>
+<blockquote>
+<p>每个Replica都在自己的local log中存储消息,并在日志中维护了重要的offset位置信息.<br>LEO代表了日志的最新的偏移量,HW是最近提交消息的偏移量(HW也是每个Replica都有的吗?).  </p>
+</blockquote>
+<p>Each log is periodically synced to disks. Data before the flushed offset is guaranteed to be persisted on disks.<br>As we will see, the flush offset can be before or after HW.  </p>
+<blockquote>
+<p>每个日志都会定时地同步到磁盘.在flushed offset之前的数据一定能保存成功持久化到磁盘上.<br>flush offset可以在HW之前或者之后(因为follower只是先写到内存中然后返回ack给leader,hw增加时,<br>follower在内存中的消息不一定什么时候写到磁盘上,即可能在hw增加前就写到磁盘,或者等hw增加后才写到磁盘).</p>
+</blockquote>
+<p><strong>Writes</strong><br>To publish a message to a partition, the client first finds the <code>leader of the partition</code> from<br>Zookeeper and <code>sends the message to the leader</code>.The leader writes the message to its <code>local log</code>.<br>Each follower constantly <code>pulls</code> new messages from the leader using a single socket channel.<br>That way, the follower receives all messages in the <code>same order</code> as written in the leader.  </p>
+<blockquote>
+<p>为了将消息发布给一个Partition,客户端会从ZK中先找到这个Partition的Leader,然后把消息发送给Leader.<br>Leader会将消息写到自己的本地日志文件中,(Partition的)每个follower会从Leader一直拉取数据.<br>通过这种方式,follower接收的所有消息的顺序一定和写到leader的消息是同样的顺序.  </p>
+</blockquote>
+<p>The follower writes each received message to its <code>own log</code> and sends an <code>acknowledgment</code> back to the leader.<br>Once the leader receives the acknowledgment from <code>all replicas in ISR</code>, the message is <code>committed</code>.<br>The <code>leader advances the HW</code> and sends an acknowledgment to the client.  </p>
+<blockquote>
+<p>follower收到的每条消息都会写到自己的日志中,并且发送ack给leader.<br>一旦leader接收到在ISR中所有副本的ack,这条消息就会被提交.然后Leader会增加HW,并发送ack给客户端.</p>
+</blockquote>
+<p>For better performance, each follower sends an acknowledgment after the message is <code>written to memory</code>.<br>So, for each committed message, we guarantee that the message is stored in multiple replicas in memory.<br>However, there is <code>no guarantee</code> that any replica has <code>persisted</code> the commit message to disks though.<br>Given that correlated failures are relatively rare, this approach gives us a good balance between response time and durability.<br>In the future, we may consider adding options that provide even stronger guarantees.  </p>
+<blockquote>
+<p>为了性能考虑,每个follower当消息被写到内存时就发送ack(而不是要完全地刷写到磁盘上才ack).<br>所以对于每条提交的消息,我们能够保证的是这条消息一定是存储在多个副本(所有ISR)的内存中.<br>但是并不保证任何副本已经把这条提交的消息持久化到磁盘中.这是基于响应时间和持久性两者平衡的.    </p>
+</blockquote>
+<p>The leader also periodically <code>broadcasts the HW</code> to all followers.<br>The broadcasting can be piggybacked(背负) on the return value of the <code>fetch requests</code> from the followers.<br>From time to time, <code>each replica checkpoints its HW to its disk</code>.  </p>
+<blockquote>
+<p>Leader也会定时地将HW广播给所有的followers. 广播消息可以附加在从follower过来的fetch请求的结果中.<br>同时,每个副本(不管是leader还是follower)也会定时地将HW持久化到自己的磁盘上.  </p>
+</blockquote>
+<blockquote>
+<p>当follower向leader提交fetch请求时,leader也会告诉所有的follower说,我现在的hw是多少了.这是一种保护机制.<br>假设只有leader一个人保护了hw这个重要的信息,一旦leader不幸挂掉了,就没有人知道hw现在到底是多少了.<br>所以只要一有follower过来获取消息时,leader就不厌其烦地像个老太婆不断地唠叨说我这一次的hw更新到了哪里.<br>每个follower也就都会知道leader的最新hw.这样即使leader挂掉了,hw仍然在其他follower上都备份有这个重要信息.<br>几个follower在一阵商量后,选举出了新的leader,这些人都知道上一个leader最新的hw,因此hw这个香火会继续传承下去.  </p>
+</blockquote>
+<p><strong>Reads</strong><br>For simplicity, reads are always served from the leader. Only messages up to the HW are exposed to the reader.  </p>
+<blockquote>
+<p>为了简单起见,只有leader可以提供读消息的服务.并且最多只到hw位置的消息才会暴露给客户端.  </p>
+</blockquote>
+<hr>
+<p>Producer在发布消息到某个Partition时，先通过Zookeeper找到该Partition的Leader，<br>然后无论该Topic的Replication Factor为多少（也即该Partition有多少个Replica），<br>Producer只将该消息发送到该Partition的Leader。Leader会将该消息写入其本地Log。每个Follower都从Leader pull数据。<br>这种方式上，Follower存储的数据顺序与Leader保持一致。Follower在收到该消息并写入其Log后，向Leader发送ACK。<br>一旦Leader收到了ISR中的所有Replica的ACK，该消息就被认为已经commit了，Leader将增加HW并且向Producer发送ACK。<br>为了提高性能，每个Follower在接收到数据后就立马向Leader发送ACK，而非等到数据写入Log中。<br>因此，对于已经commit的消息，Kafka只能保证它被存于多个Replica的内存中，而不能保证它们被持久化到磁盘中，<br>也就不能完全保证异常发生后该条消息一定能被Consumer消费。但考虑到这种场景非常少见，<br>可以认为这种方式在性能和数据持久化上做了一个比较好的平衡。在将来的版本中，Kafka会考虑提供更高的持久性。<br>Consumer读消息也是从Leader读取，只有被commit过的消息（offset低于HW的消息）才会暴露给Consumer。 </p>
+<p>Kafka的复制机制既不是完全的同步复制，也不是单纯的异步复制。事实上，<br>同步复制要求所有能工作的Follower都复制完，这条消息才会被认为commit，这种复制方式极大的影响了吞吐率。<br>而异步复制方式下，Follower异步的从Leader复制数据，数据只要被Leader写入log就被认为已经commit，<br>这种情况下如果Follower都复制完都落后于Leader，而如果Leader突然宕机，则会丢失数据。<br>而Kafka的这种使用ISR的方式则很好的均衡了确保数据不丢失以及吞吐率。<br>Follower可以批量的从Leader复制数据，这样极大的提高复制性能（批量写磁盘），极大减少了Follower与Leader的差距  </p>
+<hr>
+<p>Checkpoint用在Follower failure是怎么解决HW的同步问题:<br>After a configured timeout period, the leader will drop the failed follower from its ISR<br>and writes will continue on the remaining replicas in ISR.  </p>
+<blockquote>
+<p>如果Follower失败了,在超过一定时间后,Leader会将这个失败的follower从ISR中移除(follower没有发送fetch请求)<br>由于ISR保存的是所有全部赶得上Leader的follower replicas,失败的follower肯定是赶不上了.<br>虽然ISR现在少了一个,但是并不会引起的数据的丢失,ISR中剩余的replicas会继续同步数据(只要ISR中有一个follower,就不会丢失数据)<br>(注意:这里讨论的是一个Partition的follower副本,而不是节点,如果是一个节点,它不止存储一个Partition,而且不都是follower)  </p>
+</blockquote>
+<p>If the failed follower comes back, it first truncates its log to the last checkpointed HW.<br>It then starts to catch up all messages after its HW from the leader.<br>When the follower fully catches up, the leader will add it back to the current ISR.  </p>
+<blockquote>
+<p>如果失败的follower恢复过来,它首先将自己的日志截断到上次checkpointed时刻的HW.<br>因为checkpoint记录的是所有Partition的hw offset. 当follower失败时,checkpoint中关于这个Partition的HW就不会再更新了.<br>而这个时候存储的HW信息和follower partition replica的offset并不一定是一致的. 比如这个follower获取消息比较快,<br>但是ISR中有其他follower复制消息比较慢,这样Leader并不会很快地更新HW,这个快的follower的hw也不会更新(leader广播hw给follower)<br>这种情况下,这个follower日志的offset是比hw要大的.所以在它恢复之后,要将比hw多的部分截掉,然后继续从leader拉取消息(跟平时一样).<br>实际上,ISR中的每个follower日志的offset一定是比hw大的.因为只有ISR中所有follower都复制完消息,leader才会增加hw.<br>也就是说有可能有些follower复制完了,而有些follower还没有复制完,那么hw是不会增加的,复制完的follower的offset就比hw要大.  </p>
+</blockquote>
+<h2 id="Consumer_Design">Consumer Design</h2><h3 id="Group_management_protocol">Group management protocol</h3><p><a href="https://cwiki.apache.org/confluence/display/KAFKA/Kafka+0.9+Consumer+Rewrite+Design" target="_blank" rel="noopener">https://cwiki.apache.org/confluence/display/KAFKA/Kafka+0.9+Consumer+Rewrite+Design</a>  </p>
+<p>Rebalancing is the process where a group of consumer instances (belonging to the same group) co-ordinate to own a mutually exclusive set of partitions of topics that the group is subscribed to. At the end of a successful rebalance operation for a consumer group, every partition for all subscribed topics will be owned by a single consumer instance within the group. The way rebalancing works is as follows. Every broker is elected as the coordinator for a subset of the consumer groups. The co-ordinator broker for a group is responsible for orchestrating a rebalance operation on consumer group membership changes or partition changes for the subscribed topics. It is also responsible for communicating the resulting partition ownership configuration to all consumers of the group undergoing a rebalance operation.<br>在同一个消费组里多个consumer实例需要进行平衡操作. 消费组会注册感兴趣的topics. 这个消费组中的所有消费者会互相协调,<br>每个消费者会互相拥有独一的partition集合. 即同一个partition只会分配给消费组中的一个消费者.一个消费者可以有多个partition.<br>当消费组成功平衡后,所有注册的topics的每个partition都会被唯一的消费者拥有(每个partition都会被分配给消费者去消费)<br>每个Broker节点会被选举为一部分消费组的协调节点,消费组的协调节点负责在组成员变化,或者注册的topics的partition变化时进行协调<br>协调节点同时负责在平衡操作时, 将partition的所有权配置信息(partition分配给哪个消费者)在所有consumers之间进行交流  </p>
+<p>Consumer消费者的工作过程:<br>1.在启动是或者协调节点故障转移时,消费者发送ConsumerMetadataRequest(GroupCoordinatorRequest)给bootstrap.brokers列表中的<br>任意一个brokers.在ConsumerMetadataResponse(GroupCoordinatorResponse)中,它接收消费者对应的消费组所属的协调节点的位置信息<br>2.消费者连接协调节点,并发送HeartbeatRequest.如果返回的HeartbeatResponse中返回IllegalGeneration错误码,说明协调节点已经在初始化平衡.<br>消费者就会停止抓取数据,提交offsets,发送JoinGroupRequest给协调节点. 在JoinGroupResponse,它接收消费者应该拥有的topic-partitions列表<br>以及当前消费组的新的generation编号. 这个时候消费组管理已经完成,消费者就可以开始抓取数据,并为它拥有的partitions提交offsets<br>3.如果HeartbeatResponse没有错误返回,消费者会从它上次拥有的partitions列表继续抓取数据,这个过程是不会被中断的.  </p>
+<p>Co-ordinator协调节点的工作过程:<br>1.在稳定状态下,协调节点通过故障检测协议跟踪每个消费组中每个消费者的健康状况.<br>2.在选举和启动时,协调节点读取它管理的消费组列表,以及从ZK中读取每个消费组的成员信息.如果之前没有成员信息,它不会做任何动作.<br>只有在同一个消费组的第一个消费者注册进来时,协调节点才开始工作(即开始加载消费组的消费者成员信息).<br>3.当协调节点完全加载完它所负责的消费组列表的所有组成员之前,它会在以下几种请求的响应中返回CoordinatorStartupNotComplete错误码:<br>HeartbeatRequest,OffsetCommitRequest,JoinGroupRequest.这样消费者就会果断时间重试(直到完全加载,没有错误码返回为止).<br>4.在选举或启动时,协调节点会对消费组中的所有消费者进行故障检测. 根据故障检测协议被协调节点标记为Dead的消费者会从消费组中移除<br>这个时候协调节点会为Dead的消费者所属的消费组触发一个平衡操作(消费者Dead之后,这个消费者拥有的partition需要平衡给其他消费者).<br>5.当HeartbeatResponse返回IllegalGeneration错误码,就会触发平衡操作. 一旦所有存活的消费者通过JoinGroupRequests重新注册到协调节点<br>协调节点会将最新的partition所有权信息在JoinGroupResponse的每个消费者之间通信(同步),然后就完成了平衡操作.<br>6.协调节点会跟踪任何一个消费者已经注册的topics的topic-partition的变更. 如果它检测到某个topic新增的partition,就会触发平衡操作.<br>当创建一个新的topics也会触发平衡操作,因为消费者可以在topic被创建之前就注册它感兴趣的topics.  </p>
+<p>从上面两者的工作过程,我们大致知道了协调节点负责管理消费组中的消费者.而消费者会和协调节点通信.<br>如果协调节点发生故障转移,则消费者需要寻找新的协调节点.<br>如果协调节点检测到消费者发生了故障,则协调节点负责平衡操作. </p>
+<h3 id="High_Level_Consumer">High Level Consumer</h3><p><a href="https://cwiki.apache.org/confluence/display/KAFKA/Consumer+Group+Example" target="_blank" rel="noopener">https://cwiki.apache.org/confluence/display/KAFKA/Consumer+Group+Example</a>  </p>
+<p>high-level方式的消费不用关心offset,它会自动的读ZK中这个Consumer Group的last offset(最近读取过的消息).<br>因为消费者在读取消息后, 会将最近读取Partition的offset写到ZK中.写到ZK中的offset名称是以ConsumerGroup.  </p>
+<p>一个消费者组可以有多个消费者,Kafka中的一个Partition只会被消费者组中的一个消费者消费,但可以被多个消费组同时消费.<br>下图Server1的Partition0(P0),会被消费组A和消费组B同时消费,但是消费组A中只能有一个消费者读取比如C1(消费组B也只有C3读取).<br>通过这种方式,可以将一个Broker上的多个Partition负载到不同的消费者(同一个消费组的多个消费者).<br>比如Broker1上有两个Partition(P0,P3), 对于消费组B, P0分给C3,P3分给C4. 但是对于消费组A,都分给了C1.  </p>
+<p><img src="http://kafka.apache.org/images/consumer-groups.png" alt="consumer_group"></p>
+<p>对于多个partition和多个consumer有以下这样的限制条件:  </p>
+<ul>
+<li>如果consumer比partition多，是浪费，因为kafka的设计是在一个partition上是不允许并发的，所以consumer数不要大于partition数 </li>
+<li>如果consumer比partition少，一个consumer会对应于多个partitions，这里主要合理分配consumer数和partition数，否则会导致partition里面的数据被取的不均匀.<br>最好partiton数目是consumer数目的整数倍，所以partition数目很重要，比如取24，就很容易设定consumer数目 </li>
+<li>如果consumer从多个partition读到数据，不保证数据间的顺序性，kafka只保证在一个partition上数据是有序的，但多个partition，根据你读的顺序会有不同 </li>
+<li>增减consumer，broker，partition会导致rebalance，所以rebalance后consumer对应的partition会发生变化 </li>
+<li>High-level接口中获取不到数据的时候是会block住消费者线程的</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">String topic = <span class="string">"page_visits"</span>;</span><br><span class="line">String group = <span class="string">"pv"</span>;</span><br><span class="line"></span><br><span class="line">Properties props = <span class="keyword">new</span> Properties();</span><br><span class="line">props.put(<span class="string">"group.id"</span>, group);</span><br><span class="line">props.put(<span class="string">"auto.offset.reset"</span>, <span class="string">"smallest"</span>); <span class="comment">// 必须要加，如果要读旧数据</span></span><br><span class="line">props.put(<span class="string">"zookeeper.connect"</span>, <span class="string">"localhost:2181"</span>);</span><br><span class="line">props.put(<span class="string">"zookeeper.session.timeout.ms"</span>, <span class="string">"400"</span>);</span><br><span class="line">props.put(<span class="string">"zookeeper.sync.time.ms"</span>, <span class="string">"200"</span>);</span><br><span class="line">props.put(<span class="string">"auto.commit.interval.ms"</span>, <span class="string">"1000"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建消费者到Kafka集群的连接(主要是通过ZooKeeper, 因为ZK中不仅记录了Kafka集群的地址,也保管了每个Partiton的最近offset)</span></span><br><span class="line">ConsumerConfig conf = <span class="keyword">new</span> ConsumerConfig(props);</span><br><span class="line">ConsumerConnector consumer = kafka.consumer.Consumer.createJavaConsumerConnector(conf);</span><br><span class="line"></span><br><span class="line"><span class="comment">// topic和线程的对应关系, 这里放了一个topic, 并且用一个线程来消费</span></span><br><span class="line">Map&lt;String, Integer&gt; topicCountMap = <span class="keyword">new</span> HashMap&lt;String, Integer&gt;();</span><br><span class="line">topicCountMap.put(topic, <span class="keyword">new</span> Integer(<span class="number">1</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">// 消费者指定了要消费的topics, 返回所有topics的消息流. 返回的key是topic名词, value是这个topic的KafkaStream消息流列表</span></span><br><span class="line">Map&lt;String, List&lt;KafkaStream&lt;<span class="keyword">byte</span>[], <span class="keyword">byte</span>[]&gt;&gt;&gt; consumerMap = consumer.createMessageStreams(topicCountMap);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取这个topic的Kafka消息流, 一个topic是有多个消息流的, 因为会从多个Partition上读取消息</span></span><br><span class="line">List&lt;KafkaStream&lt;<span class="keyword">byte</span>[], <span class="keyword">byte</span>[]&gt;&gt; streams = consumerMap.get(topic);</span><br><span class="line">KafkaStream&lt;<span class="keyword">byte</span>[], <span class="keyword">byte</span>[]&gt; stream = streams.get(<span class="number">0</span>); </span><br><span class="line"></span><br><span class="line"><span class="comment">// 读取消息, 使用KafkaStream, 获得流的迭代器, 包含了消息的key和message</span></span><br><span class="line">ConsumerIterator&lt;<span class="keyword">byte</span>[], <span class="keyword">byte</span>[]&gt; it = stream.iterator();</span><br><span class="line"><span class="keyword">while</span> (it.hasNext())&#123;</span><br><span class="line">    System.out.println(<span class="string">"message: "</span> + <span class="keyword">new</span> String(it.next().message()));</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 其实执行不到，因为对于high level,没有数据的 话, 上面的hasNext会block</span></span><br><span class="line"><span class="keyword">if</span> (consumer != <span class="keyword">null</span>) consumer.shutdown();</span><br></pre></td></tr></table></figure>
+<h3 id="Simple_Consumer">Simple Consumer</h3><p><a href="https://cwiki.apache.org/confluence/display/KAFKA/0.8.0+SimpleConsumer+Example" target="_blank" rel="noopener">https://cwiki.apache.org/confluence/display/KAFKA/0.8.0+SimpleConsumer+Example</a></p>
+<p>由于high-level consumer使用了ConsumerGroup提供的语义的一些限制条件.<br>用户希望比Consumer Group能更好的控制数据的消费,这是使用Low Level Consumer(Simple Consumer)的主要原因.  </p>
+<ul>
+<li>同一条消息读多次</li>
+<li>在一个线程中只读取某个Topic的部分Partition</li>
+<li>管理事务，从而确保每条消息被处理一次，且仅被处理一次</li>
+</ul>
+<p>与Consumer Group相比，Low Level Consumer要求用户(应用程序)做大量的额外工作。</p>
+<ul>
+<li>必须跟踪offset，从而确定下一条应该消费哪条消息(上一次消费到哪里了)</li>
+<li>必须找出每个TopicPartition的Leader Broker是哪个Broker(Partition的Leader)</li>
+<li>必须处理Broker Leader的变化(当Partition的Leader发生变化,如何自我调整)</li>
+</ul>
+<p>使用Low Level Consumer的一般流程如下</p>
+<ul>
+<li>查找到一个“活着”的Broker，并且找出每个Partition的Leader</li>
+<li>找出每个Partition的Follower(Replica Brokers)</li>
+<li>定义好请求，该请求应该能描述应用程序需要哪些数据</li>
+<li>Fetch数据</li>
+<li>识别Leader的变化，并对之作出必要的响应</li>
+</ul>
+<h3 id="New_Consumer">New Consumer</h3><p><a href="https://cwiki.apache.org/confluence/display/KAFKA/Kafka+0.9+Consumer+Rewrite+Design" target="_blank" rel="noopener">https://cwiki.apache.org/confluence/display/KAFKA/Kafka+0.9+Consumer+Rewrite+Design</a></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">KafkaConsumer&lt;Integer, String&gt; consumer = <span class="keyword">new</span> KafkaConsumer&lt;&gt;(props);</span><br><span class="line">consumer.subscribe(Collections.singletonList(<span class="keyword">this</span>.topic));</span><br><span class="line">ConsumerRecords&lt;Integer, String&gt; records = consumer.poll(<span class="number">1000</span>);</span><br><span class="line"><span class="keyword">for</span> (ConsumerRecord&lt;Integer, String&gt; record : records) &#123;</span><br><span class="line">    System.out.println(<span class="string">"Received message: ("</span> + record.key() + <span class="string">", "</span> + record.value() + <span class="string">") at offset "</span> + record.offset());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Partitions">Partitions</h3><p><a href="http://www.confluent.io/blog/how-to-choose-the-number-of-topicspartitions-in-a-kafka-cluster/" target="_blank" rel="noopener">http://www.confluent.io/blog/how-to-choose-the-number-of-topicspartitions-in-a-kafka-cluster/</a></p>
+<p>When publishing a keyed message, Kafka deterministically maps the message to a partition based on the hash of the key. This provides a guarantee that messages with the same key are always routed to the same partition. This guarantee can be important for certain applications since messages within a partition are always delivered in order to the consumer. If the number of partitions changes, such a guaranteemay no longer hold. 之前认为只用一个Partition保证有序性，其实还可以这么干..</p>
+<p>The end-to-end latency in Kafka is defined by the time from when a message is published by the producer to when the message is read by the consumer. Kafka only exposes a message to a consumer after it has been committed</p>
+<h2 id="Ref">Ref</h2><ul>
+<li><a href="http://www.ibm.com/developerworks/cn/opensource/os-cn-kafka/index.html" target="_blank" rel="noopener">http://www.ibm.com/developerworks/cn/opensource/os-cn-kafka/index.html</a></li>
+<li><a href="http://bbs.umeng.com/thread-12086-1-1.html" target="_blank" rel="noopener">http://bbs.umeng.com/thread-12086-1-1.html</a></li>
+<li><a href="http://www.aboutyun.com/forum.php?mod=viewthread&amp;tid=15812" target="_blank" rel="noopener">http://www.aboutyun.com/forum.php?mod=viewthread&amp;tid=15812</a></li>
+</ul>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/01/04/Kafka-Intro/">Introduce Kafka</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年01月04日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/01/04/Kafka-Intro/" title="Introduce Kafka">http://github.com/zqhxuyuan/2016/01/04/Kafka-Intro/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/01/04/Kafka-Intro/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/01/04/BookNote_Scala_doc/">
+        Scala Documentation
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/01/04/BookNote_FP_scala/">
+        Function Programming in Scala
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Background"><span class="toc-number">1.</span> <span class="toc-text">Background</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kafka_Replication"><span class="toc-number">2.</span> <span class="toc-text">Kafka Replication</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Consumer_Design"><span class="toc-number">3.</span> <span class="toc-text">Consumer Design</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Group_management_protocol"><span class="toc-number">3.1.</span> <span class="toc-text">Group management protocol</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#High_Level_Consumer"><span class="toc-number">3.2.</span> <span class="toc-text">High Level Consumer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Simple_Consumer"><span class="toc-number">3.3.</span> <span class="toc-text">Simple Consumer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#New_Consumer"><span class="toc-number">3.4.</span> <span class="toc-text">New Consumer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Partitions"><span class="toc-number">3.5.</span> <span class="toc-text">Partitions</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ref"><span class="toc-number">4.</span> <span class="toc-text">Ref</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/01/04/Kafka-Intro/" data-title="Introduce Kafka" data-url="http://github.com/zqhxuyuan/2016/01/04/Kafka-Intro/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/01/04/BookNote_Scala_doc/" title="上一篇: Scala Documentation">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/01/04/BookNote_FP_scala/" title="下一篇: Function Programming in Scala">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

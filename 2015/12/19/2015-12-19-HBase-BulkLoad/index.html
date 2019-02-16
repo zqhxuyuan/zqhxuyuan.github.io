@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>HBase BulkLoad | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="HBase的BulkLoad分成了两个过程: MR生成HFile, 导入HFile到HBase集群">
+<meta name="keywords" content="hbase">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HBase BulkLoad">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/12/19/2015-12-19-HBase-BulkLoad/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="HBase的BulkLoad分成了两个过程: MR生成HFile, 导入HFile到HBase集群">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151217221820999">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151217220331750">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151217221834509">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151217221852624">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151218215321046">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.214Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HBase BulkLoad">
+<meta name="twitter:description" content="HBase的BulkLoad分成了两个过程: MR生成HFile, 导入HFile到HBase集群">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151217221820999">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-12-19-HBase-BulkLoad" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/12/19/2015-12-19-HBase-BulkLoad/" class="article-date">
+  	<time datetime="2015-12-18T16:00:00.000Z" itemprop="datePublished">2015-12-19</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      HBase BulkLoad
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/bigdata/">bigdata</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hbase/">hbase</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>HBase的BulkLoad分成了两个过程: MR生成HFile, 导入HFile到HBase集群<br><a id="more"></a></p>
+<h2 id="HBase_BulkLoad">HBase BulkLoad</h2><h3 id="HBase_&amp;_MapReduce">HBase &amp; MapReduce</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@spark047213 ~]$ hadoop jar hbase-1.0.2/lib/hbase-server-1.0.2.jar</span><br><span class="line">Exception in thread &quot;main&quot; java.lang.NoClassDefFoundError: org/apache/hadoop/hbase/filter/Filter</span><br></pre></td></tr></table></figure>
+<p>运行MapReduce作业时,需要将HBase的依赖包加入到HADOOP_CLASSPATH中: <a href="http://hbase.apache.org/book.html#hbase.mapreduce.classpath" target="_blank" rel="noopener">http://hbase.apache.org/book.html#hbase.mapreduce.classpath</a>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">export HBASE_HOME=/home/qihuang.zheng/hbase-1.0.2</span><br><span class="line">HADOOP_CLASSPATH=`$&#123;HBASE_HOME&#125;/bin/hbase classpath` hadoop jar $&#123;HBASE_HOME&#125;/lib/hbase-server-1.0.2.jar rowcounter data.md5_id</span><br><span class="line"></span><br><span class="line">[qihuang.zheng@spark047213 ~]$ HADOOP_CLASSPATH=`$&#123;HBASE_HOME&#125;/bin/hbase classpath` hadoop jar $&#123;HBASE_HOME&#125;/lib/hbase-server-1.0.2.jar</span><br><span class="line">An example program must be given as the first argument.</span><br><span class="line">Valid program names are:</span><br><span class="line">  CellCounter: Count cells in HBase table</span><br><span class="line">  completebulkload: Complete a bulk data load.</span><br><span class="line">  copytable: Export a table from local cluster to peer cluster</span><br><span class="line">  export: Write table data to HDFS.</span><br><span class="line">  import: Import data written by Export.</span><br><span class="line">  importtsv: Import data in TSV format.</span><br><span class="line">  rowcounter: Count rows in HBase table</span><br><span class="line">  verifyrep: Compare the data from tables in two different clusters.</span><br></pre></td></tr></table></figure>
+<h3 id="MR作业生成HFile">MR作业生成HFile</h3><p>You must specify exactly one column to be the row key, and you must specify a column name for every column that exists in the input data.<br><code>importtsv</code>命令导入HDFS上的文件需要指定唯一的row-key,并且输入数据的每一列都需要指定列名. 所以后两列不想存储都不行.  </p>
+<blockquote>
+<p>In order to function efficiently, HFileOutputFormat2 must be configured such that each output HFile fits within a single region. In order to do this, jobs whose output will be bulk loaded into HBase use Hadoop’s TotalOrderPartitioner class to partition the map output into disjoint ranges of the key space, corresponding to the key ranges of the regions in the table.</p>
+</blockquote>
+<p>确保每个输出的HFile文件都只存在于唯一的Region中.这样在导入到HBase集群中, 只要移动HFile文件即可.<br>如果一个HFile文件存在于不止一个Region中,则导入之后,这个Region还会进行Split.<br>而我们的目的是移动HFile文件后立即可用且没有额外的工作. 同时因为Region是排序的,输出也必须是有序的.<br>导入到HBase集群的输出文件会使用Hadoop的TotalOrderPartitioner将map输出进行分区:分解成不同的范围<br>这个范围也对应了HBase建表时候创建的多个Region的KeyRange.  </p>
+<blockquote>
+<p>MR输出的每个HFile文件正好对应了HBase每个Region的KeyRange.这样文件只要直接拷贝就可以使用.  </p>
+</blockquote>
+<p>在建表的时候预先分配Split: <a href="http://grokbase.com/t/hbase/user/145bkvaq0x/how-to-pre-split-a-table-whose-row-key-is-md5-url" target="_blank" rel="noopener">http://grokbase.com/t/hbase/user/145bkvaq0x/how-to-pre-split-a-table-whose-row-key-is-md5-url</a>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">create &apos;data.md5_mob2&apos;, &apos;mob&apos;, &#123;NUMREGIONS =&gt; 16, SPLITALGO =&gt; &apos;HexStringSplit&apos;&#125;</span><br><span class="line">create &apos;data.md5_id2&apos;, &apos;id&apos;, &#123;NUMREGIONS =&gt; 16, SPLITALGO =&gt; &apos;HexStringSplit&apos;&#125;</span><br><span class="line">create &apos;data.md5_id2&apos;, &apos;id&apos;, &#123;SPLITS_FILE =&gt; &apos;split32.txt&apos;&#125;</span><br><span class="line">create &apos;data.md5_id4&apos;, &apos;id&apos;, &#123;SPLITS_FILE =&gt; &apos;split32.txt&apos;, REGION_REPLICATION =&gt; 1, CONFIGURATION =&gt; &#123;&apos;hbase.regionserver.region.split.policy&apos; =&gt; &apos;KeyPrefixRegionSplitPolicy&apos;, &apos;prefix_split_key_policy.prefix_length&apos; =&gt; &apos;3&apos;&#125;&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>假设按照3位(0-f),则分区数=16^3=4096,在建表时会有问题. 于是改成了16<em>16</em>8=2048个Region(实际上会多一个Region的).  </p>
+</blockquote>
+<p><code>sh hfile.sh id_mdf_tmp1 id_hbase1</code></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line"><span class="comment">#Usage: importtsv -Dimporttsv.columns=a,b,c &lt;tablename&gt; &lt;inputdir&gt;</span></span><br><span class="line">input=<span class="variable">$1</span></span><br><span class="line">output=<span class="variable">$2</span></span><br><span class="line">HADOOP_CLASSPATH=`hbase classpath` hadoop jar <span class="variable">$&#123;HBASE_HOME&#125;</span>/lib/hbase-server-1.0.2.jar importtsv \</span><br><span class="line">-Dimporttsv.columns=id:id,HBASE_ROW_KEY,id:c1,id:c2 \</span><br><span class="line">-Dimporttsv.separator=, \</span><br><span class="line">-Dimporttsv.bulk.output=/user/tongdun/<span class="variable">$output</span> \</span><br><span class="line">-Dcreate.table=no \</span><br><span class="line">-Dno.strict=<span class="literal">true</span> \</span><br><span class="line">-Dmapreduce.map.speculative=<span class="literal">false</span> \</span><br><span class="line">-Dmapreduce.reduce.speculative=<span class="literal">false</span> \</span><br><span class="line">data.md5_id2 /user/tongdun/<span class="variable">$input</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>如果只是KeyValue数据,可以不设置Column.只有ColumnFamily. 但是由于源数据包括了四个字段,在表中都必须对应字段.<br>如果没有指定importtsv.bulk.output,则直接写入到HBase集群.指定的话先在HDFS上生成HFile文件.这时并不会写数据到HBase中.  </p>
+</blockquote>
+<h3 id="MR任务内存不足">MR任务内存不足</h3><p>由于运行MapReduce的资源有限,如果读取太大的文件,会造成内存不足.但是仅仅是一个26G文件,也会有Container内存不足.更何况还有100多G的文件呢!   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Container [pid=48778,containerID=container_1449135806348_0034_01_000162] is running beyond physical memory limits. Current usage: 4.0 GB of 4 GB physical memory used; 4.7 GB of 8.4 GB virtual memory used. Killing container.</span><br><span class="line">Dump of the process-tree for container_1449135806348_0034_01_000162 :</span><br><span class="line">        |- PID PPID PGRPID SESSID CMD_NAME USER_MODE_TIME(MILLIS) SYSTEM_TIME(MILLIS) VMEM_USAGE(BYTES) RSSMEM_USAGE(PAGES) FULL_CMD_LINE</span><br><span class="line">        |- 48795 48778 48778 48778 (java) 3961 5369 5007175680 1054447 /usr/install/java/bin/java -Djava.net.preferIPv4Stack=true -Dhadoop.metrics.log.level=WARN -Xmx4096m -Djava.io.tmpdir=/home/admin/hadoop/data/yarn-tmp/nmdir/usercache/qihuang.zheng/appcache/application_1449135806348_0034/container_1449135806348_0034_01_000162/tmp -Dlog4j.configuration=container-log4j.properties -Dyarn.app.container.log.dir=/home/admin/output/hadoop/logs/application_1449135806348_0034/container_1449135806348_0034_01_000162 -Dyarn.app.container.log.filesize=0 -Dhadoop.root.logger=INFO,CLA org.apache.hadoop.mapred.YarnChild 192.168.47.242 40792 attempt_1449135806348_0034_r_000015_0 162</span><br><span class="line">        |- 48778 11861 48778 48778 (bash) 0 1 9424896 308 /bin/bash -c /usr/install/java/bin/java -Djava.net.preferIPv4Stack=true -Dhadoop.metrics.log.level=WARN  -Xmx4096m -Djava.io.tmpdir=/home/admin/hadoop/data/yarn-tmp/nmdir/usercache/qihuang.zheng/appcache/application_1449135806348_0034/container_1449135806348_0034_01_000162/tmp -Dlog4j.configuration=container-log4j.properties -Dyarn.app.container.log.dir=/home/admin/output/hadoop/logs/application_1449135806348_0034/container_1449135806348_0034_01_000162 -Dyarn.app.container.log.filesize=0 -Dhadoop.root.logger=INFO,CLA org.apache.hadoop.mapred.YarnChild 192.168.47.242 40792 attempt_1449135806348_0034_r_000015_0 162 1&gt;/home/admin/output/hadoop/logs/application_1449135806348_0034/container_1449135806348_0034_01_000162/stdout 2&gt;/home/admin/output/hadoop/logs/application_1449135806348_0034/container_1449135806348_0034_01_000162/stderr</span><br><span class="line"></span><br><span class="line">Container killed on request. Exit code is 143</span><br><span class="line">Container exited with a non-zero exit code 143</span><br></pre></td></tr></table></figure>
+<p>参考: <a href="http://stackoverflow.com/questions/21005643/container-is-running-beyond-memory-limits" target="_blank" rel="noopener">http://stackoverflow.com/questions/21005643/container-is-running-beyond-memory-limits</a></p>
+<p>YARN的ApplicationMaster也占用了NM中的一个Container. 在刚刚启动AM时,还没有启动MR任务时:  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151217221820999" alt="mr_am"></p>
+<p>添加参数,修改map/reduce的内存为5G.    </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-Dmapreduce.map.memory.mb=5120 -Dmapreduce.map.java.opts=-Xmx4096m \</span><br><span class="line">-Dmapreduce.reduce.memory.mb=5120 -Dmapreduce.reduce.java.opts=-Xmx4096m \</span><br></pre></td></tr></table></figure>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151217220331750" alt="mr-5g"></p>
+<h3 id="MR任务内存调优">MR任务内存调优</h3><p>由于可用内存每个节点只有24G. 一共9个NM. 24G的内存分成5G,一个节点最多启动4个Container,最后剩余4G. 这4个G可以分给Reduce </p>
+<p>26G文件, 209个MapTasks, 16个Reduces. MapNumer=26*1024/128(BlockSize)=209.<br>Reduce的数量是根据HBase中的Region数量是固定的:因为使用了<code>NUMREGIONS =&gt; 16, SPLITALGO =&gt; &#39;HexStringSplit&#39;</code>  </p>
+<p>这样9个节点,16个ReduceTask,每个节点运行了2个Reduce,剩余的4G可以给每个Reduce增加2G. </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-Dmapreduce.map.memory.mb=5120 -Dmapreduce.map.java.opts=-Xmx4096m \</span><br><span class="line">-Dmapreduce.reduce.memory.mb=7189 -Dmapreduce.reduce.java.opts=-Xmx6144m \</span><br></pre></td></tr></table></figure>
+<p>127G,MapTasks=127*8=1016.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151217221834509" alt="mr_127g"></p>
+<p>在还没有运行Reduce任务时,由于每个Map的内存最多5G,所以每个节点剩余的内存也都是4G.<br>一旦Reduce任务运行起来,一个Reduce任务7G. 原先一个节点4个Map,当一个Map完成后,释放5G空间,剩余9G.<br>此时启动了一个Reduce,则剩余空间是9-7=2G. 但是下图看到剩余的却是1G. <code>什么东西多占用了1G?</code>  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151217221852624" alt="mr_reduce"></p>
+<p>Map任务是对输入文件按照128M进行划分.而Reduce固定16个.在大文件的情况下,每个Reduce的数据量也很大.内存能够撑得住?  </p>
+<h3 id="生成HFile文件">生成HFile文件</h3><p>原始文件27G. Reduce数量16个,生成的16个文件都有5.5G.可以看到文件名实际上已经能确定Region了.<br>26G文件生成HFile花了20min. 6T需要<code>6*1024*20/26/60=3Day</code>. 看起来比脚本处理快多了.   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@spark047213 ~]$ hadoop fs -du -h /user/tongdun/id_hbase1_1/id</span><br><span class="line">5.5 G  /user/tongdun/id_hbase1_1/id/00acc7bdb9444ede81bd938c772e420f</span><br><span class="line">5.5 G  /user/tongdun/id_hbase1_1/id/0671fcdbd0884eecaed2876060a203fe</span><br><span class="line">5.5 G  /user/tongdun/id_hbase1_1/id/069cafcd20d947ec80fc2063415886ca</span><br><span class="line">5.5 G  /user/tongdun/id_hbase1_1/id/12144090330941c3a6236fa899c3b8f5</span><br><span class="line">5.5 G  /user/tongdun/id_hbase1_1/id/3870800164104b92a64db7f80757d750</span><br><span class="line">5.5 G  /user/tongdun/id_hbase1_1/id/41d52b83667a49f8ba4ea68336c2c66c</span><br><span class="line">5.5 G  /user/tongdun/id_hbase1_1/id/4de99c7e03804ed085bf63c1c828d700</span><br><span class="line">5.5 G  /user/tongdun/id_hbase1_1/id/541c7dfa1fa74b139d93a5ef10049934</span><br><span class="line">5.5 G  /user/tongdun/id_hbase1_1/id/5a6819f2d0864cde8450c1d5676bab07</span><br><span class="line">5.5 G  /user/tongdun/id_hbase1_1/id/5f8fe4436d6443e18c2e120d2f5d07f0</span><br><span class="line">5.5 G  /user/tongdun/id_hbase1_1/id/77f018a00d3543abb54de65bba26419d</span><br><span class="line">5.5 G  /user/tongdun/id_hbase1_1/id/b35a2c68790c4b31bf0b59511b4baf7b</span><br><span class="line">5.5 G  /user/tongdun/id_hbase1_1/id/bab7d211bf614bc48d9661df9ba68d81</span><br><span class="line">5.5 G  /user/tongdun/id_hbase1_1/id/bd1cc8041aaf47ec980d7855d42f34c6</span><br><span class="line">5.5 G  /user/tongdun/id_hbase1_1/id/cbd41ef63b984d45ba49be5c3f0e5466</span><br><span class="line">5.5 G  /user/tongdun/id_hbase1_1/id/f01fbad0952b496bab2e4ab199c196cd</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>问题: 为什么不是0-f开头的每个都有一个文件.上面0开头的有三个文件.2开头的都没有.能对应上KeyRange吗?  </p>
+</blockquote>
+<h3 id="导入HBase集群和验证数据">导入HBase集群和验证数据</h3><blockquote>
+<p>completebulkload tool is used to import the data into the running cluster: iterates through the prepared data files, and for each one determines the region the file belongs to. It then contacts the appropriate RegionServer which adopts the HFile, moving it into its storage directory and making the data available to clients.<br>循环每个HFile文件,决定这个文件属于哪个Region,联系对应的RegionServer,移动到RS的存储目录,客户端查询数据.  </p>
+</blockquote>
+<p>A.将生成的HFile导入到HBase集群中可以用hbase的增量加载: <code>hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles $output data.md5_id2</code><br>B.仍然使用hadoop命令,但和前面创建HFile不同,这是一个hdfs的mv操作,并不会启动MapReduce: <code>HADOOP_CLASSPATH=</code>hbase classpath<code>hadoop jar ${HBASE_HOME}/lib/hbase-server-1.0.2.jar completebulkload $output data.md5_id2</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">HADOOP_CLASSPATH=`hbase classpath` hadoop jar $&#123;HBASE_HOME&#125;/lib/hbase-server-1.0.2.jar completebulkload /user/tongdun/id_hbase/id_hbase1_1 data.md5_id2</span><br><span class="line"></span><br><span class="line">hbase(main):001:0&gt; list</span><br><span class="line">TABLE</span><br><span class="line">data.md5_id</span><br><span class="line">data.md5_id2</span><br><span class="line">2 row(s) in 0.9380 seconds</span><br><span class="line"></span><br><span class="line">=&gt; [&quot;data.md5_id&quot;, &quot;data.md5_id2&quot;]</span><br><span class="line">hbase(main):002:0&gt; get &quot;data.md5_id2&quot;,&quot;000045d573fb248697bb9c3f8536c1b5&quot;</span><br><span class="line">COLUMN                                             CELL</span><br><span class="line"> id:c1                                             timestamp=1450359965709, value=00</span><br><span class="line"> id:c2                                             timestamp=1450359965709, value=00</span><br><span class="line"> id:id                                             timestamp=1450359965709, value=110100195503206224</span><br><span class="line">3 row(s) in 1.0650 seconds</span><br><span class="line"></span><br><span class="line">hbase(main):004:0&gt; get &quot;data.md5_id2&quot;,&quot;ddd5df06f27f9e127eb5816b338970dd&quot;</span><br><span class="line">COLUMN                                             CELL</span><br><span class="line"> id:id                                             timestamp=1450359965709, value=110100195512089920</span><br><span class="line">3 row(s) in 0.1520 seconds</span><br></pre></td></tr></table></figure>
+<p>由于是移动文件, /user/tongdun/id_hbase/id_hbase1_1会被移动到HDFS中hbase的存储路径: 但是貌似名字不是一样的 </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151218215321046" alt="hbase-path"></p>
+<p>由于completebulkload的文件夹下级必须是column-family:id,批量导入脚本:  </p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line"><span class="keyword">for</span> f <span class="keyword">in</span> `hadoop fs -ls /user/tongdun/id_hbase | awk <span class="string">'&#123;print $8&#125;'</span>`</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">  HADOOP_CLASSPATH=`hbase classpath` hadoop jar <span class="variable">$&#123;HBASE_HOME&#125;</span>/lib/hbase-server-1.0.2.jar completebulkload <span class="variable">$f</span> data.md5_id2</span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+<h3 id="增加(手机号)新数据流程">增加(手机号)新数据流程</h3><p>1.上传文件到HDFS: <code>hadoop fs -put mobile_173.txt /user/tongdun/mob_173</code><br>2.生成HFile并导入到HBase: <code>sh hfile2.sh mob_173 mob_173_out</code>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">input=$1</span><br><span class="line">output=$2</span><br><span class="line"></span><br><span class="line">HADOOP_CLASSPATH=`$&#123;HBASE_HOME&#125;/bin/hbase classpath` hadoop jar $&#123;HBASE_HOME&#125;/lib/hbase-server-1.0.2.jar importtsv \</span><br><span class="line">-Dimporttsv.columns=mob:mob,HBASE_ROW_KEY \</span><br><span class="line">-Dimporttsv.separator=, \</span><br><span class="line">-Dimporttsv.bulk.output=/user/tongdun/$output \</span><br><span class="line">-Dcreate.table=no \</span><br><span class="line">-Dno.strict=true \</span><br><span class="line">-Dmapreduce.map.speculative=false \</span><br><span class="line">-Dmapreduce.reduce.speculative=false \</span><br><span class="line">-Dmapreduce.map.memory.mb=5120 -Dmapreduce.map.java.opts=-Xmx4096m \</span><br><span class="line">-Dmapreduce.reduce.memory.mb=7189 -Dmapreduce.reduce.java.opts=-Xmx6144m \</span><br><span class="line">data.md5_mob2 /user/tongdun/$input</span><br><span class="line"></span><br><span class="line">HADOOP_CLASSPATH=`hbase classpath` hadoop jar $&#123;HBASE_HOME&#125;/lib/hbase-server-1.0.2.jar completebulkload /user/tongdun/$output data.md5_mob2</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意: 要根据源文件格式,比如mobile_173.txt只有两列,分别是手机号和md5.<br>对于手机号,创建表时指定的列族为mob,列名也是mob.  </p>
+</blockquote>
+<blockquote>
+<p>上面第一个命令会在output生成文件, 但是第二个命令会移动到hbase中,所以最终output是没有文件的.</p>
+</blockquote>
+<p>或者直接将文本文件导入到HBase中: <code>nohup sh hfile3.sh &amp;</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">HADOOP_CLASSPATH=`$&#123;HBASE_HOME&#125;/bin/hbase classpath` hadoop jar $&#123;HBASE_HOME&#125;/lib/hbase-server-1.0.2.jar importtsv \</span><br><span class="line">-Dimporttsv.columns=mob:mob,HBASE_ROW_KEY \</span><br><span class="line">-Dimporttsv.separator=, \</span><br><span class="line">-Dcreate.table=no \</span><br><span class="line">-Dno.strict=true \</span><br><span class="line">-Dmapreduce.map.speculative=false \</span><br><span class="line">-Dmapreduce.reduce.speculative=false \</span><br><span class="line">-Dmapreduce.map.memory.mb=5120 -Dmapreduce.map.java.opts=-Xmx4096m \</span><br><span class="line">-Dmapreduce.reduce.memory.mb=7189 -Dmapreduce.reduce.java.opts=-Xmx6144m \</span><br><span class="line">data.md5_mob2 /user/tongdun/mob_173/mobbile_173.txt</span><br></pre></td></tr></table></figure>
+<p>查看MR作业: <code>yarn application -list</code></p>
+<h4 id="验证新增数据">验证新增数据</h4><p>hdfs:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@spark047213 ~]$ hadoop fs -cat /user/tongdun/mob_173/*.txt | head</span><br><span class="line">17300000000,04b8c36de88db9ad1aa488b3beb960ea</span><br><span class="line">17300000001,0d0a267f885048645083110b9dcfc770</span><br><span class="line">17300000002,5a0c8c8e5682476d2e5a6446995f116a</span><br></pre></td></tr></table></figure>
+<p>hbase:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hbase(main):006:0&gt; get &apos;data.md5_mob2&apos;,&apos;04b8c36de88db9ad1aa488b3beb960ea&apos;</span><br><span class="line">COLUMN                                             CELL</span><br><span class="line"> mob:mob                                           timestamp=1454381066042, value=17300000000</span><br><span class="line">1 row(s) in 0.0280 seconds</span><br></pre></td></tr></table></figure>
+<h3 id="修改副本数">修改副本数</h3><table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Output</th>
+<th>Time</th>
+<th>multi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>26G</td>
+<td>87.3G</td>
+<td>20min</td>
+<td>3.3</td>
+</tr>
+<tr>
+<td>806.5G</td>
+<td>2.6T</td>
+<td>10h</td>
+<td>3.3</td>
+</tr>
+<tr>
+<td>6T</td>
+<td>18T</td>
+<td>…</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>数据量有点大,所以考虑把这些数据的副本数都设置为1,减少数据的占用空间.    </p>
+<p>To set replication of an individual file to 4:  <code>hadoop fs -setrep -w 4 /path/to/file</code><br>You can also do this recursively. To change replication of entire HDFS to 1: <code>hadoop fs -setrep -R -w 1 /</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">nohup hadoop fs -setrep -R -w 1 /hbase/data/default &amp;</span><br><span class="line">nohup hadoop fs -setrep -R -w 1 /user/tongdun/id_mdf* &amp;</span><br><span class="line">nohup hadoop fs -setrep -R -w 1 /user/tongdun/id_hbase* &amp;</span><br><span class="line">nohup hadoop fs -setrep -R -w 1 /user/tongdun/mob_mdf_tmp* &amp; </span><br><span class="line">nohup hadoop fs -setrep -R -w 1 /user/tongdun/mob_hbase &amp;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>-R选项表示递归,所以最后面的参数可以是文件夹.  </p>
+</blockquote>
+<h3 id="Ref">Ref</h3><ul>
+<li><a href="https://phoenix.apache.org/bulk_dataload.html" target="_blank" rel="noopener">https://phoenix.apache.org/bulk_dataload.html</a>  </li>
+<li><a href="http://blog.cloudera.com/blog/2013/09/how-to-use-hbase-bulk-loading-and-why/" target="_blank" rel="noopener">http://blog.cloudera.com/blog/2013/09/how-to-use-hbase-bulk-loading-and-why/</a>   </li>
+<li><a href="http://hbase.apache.org/book.html#importtsv" target="_blank" rel="noopener">http://hbase.apache.org/book.html#importtsv</a> </li>
+<li><a href="http://hbase.apache.org/book.html#arch.bulk.load.arch" target="_blank" rel="noopener">http://hbase.apache.org/book.html#arch.bulk.load.arch</a></li>
+<li><a href="http://blog.csdn.net/samhacker/article/details/21282243" target="_blank" rel="noopener">http://blog.csdn.net/samhacker/article/details/21282243</a>  </li>
+<li><a href="http://my.oschina.net/leejun2005/blog/187309" target="_blank" rel="noopener">http://my.oschina.net/leejun2005/blog/187309</a></li>
+</ul>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/12/19/2015-12-19-HBase-BulkLoad/">HBase BulkLoad</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年12月19日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/12/19/2015-12-19-HBase-BulkLoad/" title="HBase BulkLoad">http://github.com/zqhxuyuan/2015/12/19/2015-12-19-HBase-BulkLoad/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/12/19/2015-12-19-HBase-BulkLoad/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/12/21/2015-12-21-HBase-Query/">
+        HBase多线程Query优化查询速度
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/12/18/2015-12-18-Spark-HBase-RDD/">
+        HBase-RDD
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#HBase_BulkLoad"><span class="toc-number">1.</span> <span class="toc-text">HBase BulkLoad</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase_&_MapReduce"><span class="toc-number">1.1.</span> <span class="toc-text">HBase &amp; MapReduce</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MR作业生成HFile"><span class="toc-number">1.2.</span> <span class="toc-text">MR作业生成HFile</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MR任务内存不足"><span class="toc-number">1.3.</span> <span class="toc-text">MR任务内存不足</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MR任务内存调优"><span class="toc-number">1.4.</span> <span class="toc-text">MR任务内存调优</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#生成HFile文件"><span class="toc-number">1.5.</span> <span class="toc-text">生成HFile文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#导入HBase集群和验证数据"><span class="toc-number">1.6.</span> <span class="toc-text">导入HBase集群和验证数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#增加(手机号)新数据流程"><span class="toc-number">1.7.</span> <span class="toc-text">增加(手机号)新数据流程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#验证新增数据"><span class="toc-number">1.7.1.</span> <span class="toc-text">验证新增数据</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#修改副本数"><span class="toc-number">1.8.</span> <span class="toc-text">修改副本数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Ref"><span class="toc-number">1.9.</span> <span class="toc-text">Ref</span></a></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/12/19/2015-12-19-HBase-BulkLoad/" data-title="HBase BulkLoad" data-url="http://github.com/zqhxuyuan/2015/12/19/2015-12-19-HBase-BulkLoad/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/12/21/2015-12-21-HBase-Query/" title="上一篇: HBase多线程Query优化查询速度">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/12/18/2015-12-18-Spark-HBase-RDD/" title="下一篇: HBase-RDD">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

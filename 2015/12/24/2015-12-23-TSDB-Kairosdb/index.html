@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>时间序列数据库之Kairosdb | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="A time series is a sequence of data points, typically consisting of successive measurements made over a time interval.">
+<meta name="keywords" content="timeseries">
+<meta property="og:type" content="article">
+<meta property="og:title" content="时间序列数据库之Kairosdb">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/12/24/2015-12-23-TSDB-Kairosdb/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="A time series is a sequence of data points, typically consisting of successive measurements made over a time interval.">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.220Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="时间序列数据库之Kairosdb">
+<meta name="twitter:description" content="A time series is a sequence of data points, typically consisting of successive measurements made over a time interval.">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-12-23-TSDB-Kairosdb" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/12/24/2015-12-23-TSDB-Kairosdb/" class="article-date">
+  	<time datetime="2015-12-23T16:00:00.000Z" itemprop="datePublished">2015-12-24</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      时间序列数据库之Kairosdb
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/work/">work</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/timeseries/">timeseries</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>A time series is a sequence of data points, typically consisting of successive measurements made over a time interval.<br><a id="more"></a></p>
+<h2 id="存储">存储</h2><p>添加数据支持telnet的4242端口或者rest的8080端口. 添加数据表示将要存储的指标数据入库.<br>telnet的格式: <code>put &lt;metric name&gt; &lt;time stamp&gt; &lt;value&gt; &lt;tag&gt; &lt;tag&gt;... \n</code>  </p>
+<p>比如要监控主机的load:  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">now=$(($(date +%s%N)/1000000))</span><br><span class="line">metric=load_value_test</span><br><span class="line">value=42</span><br><span class="line"><span class="built_in">echo</span> <span class="string">"put <span class="variable">$metric</span> <span class="variable">$now</span> <span class="variable">$value</span> host=A"</span> | nc -w 30 localhost 4242</span><br></pre></td></tr></table></figure>
+<p>上面表示: 在主机host为A的机器上, 指标名称load_value_test, 在某个时间点(入库时一般是当前时间)的值是42.<br>对于相同的指标名称, 会收集很多个机器. 同样对于一台机器, 收集的指标也不止load,还有CPU等.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">put load $now 42 host=192.168.0.10</span><br><span class="line">put load $now 55 host=192.168.0.11</span><br><span class="line">put load $now 60 host=192.168.0.12</span><br><span class="line"></span><br><span class="line">put cpu $now 10 host=192.168.0.10</span><br><span class="line">put cpu $now 29 host=192.168.0.11</span><br><span class="line">put cpu $now 99 host=192.168.0.12</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>下面的语法是InfluxDB和KairosDB的对比(针对指标只有一个值)</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>KairosDB</th>
+<th>InfluxDB</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cpu 1434067467000 0.64 host=serverA,region=us_west</td>
+<td>cpu,host=serverA,region=us_west value=0.64 1434067467000</td>
+</tr>
+</tbody>
+</table>
+<p>其中对应的Schema:  </p>
+<table>
+<thead>
+<tr>
+<th>metric_name</th>
+<th>timestamp</th>
+<th>tags</th>
+<th>fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>cpu</td>
+<td>1434067467000</td>
+<td>host=serverA,region=us_west</td>
+<td>0.64/value=0.64</td>
+</tr>
+</tbody>
+</table>
+<p>KairosDB也支持rest方式表示(HTTP POST)存储数据:  </p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[&#123;</span><br><span class="line">    <span class="attr">"name"</span>: <span class="string">"load"</span>,</span><br><span class="line">    <span class="attr">"timestamp"</span>: <span class="number">1349109376</span>,</span><br><span class="line">    <span class="attr">"type"</span>: <span class="string">"long"</span>,</span><br><span class="line">    <span class="attr">"value"</span>: <span class="number">42</span>,</span><br><span class="line">    <span class="attr">"tags"</span>:&#123;<span class="attr">"host"</span>:<span class="string">"192.168.0.10"</span>&#125;</span><br><span class="line">&#125;,</span><br><span class="line">&#123;</span><br><span class="line">    <span class="attr">"name"</span>: <span class="string">"cpu"</span>,</span><br><span class="line">    <span class="attr">"timestamp"</span>: <span class="number">1349109376</span>,</span><br><span class="line">    <span class="attr">"type"</span>: <span class="string">"long"</span>,</span><br><span class="line">    <span class="attr">"value"</span>: <span class="number">10</span>,</span><br><span class="line">    <span class="attr">"tags"</span>:&#123;<span class="attr">"host"</span>:<span class="string">"192.168.0.10"</span>&#125;</span><br><span class="line">&#125;]</span><br></pre></td></tr></table></figure>
+<h2 id="DataPoints">DataPoints</h2><blockquote>
+<p>Data points have a metric name, a value, a timestamp, and a list of one or more tags.<br>Tags are named properties that identify the data, such as its type and where it comes from.<br>You can either use “timestamp” with “value” for a single data point or you can use “datapoints” to post multiple data points.  </p>
+</blockquote>
+<p>datapoints: An array of data points. Each data point consists of a timestamp and value.</p>
+<p>The tags are used when querying metrics to narrow down the search. For example,<br>if multiple metrics are measured on server1, you could add the “host”:”server1” tag to each of the metrics<br>and queries could return all metrics for the “host” tagged with the value of “server1”.<br>如果server1有多个指标需要被监控,可以为每个指标都添加host的标签. 当查询host=server1的标签时,所有server1的指标都会返回.  </p>
+<p>DataPoints一般是多个timestamp和value的组合,表示在某一个时刻的指标值,tags也可以指定多个.<br>下面表示数据中心为DC1,主机为server1在三个时间点的load值.  </p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"name"</span>: <span class="string">"load"</span>,</span><br><span class="line">    <span class="attr">"datapoints"</span>: [[<span class="number">1359788400000</span>, <span class="number">123</span>], [<span class="number">1359788300000</span>, <span class="number">13.2</span>], [<span class="number">1359788410000</span>, <span class="number">23.1</span>]],</span><br><span class="line">    <span class="attr">"tags"</span>: &#123;</span><br><span class="line">        <span class="attr">"host"</span>: <span class="string">"server1"</span>,</span><br><span class="line">        <span class="attr">"data_center"</span>: <span class="string">"DC1"</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果指标名称对应的值有多个组成, datapoints的value也可以用多个来表示:<br>下面表示指标名称为阻抗,指标值是一个复数(实数和虚数). 所以每个时间点的value又是一个json结构.  </p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"name"</span>: <span class="string">"impedance"</span>,</span><br><span class="line">    <span class="attr">"type"</span>: <span class="string">"complex-number"</span>,</span><br><span class="line">    <span class="attr">"datapoints"</span>: [</span><br><span class="line">        [<span class="number">1359788400000</span>,&#123;<span class="attr">"real"</span>: <span class="number">2.3</span>,<span class="attr">"imaginary"</span>: <span class="number">3.4</span>&#125;],</span><br><span class="line">        [<span class="number">1359788300000</span>,&#123;<span class="attr">"real"</span>: <span class="number">1.1</span>,<span class="attr">"imaginary"</span>: <span class="number">5.2</span>&#125;]</span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"tags"</span>: &#123;</span><br><span class="line">        <span class="attr">"host"</span>: <span class="string">"server1"</span>,</span><br><span class="line">        <span class="attr">"data_center"</span>: <span class="string">"DC1"</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果用InfluxDB的Schema表示:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">impedance,host=server1,data_center=DC1 real=2.3,imaginary=3.4 1359788400000</span><br><span class="line">impedance,host=server1,data_center=DC1 real=1.1,imaginary=5.2 1359788300000</span><br></pre></td></tr></table></figure>
+<h2 id="查询">查询</h2><p>假设前面要监控的所有主机都存储有load这个指标.下面查询过去20分钟内指标名称为”负载”的记录,就会把所有主机的负载都显示出来.  </p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"start_relative"</span>:&#123;<span class="attr">"value"</span>:<span class="number">20</span>,<span class="attr">"unit"</span>:<span class="string">"minutes"</span>&#125;,</span><br><span class="line">  <span class="attr">"metrics"</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">"name"</span>: <span class="string">"load"</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>时间范围可以是相对(relative)或绝对(absolute). 必须要有开始时间, 结束时间不指定默认当前.  </p>
+</blockquote>
+<p>Returns a list of metric values based on a set of criteria. 根据查询条件返回指标结果. 同时会返回在数据点内的标签和对应的标签值集合<br>Also returns a set of all tag names and values that are found across the data points.  </p>
+<ul>
+<li>分组[group_by]: 查询结果可以分组, 分组方式有: 标签, 时间范围, 值.  </li>
+<li>聚合[aggregators]: Aggregators perform an operation on data points and down samples.  </li>
+<li>过滤[tags]: 通过指定tag来过滤查询结果. 比如根据指标load查询的是所有节点的负载,现在只关心server1的负载,就可以设置标签host=server1进行过滤.  </li>
+</ul>
+<blockquote>
+<p>聚合可以combine. 聚合按照顺序执行, 前一个聚合的输出会作为下一个聚合的输入.<br>For example, you could sum all data points in 5 minute periods then average them for a week period.<br>对间隔为5分钟的数据集求和, 然后按照一周的间隔求平均值.  </p>
+</blockquote>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">   <span class="attr">"start_absolute"</span>: <span class="number">1357023600000</span>,</span><br><span class="line">   <span class="attr">"end_relative"</span>: &#123;</span><br><span class="line">       <span class="attr">"value"</span>: <span class="string">"5"</span>,</span><br><span class="line">       <span class="attr">"unit"</span>: <span class="string">"days"</span></span><br><span class="line">   &#125;,</span><br><span class="line">   <span class="attr">"metrics"</span>: [</span><br><span class="line">       &#123;</span><br><span class="line">           <span class="attr">"tags"</span>: &#123;</span><br><span class="line">               <span class="attr">"host"</span>: [<span class="string">"foo"</span>, <span class="string">"foo2"</span>],</span><br><span class="line">               <span class="attr">"customer"</span>: [<span class="string">"bar"</span>]</span><br><span class="line">           &#125;,</span><br><span class="line">           <span class="attr">"name"</span>: <span class="string">"abc.123"</span>,</span><br><span class="line">           <span class="attr">"limit"</span>: <span class="number">10000</span></span><br><span class="line">           <span class="string">"aggregators"</span>: [</span><br><span class="line">               &#123;</span><br><span class="line">                   <span class="attr">"name"</span>: <span class="string">"sum"</span>,</span><br><span class="line">                   <span class="attr">"sampling"</span>: &#123;</span><br><span class="line">                       <span class="attr">"value"</span>: <span class="number">10</span>,</span><br><span class="line">                       <span class="attr">"unit"</span>: <span class="string">"minutes"</span></span><br><span class="line">                   &#125;</span><br><span class="line">               &#125;</span><br><span class="line">           ]</span><br><span class="line">       &#125;</span><br><span class="line">   ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>start_relative=5 minutes: the query will return all matching data points for the last 5 minutes.<br>过去5分钟内的所有数据. 因为开始时间是相对于当前时间往前5分钟: [当前时间-5min, 当前时间].  </p>
+<p>start_relative=30 min, end_relative=10 min. if the start time is 30 minutes and the end time is 10 minutes,<br>the query returns matching data points that occurred between the last 30 minutes up to and including the last 10 minutes.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">      30min ago              10min ago          now</span><br><span class="line">---------|----------------------|----------------|----&gt;</span><br><span class="line">         |&lt;--------------------&gt;|</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Most aggregators support downsampling(降采样). Downsampling allows you to reduce the sampling rate(抽样率) of the data points<br>and aggregate these values over a longer period of time. 减少数据点集合的抽样率,可以在更长的时段里聚合这些数据.<br>For example, you could average all daily values over the last week.<br>Rather than getting 7 values you would get one value which is the average for the week. </p>
+</blockquote>
+<h2 id="聚合">聚合</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">"aggregators": [</span><br><span class="line">&#123;</span><br><span class="line">  <span class="attr">"name"</span>: <span class="string">"sum"</span>,</span><br><span class="line">  <span class="attr">"align_sampling"</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="attr">"align_start_time"</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="attr">"sampling"</span>: &#123;</span><br><span class="line">    <span class="attr">"value"</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="attr">"unit"</span>: <span class="string">"minutes"</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;]</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Sampling is the length of the interval on which to aggregate data. 要聚合数据的间隔长度  </p>
+</blockquote>
+<p>由于每一个时刻都会有data point数据点产生,sampling是对数据进行取样.假设sampling是一分钟.则如何把每个时刻的数据点放在对应的Range里.<br>以监控为例,监控图要展示一分钟的CPU,Load,IO等信息. 由于每个时间点(假设每秒钟)都会产生一条数据.聚合时要对属于同一分钟的数据进行聚合.  </p>
+<p><strong>align_start_time</strong> </p>
+<p>  When set to true the time for the aggregated data point for each range will<br>  fall on the start of the range instead of being the value for the first<br>  data point within that range.  </p>
+<p><strong>align_sampling</strong> </p>
+<p>  Setting this to true will cause the aggregation range to be aligned based on<br>  the sampling size.  For example if your sample size is either milliseconds,<br>  seconds, minutes or hours then the start of the range will always be at the top<br>  of the hour.  The effect of setting this to true is that your data will<br>  take the same shape when graphed as you refresh the data.</p>
+<h2 id="Cassandra_Schema">Cassandra Schema</h2><p>有三张表(ColumnFamily)来存储时间序列数据.   </p>
+<ul>
+<li><code>data_points</code> - where the data is kept.</li>
+<li><code>row_key_index</code> - index to lookup what rows to get during a query.</li>
+<li><code>string_index</code> - used to answer the query of what tags and metrics are in the system.</li>
+</ul>
+<p><code>data_points</code>是存储原始数据, <code>row_key_index</code>是row_key的索引, 实际上索引的是<code>data_points</code>的数据. <code>string_index</code>没什么用.  </p>
+<p><code>data_points</code>的row-key由下面几个部分组成:  </p>
+<ul>
+<li>Metric name (UTF-8)</li>
+<li>Row time stamp. The time stamp for the row to begin at.</li>
+<li>Datastore type.</li>
+<li>Concatenated string of tags (tag1=val1:tag2=val2…)</li>
+</ul>
+<p>列名是相对row-key中的timestamp的time offset. 列的值是指标的值.  </p>
+<p>|row-key|time_0|time_1000|…|<br>|——-|——–|———–|…|<br>|load:12345678000:host=server1|20|45|…|<br>|load:12345678000:host=server2|10|43|…|<br>|cpu:12345678000:host=server1|33|57|…|</p>
+<blockquote>
+<p>row-key中的timestamp记录的是第一条记录的时间撮,所以time1(0)表示的是12345678000时刻, 这个点的load=20.<br>time2(100)表示的是12345678000+100=123456781000时刻, 主机为server1的指标load值为45.<br>这种存储方式对于同一个tag,相同的指标(metric_name),即使每一毫秒记录一次,最长能记录3周(如果一秒一条,则3000周!).<br>注意到列名是时间撮的偏移量(毫秒). 并不是相同指标相同tag分成多行,这里分成多列!  </p>
+</blockquote>
+<p><code>row_key_index</code>表的row_key是metric_name. 列名是data_points的row_key.  </p>
+<table>
+<thead>
+<tr>
+<th>row-key</th>
+<th>load:12345678000:host=server1</th>
+<th>load:12345678000:host=server2</th>
+<th>…</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>load</td>
+</tr>
+<tr>
+<td></td>
+<td>cpu:12345678000:host=server1</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>cpu</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>因为row_key是metric_name. 所以上面data_points的三条记录有两个row_key: load和cpu.<br>相同metric_name的不同tag会作为这个row_key的多个列. 实际上因为data_points的row_key不多,<br>所以这里的列也不会很多. 即data_points的列跟时间有关,这里只跟指标有关(尤其是tag)  </p>
+</blockquote>
+<blockquote>
+<p>When a query comes in a column slice of the row key index is done for the particular metric,<br>this returns the rows that will contain the data. The row keys are then filtered based on if any tags were specified.<br>A multi get hector call is made to fetch the data from the various rows.<br>If any row has more data then the remainder is fetched individually using a larger buffer.</p>
+</blockquote>
+<p>查询一般会给出metric_name,所以先在row_key_index中查询metric_name对应的列.<br>如果查询时指定了tag,会只过滤出来指定tag的row_keys. 得到row_keys后会多线程读取data_points中的记录.<br>从上面的表结构可以看出row_key_index的列相当于外键. 不过index这个词也很符合,是对row_key进行索引.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">             row_key_index            data_points</span><br><span class="line">metric_name  ============&gt;  row_key   ===========&gt; query time-range metric value</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>对比InfluxDB, Influx中把每个metric_name当做一个Table. 类似于这里的row_key_index表(主键是metric_name).<br>不同的是data_points表. K的row_key包含了metric_name,时间撮,tag. 列名是timestamp,列的值是指标值.<br>而InfluxDB表的row_key是timestamp, 而tag和field都作为列.<br>K如果相同metric相同timestamp, 但是有多个tag,最终会形成多条row_key记录.<br>而I对于同一个row_key(相同timestamp), 多个tag会形成多个列, 但只有一行.  </p>
+</blockquote>
+<h2 id="数据存储流程">数据存储流程</h2><p>KairosDatastore的putDataPoint会调用底层存储,首先写到缓冲区,待缓冲区满了再刷新到存储层.<br>添加一个数据点: 指标名称metric_name, tag标签集合, 数据点(数据类型,指标的具体值). </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">putDataPoint</span><span class="params">(String metricName, ImmutableSortedMap&lt;String, String&gt; tags, DataPoint dataPoint, <span class="keyword">int</span> ttl)</span> <span class="keyword">throws</span> DatastoreException </span>&#123;</span><br><span class="line">  m_datastore.putDataPoint(metricName, tags, dataPoint, ttl);</span><br><span class="line">  <span class="keyword">for</span> (DataPointListener dataPointListener : m_dataPointListeners) &#123;</span><br><span class="line">    dataPointListener.dataPoint(metricName, tags, dataPoint);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>底层存储是Cassandra,对应的存储实现是CassandraDatastore. 由于一条记录要写到三张表中.<br>分别使用了三个缓冲区m_rowKeyWriteBuffer,m_stringIndexWriteBuffer,m_dataPointWriteBuffer.  </p>
+<p>DataPointsRowKey表示的是data_points表的row_key, 组成格式:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rowKey = <span class="keyword">new</span> DataPointsRowKey(metricName, rowTime, dataPoint.getDataStoreDataType(), tags);</span><br></pre></td></tr></table></figure>
+<p>row_key_index的row_key是metricName. value是data_points的rowKey.    </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">m_rowKeyWriteBuffer.addData(metricName, rowKey, <span class="string">""</span>, now, rowKeyTtl);</span><br></pre></td></tr></table></figure>
+<p>第一个参数是rowKey, 接下来两个分别是列和值.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addData</span><span class="params">(RowKeyType rowKey,ColumnKeyType columnKey,ValueType value,<span class="keyword">long</span> timestamp,<span class="keyword">int</span> ttl)</span> </span>&#123;</span><br><span class="line">    waitOnBufferFull();</span><br><span class="line">    m_bufferCount ++;</span><br><span class="line">    <span class="keyword">if</span> (columnKey.toString().length() &gt; <span class="number">0</span>)&#123;</span><br><span class="line">      m_buffer.add(<span class="keyword">new</span> Triple&lt;RowKeyType, ColumnKeyType, ValueType&gt;(rowKey, columnKey, value, timestamp, ttl));</span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在添加数据之前会先判断缓冲区是否已满,如果没有,则缓冲区计数器加1(累加到一定程序一定会满的), 并将数据添加到缓冲区中.<br>当缓冲区计数器达到阈值, 或者可重入锁的引用计数=0, 就启动提交作业的任务WriteDataJob.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">submitJob</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  Mutator&lt;RowKeyType&gt; pendingMutations = <span class="keyword">null</span>;</span><br><span class="line">  List&lt;Triple&lt;RowKeyType, ColumnKeyType, ValueType&gt;&gt; buffer = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//创建新的变量, 将原变量值赋值给新变量, 重置原变量, 接下来的操作都是在新变量上进行</span></span><br><span class="line">  pendingMutations = m_mutator;</span><br><span class="line">  buffer = m_buffer;</span><br><span class="line">  m_mutator = <span class="keyword">new</span> MutatorImpl&lt;RowKeyType&gt;(m_keyspace, m_rowKeySerializer);</span><br><span class="line">  m_buffer = <span class="keyword">new</span> ArrayList&lt;Triple&lt;RowKeyType, ColumnKeyType, ValueType&gt;&gt;();</span><br><span class="line">  m_bufferCount = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  WriteDataJob writeDataJob = <span class="keyword">new</span> WriteDataJob(pendingMutations, buffer);</span><br><span class="line">  m_executorService.submit(writeDataJob);</span><br><span class="line">  writeDataJob.waitTillStarted();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>写入Cassandra,这里用的客户端是hector. 跟官方的drive一样,先构造INSERT语句,然后调用客户端的execute就插入数据到C了.<br>由于缓冲区是有很多条记录的,所以这里用批量插入的方式,先依次加入到Mutator:m_pendingMutations中. 最后执行这个Mutator.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (m_pendingMutations != <span class="keyword">null</span>) &#123;</span><br><span class="line">  <span class="keyword">for</span> (Triple&lt;RowKeyType, ColumnKeyType, ValueType&gt; data : m_buffer) &#123;</span><br><span class="line">    HColumnImpl&lt;ColumnKeyType, ValueType&gt; col = <span class="keyword">new</span> HColumnImpl(data.getSecond(), data.getThird(), data.getTime(), m_columnKeySerializer, m_valueSerializer);</span><br><span class="line">    m_pendingMutations.addInsertion(data.getFirst(), m_cfName, col);</span><br><span class="line">  &#125;</span><br><span class="line">  m_pendingMutations.execute();</span><br><span class="line">&#125;</span><br><span class="line">m_pendingMutations = <span class="keyword">null</span>;</span><br></pre></td></tr></table></figure>
+<p>由于m_buffer缓冲区包含了Row, ColumnName, ColumnValue. 构造的HColumn是列信息(包括了列名和列值),<br>addInsertion的第一个和第三个参数分别是Row和Column(Name和Value). 第二个参数是ColumnFamilyName,即表名.  </p>
+<h2 id="数据查询流程">数据查询流程</h2><p>queryDatabase需要提供DatastoreMetricQuery指标查询对象,有两个实现类DatastoreMetricQueryImpl和QueryMetric.<br>都能够对应到前面我们的示例查询JSON串. 比如分组(group by), 聚合(aggregator), 起止时间, tags等.    </p>
+<p>首先根据metric_name和起止时间确定row_key:getKeysForQueryIterator,返回FilteredRowKeyIterator过滤后的RowKey迭代器:<br>SliceQuery是根据metric_name查询row_key_index的列.因为row_key_index的主键就是metricName.列正是DataPointsRowKey  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">FilteredRowKeyIterator</span><span class="params">(String metricName, <span class="keyword">long</span> startTime, <span class="keyword">long</span> endTime, SetMultimap&lt;String, String&gt; filterTags)</span> </span>&#123;</span><br><span class="line">  <span class="comment">//指定了row_key_index的Key(行键),Name(列名),Value(列值)的序列化对象</span></span><br><span class="line">  SliceQuery&lt;String, DataPointsRowKey, String&gt; sliceQuery = HFactory.createSliceQuery(m_keyspace, StringSerializer.get(), <span class="keyword">new</span> DataPointsRowKeySerializer(<span class="keyword">true</span>), StringSerializer.get());</span><br><span class="line">  <span class="comment">//设置表row_key_index的主键为metricName, 相当于查询: select * from row_key_index where row_key = $metric_name</span></span><br><span class="line">  sliceQuery.setColumnFamily(CF_ROW_KEY_INDEX).setKey(metricName);</span><br><span class="line">  m_sliceIterator = createSliceIterator(sliceQuery, metricName, startTime, endTime);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> ColumnSliceIterator&lt;String, DataPointsRowKey, String&gt; <span class="title">createSliceIterator</span><span class="params">(SliceQuery&lt;String, DataPointsRowKey, String&gt; sliceQuery, String metricName, <span class="keyword">long</span> startTime, <span class="keyword">long</span> endTime)</span> </span>&#123;</span><br><span class="line">  <span class="comment">//构建data_points表的起始和结束的row_key. 因为data_points的主键除了metricName,时间撮,还有tag. 在没有指定tag情况下,会查询出所有的tag.</span></span><br><span class="line">  DataPointsRowKey startKey = <span class="keyword">new</span> DataPointsRowKey(metricName,calculateRowTime(startTime), <span class="string">""</span>);</span><br><span class="line">  DataPointsRowKey endKey = <span class="keyword">new</span> DataPointsRowKey(metricName,calculateRowTime(endTime), <span class="string">""</span>);</span><br><span class="line">  endKey.setEndSearchKey(<span class="keyword">true</span>);</span><br><span class="line">  <span class="comment">//列的Slice切片. 实际上现在还是在row_key_index中. 因为对于row_key_index的row_key存在多个DataPointsRowKey</span></span><br><span class="line">  <span class="comment">//指定起始和结束时间, 确定最终要查询data_points表的哪些row_key.  </span></span><br><span class="line">  ColumnSliceIterator&lt;String, DataPointsRowKey, String&gt; iterator = <span class="keyword">new</span> ColumnSliceIterator(sliceQuery,startKey, endKey, <span class="keyword">false</span>, m_singleRowReadSize);</span><br><span class="line">  <span class="keyword">return</span> (iterator);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Iterator迭代器需要实现hasNext和next方法, 其中m_filterTags来自于查询条件指定的tags.<br>在查询row_key_index的每一列时,这一列(DataPointsRowKey)也包含了tags标签集合.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> DataPointsRowKey <span class="title">nextKeyFromIterator</span><span class="params">(ColumnSliceIterator&lt;String, DataPointsRowKey, String&gt; iterator)</span></span>&#123;</span><br><span class="line">  DataPointsRowKey next = <span class="keyword">null</span>;</span><br><span class="line">  outer:</span><br><span class="line">  <span class="keyword">while</span> (iterator.hasNext())&#123;</span><br><span class="line">    DataPointsRowKey rowKey = iterator.next().getName();</span><br><span class="line">    Map&lt;String, String&gt; keyTags = rowKey.getTags(); <span class="comment">//获取DataPointsRowKey的tags集合(比如host=A1,server=B1)</span></span><br><span class="line">    <span class="keyword">for</span> (String tag : m_filterTags.keySet())&#123;       <span class="comment">//只需要获取这些tags(比如只选择host=A1,A2)</span></span><br><span class="line">      String value = keyTags.get(tag);              <span class="comment">//DataPointsRowKey中每个tag只会有一个值,而指定的过滤条件,一个tag可以有多个值</span></span><br><span class="line">      <span class="keyword">if</span> (value == <span class="keyword">null</span> || !m_filterTags.get(tag).contains(value)) <span class="comment">//所以判断DataPointsRowKey中tag的值是否被包含在过滤值列表中</span></span><br><span class="line">        <span class="keyword">continue</span> outer; <span class="comment">//Don't want this key</span></span><br><span class="line">    &#125;</span><br><span class="line">    next = rowKey;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> (next);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>根据row-keys查询,采用批处理的方式(大小为m_multiRowSize). 如果keys大小小于m_multiRowSize,就加入到临时列表queryKeys.   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">queryWithRowKeys</span><span class="params">(DatastoreMetricQuery query, QueryCallback queryCallback, Iterator&lt;DataPointsRowKey&gt; rowKeys)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">long</span> currentTimeTier = <span class="number">0L</span>;</span><br><span class="line">  String currentType = <span class="keyword">null</span>;</span><br><span class="line">  List&lt;QueryRunner&gt; runners = <span class="keyword">new</span> ArrayList&lt;QueryRunner&gt;();</span><br><span class="line">  List&lt;DataPointsRowKey&gt; queryKeys = <span class="keyword">new</span> ArrayList&lt;DataPointsRowKey&gt;();  <span class="comment">//临时变量,用来保存每一批的row-keys</span></span><br><span class="line">  <span class="keyword">while</span> (rowKeys.hasNext())&#123;</span><br><span class="line">    DataPointsRowKey rowKey = rowKeys.next();</span><br><span class="line">    <span class="keyword">if</span> (currentTimeTier == <span class="number">0L</span>) currentTimeTier = rowKey.getTimestamp();</span><br><span class="line">    <span class="keyword">if</span> (currentType == <span class="keyword">null</span>) currentType = rowKey.getDataType();</span><br><span class="line">    <span class="keyword">if</span> ((rowKey.getTimestamp() == currentTimeTier) &amp;&amp; (queryKeys.size() &lt; m_multiRowSize) &amp;&amp; (currentType.equals(rowKey.getDataType()))) &#123;</span><br><span class="line">      queryKeys.add(rowKey);</span><br><span class="line">    &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">      <span class="comment">//每一次批处理都封装到QueryRunner对象中, 最后统一运行.  </span></span><br><span class="line">      runners.add(<span class="keyword">new</span> QueryRunner(m_keyspace, CF_DATA_POINTS, m_kairosDataPointFactory, queryKeys, query.getStartTime(), query.getEndTime(), queryCallback, m_singleRowReadSize,m_multiRowReadSize, query.getLimit(), query.getOrder()));</span><br><span class="line">      queryKeys = <span class="keyword">new</span> ArrayList&lt;DataPointsRowKey&gt;();    <span class="comment">//重置所有的临时变量</span></span><br><span class="line">      queryKeys.add(rowKey);</span><br><span class="line">      currentTimeTier = rowKey.getTimestamp();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//最后还要进行一次处理. 和上面的else部分不同,不需要清空变量.因为没有下一次了. 注意现在根据row_keys是要查询data_points表.  </span></span><br><span class="line">  <span class="keyword">if</span> (!queryKeys.isEmpty()) &#123;</span><br><span class="line">    runners.add(<span class="keyword">new</span> QueryRunner(m_keyspace, CF_DATA_POINTS, m_kairosDataPointFactory, queryKeys, query.getStartTime(), query.getEndTime(), queryCallback, m_singleRowReadSize, m_multiRowReadSize, query.getLimit(), query.getOrder()));</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (QueryRunner runner : runners) &#123;</span><br><span class="line">    runner.runQuery();</span><br><span class="line">  &#125;</span><br><span class="line">  queryCallback.endDataPoints();  <span class="comment">//查询回调,比如将查询结果放入缓存中</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在根据metric_name和时间范围获取到了需要查询的DataPointsRowKey迭代器. 就可以去data_points表查询原始数据点集合了.  </p>
+<h2 id="QueryRunner">QueryRunner</h2><p>data_points表的Key,Name,Value的类型根据表结构分别是DataPointsRowKey, Integer, byte[].<br>同时由于一次查询多个row_keys,构造的查询切片是MultigetSliceQuery.  </p>
+<h2 id="分组聚合查询流程">分组聚合查询流程</h2><p>QueryMetric.getAggregators被调用的地方是KairosDatastore, 被用在MetricsResource.execute中:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Response <span class="title">get</span><span class="params">(String json)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    <span class="comment">//根据查询提供的json字符串,构造QueryMetric查询对象</span></span><br><span class="line">    List&lt;QueryMetric&gt; queries = queryParser.parseQueryMetric(json);</span><br><span class="line">    <span class="keyword">for</span> (QueryMetric query : queries)&#123;</span><br><span class="line">      DatastoreQuery dq = datastore.createQuery(query);   <span class="comment">//创建服务于QueryMetric的DatastoreQueryImpl</span></span><br><span class="line">      List&lt;DataPointGroup&gt; results = dq.execute();        <span class="comment">//执行查询,会去查询底层的CassandraDatastore</span></span><br><span class="line">      jsonResponse.formatQuery(results, query.isExcludeTags(), dq.getSampleSize());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在一个查询的流程就清楚了:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">查询json字符串 --&gt; 构造QueryMetric查询对象 --&gt; 创建DatastoreQueryImpl --&gt; 查询底层的CassandraDatastore --&gt; 设置查询结果到响应中</span><br></pre></td></tr></table></figure>
+<p>查询支持缓存,如果缓存未命中,除了传入要查询的对象QueryMetric,还有回调对象CachedSearchResult. 缓存命中就直接打开缓存.<br>缓存使用本地文件,包括了index文件和data文件,正好对一个了row_key_index表和data_points表.<br>和Cassandra的key cache一样都是本地节点的缓存,而不是分布式的集群缓存. </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">  <span class="function"><span class="keyword">public</span> List&lt;DataPointGroup&gt; <span class="title">execute</span><span class="params">()</span> <span class="keyword">throws</span> DatastoreException </span>&#123;</span><br><span class="line">      CachedSearchResult cachedResults = <span class="keyword">null</span>;</span><br><span class="line">      List&lt;DataPointRow&gt; returnedRows = <span class="keyword">null</span>;</span><br><span class="line">      String tempFile = m_cacheDir + m_cacheFilename;</span><br><span class="line">      <span class="keyword">if</span> (m_metric.getCacheTime() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">//缓存存在,直接打开缓存. 由于缓存使用本地文件, 所以实际上是将本地文件内容加载到内存中. </span></span><br><span class="line">        cachedResults = CachedSearchResult.openCachedSearchResult(m_metric.getName(), tempFile, m_metric.getCacheTime(), m_dataPointFactory);</span><br><span class="line">        <span class="keyword">if</span> (cachedResults != <span class="keyword">null</span>) &#123;</span><br><span class="line">          returnedRows = cachedResults.getRows();</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">//缓存未命中,需要到底层存储(m_datastore)查询一次,并放入缓存中  </span></span><br><span class="line">      <span class="keyword">if</span> (cachedResults == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">//这里只是创建了一个缓存对象. 但是数据添加到缓存中, 则是有后面一句的回调函数来实现.  </span></span><br><span class="line">        cachedResults = CachedSearchResult.createCachedSearchResult(m_metric.getName(), tempFile, m_dataPointFactory);</span><br><span class="line">        m_datastore.queryDatabase(m_metric, cachedResults);   </span><br><span class="line">        returnedRows = cachedResults.getRows();  <span class="comment">//查询到结果后, 缓存中一定是有数据的, 即要保证回调函数被调用. </span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//....</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果有分组条件,会将<code>List&lt;DataPointRow&gt;</code>首先按照tag分组成<code>List&lt;DataPointGroup&gt;</code>.<br>分组一般是对多个相同的tag标签名称. 比如相同metricName. 分组的tag为host. <code>host的值有很多个,表示集群的每个主机.  
+根据tag分组, 比如</code>select host,sum(value) from cpu group by host`<br>因为对于相同的metricName, 不同的tag在kairosdb中是不同的row-key.<br>所以按照tag分组后,在物理存储中相同tag即相同row-key的都会被归于同一组(物理和逻辑视图一致了).  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//首先根据tag分组</span></span><br><span class="line">List&lt;DataPointGroup&gt; queryResults = groupByTypeAndTag(m_metric.getName(), returnedRows, getTagGroupBy(m_metric.getGroupBys()), m_metric.getOrder());</span><br><span class="line"><span class="comment">// Now group for all other types of group bys.</span></span><br><span class="line">Grouper grouper = <span class="keyword">new</span> Grouper(m_dataPointFactory);</span><br><span class="line">queryResults = grouper.group(removeTagGroupBy(m_metric.getGroupBys()), queryResults);</span><br></pre></td></tr></table></figure>
+<h3 id="tag分组">tag分组</h3><p>groupByTypeAndTag会根据<code>分组类型</code>和<code>标签</code>进行分组. 测试用例可以查看KairosDatastoreTest. 如果数据点没有指定任何的标签,<br>则只会有一个DataPointGroup,测试方法:test_query_sumAggregator和test_query_noAggregator都只有一个数据点组.  </p>
+<p>对应KairosDatastore.groupByTypeAndTag(),所有数据点rows的groupType都一样,所以typeGroups只有一个元素.<br>这样所有的数据点都统一放在了typeGroups的value中[typeGroups.get(type)]. sortedTypes的for循环也只会调用一次而已.<br>注意DataPointGroupRowWrapper是DataPointRow的封装,即一个DataPointGroupRowWrapper只有一个数据点,虽然它也继承了DataPointGroup.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> List&lt;DataPointGroup&gt; <span class="title">groupByTypeAndTag</span><span class="params">(String metricName, List&lt;DataPointRow&gt; rows, TagGroupBy tagGroupBy, Order order)</span> </span>&#123;</span><br><span class="line">    List&lt;DataPointGroup&gt; ret = <span class="keyword">new</span> ArrayList&lt;DataPointGroup&gt;();</span><br><span class="line">    <span class="comment">//key是groupType, value是一个List,可以存放多个数据点集合组</span></span><br><span class="line">    ListMultimap&lt;String, DataPointGroup&gt; typeGroups = ArrayListMultimap.create();</span><br><span class="line">    <span class="comment">//Go through each row grouping them by type</span></span><br><span class="line">    <span class="keyword">for</span> (DataPointRow row : rows) &#123;</span><br><span class="line">      String groupType = m_dataPointFactory.getGroupType(row.getDatastoreType());</span><br><span class="line">      typeGroups.put(groupType, <span class="keyword">new</span> DataPointGroupRowWrapper(row));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//Sort the types for predictable results</span></span><br><span class="line">    TreeSet&lt;String&gt; sortedTypes = <span class="keyword">new</span> TreeSet&lt;String&gt;(typeGroups.keySet());</span><br><span class="line">    <span class="comment">//Now go through each type group and group by tag if needed.</span></span><br><span class="line">    <span class="keyword">for</span> (String type : sortedTypes) &#123;</span><br><span class="line">      <span class="keyword">if</span> (tagGroupBy != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        ret.add(<span class="keyword">new</span> SortingDataPointGroup(typeGroups.get(type), <span class="keyword">new</span> TypeGroupByResult(type), order));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果查询时指定了标签TagGroupBy(可以有多个), groups的key是标签名称, value是属于这个标签的数据组.<br>注意groups和上面的typeGroups类似,value都能够放入key对应的多个对象:同一个标签名称,当然会有多个标签值了!  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">ListMultimap&lt;String, DataPointGroup&gt; groups = ArrayListMultimap.create();</span><br><span class="line">Map&lt;String, TagGroupByResult&gt; groupByResults = <span class="keyword">new</span> HashMap&lt;String, TagGroupByResult&gt;();</span><br><span class="line"></span><br><span class="line"><span class="comment">//按照类型分组, 很可能只有一个分组,比如groupType都是long类型. 因此还要按照客户端指定的tag再次分组  </span></span><br><span class="line"><span class="comment">//但是typeGroups中的每个DataPointGroup都是用一个个单独的Row包装起来的. 并不是说一个DataPointGroup有多个Row.</span></span><br><span class="line"><span class="keyword">for</span> (DataPointGroup dataPointGroup : typeGroups.get(type)) &#123;</span><br><span class="line">  <span class="comment">//tagGroupBy是客户端指定要查询哪些标签, dataPointGroup是数据点, 从中解析出标签对应的值</span></span><br><span class="line">  LinkedHashMap&lt;String, String&gt; matchingTags = getMatchingTags(dataPointGroup, tagGroupBy.getTagNames());</span><br><span class="line">  String tagsKey = getTagsKey(matchingTags);</span><br><span class="line">  <span class="comment">//同一个tagsKey会有两个Map分别保存不同的数据. 不过最后都用于下面构造出SortingDataPointGroup</span></span><br><span class="line">  <span class="comment">//注意groups的value最后针对tagsKey是一个集合, 而groupByResults因为是普通的Map,只会有一个对象.</span></span><br><span class="line">  groups.put(tagsKey, dataPointGroup);</span><br><span class="line">  groupByResults.put(tagsKey, <span class="keyword">new</span> TagGroupByResult(tagGroupBy, matchingTags));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//Sort groups by tags 根据标签名称排序. </span></span><br><span class="line">TreeSet&lt;String&gt; sortedGroups = <span class="keyword">new</span> TreeSet&lt;String&gt;(groups.keySet());</span><br><span class="line"><span class="keyword">for</span> (String key : sortedGroups) &#123;</span><br><span class="line">  <span class="comment">//根据上面的tagsKey, 从两个Map中获取对应的数据. 分别是DataPointGroup(多个数据点组成的分组集合)和分组结果.  </span></span><br><span class="line">  SortingDataPointGroup sdpGroup = <span class="keyword">new</span> SortingDataPointGroup(groups.get(key), groupByResults.get(key), order);</span><br><span class="line">  sdpGroup.addGroupByResult(<span class="keyword">new</span> TypeGroupByResult(type));</span><br><span class="line">  ret.add(sdpGroup);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>查询时指定的tagNames名称是有序的,所以返回的matchingTags也需要有序(使用LinkedHashMap).所以上面第二段代码还会按照tags进行分组.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> LinkedHashMap&lt;String, String&gt; <span class="title">getMatchingTags</span><span class="params">(DataPointGroup datapointGroup, List&lt;String&gt; tagNames)</span> </span>&#123;</span><br><span class="line">  LinkedHashMap&lt;String, String&gt; matchingTags = <span class="keyword">new</span> LinkedHashMap&lt;String, String&gt;();</span><br><span class="line">  <span class="comment">//循环tagNames, 结果按照tagNames出现的顺序</span></span><br><span class="line">  <span class="keyword">for</span> (String tagName : tagNames) &#123;</span><br><span class="line">    Set&lt;String&gt; tagValues = datapointGroup.getTagValues(tagName);</span><br><span class="line">    <span class="keyword">if</span> (tagValues != <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="comment">//虽然返回的tagValues是一个集合,表示一个标签会有多个值. 但那是针对相同标签,不同值而言.  </span></span><br><span class="line">      <span class="comment">//而这里因为DataPointGroup只是Row的封装,所以一个标签只有一个值!  </span></span><br><span class="line">      <span class="comment">//当然同一行可以有多个标签, 但那是不同的标签, 而不是一个标签多个值!</span></span><br><span class="line">      String tagValue = tagValues.iterator().next();</span><br><span class="line">      matchingTags.put(tagName, tagValue != <span class="keyword">null</span> ? tagValue : <span class="string">""</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> matchingTags;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>按照tag分组的示例(同一个指标名称,多个tag分组,类似于SQL中的group by dc,host):  </p>
+<table>
+<thead>
+<tr>
+<th>metric_name</th>
+<th>dc</th>
+<th>host</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>metric1</td>
+<td>dc1</td>
+<td>server1</td>
+</tr>
+<tr>
+<td>metric1</td>
+<td>dc2</td>
+<td>server1</td>
+</tr>
+<tr>
+<td>metric1</td>
+<td>dc1</td>
+<td>server2</td>
+</tr>
+<tr>
+<td>metric1</td>
+<td>dc2</td>
+<td>server2</td>
+</tr>
+</tbody>
+</table>
+<h3 id="DataPointGroup">DataPointGroup</h3><p>DataPointGroup对象除了指标名称(name)和分组结果列表(group_by),还有tags:对应TagSet,values:对应DataPoint迭代器.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">DataPointGroup</span> <span class="keyword">extends</span> <span class="title">Iterator</span>&lt;<span class="title">DataPoint</span>&gt;, <span class="title">TagSet</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span></span>;                          <span class="comment">//Returns the metric name for this group</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> List&lt;GroupByResult&gt; <span class="title">getGroupByResult</span><span class="params">()</span></span>;    <span class="comment">//Returns the list of group by results or an empty list if the results are not grouped.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以tag分组的返回结果为例,可以看到与DataPointGroup都是一一对应的.  </p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"queries"</span>: [&#123;<span class="attr">"results"</span>: [</span><br><span class="line">              &#123;</span><br><span class="line">                  "name": "metric1",                      //指标名称</span><br><span class="line">                  "group_by": [                           //List&lt;GroupByResult&gt;</span><br><span class="line">                      &#123;</span><br><span class="line">                          "name": "tag",                  //不同的分组方式,这里名称不一样,比如还有value,time等</span><br><span class="line">                          "tags": ["data_center", "host"],</span><br><span class="line">                          "group": &#123;</span><br><span class="line">                              "data_center": "dc1",</span><br><span class="line">                              "host": "server1"</span><br><span class="line">                          &#125;</span><br><span class="line">                      &#125;</span><br><span class="line">                  ],</span><br><span class="line">                  "tags": &#123;                               //TagSet</span><br><span class="line">                      "data_center": ["dc1"],</span><br><span class="line">                      "host": ["server1"]</span><br><span class="line">                  &#125;,</span><br><span class="line">                  "values": [                             //Iterator&lt;DataPoint&gt;</span><br><span class="line">                      [1353222000000, 31],</span><br><span class="line">                      [<span class="number">1364796000000</span>, <span class="number">723</span>]</span><br><span class="line">                  ]</span><br><span class="line">              &#125;</span><br><span class="line">]&#125;]&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="其他分组">其他分组</h3><p>除了根据tag分组,还可以根据Value,时间或者Bin分组. 具体实现在Grouper. 对应测试用例在GrouperTest.<br>根据Value分组:将数据点的值与指定范围取模.根据时间分组,要设置时间单位,比如月份,则相同月份的数据点会在一个组里.<br>下面是根据value和time进行分组的示例. range_size和group_count分别表示每一组的数据点容量/取值范围.  </p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">"group_by": [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"name"</span>: <span class="string">"value"</span>,</span><br><span class="line">        <span class="attr">"range_size"</span>: <span class="number">1000</span></span><br><span class="line">      &#125;</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line">"group_by": [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"name"</span>: <span class="string">"time"</span>,</span><br><span class="line">        <span class="attr">"group_count"</span>: <span class="string">"168"</span>,</span><br><span class="line">        <span class="attr">"range_size"</span>: &#123;</span><br><span class="line">          <span class="attr">"value"</span>: <span class="string">"1"</span>,</span><br><span class="line">          <span class="attr">"unit"</span>: <span class="string">"hours"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>按照时间分组,通常的需求是按照时间段,统计今天和昨天(上周等)在同一时间段的聚合行为等. 比如上面按照每小时分组,一共有168组.<br>由于一周正好是168个小时. 所以每周的每天的相同小时会归于一组. 比如21号0点和28号0点会是同一组.<br>如果unit=days, group_count=7. 则周一的数据会归于一组. 周二的所有数据归于一组.  </p>
+<table>
+<thead>
+<tr>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>………….</th>
+<th>168</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2015122101</td>
+<td>2015122102</td>
+<td>2015122103</td>
+<td>2015122104</td>
+<td>…</td>
+<td>2015122723</td>
+</tr>
+<tr>
+<td>2015122801</td>
+<td>2015122802</td>
+<td>2015122803</td>
+<td>2015122804</td>
+<td>…</td>
+<td>2016010323</td>
+</tr>
+</tbody>
+</table>
+<p>以总共一周,每一小时的分组结果为例(下面只显示了其中的一组, 每一组的格式都是类似的):<br>对于metric1指标,它所在的机器是dc1:server1,显然每天每一秒都会有指标数据产生.<br>如果对于metric1指标的所有数据,仅仅根据tag分组,则每个tag组合的所有指标数据都只有一组.<br>为了更细粒度地查看相同指标,相同tag在不同时间段内的表现,设置了时间分组,可以方便地看出同一个小时在今天和上周的差异.</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">"queries"</span>: [&#123;<span class="attr">"results"</span>: [</span><br><span class="line">              &#123;</span><br><span class="line">                  "name": "metric1",                                  //① 每一组的指标名称</span><br><span class="line">                  "group_by": [                                       //② List&lt;GroupByResult&gt;</span><br><span class="line">                      &#123;</span><br><span class="line">                          <span class="attr">"name"</span>: <span class="string">"time"</span>,</span><br><span class="line">                          <span class="attr">"range_size"</span>: &#123;<span class="attr">"value"</span>: <span class="number">1</span>,<span class="attr">"unit"</span>: <span class="string">"HOURS"</span>&#125;,</span><br><span class="line">                          <span class="attr">"group_count"</span>: <span class="number">168</span>,</span><br><span class="line">                          <span class="attr">"group"</span>: &#123;<span class="attr">"group_number"</span>: <span class="number">60</span>&#125;</span><br><span class="line">                      &#125;</span><br><span class="line">                  ],</span><br><span class="line">                  "tags": &#123;                                           //③ TagSet</span><br><span class="line">                      "data_center": ["dc1"],</span><br><span class="line">                      "host": ["server1"]</span><br><span class="line">                  &#125;,</span><br><span class="line">                  "values": [                                         //④ Iterator&lt;DataPoint&gt;</span><br><span class="line">                      [1353222000000, 146],</span><br><span class="line">                      [<span class="number">1353826800000</span>, <span class="number">241</span>]</span><br><span class="line">                  ]</span><br><span class="line">              &#125;</span><br><span class="line">]&#125;]&#125;</span><br></pre></td></tr></table></figure>
+<p>分组的过程实际上是将原始的数据点集合按照指定的分组条件将属于相同的组的所有数据点重新组合下.<br>下面的dataPointGroupList是上一步经过type和tags分组后的数据点组. 这是因为首先根据tag分组.<br>因为只有相同tag的数据,在时间上进一步分组才有意义,否则比如相同metric,不同tag比较是没有意义的.<br>所以上面的示例中查询结果除了group_by,还有tags. values对应的就是这个标签在某一个组的值列表(数据点).  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> List&lt;DataPointGroup&gt; <span class="title">group</span><span class="params">(List&lt;GroupBy&gt; groupBys, List&lt;DataPointGroup&gt; dataPointGroupList)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  List&lt;DataPointGroup&gt; dataPointGroups = <span class="keyword">new</span> ArrayList&lt;DataPointGroup&gt;();</span><br><span class="line">  <span class="keyword">for</span> (DataPointGroup dataPointGroup : dataPointGroupList) &#123;</span><br><span class="line">    Map&lt;List&lt;Integer&gt;, Group&gt; groupIdsToGroup = <span class="keyword">new</span> LinkedHashMap&lt;List&lt;Integer&gt;, Group&gt;();</span><br><span class="line">    Map&lt;String, String&gt; tags = getTags(dataPointGroup);</span><br><span class="line">    <span class="keyword">while</span> (dataPointGroup.hasNext()) &#123;</span><br><span class="line">      DataPoint dataPoint = dataPointGroup.next();          </span><br><span class="line">      List&lt;Integer&gt; groupIds = <span class="keyword">new</span> ArrayList&lt;Integer&gt;();</span><br><span class="line">      List&lt;GroupByResult&gt; results = <span class="keyword">new</span> ArrayList&lt;GroupByResult&gt;();</span><br><span class="line">      <span class="keyword">for</span> (GroupBy groupBy : groupBys) &#123;                    <span class="comment">//允许同时有多个分组方式.上面的几个例子都是一种分组方式</span></span><br><span class="line">        <span class="keyword">int</span> groupId = groupBy.getGroupId(dataPoint, tags);  <span class="comment">//获取这个数据点在哪一个组内: group_number</span></span><br><span class="line">        groupIds.add(groupId);                              </span><br><span class="line">        results.add(groupBy.getGroupByResult(groupId));</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// add to group 首先判断组是否存在,如果已经存在,则直接添加到存在的组里面. 比如21号创建了组,28号时就直接用21号的组</span></span><br><span class="line">      Group group = getGroup(groupIdsToGroup, dataPointGroup, groupIds, results);</span><br><span class="line">      group.addDataPoint(dataPoint);                        <span class="comment">//④ 数据点</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (Group group : groupIdsToGroup.values()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (!dataPointGroup.getGroupByResult().isEmpty()) &#123;</span><br><span class="line">        group.addGroupByResults(dataPointGroup.getGroupByResult()); <span class="comment">//② 添加GroupByResult</span></span><br><span class="line">      &#125;</span><br><span class="line">      dataPointGroups.add(group.getDataPointGroup());       <span class="comment">//最后在Group中的DataPointGroup是完整的,包含了①②③④</span></span><br><span class="line">    &#125;</span><br><span class="line">    dataPointGroup.close();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> dataPointGroups;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="聚合-1">聚合</h3><p>由于上一步返回的queryResults是分组后的DataPointGroup. 而聚合操作是在分组后的结果集中进行的.<br>比如要统计相同指标,在同一组内的平均值,最大值等. 聚合动作是在每一个组内都做相同的操作.以SQL角度来看,<br>分组后都需要有一个聚合函数: <code>select host,server,sum(value) from cpu group by host,server</code>  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">m_results = <span class="keyword">new</span> ArrayList&lt;DataPointGroup&gt;();</span><br><span class="line"><span class="keyword">for</span> (DataPointGroup queryResult : queryResults) &#123;</span><br><span class="line">    DataPointGroup aggregatedGroup = queryResult;</span><br><span class="line">    List&lt;Aggregator&gt; aggregators = m_metric.getAggregators();</span><br><span class="line">    <span class="keyword">if</span> (m_metric.getLimit() != <span class="number">0</span>) &#123;</span><br><span class="line">      aggregatedGroup = <span class="keyword">new</span> LimitAggregator(m_metric.getLimit()).aggregate(aggregatedGroup);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//This will pipe the aggregators together. 通过链式,可以同时有多个聚合操作,这些聚合操作是一个接一个,而不是同时发生!</span></span><br><span class="line">    <span class="keyword">for</span> (Aggregator aggregator : aggregators) &#123;</span><br><span class="line">      <span class="keyword">if</span> (aggregator.canAggregate())  <span class="comment">//Make sure the aggregator can handle this type of data.</span></span><br><span class="line">        aggregatedGroup = aggregator.aggregate(aggregatedGroup);</span><br><span class="line">    &#125;</span><br><span class="line">    m_results.add(aggregatedGroup);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> (m_results);</span><br></pre></td></tr></table></figure>
+<p>RangeAggregator是个抽象类,具体的实现交给SubAggregator.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> DataPointGroup <span class="title">aggregate</span><span class="params">(DataPointGroup dataPointGroup)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (m_alignSampling)</span><br><span class="line">    m_startTime = alignRangeBoundary(m_startTime);</span><br><span class="line">  <span class="keyword">if</span>(m_exhaustive)</span><br><span class="line">    <span class="keyword">return</span>(<span class="keyword">new</span> ExhaustiveRangeDataPointAggregator(dataPointGroup, getSubAggregator()));</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    <span class="keyword">return</span>(<span class="keyword">new</span> RangeDataPointAggregator(dataPointGroup, getSubAggregator()));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Return a RangeSubAggregator that will be used to aggregate data over a</span></span><br><span class="line"><span class="comment"> * discrete range of data points.  This is called once per grouped data series.</span></span><br><span class="line"><span class="comment"> *  </span></span><br><span class="line"><span class="comment"> * For example, if one metric is queried and no grouping is done this method is</span></span><br><span class="line"><span class="comment"> * called once and the resulting object is called over and over for each range within the results.</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> * If the query were grouping by the host tag and host has values of 'A' and 'B'</span></span><br><span class="line"><span class="comment"> * this method will be called twice, once to aggregate results for 'A' and once to aggregate results for 'B'.</span></span><br><span class="line"><span class="comment"> * 上面的意思是聚合操作是针对每一组进行的. 每一组都要调用一次聚合操作. 控制调用的是在前面的queryResults循环中!   </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> RangeSubAggregator <span class="title">getSubAggregator</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+<p>RangeDataPointAggregator是对RangeSubAggregator的代理,其next调用会通过子聚合类来获取迭代器,从而获取迭代器里的数据点.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">RangeDataPointAggregator</span> <span class="keyword">extends</span> <span class="title">AggregatedDataPointGroupWrapper</span> </span>&#123;</span><br><span class="line">  <span class="keyword">protected</span> RangeSubAggregator m_subAggregator;</span><br><span class="line">  <span class="keyword">protected</span> Iterator&lt;DataPoint&gt; m_dpIterator;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> DataPoint <span class="title">next</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!m_dpIterator.hasNext())&#123;</span><br><span class="line">      <span class="comment">//We calculate start and end ranges as the ranges may not be consecutive if data does not show up in each range.</span></span><br><span class="line">      <span class="comment">//currentDataPoint是在父类中定义的,代表每次迭代过程中的当前数据点</span></span><br><span class="line">      <span class="keyword">long</span> startRange = getStartRange(currentDataPoint.getTimestamp());</span><br><span class="line">      <span class="keyword">long</span> endRange = getEndRange(currentDataPoint.getTimestamp());</span><br><span class="line">      SubRangeIterator subIterator = <span class="keyword">new</span> SubRangeIterator(endRange);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">long</span> dataPointTime = currentDataPoint.getTimestamp();</span><br><span class="line">      <span class="keyword">if</span> (m_alignStartTime) dataPointTime = startRange;</span><br><span class="line">      m_dpIterator = m_subAggregator.getNextDataPoints(dataPointTime, subIterator).iterator();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//如果当前迭代器还有元素,则每次调用next,都会调用一次m_dpIterator的next.如果m_dpIterator没有元素了,再次申请一个新的迭代器.</span></span><br><span class="line">    <span class="comment">//相当于一次申请了一个内部迭代器, 可以用于外部的多次next调用. 通过这种方式, 一批一批地处理.  </span></span><br><span class="line">    <span class="keyword">return</span> (m_dpIterator.next());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>RangeDataPointAggregator是个DataPointGroup,最终要实现Iterator迭代器,虽然它自己又代理了innerDataPointGroup.<br>迭代器要有hasNext和next方法,交给RangeSubAggregator不断获取下一个数据点,形成的Iterator<datapoint>.  </datapoint></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">    RangeDataPointAggregator   --&gt; AggregatedDataPointGroupWrapper --&gt; DataPointGroup --&gt; Iterator&lt;DataPoint&gt;</span><br><span class="line">    |                 |                            |                        |------------------|</span><br><span class="line">DataPointGroup  RangeSubAggregator                |                          hasNext,next()</span><br><span class="line">    |------------------\---------------------------|(inner)                           |   </span><br><span class="line">                        \-------------------------------------------------------------|</span><br><span class="line">                             m_subAggregator.getNextDataPoints().iterator</span><br></pre></td></tr></table></figure>
+<p>以RangeAggregator子类CountAggregator的RangeSubAggregator=CountDataPointAggregator求和以及平均值为例:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">CountDataPointAggregator</span> <span class="keyword">implements</span> <span class="title">RangeSubAggregator</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> Iterable&lt;DataPoint&gt; <span class="title">getNextDataPoints</span><span class="params">(<span class="keyword">long</span> returnTime, Iterator&lt;DataPoint&gt; dataPointRange)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> count = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (dataPointRange.hasNext()) &#123;</span><br><span class="line">      count++;</span><br><span class="line">      dataPointRange.next();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> Collections.singletonList(m_dataPointFactory.createDataPoint(returnTime, count));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">AvgDataPointAggregator</span> <span class="keyword">implements</span> <span class="title">RangeSubAggregator</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> Iterable&lt;DataPoint&gt; <span class="title">getNextDataPoints</span><span class="params">(<span class="keyword">long</span> returnTime, Iterator&lt;DataPoint&gt; dataPointRange)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> count = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">double</span> sum = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (dataPointRange.hasNext()) &#123;</span><br><span class="line">      DataPoint dp = dataPointRange.next();</span><br><span class="line">      sum += dp.getDoubleValue();</span><br><span class="line">      count++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> Collections.singletonList(m_dataPointFactory.createDataPoint(returnTime, sum / count));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意上面的第二个参数也是一个迭代器,因此是在dataPointRange多个数据点上做不同的聚合操作(比如求和或平均值).<br>最终只返回一个数据点,用singleton封装成List,因为聚合操作形成的也只有一个值.<br>数据点范围是由SubRangeIterator, 它是由currentDataPoint的startRange和endRange构造出来的.<br>SubRangeIterator是RangeDataPointAggregator的内部类,所以实际上使用的还是最原始传进来的DataPointGroup!  </p>
+<blockquote>
+<p>这里开始和结束范围有一个samplingValue抽样的概念. 为什么要抽样? 抽样会对数据精度有影响吗?   </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">long</span> <span class="title">getStartRange</span><span class="params">(<span class="keyword">long</span> timestamp)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">long</span> samplingValue = m_sampling.getValue();</span><br><span class="line">  <span class="keyword">long</span> numberOfPastPeriods = m_unitField.getDifferenceAsLong(timestamp, m_startTime) / samplingValue;</span><br><span class="line">  <span class="keyword">return</span> m_unitField.add(m_startTime, numberOfPastPeriods * samplingValue);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">long</span> <span class="title">getEndRange</span><span class="params">(<span class="keyword">long</span> timestamp)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">long</span> samplingValue = m_sampling.getValue();</span><br><span class="line">  <span class="keyword">long</span> numberOfPastPeriods = m_unitField.getDifferenceAsLong(timestamp, m_startTime) / samplingValue;</span><br><span class="line">  <span class="keyword">return</span> m_unitField.add(m_startTime, (numberOfPastPeriods + <span class="number">1</span>) * samplingValue);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">protected</span> <span class="class"><span class="keyword">class</span> <span class="title">SubRangeIterator</span> <span class="keyword">implements</span> <span class="title">Iterator</span>&lt;<span class="title">DataPoint</span>&gt; </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasNext</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> ((currentDataPoint != <span class="keyword">null</span>) &amp;&amp; (currentDataPoint.getTimestamp() &lt; m_endRange));</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> DataPoint <span class="title">next</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    DataPoint ret = currentDataPoint;</span><br><span class="line">    <span class="keyword">if</span> (hasNextInternal())</span><br><span class="line">      currentDataPoint = nextInternal();  <span class="comment">//这里会调用外部类父类AggregatedDataPointGroupWrapper,最终还是innerDataPointGroup.next()</span></span><br><span class="line">    <span class="keyword">return</span> (ret);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以有必要看下具体的innerDataPointGroup, 它其实决定了数据点组中每个数据点的获取.  </p>
+<h3 id="EOF_AGG_QUERY">EOF AGG QUERY</h3><p>在KairosDatastore.execute的aggregate流程中,只是创建了一个聚合RangeDataPointAggregator就结束了,返回的是DataPointGroup.<br>虽然我们上面分析了Iterator<datapoint>是交给子聚合类来实现. 但是如何调用迭代器,最终返回DataPoint即结果中的values列表?<br>实际是在MetricsResource在execute之后的jsonResponse.formatQuery输出结果时才调用, 现在聚合查询的整个流程就完成了.  </datapoint></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//This loop must call close on each group at the end.</span></span><br><span class="line"><span class="keyword">for</span> (DataPointGroup group : queryResults) &#123;</span><br><span class="line">  m_jsonWriter.key(<span class="string">"name"</span>).value(metric);</span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">  <span class="comment">//前面写了name,group_by,tags,现在真正开始输出DataPoint列表</span></span><br><span class="line">  m_jsonWriter.key(<span class="string">"values"</span>).array();</span><br><span class="line">  <span class="keyword">while</span> (group.hasNext()) &#123;</span><br><span class="line">    DataPoint dataPoint = group.next();</span><br><span class="line">    m_jsonWriter.array().value(dataPoint.getTimestamp());</span><br><span class="line">    dataPoint.writeValueToJson(m_jsonWriter);</span><br><span class="line">    m_jsonWriter.endArray();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="kairosdb-client">kairosdb-client</h2><p>存储:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">MetricBuilder builder = MetricBuilder.getInstance();</span><br><span class="line">builder.addMetric(&quot;metric1&quot;)</span><br><span class="line">        .addTag(&quot;host&quot;, &quot;server1&quot;)</span><br><span class="line">        .addTag(&quot;customer&quot;, &quot;Acme&quot;)</span><br><span class="line">        .addDataPoint(System.currentTimeMillis(), 10)</span><br><span class="line">        .addDataPoint(System.currentTimeMillis(), 30L);</span><br><span class="line">HttpClient client = new HttpClient(&quot;http://localhost:8080&quot;);</span><br><span class="line">Response response = client.pushMetrics(builder);</span><br><span class="line">client.shutdown();</span><br></pre></td></tr></table></figure>
+<p>查询: </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">QueryBuilder builder = QueryBuilder.getInstance();</span><br><span class="line">builder.setStart(2, TimeUnit.MONTHS)</span><br><span class="line">       .setEnd(1, TimeUnit.MONTHS)</span><br><span class="line">       .addMetric(&quot;metric1&quot;)</span><br><span class="line">       .addAggregator(AggregatorFactory.createAverageAggregator(5, TimeUnit.MINUTES));</span><br><span class="line">HttpClient client = new HttpClient(&quot;http://localhost:8080&quot;);</span><br><span class="line">QueryResponse response = client.query(builder);</span><br><span class="line">client.shutdown();</span><br></pre></td></tr></table></figure>
+<p>自定义类型:  </p>
+<blockquote>
+<p>You must first understand the different custom type values<br>you must specify on the client; group type and registered type. 客户端,分组类型,注册类型<br>The group type is used for JSON serialization/de-serialization. 分组类型用于JSON的序列化和反序列化<br>The registered type is used by the server to identify which DataPointFactory 注册类型用于定位DataPointFactory<br>it will use to serialize/de-serialize the data to the data store. 它会序列化或反序列化数据到底层存储</p>
+</blockquote>
+<p>存储时,首先通过客户端向KairosDB注册分组类型. 添加指标时,指定注册类型.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">HttpClient client = new HttpClient(&quot;http://localhost:8080&quot;);</span><br><span class="line">client.registerCustomDataType(&quot;complex&quot;, ComplexNumber.class); // &quot;complex&quot; is the group type</span><br><span class="line"></span><br><span class="line">MetricBuilder metricBuilder = MetricBuilder.getInstance();</span><br><span class="line">Metric metric = metricBuilder.addMetric(&quot;metric1&quot;, &quot;complex-number&quot;);  // &quot;complex-number&quot; is the registered type</span><br><span class="line">metric.addTag(&quot;host&quot;, &quot;myHost&quot;);</span><br><span class="line">metric.addDataPoint(System.currentTimeMillis(), new ComplexNumber(2.3, 3.4));</span><br><span class="line">metric.addDataPoint(System.currentTimeMillis(), new ComplexNumber(1.1, 5));</span><br><span class="line"></span><br><span class="line">client.pushMetrics(metricBuilder);</span><br></pre></td></tr></table></figure>
+<p>查询时,将数据点的值转换为自定义的类型.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">QueryBuilder queryBuilder = QueryBuilder.getInstance();</span><br><span class="line">queryBuilder.addMetric(&quot;metric1&quot;);</span><br><span class="line">queryBuilder.setStart(1, TimeUnit.HOURS);</span><br><span class="line"></span><br><span class="line">QueryResponse response = client.query(queryBuilder);</span><br><span class="line">List&lt;DataPoint&gt; dataPoints = response.getQueries().get(0).getResults().get(0).getDataPoints();</span><br><span class="line"></span><br><span class="line">for (DataPoint dataPoint : dataPoints)</span><br><span class="line">&#123;</span><br><span class="line">    ComplexNumber complex = (ComplexNumber) dataPoint.getValue();</span><br><span class="line">    System.out.println(complex.real + &quot; + &quot; + complex.imaginary + &quot;i&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/12/24/2015-12-23-TSDB-Kairosdb/">时间序列数据库之Kairosdb</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年12月24日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/12/24/2015-12-23-TSDB-Kairosdb/" title="时间序列数据库之Kairosdb">http://github.com/zqhxuyuan/2015/12/24/2015-12-23-TSDB-Kairosdb/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/12/24/2015-12-23-TSDB-Kairosdb/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/12/25/2015-12-25-TSDB-InfluxDB/">
+        时间序列数据库之InfluxDB
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/12/23/2015-12-23-HBase-QA/">
+        HBase QA
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#存储"><span class="toc-number">1.</span> <span class="toc-text">存储</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DataPoints"><span class="toc-number">2.</span> <span class="toc-text">DataPoints</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查询"><span class="toc-number">3.</span> <span class="toc-text">查询</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#聚合"><span class="toc-number">4.</span> <span class="toc-text">聚合</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Cassandra_Schema"><span class="toc-number">5.</span> <span class="toc-text">Cassandra Schema</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据存储流程"><span class="toc-number">6.</span> <span class="toc-text">数据存储流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据查询流程"><span class="toc-number">7.</span> <span class="toc-text">数据查询流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#QueryRunner"><span class="toc-number">8.</span> <span class="toc-text">QueryRunner</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#分组聚合查询流程"><span class="toc-number">9.</span> <span class="toc-text">分组聚合查询流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#tag分组"><span class="toc-number">9.1.</span> <span class="toc-text">tag分组</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DataPointGroup"><span class="toc-number">9.2.</span> <span class="toc-text">DataPointGroup</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#其他分组"><span class="toc-number">9.3.</span> <span class="toc-text">其他分组</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#聚合-1"><span class="toc-number">9.4.</span> <span class="toc-text">聚合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#EOF_AGG_QUERY"><span class="toc-number">9.5.</span> <span class="toc-text">EOF AGG QUERY</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#kairosdb-client"><span class="toc-number">10.</span> <span class="toc-text">kairosdb-client</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/12/24/2015-12-23-TSDB-Kairosdb/" data-title="时间序列数据库之Kairosdb" data-url="http://github.com/zqhxuyuan/2015/12/24/2015-12-23-TSDB-Kairosdb/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/12/25/2015-12-25-TSDB-InfluxDB/" title="上一篇: 时间序列数据库之InfluxDB">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/12/23/2015-12-23-HBase-QA/" title="下一篇: HBase QA">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

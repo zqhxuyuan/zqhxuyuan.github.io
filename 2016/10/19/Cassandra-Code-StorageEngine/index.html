@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Cassandra源码分析-存储引擎 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Cassandra-2.2/3.0 源码分析：存储引擎">
+<meta name="keywords" content="cassandra">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cassandra源码分析-存储引擎">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/10/19/Cassandra-Code-StorageEngine/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Cassandra-2.2/3.0 源码分析：存储引擎">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161019102825548">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161019114157487">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161019112929825">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160928232515893">
+<meta property="og:image" content="http://www.bodhtree.com/blog/wp-content/uploads/2013/12/clip_image0022.jpg">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161020165624490">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161020165013403">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161020170822505">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161021085510867">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161021113351335">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161021113407601">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161021134751953">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161021144358933">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.276Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cassandra源码分析-存储引擎">
+<meta name="twitter:description" content="Cassandra-2.2/3.0 源码分析：存储引擎">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161019102825548">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Cassandra-Code-StorageEngine" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/10/19/Cassandra-Code-StorageEngine/" class="article-date">
+  	<time datetime="2016-10-18T16:00:00.000Z" itemprop="datePublished">2016-10-19</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Cassandra源码分析-存储引擎
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/cassandra/">cassandra</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cassandra/">cassandra</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Cassandra-2.2/3.0 源码分析：存储引擎<br><a id="more"></a></p>
+<h2 id="DecoratedKey、Token">DecoratedKey、Token</h2><p>对字节形式的key进行修饰后的DecoratedKey会用在很多地方，比如读写：</p>
+<blockquote>
+<p>StorageService.getPartitioner()获取唯一的Partitioner。注意一个集群只允许配置一个Partitioner，<br>不允许配置多个Partitioner，否则会有冲突。而且服务端配置的Partitioner，客户端也必须使用相同的Partitioner，<br>如果说服务器使用Murmur3，而客户端使用Random，客户端启动时会报错。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Read</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Row <span class="title">getRow</span><span class="params">(Keyspace keyspace)</span> </span>&#123;</span><br><span class="line">    DecoratedKey dk = StorageService.getPartitioner().decorateKey(key);</span><br><span class="line">    <span class="keyword">return</span> keyspace.getRow(<span class="keyword">new</span> QueryFilter(dk, cfName, filter, timestamp));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161019102825548" alt="c-decorated key"></p>
+<p>Murmur3Partitioner对key进行装饰后，最终得到某个Token，这个Token是无状态的数据，所以新的key会创建新的Token对象。  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Murmur3Partitioner</span> <span class="keyword">implements</span> <span class="title">IPartitioner</span></span></span><br><span class="line"><span class="class">    <span class="title">public</span> <span class="title">static</span> <span class="title">final</span> <span class="title">Murmur3Partitioner</span> <span class="title">instance</span> </span>= <span class="keyword">new</span> Murmur3Partitioner();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> DecoratedKey <span class="title">decorateKey</span><span class="params">(ByteBuffer key)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">long</span>[] hash = getHash(key);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> PreHashedDecoratedKey(getToken(key, hash), key, hash[<span class="number">0</span>], hash[<span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> LongToken <span class="title">getToken</span><span class="params">(ByteBuffer key, <span class="keyword">long</span>[] hash)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> LongToken(normalize(hash[<span class="number">0</span>]));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">LongToken</span> <span class="keyword">extends</span> <span class="title">Token</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">long</span> token;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="title">LongToken</span><span class="params">(<span class="keyword">long</span> token)</span> </span>&#123; <span class="keyword">this</span>.token = token; &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> IPartitioner <span class="title">getPartitioner</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> instance; &#125;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> Object <span class="title">getTokenValue</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> token; &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Token</span> <span class="keyword">implements</span> <span class="title">RingPosition</span>&lt;<span class="title">Token</span>&gt;, <span class="title">Serializable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> TokenSerializer serializer = <span class="keyword">new</span> TokenSerializer();</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">TokenFactory</span> </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">toByteArray</span><span class="params">(Token token)</span></span>;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> Token <span class="title">fromByteArray</span><span class="params">(ByteBuffer bytes)</span></span>;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> String <span class="title">toString</span><span class="params">(Token token)</span></span>; <span class="comment">// serialize as string, not necessarily human-readable</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> Token <span class="title">fromString</span><span class="params">(String string)</span></span>; <span class="comment">// deserialize</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">abstract</span> <span class="keyword">public</span> IPartitioner <span class="title">getPartitioner</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">abstract</span> <span class="keyword">public</span> Object <span class="title">getTokenValue</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>DecoratedKey抽象类包括了key内容本身和Token，实现类有内存的BufferDecoratedKey和native的NativeDecoratedKey。  </p>
+<blockquote>
+<p>可见在支持native对象时，最底层的key对象已经开始用native方式分配内存了</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">DecoratedKey</span> <span class="keyword">implements</span> <span class="title">RowPosition</span>, <span class="title">FilterKey</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Token token;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Token <span class="title">getToken</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> token; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> ByteBuffer <span class="title">getKey</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最底层的接口其实还不是DecoratedKey，而是RingPosition</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161019114157487" alt="c-ringposition"></p>
+<p>Token是对key进行hash得到的一个数值，因此可能产生hash冲突，即同一个hash值可能有多个key对应。<br>所以Key和Token不是一一对应的，根据key可以得到唯一的Token，但是根据Token不一定有唯一的key。  </p>
+<h3 id="Native">Native</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NativeDecoratedKey</span> <span class="keyword">extends</span> <span class="title">DecoratedKey</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">long</span> peer;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">NativeDecoratedKey</span><span class="params">(Token token, NativeAllocator allocator, OpOrder.Group writeOp, ByteBuffer key)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(token);</span><br><span class="line">        <span class="keyword">int</span> size = key.remaining();</span><br><span class="line">        <span class="keyword">this</span>.peer = allocator.allocate(<span class="number">4</span> + size, writeOp);</span><br><span class="line">        MemoryUtil.setInt(peer, size);</span><br><span class="line">        MemoryUtil.setBytes(peer + <span class="number">4</span>, key);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> ByteBuffer <span class="title">getKey</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> MemoryUtil.getByteBuffer(peer + <span class="number">4</span>, MemoryUtil.getInt(peer));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BufferDecoratedKey</span> <span class="keyword">extends</span> <span class="title">DecoratedKey</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ByteBuffer key;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">BufferDecoratedKey</span><span class="params">(Token token, ByteBuffer key)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(token);</span><br><span class="line">        <span class="keyword">this</span>.key = key;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> ByteBuffer <span class="title">getKey</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> key; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a href="http://normanmaurer.me/blog/2013/10/28/Lesser-known-concurrent-classes-Part-1/" target="_blank" rel="noopener">http://normanmaurer.me/blog/2013/10/28/Lesser-known-concurrent-classes-Part-1/</a><br><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161019112929825" alt="c-atomic update"><br>左图使用Atomic，右图使用volatile（总共占用500M）和AtomicUpdater（136M）</p>
+</blockquote>
+<h2 id="TokenMetadata">TokenMetadata</h2><h2 id="DataModel">DataModel</h2><p>OnDiskAtom：在盘原子（OnDisk + Atom原子，磁盘上的原子变量），有两个实现类：RangeTombstone和Cell，<br>Cell也有多种接口：AbstractCell、CounterCell、ExpiringCell、DeletedCell。<br>这里已经把删除相关的几种实现都覆盖了：TTL为ExpiringCell，删除命令为DeletedCell，删除多个为RangeTombstone。<br>普通操作的抽象类是AbstractCell，有两种大类实现：BufferCell和AbstractNativeCell，分别代表内存和Offheap中的Cell。  </p>
+<p>Cell有多种实现，除了几种删除相关的Cell外，普通Cell又分为BufferCell和NativeCell。<br>其中BufferCell在内存中，而NativeCell在OffHeap中。</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160928232515893" alt="c-cell"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Row</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> DecoratedKey key;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> ColumnFamily cf;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">ColumnFamily</span> <span class="keyword">implements</span> <span class="title">Iterable</span>&lt;<span class="title">Cell</span>&gt;, <span class="title">IRowCacheEntry</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> CFMetaData metadata;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ArrayBackedSortedColumns</span> <span class="keyword">extends</span> <span class="title">ColumnFamily</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> DeletionInfo deletionInfo;</span><br><span class="line">    <span class="keyword">private</span> Cell[] cells;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> size;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> sortedSize;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Cell</span> <span class="keyword">extends</span> <span class="title">OnDiskAtom</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> CellName <span class="title">name</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> ByteBuffer <span class="title">value</span><span class="params">()</span></span>;    </span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BufferCell</span> <span class="keyword">extends</span> <span class="title">AbstractCell</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> CellName name;  <span class="comment">//Cell名称</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> ByteBuffer value; <span class="comment">//Cell值</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">long</span> timestamp; <span class="comment">//时间撮，每个Cell都有一个时间撮，用来防止冲突</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Keyspace</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ConcurrentMap&lt;UUID, ColumnFamilyStore&gt; columnFamilyStores = <span class="keyword">new</span> ConcurrentHashMap&lt;&gt;();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> KSMetaData metadata;    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Keyspace和ColumnFamily的定义都有元数据，分别用KSMetaData和CFMetadata表示ks和表级别的配置信息。</p>
+<p>数据库：Keyspace<br>表：ColumnFamily<br>主键：DecoratedKey<br>行：Row<br>列：Cell  </p>
+<p>Row由Key和ColumnFamily组成，即主键和列族（很多个列）。ColumnFamily是Column的Family，Column也叫做Cell。<br>ColumnFamily可以用一个双层Map表示：<code>Map&lt;RowKey, SortedMap&lt;ColumnKey, ColumnValue&gt;&gt;</code><br>因为是Map结构，所以查询Map中的指定key非常快，列是有序存储的，所以扫描多个列或者定位某个列也很高效。</p>
+<p><img src="http://www.bodhtree.com/blog/wp-content/uploads/2013/12/clip_image0022.jpg" alt="column-family"></p>
+<h2 id="SSTableWriter">SSTableWriter</h2><p>SSTable构建在SequenceFile上，它在磁盘的数据存储是有序的，SSTable包括数据文件和索引文件。除此之外，为了加快文件的读取，<br>还有BloomFilter、IndexSummary，注意索引文件会存储每个key在数据文件中的索引位置，而IndexSummary文件则存储部分key，<br>每隔一定key的数量才在summary文件中存储一个条目。通常summary文件比较小，所以可以直接以MMap的形式映射到内存中。  </p>
+<p>SSTable分成SSTableWriter和SSTableReader，具体的文件操作接口实现是：BigTableWriter和BigTableReader。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">SSTable</span><br><span class="line">  |-- SSTableWriter </span><br><span class="line">        |-- BigTableWriter </span><br><span class="line">  |-- SSTableReader</span><br><span class="line">        |-- BigTableReader</span><br></pre></td></tr></table></figure>
+<p><code>BigTableWriter.append()</code>应该是实际的写入一行记录方法，看看调用链：当Memtable刷写时，会把内存中有序的数据追加到BigTableWriter。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">BigTableWriter.append(DecoratedKey, ColumnFamily)</span><br><span class="line">  |-- Memtable.writeSortedContents(File) </span><br><span class="line">        |-- Memtable.flush()</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>append方法第一个参数DecoratedKey表示row key，那么第二个参数ColumnFamily表示的是这个key对应的所有Column家族。<br>ColumnFamily是Column数据的集合，Column包括ColumnName和ColumnValue，有了row key，column name，column value，数据也就准备完毕。  </p>
+</blockquote>
+<h3 id="BigTableWriter">BigTableWriter</h3><p>BigTableWriter针对索引文件和数据文件的写入分别是：IndexWriter和SequentialWriter。后者负责data文件，<br>而前者除了Index文件，还有BloomFilter文件、Summary文件都一起完成。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BigTableWriter</span> <span class="keyword">extends</span> <span class="title">SSTableWriter</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> IndexWriter iwriter; <span class="comment">//勤劳的Index，还要负责BF、IndexSummary</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> SequentialWriter dataFile; <span class="comment">//孤傲的数据文件</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">append</span><span class="params">(DecoratedKey decoratedKey, ColumnFamily cf)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> startPosition = beforeAppend(decoratedKey); <span class="comment">//写文件，要知道开始位置</span></span><br><span class="line">    RowIndexEntry entry = rawAppend(cf, startPosition, decoratedKey, dataFile.stream); <span class="comment">//返回索引条目</span></span><br><span class="line">    <span class="keyword">long</span> endPosition = dataFile.getFilePointer();</span><br><span class="line">    afterAppend(decoratedKey, endPosition, entry);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">long</span> <span class="title">beforeAppend</span><span class="params">(DecoratedKey decoratedKey)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (lastWrittenKey == <span class="keyword">null</span>) ? <span class="number">0</span> : dataFile.getFilePointer();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">afterAppend</span><span class="params">(DecoratedKey decoratedKey, <span class="keyword">long</span> dataEnd, RowIndexEntry index)</span> </span>&#123;</span><br><span class="line">    lastWrittenKey = decoratedKey;</span><br><span class="line">    <span class="keyword">if</span> (first == <span class="keyword">null</span>) first = lastWrittenKey;</span><br><span class="line">    iwriter.append(decoratedKey, index, dataEnd); <span class="comment">//索引文件，以及其他BF、IndexSummary都在这里完成</span></span><br><span class="line">    dbuilder.addPotentialBoundary(dataEnd);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="IndexWriter索引文件">IndexWriter索引文件</h3><p>先来看IndexWriter怎么写入索引文件以及BF、IndexSummary等。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">IndexWriter</span> <span class="keyword">extends</span> <span class="title">AbstractTransactional</span> <span class="keyword">implements</span> <span class="title">Transactional</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> SequentialWriter indexFile; <span class="comment">//Index文件</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> SegmentedFile.Builder builder;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> IndexSummaryBuilder summary; <span class="comment">//IndexSummary文件</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> IFilter bf; <span class="comment">//Bloom Filter文件</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">append</span><span class="params">(DecoratedKey key, RowIndexEntry indexEntry, <span class="keyword">long</span> dataEnd)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    bf.add(key); <span class="comment">//添加到Bloom Filter中，BF类似于一个List集合</span></span><br><span class="line">    <span class="keyword">long</span> indexStart = indexFile.getFilePointer();</span><br><span class="line">    ByteBufferUtil.writeWithShortLength(key.getKey(), indexFile.stream);</span><br><span class="line">    rowIndexEntrySerializer.serialize(indexEntry, indexFile.stream); <span class="comment">//序列化到IndexFile文件中</span></span><br><span class="line">    <span class="keyword">long</span> indexEnd = indexFile.getFilePointer();</span><br><span class="line">    summary.maybeAddEntry(key, indexStart, indexEnd, dataEnd); <span class="comment">//也许需要追加索引条目到Summary文件中</span></span><br><span class="line">    builder.addPotentialBoundary(indexStart);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Write_Data(Column_Index)">Write Data(Column Index)</h3><p>key和ColumnFamily已经足够可以代表要写入的数据了。ColumnIndex字面意思是Column索引，为什么要在列上加索引，<br>因为Cassandra是宽表，一行数据可能有很多列（最多2亿个列，可想而知，对列做索引也可以提高性能）。<br>这里的out参数是dataFile的输出流，所以接下来的文件写入都是会写到Data数据文件中的。  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> RowIndexEntry <span class="title">rawAppend</span><span class="params">(ColumnFamily cf, <span class="keyword">long</span> startPosition, DecoratedKey key, DataOutputPlus out)</span> </span>&#123;</span><br><span class="line">  ColumnIndex.Builder builder = <span class="keyword">new</span> ColumnIndex.Builder(cf, key.getKey(), out);</span><br><span class="line">  ColumnIndex index = builder.build(cf); <span class="comment">//这里会由dataFile写文件内容</span></span><br><span class="line">  out.writeShort(END_OF_ROW); <span class="comment">//一行数据的结束标记位</span></span><br><span class="line">  <span class="keyword">return</span> RowIndexEntry.create(startPosition, cf.deletionInfo().getTopLevelDeletion(), index); <span class="comment">//返回RowIndex</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>IndexInfo的组成：Composite lastName、firsetName（Block索引块的第一个列名和最后一个列名），offset、width（索引块的偏移量和长度）。<br>一个ColumnIndex包括了多个IndexInfo，因此ColumnIndex表示的是所有Column组成在一起的最终索引结果。<br><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161020165624490" alt="c column index"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ColumnIndex</span> </span>&#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> List&lt;IndexHelper.IndexInfo&gt; columnsIndex;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Help to create an index for a column family based on size of columns, and write said columns to disk.</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Builder</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ColumnIndex result;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> DataOutputPlus output;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ByteBuffer key;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ColumnIndex <span class="title">build</span><span class="params">(ColumnFamily cf)</span></span>&#123;</span><br><span class="line">      <span class="keyword">for</span>(Cell c : cf) add(c); <span class="comment">//不考虑Tombstone等，非常简单！     </span></span><br><span class="line">      ColumnIndex index = build();</span><br><span class="line">      <span class="keyword">return</span> index; </span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ColumnIndex实际上并不是单个Column，或者说仅仅表示一个Column的Index，它表示的真正含义是一行的所有Column。<br>一行记录有很多Column，这些Column会每隔blockSize生成一个IndexInfo关于列的索引条目。<br><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161020165013403" alt="c index info"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">add</span><span class="params">(OnDiskAtom column)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (firstColumn == <span class="keyword">null</span>) &#123;  <span class="comment">//第一列，在一行中只会执行一次。。错误！因为一行有多个Block， 每个Block都会执行一次</span></span><br><span class="line">    firstColumn = column;</span><br><span class="line">    startPosition = endPosition;</span><br><span class="line">    endPosition += tombstoneTracker.writeOpenedMarkers(firstColumn.name(), output, atomSerializer);</span><br><span class="line">    blockSize = <span class="number">0</span>; </span><br><span class="line">    maybeWriteRowHeader(); <span class="comment">//第一个列，需要添加RowHeader</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (tombstoneTracker.update(column, <span class="keyword">false</span>)) &#123;</span><br><span class="line">    <span class="keyword">long</span> size = tombstoneTracker.writeUnwrittenTombstones(output, atomSerializer);</span><br><span class="line">    size += atomSerializer.serializedSizeForSSTable(column);</span><br><span class="line">    endPosition += size;</span><br><span class="line">    blockSize += size; <span class="comment">//增加block大小，最后才可以判断是否需要添加列索引</span></span><br><span class="line">    atomSerializer.serializeForSSTable(column, output);  <span class="comment">//序列化Column！！！</span></span><br><span class="line">  &#125;</span><br><span class="line">  lastColumn = column; <span class="comment">//最近一个列</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// if we hit the column index size that we have to index after, go ahead and index it.</span></span><br><span class="line">  <span class="keyword">if</span> (blockSize &gt;= DatabaseDescriptor.getColumnIndexSize()) &#123; <span class="comment">//间隔blockSize，添加一个列索引</span></span><br><span class="line">    IndexHelper.IndexInfo cIndexInfo = <span class="keyword">new</span> IndexHelper.IndexInfo(</span><br><span class="line">      firstColumn.name(), column.name(), indexOffset + startPosition, endPosition - startPosition);</span><br><span class="line">    result.columnsIndex.add(cIndexInfo);</span><br><span class="line">    firstColumn = <span class="keyword">null</span>; <span class="comment">//重置firstColumn为null，这样下一个Block会重新执行开头的if条件</span></span><br><span class="line">    lastBlockClosing = column;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后build的时候，第一个if条件表示在add过程中都没产生IndexInfo，第二个条件是说即使add过程有IndexInfo，<br>可能剩余的Column不够一个完整的Block，也要新建一个IndexInfo不足以产生一个完整的Block。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> ColumnIndex <span class="title">build</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (result.columnsIndex.isEmpty() || lastBlockClosing != lastColumn) &#123;</span><br><span class="line">    IndexHelper.IndexInfo cIndexInfo = <span class="keyword">new</span> IndexHelper.IndexInfo(</span><br><span class="line">      firstColumn.name(), lastColumn.name(), indexOffset + startPosition, endPosition - startPosition);</span><br><span class="line">    result.columnsIndex.add(cIndexInfo);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ColumnIndex会被用于创建RowIndexEntry，如果索引块（IndexInfo）只有一个，则直接创建RowIndexEntry（不需要把IndexInfo传进去），<br>否则创建IndexedEntry，会把ColumnIndex的所有IndexInfo都传入。<br><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161020170822505" alt="c-index entry"></p>
+<blockquote>
+<p>position其实就是Row的起始位置，知道了起始位置，就可以构建row key索引的条目了。后续的IndexWriter我们已经分析过了。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> RowIndexEntry&lt;IndexHelper.IndexInfo&gt; create(<span class="keyword">long</span> position, DeletionTime deletionTime, ColumnIndex index) &#123;</span><br><span class="line">    <span class="keyword">if</span> (index.columnsIndex.size() &gt; <span class="number">1</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> IndexedEntry(position, deletionTime, index.columnsIndex);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> RowIndexEntry&lt;&gt;(position); <span class="comment">//如果只有一个columnsIndex，直接用RowIndexEntry</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后回到IndexWriter流程，看看索引文件中RowIndex条目的序列化：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//RowIndexEntry.Serializer</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">serialize</span><span class="params">(RowIndexEntry&lt;IndexHelper.IndexInfo&gt; rie, DataOutputPlus out)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  out.writeLong(rie.position);</span><br><span class="line">  out.writeInt(rie.promotedSize(idxSerializer));</span><br><span class="line">  <span class="keyword">if</span> (rie.isIndexed()) &#123; <span class="comment">//如果有多个IndexInfo</span></span><br><span class="line">      DeletionTime.serializer.serialize(rie.deletionTime(), out);</span><br><span class="line">      out.writeInt(rie.columnsIndex().size());</span><br><span class="line">      <span class="keyword">for</span> (IndexHelper.IndexInfo info : rie.columnsIndex()) <span class="comment">//每个IndexInfo都要序列化</span></span><br><span class="line">          idxSerializer.serialize(info, out);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Tombstone">Tombstone</h3><blockquote>
+<p><a href="http://stackoverflow.com/questions/27776337/what-types-of-tombstones-does-cassandra-support" target="_blank" rel="noopener">http://stackoverflow.com/questions/27776337/what-types-of-tombstones-does-cassandra-support</a><br><a href="http://thelastpickle.com/blog/2016/07/27/about-deletes-and-tombstones.html" target="_blank" rel="noopener">http://thelastpickle.com/blog/2016/07/27/about-deletes-and-tombstones.html</a></p>
+</blockquote>
+<p>Tombstone标记可以作用在A Column（d）、A Range of Columns（e）、A Whole Row。<br>单单DELETE语法就有多种：删除表、删除指定行、删除指定行的指定列。下面列举了几种Tombstone类型：  </p>
+<table>
+<thead>
+<tr>
+<th>Tombstone类型</th>
+<th>SQL</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>column tombstone</td>
+<td><code>delete id from ts1 WHERE col1 = &#39;3131&#39;;</code></td>
+<td>{“key”: “3131”,”columns”: [[“id”,”54822130”,1417814320400000,”d”]]},</td>
+</tr>
+<tr>
+<td>row tombstone</td>
+<td><code>delete from ts1 WHERE col1 = &#39;31&#39;;</code></td>
+<td>{“key”: “31”,”metadata”: {“deletionInfo”: {“markedForDeleteAt”:1417814302304000,”localDeletionTime”:1417814302}},”columns”: []}</td>
+</tr>
+<tr>
+<td>list tombstone</td>
+<td><code>insert into flights (id, destinations) values (&#39;BA1234&#39;, [&#39;ORD&#39;, &#39;LHR&#39;]);</code></td>
+<td>[“1381316637599609:45787829:tags:_”,”1381316637599609:45787829:tags:!”,1438264650252000,”t”,1438264650],</td>
+</tr>
+</tbody>
+</table>
+<h4 id="Mutation-delete">Mutation.delete</h4><p>Mutation中有三个关于delete的方法（虽然参数中都没有row key，不过Mutation一定是具体到key的），<br>cfName表示ColumnFamilyName，即表名。下面的示例中cfName=tableX，CellName=col1。  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">delete</span> <span class="keyword">from</span> tableX <span class="keyword">where</span> rowkey=<span class="keyword">key</span>;      <span class="comment">#delete(String cfName, long timestamp)</span></span><br><span class="line"><span class="keyword">delete</span> col1 <span class="keyword">from</span> tableX <span class="keyword">where</span> rowkey=<span class="keyword">key</span>; <span class="comment">#delete(String cfName, CellName name, long timestamp)</span></span><br></pre></td></tr></table></figure>
+<p>三种delete方法，调用的是不同的方法，分别是:delete，addTombstone，addAtom。其中删除列没有使用DeletionInfo。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Mutation</span> <span class="keyword">implements</span> <span class="title">IMutation</span></span></span><br><span class="line"><span class="class">  //1.删除行</span></span><br><span class="line"><span class="class">  <span class="title">public</span> <span class="title">void</span> <span class="title">delete</span>(<span class="title">String</span> <span class="title">cfName</span>, <span class="title">long</span> <span class="title">timestamp</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> localDeleteTime = (<span class="keyword">int</span>) (System.currentTimeMillis() / <span class="number">1000</span>);</span><br><span class="line">    addOrGet(cfName).delete(<span class="keyword">new</span> DeletionInfo(timestamp, localDeleteTime));</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//2.删除行中的某一列</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">delete</span><span class="params">(String cfName, CellName name, <span class="keyword">long</span> timestamp)</span> </span>&#123;</span><br><span class="line">    addOrGet(cfName).addTombstone(name, localDeleteTime, timestamp);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//3.删除行的多个列，范围</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">deleteRange</span><span class="params">(String cfName, Composite start, Composite end, <span class="keyword">long</span> timestamp)</span> </span>&#123;</span><br><span class="line">    addOrGet(cfName).addAtom(<span class="keyword">new</span> RangeTombstone(start, end, timestamp, localDeleteTime));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">ColumnFamily</span> <span class="keyword">implements</span> <span class="title">Iterable</span>&lt;<span class="title">Cell</span>&gt;, <span class="title">IRowCacheEntry</span></span></span><br><span class="line"><span class="class">  //2.删除行中的某一列</span></span><br><span class="line"><span class="class">  <span class="title">public</span> <span class="title">void</span> <span class="title">addTombstone</span>(<span class="title">CellName</span> <span class="title">name</span>, <span class="title">int</span> <span class="title">localDeletionTime</span>, <span class="title">long</span> <span class="title">timestamp</span>) </span>&#123;</span><br><span class="line">    addColumn(<span class="keyword">new</span> BufferDeletedCell(name, localDeletionTime, timestamp));</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//3.删除行的多个列，范围</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addAtom</span><span class="params">(OnDiskAtom atom)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (atom <span class="keyword">instanceof</span> Cell) &#123;</span><br><span class="line">      addColumn((Cell)atom);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">assert</span> atom <span class="keyword">instanceof</span> RangeTombstone;</span><br><span class="line">      delete((RangeTombstone)atom); <span class="comment">//RangeTombstone实现了OnDiskAtom，所以可以强转</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">delete</span><span class="params">(DeletionInfo info)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="DeletionInfo、DeletionTime">DeletionInfo、DeletionTime</h4><p><strong>列级别</strong>的删除采用的数据结构是BufferDeletedCell，只有<strong>行级别和RangeTombstone</strong>的删除才会使用DeletionInfo。  </p>
+<blockquote>
+<p>TopLevel字面意思是最高级别，在所有Column之上的是Row，Row叫做TopLevel。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A combination of a top-level (or row) tombstone and range tombstones describing the deletions within a &#123;@link ColumnFamily&#125; (or row).</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DeletionInfo</span> <span class="keyword">implements</span> <span class="title">IMeasurableMemory</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> DeletionTime topLevel; <span class="comment">//代表row级别的删除</span></span><br><span class="line">    <span class="keyword">private</span> RangeTombstoneList ranges; <span class="comment">//A list of range tombstones within the row.</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//判断一个Cell是否能够被DeletionInfo删除</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isDeleted</span><span class="params">(Cell cell)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (isLive()) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (cell.timestamp() &lt;= topLevel.markedForDeleteAt) <span class="keyword">return</span> <span class="keyword">true</span>; <span class="comment">//Cell的时间撮比markedForDeleteAt小，可以删除</span></span><br><span class="line">        <span class="keyword">return</span> ranges != <span class="keyword">null</span> &amp;&amp; ranges.isDeleted(cell); <span class="comment">//如果存在RangeTombstone，则用RangeTombstoneList判断</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>序列化DeletionInfo的两个时间撮到文件中：  </p>
+<ol>
+<li>localDeletionTime：什么时候会创建这个Tombstone，它的目的仅仅是为了经过gc_grace_seconds后删除Tombstone。</li>
+<li>markedForDeleteAt：标记记录什么时候可以被删除，通常用来作为判断条件，如果为MIN，则表示这行记录不会被删除</li>
+</ol>
+<blockquote>
+<p>通常使用DELETE命令删除行，会立即生成Tombstone，这时localDeletionTime是当前系统时间撮。如果使用TTL方式，则localDeletionTime是在TTL后的系统时间。<br>当创建Tombstone之后，为了不让Tombstone一直保存在磁盘中，再经过gc_grace_seconds后要把Tombstone删除掉，注意只有在创建Tombstone之后的gc才删除。<br>假设是TTL方式创建一条记录，并不是说在创建记录之后经过gc时间删除Tombstone；而是经过TTL时间+gc时间才删除Tombstone，因为经过TTL时间才开始创建Tombstone。  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//DeletionTime</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DeletionTime</span> <span class="keyword">implements</span> <span class="title">Comparable</span>&lt;<span class="title">DeletionTime</span>&gt;, <span class="title">IMeasurableMemory</span> </span>&#123;</span><br><span class="line">  <span class="comment">//A special DeletionTime that signifies that there is no top-level (row) tombstone.</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> DeletionTime LIVE = <span class="keyword">new</span> DeletionTime(Long.MIN_VALUE, Integer.MAX_VALUE);</span><br><span class="line">  <span class="comment">//A timestamp after which data should be considered deleted. If set to Long.MIN_VALUE, this implies that the data has not been marked for deletion at all.</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">long</span> markedForDeleteAt;</span><br><span class="line">  <span class="comment">//The local server timestamp, at which this tombstone was created. This is only used for purposes of purging the tombstone after gc_grace_seconds have elapsed.</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> localDeletionTime;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">DeletionTime</span><span class="params">(<span class="keyword">long</span> markedForDeleteAt, <span class="keyword">int</span> localDeletionTime)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.markedForDeleteAt = markedForDeleteAt;</span><br><span class="line">    <span class="keyword">this</span>.localDeletionTime = localDeletionTime;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isLive</span><span class="params">()</span> </span>&#123; <span class="comment">//Returns whether this DeletionTime is live, that is deletes no columns.</span></span><br><span class="line">    <span class="keyword">return</span> markedForDeleteAt == Long.MIN_VALUE &amp;&amp; localDeletionTime == Integer.MAX_VALUE;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isDeleted</span><span class="params">(OnDiskAtom atom)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> atom.timestamp() &lt;= markedForDeleteAt; <span class="comment">//可以看到比较某个Atom能够被删除，用的是markedForDeleteAt</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="序列化RowKey和TopLevel_Tombstone">序列化RowKey和TopLevel Tombstone</h3><p>回头重新看下ColumnIndex添加原始数据中关于Tombstone的逻辑（前面忽略了Tombstone）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> ColumnIndex <span class="title">build</span><span class="params">(ColumnFamily cf)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  <span class="comment">// cf has disentangled the columns and range tombstones, we need to re-interleave them in comparator order</span></span><br><span class="line">  Comparator&lt;Composite&gt; comparator = cf.getComparator();</span><br><span class="line">  DeletionInfo.InOrderTester tester = cf.deletionInfo().inOrderTester();</span><br><span class="line">  Iterator&lt;RangeTombstone&gt; rangeIter = cf.deletionInfo().rangeIterator();</span><br><span class="line">  RangeTombstone tombstone = rangeIter.hasNext() ? rangeIter.next() : <span class="keyword">null</span>;</span><br><span class="line">  <span class="keyword">for</span> (Cell c : cf) &#123;</span><br><span class="line">    <span class="keyword">while</span> (tombstone != <span class="keyword">null</span> &amp;&amp; comparator.compare(c.name(), tombstone.min) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="comment">// skip range tombstones that are shadowed by partition tombstones</span></span><br><span class="line">      <span class="keyword">if</span> (!cf.deletionInfo().getTopLevelDeletion().isDeleted(tombstone)) add(tombstone);</span><br><span class="line">      tombstone = rangeIter.hasNext() ? rangeIter.next() : <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!tester.isDeleted(c)) add(c);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">while</span> (tombstone != <span class="keyword">null</span>) &#123; <span class="comment">//添加所有的Tombstone，DeletionInfo中有RangeTombstoneList</span></span><br><span class="line">    add(tombstone);</span><br><span class="line">    tombstone = rangeIter.hasNext() ? rangeIter.next() : <span class="keyword">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  finishAddingAtoms(); <span class="comment">//writeUnwrittenTombstones，主要是序列化RangeTombstone</span></span><br><span class="line">  ColumnIndex index = build(); <span class="comment">//构建ColumnIndex最后一个IndexInfo，其他IndexInfo在add方法中已经添加过了</span></span><br><span class="line">  maybeWriteEmptyRowHeader(); <span class="comment">//序列化RowKey和TomLevel(Row) Tombstone</span></span><br><span class="line">  <span class="keyword">return</span> index;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>maybeWriteEmptyRowHeader有两种调用场景</strong>  </p>
+<p>因为DeletionInfo中用DeletionTime字段表示<code>A top-level (row) tombstone</code>。即DeletionTime代表的是行级别的，所以会和RowKey同一个级别一起序列化。  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ColumnIndex的Builder内部类</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">maybeWriteEmptyRowHeader</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!deletionInfo.isLive()) maybeWriteRowHeader(); <span class="comment">//存在Tombstone</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">maybeWriteRowHeader</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (lastColumn == <span class="keyword">null</span>) &#123; <span class="comment">//如果lastColumn为空，说明没有任何列</span></span><br><span class="line">      ByteBufferUtil.writeWithShortLength(key, output); <span class="comment">//写入RowKeyLength和RowKey内容</span></span><br><span class="line">      DeletionTime.serializer.serialize(deletionInfo.getTopLevelDeletion(), output);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//DeletionTime的序列化内部类</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">serialize</span><span class="params">(DeletionTime delTime, DataOutputPlus out)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    out.writeInt(delTime.localDeletionTime);</span><br><span class="line">    out.writeLong(delTime.markedForDeleteAt);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>maybeWriteRowHeader</code>不仅仅在最后调用一次，实际上在add(Atom)中每个Collumn Block也都会调用一次。也就是说每个Column Block都会分别创建一个IndexInfo，<br>也会调用一次maybeWriteRowHeader。add方法中会把这两个操作放在一起执行，而最后一个不足的Block，在build中创建IndexInfo，然后手动调用maybeWriteRowHeader。  </p>
+<p>Wait!Wait!Wait!注意到maybeWriteRowHeader序列化RowKey的条件是<code>lastColumn=null</code>，通常情况下只要有列，lastColulmn都不会为空！<br>不过<strong>即使没有任何列，也需要写入RowKey和TopLevel Tombstone</strong>。所以<code>maybeWriteRowHeader</code>有两个调用场景：<br><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161021085510867" alt="c-write row"></p>
+<ol>
+<li>没有任何列的情况下会被调用，并且只会被调用一次</li>
+<li>有列，不管有多少个Column Block，也只会调用一次，因此第一个Block时lastColumn=null，后续的Block则lastColumn!=null</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">add</span><span class="params">(OnDiskAtom column)</span></span>&#123;  <span class="comment">//如果没有任何列，不会调用add方法，lastColumn=null，也需要写入RowKey和TopLevel Tombstone</span></span><br><span class="line">    <span class="keyword">if</span> (firstColumn == <span class="keyword">null</span>) &#123;       <span class="comment">//一旦调用该add方法，说明有Column列</span></span><br><span class="line">      maybeWriteRowHeader();  <span class="comment">//只有lastColumn=null时，才写入RowKey和TopLevel Tombstone</span></span><br><span class="line">    &#125;</span><br><span class="line">    lastColumn = column;      <span class="comment">//只要有一个Column被添加，lastColumn就不为空</span></span><br><span class="line">    <span class="keyword">if</span> (blockSize &gt; ...) &#123;</span><br><span class="line">      firstColumn = <span class="keyword">null</span>;     <span class="comment">//新的Block，重置firstColumn，但是不会重置lastColumn哦</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="序列化Column">序列化Column</h3><p>RowKey和Tombstone要序列化，当然Column肯定也需要序列化，在添加每个Column时，先序列化Column大小，再序列化Column值。  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">add</span><span class="params">(OnDiskAtom column)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (tombstoneTracker.update(column, <span class="keyword">false</span>)) &#123;</span><br><span class="line">    <span class="keyword">long</span> size = tombstoneTracker.writeUnwrittenTombstones(output, atomSerializer); <span class="comment">//序列化Column的SIZE</span></span><br><span class="line">    size += atomSerializer.serializedSizeForSSTable(column);</span><br><span class="line">    endPosition += size;</span><br><span class="line">    blockSize += size;</span><br><span class="line">    atomSerializer.serializeForSSTable(column, output);  <span class="comment">//序列化Column的内容</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>先来看下<code>atomSerializer</code>的构造，它和ColumnFamily的<code>Comparator</code>有关，而Comparator来源于CFMetaData</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ColumnIndex的Builder内部类</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Builder</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> OnDiskAtom.Serializer atomSerializer; </span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">Builder</span><span class="params">(ColumnFamily cf, ByteBuffer key, DataOutputPlus output)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.key = key;</span><br><span class="line">    deletionInfo = cf.deletionInfo();</span><br><span class="line">    <span class="keyword">this</span>.indexOffset = rowHeaderSize(key, deletionInfo);</span><br><span class="line">    <span class="keyword">this</span>.result = <span class="keyword">new</span> ColumnIndex(<span class="keyword">new</span> ArrayList&lt;IndexHelper.IndexInfo&gt;());</span><br><span class="line">    <span class="keyword">this</span>.output = output;</span><br><span class="line">    <span class="keyword">this</span>.tombstoneTracker = <span class="keyword">new</span> RangeTombstone.Tracker(cf.getComparator());</span><br><span class="line">    <span class="keyword">this</span>.atomSerializer = cf.getComparator().onDiskAtomSerializer();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//CFMetadata</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">CFMetaData</span> </span>&#123;</span><br><span class="line">  <span class="comment">//必选</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">volatile</span> CellNameType comparator;          <span class="comment">// bytes, long, timeuuid, utf8, etc.</span></span><br><span class="line">  <span class="comment">//可选</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">volatile</span> AbstractType&lt;?&gt; defaultValidator = BytesType.instance;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">volatile</span> AbstractType&lt;?&gt; keyValidator = BytesType.instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="ColumnFamily的比较类型(CellNameType)">ColumnFamily的比较类型(CellNameType)</h4><p>CFMetaData字面意思是ColumnFamily的元数据，实际上是表级别的设置。下面举例看下表级别的Comparator到底是什么东西。<br>CellNameType的类继承体系如下，主要分为Compound和Simple，然后又根据Sparse和Dense，最终由四种组合类型。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">CellNameType</span><br><span class="line">  AbstractCellNameType </span><br><span class="line">      AbstractCompoundCellNameType</span><br><span class="line">          CompoundDenseCellNameType </span><br><span class="line">          CompoundSparseCellNameType</span><br><span class="line">      AbstractSimpleCellNameType</span><br><span class="line">          SimpleSparseCellNameType</span><br><span class="line">          SimpleDenseCellNameType</span><br></pre></td></tr></table></figure>
+<p>CellName是一个组合，主要是为了CQL3而设计的，<code>a CellName has first a number of clustering components, followed by the CQL3 column name, 
+and then possibly followed by a collection element part.</code>，首先是一些排序组件，然后是（普通的）CQL3列名，最后可能还有集合类型。  </p>
+<blockquote>
+<p>The sparse ones are CellName where one of the component (the last or second-to-last for collections) is used to store the CQL3 column name.<br>In other words, we have 4 types of CellName/CellNameType which correspond to the 4 type of table layout that we need to distinguish:  </p>
+<ol>
+<li>Simple (non-truly-composite) dense: this is the dynamic thrift CFs whose comparator is not composite.  </li>
+<li>Simple (non-truly-composite) sparse: this is the thrift static CFs (that don’t have a composite comparator).  </li>
+<li>Composite dense: this is the dynamic thrift CFs with a CompositeType comparator.  </li>
+<li>Composite sparse: this is the CQL3 layout (note that this is the only one that support collections).  </li>
+</ol>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">CellNameType</span> <span class="keyword">extends</span> <span class="title">CType</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isDense</span><span class="params">()</span></span>;  <span class="comment">// Whether or not the cell names for this type are dense.</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">clusteringPrefixSize</span><span class="params">()</span></span>;  <span class="comment">// The number of clustering columns for the table this is the type of.</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> CBuilder <span class="title">prefixBuilder</span><span class="params">()</span></span>;  <span class="comment">// A builder for the clustering prefix.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>clustering prefix表示列名中，clustering key的值是作为列名的前缀。当然也可以不需要clustering key，这时候就只有普通的PartitionKey作为主键了。<br>注意如果是CQL3的<code>COMPACT STORAGE</code>，则不会在列名中存储CQL3列名（即普通的列名），这种类型叫做<code>dense</code>，所以CellNameType继承体系的依据是：  </p>
+<ol>
+<li>是否是COMPACT STORAGE(或者thrift)，是为：Dense，不是为：Sparse</li>
+<li>ParitionKey是否有多个，是为Compound，不是为：Simple</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>COMPACT STORAGE</th>
+<th>Partition Key多个</th>
+<th>类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>N</td>
+<td>Y</td>
+<td>SimpleDenseCellNameType</td>
+</tr>
+<tr>
+<td>N</td>
+<td>N</td>
+<td>SimpleSparseCellNameType</td>
+</tr>
+<tr>
+<td>Y</td>
+<td>Y</td>
+<td>CompoundDenseCellNameType</td>
+</tr>
+<tr>
+<td>Y</td>
+<td>N</td>
+<td>CompoundSparseCellNameType</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>COMPACT STORAGE和thrift是等价的，Dense译为密集，表示存储比较紧密，Spark译为稀疏，则存储的列比较多。</p>
+</blockquote>
+<h4 id="CellNameType示例">CellNameType示例</h4><p>下面示例的Partition Key有四个字段，Clustering Key有一个字段（sequence_id），并且排序方式是<strong>DESC</strong>（即<strong>ReversedType</strong>），并且还有两个普通字段（event、timestamp）。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> forseti.velocity_app (</span><br><span class="line">    <span class="keyword">attribute</span> <span class="built_in">text</span>,</span><br><span class="line">    partner_code <span class="built_in">text</span>,</span><br><span class="line">    app_name <span class="built_in">text</span>,</span><br><span class="line">    <span class="keyword">type</span> <span class="built_in">text</span>,</span><br><span class="line">    sequence_id <span class="built_in">text</span>,</span><br><span class="line">    <span class="keyword">event</span> <span class="built_in">text</span>,</span><br><span class="line">    <span class="built_in">timestamp</span> <span class="built_in">bigint</span>,</span><br><span class="line">    PRIMARY <span class="keyword">KEY</span> ((<span class="keyword">attribute</span>, partner_code, app_name, <span class="keyword">type</span>), sequence_id)</span><br><span class="line">) <span class="keyword">WITH</span> <span class="keyword">CLUSTERING</span> <span class="keyword">ORDER</span> <span class="keyword">BY</span> (sequence_id <span class="keyword">DESC</span>)</span><br><span class="line">    <span class="keyword">AND</span> bloom_filter_fp_chance = <span class="number">0.1</span></span><br><span class="line">    <span class="keyword">AND</span> <span class="keyword">caching</span> = <span class="string">'&#123;"keys":"ALL", "rows_per_partition":"ALL"&#125;'</span></span><br><span class="line">    <span class="keyword">AND</span> <span class="keyword">comment</span> = <span class="string">''</span></span><br><span class="line">    <span class="keyword">AND</span> compaction = &#123;<span class="string">'unchecked_tombstone_compaction'</span>: <span class="string">'true'</span>, <span class="string">'tombstone_threshold'</span>: <span class="string">'0.1'</span>, <span class="string">'class'</span>: <span class="string">'org.apache.cassandra.db.compaction.LeveledCompactionStrategy'</span>&#125;</span><br><span class="line">    <span class="keyword">AND</span> compression = &#123;<span class="string">'sstable_compression'</span>: <span class="string">'org.apache.cassandra.io.compress.LZ4Compressor'</span>&#125;</span><br><span class="line">    <span class="keyword">AND</span> dclocal_read_repair_chance = <span class="number">0.0</span></span><br><span class="line">    <span class="keyword">AND</span> default_time_to_live = <span class="number">0</span></span><br><span class="line">    <span class="keyword">AND</span> gc_grace_seconds = <span class="number">0</span></span><br><span class="line">    <span class="keyword">AND</span> max_index_interval = <span class="number">2048</span></span><br><span class="line">    <span class="keyword">AND</span> memtable_flush_period_in_ms = <span class="number">0</span></span><br><span class="line">    <span class="keyword">AND</span> min_index_interval = <span class="number">128</span></span><br><span class="line">    <span class="keyword">AND</span> read_repair_chance = <span class="number">0.1</span></span><br><span class="line">    <span class="keyword">AND</span> speculative_retry = <span class="string">'99.0PERCENTILE'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> velocity_app(<span class="keyword">attribute</span>, partner_code, app_name, <span class="keyword">type</span>,<span class="built_in">timestamp</span>,<span class="keyword">event</span>,sequence_id)<span class="keyword">values</span>(<span class="string">'zqhxuyuan'</span>,<span class="string">'tongdun'</span>,<span class="string">'tongdun_app'</span>,<span class="string">'login'</span>,<span class="number">1111111111</span>,<span class="string">'&#123;jsondata&#125;'</span>,<span class="string">'1111111111-1'</span>);</span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> velocity_app <span class="keyword">where</span> <span class="keyword">attribute</span>=<span class="string">'zqhxuyuan'</span> <span class="keyword">and</span> <span class="keyword">type</span>=<span class="string">'login'</span> <span class="keyword">and</span> partner_code=<span class="string">'tongdun'</span> <span class="keyword">and</span> app_name=<span class="string">'tongdun_app'</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">#schema_columnfamilies实际上对应的就是CFMetadata</span></span><br><span class="line">cqlsh:system&gt; select * from system.schema_columnfamilies where keyspace_name='forseti' and columnfamily_name='velocity_app';</span><br><span class="line"> keyspace_name | columnfamily_name | bloom_filter_fp_chance | caching                                     | cf_id                                | <span class="keyword">comment</span> | compaction_strategy_class                                       | compaction_strategy_options | comparator                                                                                                                                                                     | compression_parameters                                                   | default_time_to_live | default_validator                         | dropped_columns | gc_grace_seconds | is_dense | key_validator                                                                                                                                                                                                      | local_read_repair_chance | max_compaction_threshold | max_index_interval | memtable_flush_period_in_ms | min_compaction_threshold | min_index_interval | read_repair_chance | speculative_retry | subcomparator | <span class="keyword">type</span></span><br><span class="line"><span class="comment">---------------+-------------------+------------------------+---------------------------------------------+--------------------------------------+---------+-----------------------------------------------------------------+-----------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------+----------------------+-------------------------------------------+-----------------+------------------+----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------+--------------------------+--------------------+-----------------------------+--------------------------+--------------------+--------------------+-------------------+---------------+----------</span></span><br><span class="line">       forseti |      velocity_app |                   <span class="number">0.01</span> | &#123;<span class="string">"keys"</span>:<span class="string">"ALL"</span>, <span class="string">"rows_per_partition"</span>:<span class="string">"NONE"</span>&#125; | <span class="number">763248</span>f0<span class="number">-8</span>f88<span class="number">-11e6</span>-a6b6<span class="number">-71</span>d72bc0ba41 |         | org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy |                          &#123;&#125; | org.apache.cassandra.db.marshal.CompositeType(org.apache.cassandra.db.marshal.ReversedType(org.apache.cassandra.db.marshal.UTF8Type),org.apache.cassandra.db.marshal.UTF8Type) | &#123;<span class="string">"sstable_compression"</span>:<span class="string">"org.apache.cassandra.io.compress.LZ4Compressor"</span>&#125; |                    <span class="number">0</span> | org.apache.cassandra.db.marshal.BytesType |            <span class="literal">null</span> |           <span class="number">864000</span> |    <span class="literal">False</span> | org.apache.cassandra.db.marshal.CompositeType(org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UTF8Type,org.apache.cassandra.db.marshal.UTF8Type) |                      <span class="number">0.1</span> |                       <span class="number">32</span> |               <span class="number">2048</span> |                           <span class="number">0</span> |                        <span class="number">4</span> |                <span class="number">128</span> |                  <span class="number">0</span> |    <span class="number">99.0</span>PERCENTILE |          <span class="literal">null</span> | Standard</span><br><span class="line"></span><br><span class="line">cqlsh:<span class="keyword">system</span>&gt; <span class="keyword">select</span> * <span class="keyword">FROM</span>  schema_columns <span class="keyword">where</span> keyspace_name=<span class="string">'forseti'</span> <span class="keyword">and</span> columnfamily_name=<span class="string">'velocity_app'</span>;</span><br><span class="line"> keyspace_name | columnfamily_name | column_name  | component_index | index_name | index_options | index_type | type           | validator</span><br><span class="line"><span class="comment">---------------+-------------------+--------------+-----------------+------------+---------------+------------+----------------+----------------------------------------------------------------------------------------</span></span><br><span class="line">       forseti |      velocity_app |     app_name |               2 |       null |          null |       null |  partition_key |                                               org.apache.cassandra.db.marshal.UTF8Type</span><br><span class="line">       forseti |      velocity_app |    attribute |               0 |       null |          null |       null |  partition_key |                                               org.apache.cassandra.db.marshal.UTF8Type</span><br><span class="line">       forseti |      velocity_app |        event |               1 |       null |          null |       null |        regular |                                               org.apache.cassandra.db.marshal.UTF8Type</span><br><span class="line">       forseti |      velocity_app | partner_code |               1 |       null |          null |       null |  partition_key |                                               org.apache.cassandra.db.marshal.UTF8Type</span><br><span class="line">       forseti |      velocity_app |  sequence_id |               0 |       null |          null |       null | clustering_key | org.apache.cassandra.db.marshal.ReversedType(org.apache.cassandra.db.marshal.UTF8Type)</span><br><span class="line">       forseti |      velocity_app |    timestamp |               1 |       null |          null |       null |        regular |                                               org.apache.cassandra.db.marshal.LongType</span><br><span class="line">       forseti |      velocity_app |         type |               3 |       null |          null |       null |  partition_key |                                               org.apache.cassandra.db.marshal.UTF8Type</span><br></pre></td></tr></table></figure>
+<p>下表总结了<code>schema_columnfamilies</code>的几种比较类型，其中第一行comparator，即是表级别的Comparator。<br>这是一个组合类型，第一个字段是倒序的sequence_id，那么第二个字段到底表示的是哪个字段。<br>首先不可能是PartitionKey，因为PartitionKey有四个字段，那么就只剩下两个普通字段了，<br>但是这两个普通字段的类型又不同，分别是bigint和text！实际上用UTF8类型代表这两个字段。<br><strong>所以comparator实际上是Column级别的比较器！因为物理存储时，列名为：ClusteringKey的Value：普通字段的名称。<br>即ReversedType(UTF8Type)=ClusteringKey的值（倒序排列），UTF8Type=普通列的名称。</strong>  </p>
+<table>
+<thead>
+<tr>
+<th>比较器</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>comparator</strong></td>
+<td><strong>CompositeType(ReversedType(UTF8Type),UTF8Type)</strong></td>
+<td>CellNameType</td>
+</tr>
+<tr>
+<td>default_validator</td>
+<td>BytesType</td>
+</tr>
+<tr>
+<td>key_validator</td>
+<td>CompositeType(UTF8Type,UTF8Type,UTF8Type,UTF8Type)</td>
+<td>PartitionKey，不包括ClusteringKey </td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>注意CQL的comparator和Thrift的Comparator有点不同，除非如果是Compact Storage的CQL才相同（因为COMPACT不会存储普通列名）。  </p>
+</blockquote>
+<h4 id="CellName与Type">CellName与Type</h4><p>CellNameType继承CType（左图），CellName继承Composite（右图）。CellName是列的名称，即列的数据内容，CellNameType是列的类型，即列数据是什么样的类型。<br>比如上面示例中，相同sequence_id有两个（普通）列：123456789-001:event，123456789-001:timestamp，列的值分别是：”{json evnet}”，123456789。  </p>
+<table>
+<thead>
+<tr>
+<th>ColumnName</th>
+<th>123456789-001:event</th>
+<th>123456789-001:timestamp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ColumnValue</td>
+<td>“{json event}”</td>
+<td>123456789</td>
+</tr>
+</tbody>
+</table>
+<p>那么CellName分别是”123456789-001:event”和”123456789-001:timestamp”，而CellNameType只有一个：CompositeType(ReversedType(UTF8Type),UTF8Type)</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161021113351335" alt="c-ctype"> | <img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161021113407601" alt="c-composite"></p>
+<p><strong>列名存储列的数据内容，列类型用来表示列的一些特性，比如是不Dense的，前缀是什么，这样根据列的类型，可以做一些特殊的操作。可以把列类型看做是列的元数据。</strong>  </p>
+<p><strong>列名</strong></p>
+<p>CellName的最底层接口是Composite：A composite value can be though as a list of ByteBuffer。即列名就是ByteBuffer数据内容，<br>不管是SimpleSparseCellName还是CompoundSparseCellName，列名肯定是唯一的，用ColumnIdentifier表示：Represents an identifer for a CQL column definition。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">CellName</span> <span class="keyword">extends</span> <span class="title">Composite</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> ColumnIdentifier <span class="title">cql3ColumnName</span><span class="params">(CFMetaData metadata)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ColumnIdentifier</span> <span class="keyword">extends</span> <span class="title">org</span>.<span class="title">apache</span>.<span class="title">cassandra</span>.<span class="title">cql3</span>.<span class="title">selection</span>.<span class="title">Selectable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> ByteBuffer bytes;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String text;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleSparseCellName</span> <span class="keyword">extends</span> <span class="title">AbstractComposite</span> <span class="keyword">implements</span> <span class="title">CellName</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ColumnIdentifier columnName;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CompoundSparseCellName</span> <span class="keyword">extends</span> <span class="title">CompoundComposite</span> <span class="keyword">implements</span> <span class="title">CellName</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> ColumnIdentifier columnName;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><em>列类型</em></p>
+<p>根据PartitionKey的数量，一个是Simple，多个是Compound，那么CompoundSparseCellNameType表示多个PartitionKey，而且是正常的CQL表（不是COMPACT STORAGE）。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//是不是truly composite CType，是由多少个PartitionKey决定</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleCType</span> <span class="keyword">extends</span> <span class="title">AbstractCType</span> </span>&#123;  <span class="comment">// A not truly-composite CType.</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> AbstractType&lt;?&gt; type; <span class="comment">//一个PartitionKey，所以只有一个成员变量，代表PartitionKey的类型</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CompoundCType</span> <span class="keyword">extends</span> <span class="title">AbstractCType</span> </span>&#123; <span class="comment">// A truly-composite CType.</span></span><br><span class="line">    <span class="keyword">final</span> List&lt;AbstractType&lt;?&gt;&gt; types;  <span class="comment">//多个PartitionKey，所以是一个列表</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractCompoundCellNameType</span> <span class="keyword">extends</span> <span class="title">AbstractCellNameType</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> CompoundCType clusteringType;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> CompoundCType fullType;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CompoundSparseCellNameType</span> <span class="keyword">extends</span> <span class="title">AbstractCompoundCellNameType</span> </span>&#123;</span><br><span class="line">    <span class="comment">// For CQL3 columns, this is always UTF8Type. However, for compatibility with super columns, we need to allow it to be non-UTF8.</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> AbstractType&lt;?&gt; columnNameType;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">CompoundSparseCellNameType</span><span class="params">(List&lt;AbstractType&lt;?&gt;&gt; types)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(types, UTF8Type.instance); <span class="comment">//第二个参数是：columnNameType</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>虽然CFMetadata的comparator是<code>CellNameType</code>，但是上面的CQL示例中comparaor却是<code>CompositeType</code>。CompoundCType和CompositeType都表示复合类型，其成员变量都是List类型。  </p>
+<blockquote>
+<p>问题：为什么需要CompoundCType和CompositeType，Composite可以看做是CellName，CompositeType就是CelllNameType了，而CompoundCType也是CellNameType。两者到底有什么不同？</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CompoundCType</span> <span class="keyword">extends</span> <span class="title">AbstractCType</span> </span>&#123; <span class="comment">// A truly-composite CType.</span></span><br><span class="line">    <span class="keyword">final</span> List&lt;AbstractType&lt;?&gt;&gt; types;  <span class="comment">//多个PartitionKey，所以是一个列表</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CompositeType</span> <span class="keyword">extends</span> <span class="title">AbstractCompositeType</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> List&lt;AbstractType&lt;?&gt;&gt; types;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractCompositeType</span> <span class="keyword">extends</span> <span class="title">AbstractType</span>&lt;<span class="title">ByteBuffer</span>&gt; </span>&#123;..&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="序列化Cell">序列化Cell</h4><p>回到ColumnIndex序列化Column上，CellName只是Column的名称，而Cell实际上才是一个完整的列：包括列名和列值。Cell的最底层是OnDiskAtom。  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">OnDiskAtom</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> Composite <span class="title">name</span><span class="params">()</span></span>; <span class="comment">//列名，比如CellName继承了Composite</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">long</span> <span class="title">timestamp</span><span class="params">()</span></span>; <span class="comment">//每个Atom都有时间撮</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Serializer</span> <span class="keyword">implements</span> <span class="title">ISSTableSerializer</span>&lt;<span class="title">OnDiskAtom</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> CellNameType type; <span class="comment">//列名的类型</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">serializeForSSTable</span><span class="params">(OnDiskAtom atom, DataOutputPlus out)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (atom <span class="keyword">instanceof</span> Cell) &#123;</span><br><span class="line">            type.columnSerializer().serialize((Cell)atom, out); <span class="comment">//Atom强转为Cell</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">assert</span> atom <span class="keyword">instanceof</span> RangeTombstone;</span><br><span class="line">            type.rangeTombstoneSerializer().serializeForSSTable((RangeTombstone)atom, out);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Cell</span> <span class="keyword">extends</span> <span class="title">OnDiskAtom</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> CellName <span class="title">name</span><span class="params">()</span></span>;       <span class="comment">//列名  --&gt;重写了OnDiskAtom的name方法，将返回类型从Composite转为CellName</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ByteBuffer <span class="title">value</span><span class="params">()</span></span>;    <span class="comment">//列值</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>由于Cell包括了列名和列值，当然每个列都有一个时间撮，所以序列化时要写入这三部分。ColumnSerializer是Cell的序列化类。  </p>
+<ol>
+<li>序列化CellName（cell.name方法）</li>
+<li>如果是CounterCell或ExpiringCell，则还要写入相关的时间撮</li>
+<li>序列化Cell的时间撮（cell.timestamp方法）</li>
+<li>序列化Cell的值（cell.value方法）</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ColumnSerializer</span> <span class="keyword">implements</span> <span class="title">ISerializer</span>&lt;<span class="title">Cell</span>&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> CellNameType type;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">serialize</span><span class="params">(Cell cell, DataOutputPlus out)</span> </span>&#123;</span><br><span class="line">    type.cellSerializer().serialize(cell.name(), out); <span class="comment">//序列化Cell的name，实际上就是序列化CellName</span></span><br><span class="line">    out.writeByte(cell.serializationFlags()); <span class="comment">//Flag标志位</span></span><br><span class="line">    <span class="keyword">if</span> (cell <span class="keyword">instanceof</span> CounterCell) &#123;</span><br><span class="line">        out.writeLong(((CounterCell) cell).timestampOfLastDelete());</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (cell <span class="keyword">instanceof</span> ExpiringCell) &#123;</span><br><span class="line">        out.writeInt(((ExpiringCell) cell).getTimeToLive());</span><br><span class="line">        out.writeInt(cell.getLocalDeletionTime());</span><br><span class="line">    &#125;</span><br><span class="line">    out.writeLong(cell.timestamp());</span><br><span class="line">    ByteBufferUtil.writeWithLength(cell.value(), out);</span><br><span class="line">  &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下图总结了Data文件和索引文件的物理视图，其中最右边最细粒度的Column包括了四个字段，正好对应了上面ColumnSerializer的序列化过程。</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161021134751953" alt="c-storage layout"></p>
+<h3 id="CQLSSTableWriter">CQLSSTableWriter</h3><p>除了数据写流程中Memtable的flush会通过SSTableWriter生成SSTable，也可以直接使用离线方式的CQLSSTableWriter直接生成SSTable。<br>后者不需要启动Cassandra，通常可以用在离线数据生成，如果要把数据导入Cassandra中，还需要通过NodeTool的Stream方式导入。</p>
+<blockquote>
+<p>Builder构建模式用在很多地方，比如添加Column数据的ColumnIndex，通过Build模式生成关于Column的索引块信息</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">String schema = <span class="string">"CREATE TABLE myKs.myTable (k int PRIMARY KEY,v1 text,v2 int)"</span>;</span><br><span class="line">String insert = <span class="string">"INSERT INTO myKs.myTable (k, v1, v2) VALUES (?, ?, ?)"</span>;</span><br><span class="line">CQLSSTableWriter writer = CQLSSTableWriter.builder()</span><br><span class="line">                                          .inDirectory(<span class="string">"path/to/directory"</span>)</span><br><span class="line">                                          .forTable(schema)</span><br><span class="line">                                          .using(insert).build();</span><br><span class="line">writer.addRow(<span class="number">0</span>, <span class="string">"test1"</span>, <span class="number">24</span>);</span><br><span class="line">writer.addRow(<span class="number">1</span>, <span class="string">"test2"</span>, <span class="keyword">null</span>);</span><br><span class="line">writer.addRow(<span class="number">2</span>, <span class="string">"test3"</span>, <span class="number">42</span>);</span><br><span class="line">writer.close();</span><br></pre></td></tr></table></figure>
+<p><code>CQLSSTableWriter</code>只是提供了CQL方式的一种接口（工具类），实际上最后还是会以SSTableWriter的方式进入到写流程中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CQLSSTableWriter</span> <span class="keyword">implements</span> <span class="title">Closeable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> AbstractSSTableSimpleWriter writer;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> UpdateStatement insert;   <span class="comment">//Writer只可能是insert语句，所以Statement是固定的UpdateStatement</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> List&lt;ColumnSpecification&gt; boundNames;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Builder</span></span></span><br><span class="line"><span class="class">      <span class="title">private</span> <span class="title">boolean</span> <span class="title">sorted</span> </span>= <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">      <span class="function"><span class="keyword">public</span> Builder <span class="title">sorted</span><span class="params">()</span> </span>&#123;</span><br><span class="line">          <span class="keyword">this</span>.sorted = <span class="keyword">true</span>;</span><br><span class="line">          <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="function"><span class="keyword">public</span> CQLSSTableWriter <span class="title">build</span><span class="params">()</span> </span>&#123;</span><br><span class="line">          AbstractSSTableSimpleWriter writer = sorted ? <span class="keyword">new</span> SSTableSimpleWriter(directory, schema, partitioner)</span><br><span class="line">                                             : <span class="keyword">new</span> BufferedWriter(directory, schema, partitioner, bufferSizeInMB);</span><br><span class="line">          <span class="keyword">return</span> <span class="keyword">new</span> CQLSSTableWriter(writer, insert, boundNames);</span><br><span class="line">      &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>insert语句会被解析成<code>List&lt;ColumnSpecification&gt;</code>，insert语句的<code>?</code>部分和<code>addRow</code>的参数是绑定在一起的（bound）。  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> CQLSSTableWriter <span class="title">rawAddRow</span><span class="params">(List&lt;ByteBuffer&gt; values)</span> </span>&#123;</span><br><span class="line">  QueryOptions options = QueryOptions.forInternalCalls(<span class="keyword">null</span>, values);</span><br><span class="line">  List&lt;ByteBuffer&gt; keys = insert.buildPartitionKeyNames(options);</span><br><span class="line">  Composite clusteringPrefix = insert.createClusteringPrefix(options);</span><br><span class="line">  UpdateParameters params = <span class="keyword">new</span> UpdateParameters(insert.cfm, options, insert.getTimestamp(now, options), insert.getTimeToLive(options), Collections.&lt;ByteBuffer, CQL3Row&gt;emptyMap());</span><br><span class="line">  <span class="keyword">for</span> (ByteBuffer key : keys) &#123;</span><br><span class="line">    <span class="keyword">if</span> (writer.shouldStartNewRow() || !key.equals(writer.currentKey().getKey()))</span><br><span class="line">      writer.newRow(key);  <span class="comment">//如果是没有排序的，使用SSTableSimpleWriter</span></span><br><span class="line">    insert.addUpdateForKey(writer.currentColumnFamily(), key, clusteringPrefix, params, <span class="keyword">false</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>SSTableSimpleWriter底层使用了SSTableWriter，它的writeRow方法写入一行记录，调用SSTableWriter.append方法，剩余的流程就和前面分析的写入一样了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractSSTableSimpleWriter</span> <span class="keyword">implements</span> <span class="title">Closeable</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">newRow</span><span class="params">(ByteBuffer key)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    writeRow(currentKey, columnFamily);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SSTableSimpleWriter</span> <span class="keyword">extends</span> <span class="title">AbstractSSTableSimpleWriter</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> SSTableWriter writer;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">writeRow</span><span class="params">(DecoratedKey key, ColumnFamily columnFamily)</span> </span>&#123;</span><br><span class="line">        writer.append(key, columnFamily);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>AbstractSSTableSimpleWriter的继承树如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AbstractSSTableSimpleWriter (org.apache.cassandra.io.sstable)</span><br><span class="line">    SSTableSimpleWriter (org.apache.cassandra.io.sstable)</span><br><span class="line">    SSTableSimpleUnsortedWriter (org.apache.cassandra.io.sstable)</span><br><span class="line">        BufferedWriter in CQLSSTableWriter (org.apache.cassandra.io.sstable)</span><br></pre></td></tr></table></figure>
+<p>客户端使用CQLSSTableWriter工具生成SSTable的流程图如下：<br><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161021144358933" alt="c-writer flow"></p>
+<h4 id="Spark_Cassandra_Connector的Writer">Spark Cassandra Connector的Writer</h4><h2 id="ColumnFamily">ColumnFamily</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ColumnFamily</span><br><span class="line">    AtomicBTreeColumns</span><br><span class="line">    ArrayBackedSortedColumns</span><br></pre></td></tr></table></figure>
+<p>ColumnFamily提供了添加原子变量的几种方式，比如添加Tombstone、Atom、Column等。该抽象类还定义了很多获取Column的方法，比如迭代器，对Columns进行排序等。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">ColumnFamily</span> <span class="keyword">implements</span> <span class="title">Iterable</span>&lt;<span class="title">Cell</span>&gt;, <span class="title">IRowCacheEntry</span> </span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> CFMetaData metadata;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addTombstone</span><span class="params">(CellName name, <span class="keyword">int</span> localDeletionTime, <span class="keyword">long</span> timestamp)</span> </span>&#123;</span><br><span class="line">        addColumn(<span class="keyword">new</span> BufferDeletedCell(name, localDeletionTime, timestamp));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addAtom</span><span class="params">(OnDiskAtom atom)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (atom <span class="keyword">instanceof</span> Cell) &#123;</span><br><span class="line">            addColumn((Cell)atom);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            delete((RangeTombstone)atom);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addColumn</span><span class="params">(CellName name, ByteBuffer value, <span class="keyword">long</span> timestamp, <span class="keyword">int</span> timeToLive)</span> </span>&#123;</span><br><span class="line">        Cell cell = AbstractCell.create(name, value, timestamp, timeToLive, metadata());</span><br><span class="line">        addColumn(cell);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">addColumn</span><span class="params">(Cell cell)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ArrayBackedSortedColumns</span> <span class="keyword">extends</span> <span class="title">ColumnFamily</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Cell[] cells;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="SSTableReader">SSTableReader</h2><h3 id="BigTableReader">BigTableReader</h3><h2 id="3-0新存储引擎">3.0新存储引擎</h2><blockquote>
+<p><a href="http://thelastpickle.com/blog/2016/03/04/introductiont-to-the-apache-cassandra-3-storage-engine.html" target="_blank" rel="noopener">http://thelastpickle.com/blog/2016/03/04/introductiont-to-the-apache-cassandra-3-storage-engine.html</a><br>Starting with the 3.x storage engine Partitions, Rows, and Clustering are natively supported.<br>A Partition is a collection of Rows that share the same Partition Key(s) that are ordered,<br>within the Partition, by their Clustering Key(s). Rows are then by globally identified by<br>their Primary Key: the combination of Partition Key and Clustering Key.<br>The important change is that the 3.x storage engine now knows about these ideas,<br>it may seem strange but previously it did not know about the Rows in a Partition.<br>The new storage engine was created specifically to handle these concepts in a way<br>that reduces storage requirements and improves performance.</p>
+</blockquote>
+<blockquote>
+<p><a href="http://www.datastax.com/2015/12/storage-engine-30" target="_blank" rel="noopener">http://www.datastax.com/2015/12/storage-engine-30</a><br>2.0 maps of (ordered) maps of binary data：<code>Map&lt;byte[], SortedMap&lt;byte[], Cell&gt;&gt;</code><br>The top-level keys of that map are the partition keys,<br>and each partition (identified by its key) is a sorted key/value map.<br>The inner values of that partition map is called a <code>Cell</code> mostly because<br>it contains both a binary value and the timestamp that is used for conflict resolution  </p>
+</blockquote>
+<blockquote>
+<p>3.0 <code>Map&lt;byte[], SortedMap&lt;Clustering, Row&gt;&gt;</code><br>At the top-level, a table is still a map of partitions indexed by their partition key.<br>And the partition is still a sorted map, but it is one of rows indexed by their “clustering”.<br>The Clustering holds the values for the clustering columns of the CQL row it represents.<br>And the Row object represents, well, a given CQL row, associating to each column their value and timestamp.</p>
+</blockquote>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/10/19/Cassandra-Code-StorageEngine/">Cassandra源码分析-存储引擎</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年10月19日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/10/19/Cassandra-Code-StorageEngine/" title="Cassandra源码分析-存储引擎">http://github.com/zqhxuyuan/2016/10/19/Cassandra-Code-StorageEngine/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/10/19/Cassandra-Code-StorageEngine/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/10/27/Kafka-Definitive-Guide-cn-04/">
+        译：Kafka权威指南-第四章-消费者
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/10/13/Cassandra-Code-Network/">
+        Cassandra源码分析-Network
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#DecoratedKey、Token"><span class="toc-number">1.</span> <span class="toc-text">DecoratedKey、Token</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Native"><span class="toc-number">1.1.</span> <span class="toc-text">Native</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TokenMetadata"><span class="toc-number">2.</span> <span class="toc-text">TokenMetadata</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DataModel"><span class="toc-number">3.</span> <span class="toc-text">DataModel</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SSTableWriter"><span class="toc-number">4.</span> <span class="toc-text">SSTableWriter</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#BigTableWriter"><span class="toc-number">4.1.</span> <span class="toc-text">BigTableWriter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IndexWriter索引文件"><span class="toc-number">4.2.</span> <span class="toc-text">IndexWriter索引文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Write_Data(Column_Index)"><span class="toc-number">4.3.</span> <span class="toc-text">Write Data(Column Index)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Tombstone"><span class="toc-number">4.4.</span> <span class="toc-text">Tombstone</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Mutation-delete"><span class="toc-number">4.4.1.</span> <span class="toc-text">Mutation.delete</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#DeletionInfo、DeletionTime"><span class="toc-number">4.4.2.</span> <span class="toc-text">DeletionInfo、DeletionTime</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#序列化RowKey和TopLevel_Tombstone"><span class="toc-number">4.5.</span> <span class="toc-text">序列化RowKey和TopLevel Tombstone</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#序列化Column"><span class="toc-number">4.6.</span> <span class="toc-text">序列化Column</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ColumnFamily的比较类型(CellNameType)"><span class="toc-number">4.6.1.</span> <span class="toc-text">ColumnFamily的比较类型(CellNameType)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CellNameType示例"><span class="toc-number">4.6.2.</span> <span class="toc-text">CellNameType示例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#CellName与Type"><span class="toc-number">4.6.3.</span> <span class="toc-text">CellName与Type</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#序列化Cell"><span class="toc-number">4.6.4.</span> <span class="toc-text">序列化Cell</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CQLSSTableWriter"><span class="toc-number">4.7.</span> <span class="toc-text">CQLSSTableWriter</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Spark_Cassandra_Connector的Writer"><span class="toc-number">4.7.1.</span> <span class="toc-text">Spark Cassandra Connector的Writer</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ColumnFamily"><span class="toc-number">5.</span> <span class="toc-text">ColumnFamily</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SSTableReader"><span class="toc-number">6.</span> <span class="toc-text">SSTableReader</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#BigTableReader"><span class="toc-number">6.1.</span> <span class="toc-text">BigTableReader</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-0新存储引擎"><span class="toc-number">7.</span> <span class="toc-text">3.0新存储引擎</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/10/19/Cassandra-Code-StorageEngine/" data-title="Cassandra源码分析-存储引擎" data-url="http://github.com/zqhxuyuan/2016/10/19/Cassandra-Code-StorageEngine/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/10/27/Kafka-Definitive-Guide-cn-04/" title="上一篇: 译：Kafka权威指南-第四章-消费者">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/10/13/Cassandra-Code-Network/" title="下一篇: Cassandra源码分析-Network">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>时间序列数据库之InfluxDB | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="InfluxDB is an open source distributed time series database">
+<meta name="keywords" content="timeseries">
+<meta property="og:type" content="article">
+<meta property="og:title" content="时间序列数据库之InfluxDB">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/12/25/2015-12-25-TSDB-InfluxDB/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="InfluxDB is an open source distributed time series database">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151225114111623">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151225114126447">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151225142037905">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20170519173505080">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.221Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="时间序列数据库之InfluxDB">
+<meta name="twitter:description" content="InfluxDB is an open source distributed time series database">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151225114111623">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-12-25-TSDB-InfluxDB" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/12/25/2015-12-25-TSDB-InfluxDB/" class="article-date">
+  	<time datetime="2015-12-24T16:00:00.000Z" itemprop="datePublished">2015-12-25</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      时间序列数据库之InfluxDB
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/work/">work</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/timeseries/">timeseries</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>InfluxDB is an open source distributed time series database<br><a id="more"></a><br>there are two major types of time-series data:  </p>
+<ul>
+<li>Regular – data that is <code>sampled at regular intervals</code>. For example every second, or every hour.</li>
+<li>Irregular – data that is <code>only recorded when an event occurs</code>, which might happen frequently, but always at completely random times.</li>
+</ul>
+<blockquote>
+<p><code>规则</code>: 定时比如每秒钟,每小时抽样数据.  <code>不规则</code>: 当事件发生时才记录.  </p>
+</blockquote>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151225114111623" alt="ts_reg"> <img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151225114126447" alt="rs_irreg">  </p>
+<h2 id="Schema">Schema</h2><ul>
+<li>Measurements (e.g. cpu, temperature, event, memory)</li>
+<li>Tags (e.g. region=uswest, host=serverA, sensor=23)</li>
+<li>Fields (e.g. value=23.2, info=’this is some extra stuff’, present=true)</li>
+<li>Timestamp (nano-second epoch)</li>
+</ul>
+<blockquote>
+<p>All data is indexed by measurement, tagset, and time</p>
+</blockquote>
+<ul>
+<li>Data bases        –&gt;     MySQL,PG</li>
+<li>Time series       –&gt;     Table</li>
+<li>Points or Events  –&gt;     Row</li>
+</ul>
+<blockquote>
+<p>Data in InfluxDB is organized by time series, which contain a measured value, like “cpu_load” or “temperature”.<br>Time series have zero to many points, one for each discrete sample of the metric.<br>Points consist of time (a timestamp), a measurement (“cpu_load”),<br>at least one key-value field (the measured value itself, e.g. “value=0.64” or “15min=0.78”),<br>and zero to many key-value tags containing metadata (e.g. “host=server01”, “region=EMEA”, “dc=Frankfurt”).<br>数据点包括时间,指标名称,至少一个Key-Value字段, 0个或多个标签(可以没有标签).  </p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;measurement&gt;[,&lt;tag-key&gt;=&lt;tag-value&gt;...] &lt;field-key&gt;=&lt;field-value&gt;[,&lt;field2-key&gt;=&lt;field2-value&gt;...] [unix-nano-timestamp]</span><br><span class="line">[key] [point] [timestamp]</span><br><span class="line"></span><br><span class="line">key:    &lt;measurement&gt;,&lt;tag-set&gt;</span><br><span class="line">point:  &lt;field-set&gt;</span><br><span class="line"></span><br><span class="line">cpu,host=serverA,region=us_west value=0.64</span><br><span class="line">temperature,machine=unit42,type=assembly external=25,internal=37 1434067467000000000</span><br><span class="line">payment,device=mobile,product=Notepad,method=credit billed=33,licenses=3i 1434067467100293230</span><br><span class="line">stock,symbol=AAPL bid=127.46,ask=127.48</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>A point with the measurement name of cpu and tag host, with the measured value of 0.64<br>如果指标的值只有单一的值,比如CPU的利用率,通常field字段为: value=0.64<br>如果指标的值不止一个, 比如机器的温度, 有多个字段表示: external=25,internal=37(室温和外温)  </p>
+</blockquote>
+<h2 id="Write_and_Query">Write and Query</h2><blockquote>
+<p>Conceptually you can think of a measurement as an SQL table, with rows where the primary index is always time.<br>tags and fields are effectively columns in the table. tags are indexed, fields are not.<br>指标名称会作为Table. 标签和字段会作为Table的列. 表的主键总是时间. 标签会被索引.    </p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&gt; INSERT cpu,host=serverA,region=us_west value=0.64</span><br><span class="line">&gt; INSERT temperature,machine=unit42,type=assembly external=25,internal=37</span><br><span class="line"></span><br><span class="line">&gt; SELECT * FROM cpu</span><br><span class="line">name: cpu</span><br><span class="line">---------</span><br><span class="line">time                host    region  value</span><br><span class="line">1451023636310055056 serverA us_west 0.64</span><br><span class="line"></span><br><span class="line">&gt; SELECT * FROM temperature</span><br><span class="line">name: temperature</span><br><span class="line">-----------------</span><br><span class="line">time                external    internal    machine type</span><br><span class="line">1451023737743269282 25          37          unit42  assembly</span><br></pre></td></tr></table></figure>
+<p>从上面的插入和查询结果看出, 指标名称是Table, 所有的tag和字段都会作为列. 主键即第一列总是time字段.  </p>
+<p>插入和查询也可以通过浏览器进行: <a href="http://localhost:8083/" target="_blank" rel="noopener">http://localhost:8083/</a></p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151225142037905" alt="influx_web"></p>
+<h2 id="Scala_Client">Scala Client</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">class InfluxDBClient(url: String, db: String, port: Int = 8086) &#123;</span><br><span class="line"></span><br><span class="line">  val influxdb = InfluxDB.connect(url, port)</span><br><span class="line">  val database = influxdb.selectDatabase(db)</span><br><span class="line">  val exist = database.exists()</span><br><span class="line">  val result = Await.result(exist, 5 second)</span><br><span class="line">  result match &#123;</span><br><span class="line">    case true =&gt; println(&quot;already exist&quot;)</span><br><span class="line">    case false =&gt; database.create()</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  def testBulkWrite(): Unit = &#123;</span><br><span class="line">    val points = List(</span><br><span class="line">      Point(&quot;cpu&quot;, System.currentTimeMillis()).addField(&quot;value&quot;, 456),</span><br><span class="line">      Point(&quot;host&quot;, System.currentTimeMillis()).addField(&quot;value&quot;, 456),</span><br><span class="line">      Point(&quot;net&quot;, System.currentTimeMillis()).addField(&quot;value&quot;, 456)</span><br><span class="line">    )</span><br><span class="line">    database.bulkWrite(points, precision = Precision.MILLISECONDS)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  def testWriteMetrics() = &#123;</span><br><span class="line">    var points = List(</span><br><span class="line">      Point(&quot;appId_1&quot;).addTag(&quot;taskId&quot;,&quot;1&quot;).addField(&quot;bytes&quot;,&quot;10&quot;).addField(&quot;records&quot;, &quot;1000&quot;),</span><br><span class="line">      Point(&quot;appId_1&quot;).addTag(&quot;taskId&quot;,&quot;2&quot;).addField(&quot;bytes&quot;,&quot;15&quot;).addField(&quot;records&quot;, &quot;1100&quot;),</span><br><span class="line">      Point(&quot;appId_1&quot;).addTag(&quot;taskId&quot;,&quot;3&quot;).addField(&quot;bytes&quot;,&quot;18&quot;).addField(&quot;records&quot;, &quot;1300&quot;),</span><br><span class="line">      Point(&quot;appId_1&quot;).addTag(&quot;taskId&quot;,&quot;4&quot;).addField(&quot;bytes&quot;,&quot;28&quot;).addField(&quot;records&quot;, &quot;1500&quot;),</span><br><span class="line">      Point(&quot;appId_1&quot;).addTag(&quot;taskId&quot;,&quot;5&quot;).addField(&quot;bytes&quot;,&quot;50&quot;).addField(&quot;records&quot;, &quot;1900&quot;)</span><br><span class="line">    )</span><br><span class="line">    database.bulkWrite(points, precision = Precision.MILLISECONDS)</span><br><span class="line"></span><br><span class="line">    Thread.sleep(1000)</span><br><span class="line">    points = List(</span><br><span class="line">      Point(&quot;appId_1&quot;).addTag(&quot;taskId&quot;,&quot;1&quot;).addField(&quot;bytes&quot;,&quot;55&quot;).addField(&quot;records&quot;, &quot;2000&quot;),</span><br><span class="line">      Point(&quot;appId_1&quot;).addTag(&quot;taskId&quot;,&quot;2&quot;).addField(&quot;bytes&quot;,&quot;60&quot;).addField(&quot;records&quot;, &quot;2200&quot;),</span><br><span class="line">      Point(&quot;appId_1&quot;).addTag(&quot;taskId&quot;,&quot;3&quot;).addField(&quot;bytes&quot;,&quot;74&quot;).addField(&quot;records&quot;, &quot;2500&quot;),</span><br><span class="line">      Point(&quot;appId_1&quot;).addTag(&quot;taskId&quot;,&quot;4&quot;).addField(&quot;bytes&quot;,&quot;88&quot;).addField(&quot;records&quot;, &quot;2600&quot;),</span><br><span class="line">      Point(&quot;appId_1&quot;).addTag(&quot;taskId&quot;,&quot;5&quot;).addField(&quot;bytes&quot;,&quot;100&quot;).addField(&quot;records&quot;, &quot;3000&quot;)</span><br><span class="line">    )</span><br><span class="line">    database.bulkWrite(points, precision = Precision.MILLISECONDS)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Action">Action</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">$ influx -host 10.57.xx.xx -port 8086</span><br><span class="line">&gt; connect influxdb.hz.xxx.cn:80</span><br><span class="line">&gt; show databases;</span><br><span class="line">&gt; use pontus;</span><br><span class="line">&gt; show measurements;</span><br><span class="line">name: measurements</span><br><span class="line">------------------</span><br><span class="line">name</span><br><span class="line">kafka</span><br><span class="line">mysqlhdfs</span><br><span class="line">&gt; precision rfc3339   #这里差了8个时区</span><br><span class="line">&gt; select time,lag,logSize from kafka where jobId=&apos;215&apos; and eventType=&apos;lagStatistics&apos; and time &gt; now() - 33h  order by time desc;</span><br><span class="line">name: kafka</span><br><span class="line">-----------</span><br><span class="line">time                        lag     logSize</span><br><span class="line">2017-05-19T09:19:16.39Z     0       181593</span><br><span class="line">2017-05-19T06:49:16.506Z    0       181593</span><br><span class="line">2017-05-19T06:46:16.467Z    0       181593      2017-05-19T14:46重启streaming</span><br><span class="line">2017-05-19T06:43:16.479Z    175952  181593      相差5641</span><br><span class="line">2017-05-19T06:40:16.65Z     175952  181593</span><br><span class="line">2017-05-18T10:16:16.386Z    130008  135649</span><br><span class="line">2017-05-18T10:13:16.452Z    130008  135649</span><br><span class="line">2017-05-18T10:10:16.31Z     129546  135187</span><br><span class="line">2017-05-18T02:28:06.335Z    10109   15734</span><br><span class="line">2017-05-18T02:25:05.741Z    8297    13922</span><br><span class="line">2017-05-18T02:22:05.511Z    6421    12046</span><br><span class="line">2017-05-18T02:19:05.795Z    4513    10138</span><br><span class="line">2017-05-18T02:16:05.704Z    2335    7960        相差5625</span><br><span class="line">2017-05-18T02:13:05.47Z     245     5870</span><br><span class="line">2017-05-18T02:10:06.101Z    0       5625        相差5625</span><br><span class="line">2017-05-18T02:07:05.471Z    0       5625</span><br><span class="line"></span><br><span class="line">2017-11-16T19:40:32.907Z  32456 1798688004</span><br><span class="line">2017-11-16T19:37:32.922Z  33382 1798509135</span><br><span class="line">2017-11-16T19:34:32.893Z  34429 1798313729</span><br><span class="line">2017-11-16T19:31:32.981Z  25833 1798137612</span><br><span class="line">2017-11-16T19:28:32.943Z  24161 1798000413</span><br><span class="line">2017-11-16T19:25:32.967Z  26833 1797849966</span><br><span class="line">2017-11-16T19:22:33.48Z   24147 1797702880</span><br><span class="line"></span><br><span class="line">select * from kafka where eventType=&apos;batchComplete&apos; and jobId=&apos;3663&apos; and inputSize&gt;0 order by time desc limit 300;</span><br><span class="line">time      appName eventType groupId inputSize jobId lag logSize processTime scheduleTime  topic totalTime</span><br><span class="line">2017-11-16T19:33:00Z    batchComplete   60354   3663      3760    0     3760</span><br><span class="line">2017-11-16T19:32:00Z    batchComplete   61599   3663      3900    1     3901</span><br><span class="line">2017-11-16T19:31:00Z    batchComplete   66603   3663      3969    0     3969</span><br><span class="line">2017-11-16T19:30:00Z    batchComplete   65360   3663      4088    0     4088</span><br><span class="line">2017-11-16T19:29:00Z    batchComplete   64490   3663      3903    0     3903</span><br><span class="line">2017-11-16T19:28:00Z    batchComplete   63074   3663      4084    1     4085</span><br><span class="line">2017-11-16T19:27:00Z    batchComplete   55798   3663      3501    1     3502</span><br><span class="line">2017-11-16T19:26:00Z    batchComplete   48649   3663      3131    1     3132</span><br><span class="line">2017-11-16T19:25:00Z    batchComplete   47084   3663      3073    0     3073</span><br><span class="line">2017-11-16T19:24:00Z    batchComplete   44500   3663      3000    1     3001</span><br><span class="line">2017-11-16T19:23:00Z    batchComplete   43943   3663      2979    0     2979</span><br><span class="line">2017-11-16T19:22:00Z    batchComplete   51673   3663      3310    1     3311</span><br><span class="line">2017-11-16T19:21:00Z    batchComplete   51044   3663      3365    1     3366</span><br><span class="line">2017-11-16T19:20:00Z    batchComplete   50402   3663      3790    1     3791</span><br><span class="line">2017-11-16T19:19:00Z    batchComplete   49716   3663      2943    0     2943</span><br><span class="line">2017-11-16T19:18:00Z    batchComplete   48627   3663      2918    1     2919</span><br><span class="line">2017-11-16T19:17:00Z    batchComplete   46057   3663      3140    0     3140</span><br><span class="line">2017-11-16T19:16:00Z    batchComplete   45991   3663      2920    1     2921</span><br><span class="line">2017-11-16T19:15:00Z    batchComplete   43326   3663      2741    0     2741</span><br><span class="line">2017-11-16T19:14:00Z    batchComplete   13953   3663      1275    1     1276</span><br></pre></td></tr></table></figure>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20170519173505080" alt="1"></p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/12/25/2015-12-25-TSDB-InfluxDB/">时间序列数据库之InfluxDB</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年12月25日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/12/25/2015-12-25-TSDB-InfluxDB/" title="时间序列数据库之InfluxDB">http://github.com/zqhxuyuan/2015/12/25/2015-12-25-TSDB-InfluxDB/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/12/25/2015-12-25-TSDB-InfluxDB/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/12/27/2015-12-27-TSDB/">
+        时间序列数据库
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/12/24/2015-12-23-TSDB-Kairosdb/">
+        时间序列数据库之Kairosdb
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Schema"><span class="toc-number">1.</span> <span class="toc-text">Schema</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Write_and_Query"><span class="toc-number">2.</span> <span class="toc-text">Write and Query</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Scala_Client"><span class="toc-number">3.</span> <span class="toc-text">Scala Client</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Action"><span class="toc-number">4.</span> <span class="toc-text">Action</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/12/25/2015-12-25-TSDB-InfluxDB/" data-title="时间序列数据库之InfluxDB" data-url="http://github.com/zqhxuyuan/2015/12/25/2015-12-25-TSDB-InfluxDB/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/12/27/2015-12-27-TSDB/" title="上一篇: 时间序列数据库">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/12/24/2015-12-23-TSDB-Kairosdb/" title="下一篇: 时间序列数据库之Kairosdb">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

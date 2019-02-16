@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>StreamCQL源码阅读(2) 语法和语义解析 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="StreamCQL的Schema以及语法和语义解析">
+<meta name="keywords" content="storm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="StreamCQL源码阅读(2) 语法和语义解析">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/11/26/2015-11-26-StreamCQL-schema/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="StreamCQL的Schema以及语法和语义解析">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151127193205608">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.193Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="StreamCQL源码阅读(2) 语法和语义解析">
+<meta name="twitter:description" content="StreamCQL的Schema以及语法和语义解析">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151127193205608">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-11-26-StreamCQL-schema" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/11/26/2015-11-26-StreamCQL-schema/" class="article-date">
+  	<time datetime="2015-11-25T16:00:00.000Z" itemprop="datePublished">2015-11-26</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      StreamCQL源码阅读(2) 语法和语义解析
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Source/">Source</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/storm/">storm</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>StreamCQL的Schema以及语法和语义解析</p>
+<a id="more"></a>
+<h2 id="前戏:_SemanticAnalyzer">前戏: SemanticAnalyzer</h2><p>客户端提交的CQL语句经过Application.parse返回StatementContext(语法解析结果),再进入语义解析.<br>如果是SubmitTask会触发之前的LazyTask链条依次进行语义解析. 语义解析结果AnalyzeContext最后用于构建Application.<br>语义解析跟CQL语法相关, 不过首先我们来看下构建Application的第一步是解析schemas.    </p>
+<h2 id="正文一:_Schema">正文一: Schema</h2><p>parseSchemas解析Schema: 循环每个AnalyzeContext的getCreatedSchemas,最后设置为Application的schemas.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseSchemas</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    List&lt;Schema&gt; schemas = Lists.newArrayList();</span><br><span class="line">    <span class="keyword">for</span> (AnalyzeContext context : parseContexts) &#123;</span><br><span class="line">        schemas.addAll(context.getCreatedSchemas());</span><br><span class="line">    &#125;</span><br><span class="line">    app.setSchemas(schemas);    <span class="comment">//设置到Application里 ⬅️</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="create_stream_schema">create stream schema</h3><p>那么每个AnalyzeContext的CreatedSchemas是在什么时候设置进来的? 以AnalyzeContext的一个实现类CreateStreamAnalyzeContext为例:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">CreateStreamAnalyzeContext.setSchema(Schema)  (com.huawei.streaming.cql.semanticanalyzer.analyzecontext)</span><br><span class="line">    |--CreatePipeStreamAnalyzer.analyze()  </span><br><span class="line">    |--ApplicationBuilder.createPipeStreamSplitContext(Schema)  (com.huawei.streaming.cql.builder)</span><br><span class="line">    |--CreateOutputStreamAnalyzer.analyze()  </span><br><span class="line">    |--FromClauseAnalyzer.createNewStreamContext(String, Schema)  </span><br><span class="line">    |--CreateInputStreamAnalyzer.analyze()       ⬅️</span><br></pre></td></tr></table></figure>
+<p>AnalyzeContext的setSchema方法会被对应的SemanticAnalyzer实现类的analyze调用,比如CreateInputStreamAnalyzer:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> AnalyzeContext <span class="title">analyze</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">//createInputStreamParseContext这个是ParseContext语法解析上下文对应的是CreateInputStatementContext</span></span><br><span class="line">    String streamName = createInputStreamParseContext.getStreamName();</span><br><span class="line">    ColumnNameTypeListContext columns = createInputStreamParseContext.getColumns();  <span class="comment">//列的信息在语法内容中</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//下面的AnalyzeContext就是CreateStreamAnalyzeContext</span></span><br><span class="line">    getAnalyzeContext().setStreamName(streamName);</span><br><span class="line">    getAnalyzeContext().setSchema(createSchema(streamName, columns));  <span class="comment">//根据streamName和columns创建Schema</span></span><br><span class="line">    </span><br><span class="line">    setSerDeDefine();               <span class="comment">//序列化反序列化定义, 包括设置类setSerDeClass和属性setSerDeProperties</span></span><br><span class="line">    setSourceDefine();              <span class="comment">//数据源定义</span></span><br><span class="line">    setParallelNumber();            <span class="comment">//并行度</span></span><br><span class="line">    <span class="keyword">return</span> getAnalyzeContext();     <span class="comment">//返回语义分析的结果,所以上面几个set动作其实都是往AnalyzeContext设置内容的.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从RDBMS的角度来理解Schema: 如果把streamName看做table, schema就表示表元数据: 表是由列组成的.<br>streamName和columns信息最初都是存放在语法内容的上下文中ParseContext, 而这里的语义分析上下文AnalyzeContext需要根据语法创建对应的表结构.<br>创建表元数据createSchema很简单了,就是new一个Schema,并将columns的每一列创建一个Column对象,加入到Schema中.<br>现在我们知道了Schema的来龙去脉了. 其实语义分析的基础是语法内容, 根据语法产生的数据,构建语义需要的数据结构.  </p>
+<p>以设置序列化反序列化方式为例:setSerDeDefine()-&gt;setSerDeClass+setSerDeProperties, 只不过把语法解析的内容取出来设置到语义解析结果中.   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setSerDeClass</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">//1.首先从语法解析结果中获取出反序列化类</span></span><br><span class="line">    ClassNameContext deserClassName = createInputStreamParseContext.getDeserClassName();</span><br><span class="line">    setSerDeByCQL(deserClassName);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setSerDeByCQL</span><span class="params">(ClassNameContext deserClassName)</span> </span>&#123;</span><br><span class="line">    String newDeserClassName = deserClassName.getClassName();</span><br><span class="line">    <span class="comment">//2.然后设置到语义解析结果中</span></span><br><span class="line">    getAnalyzeContext().setDeserializerClassName(newDeserClassName);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>能不能把语法和语义的这两个上下文结果数据合并在一起? 作者在注释中也提到了这个问题. 如果修改了语法,对应的语义也要一起修改(SemanticAnalyzerFactory).   </p>
+</blockquote>
+<h3 id="insert_&amp;_select_schema">insert &amp; select schema</h3><p>对于insert的Schemas, 来自于select, 而select又会再次调用from的getCreatedSchemas,下面是三个AnalyzeContext获取创建的Schemas:      </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> List&lt;Schema&gt; <span class="title">getCreatedSchemas</span><span class="params">()</span> </span>&#123;                   <span class="comment">// InsertAnalyzeContext</span></span><br><span class="line">    List&lt;Schema&gt; schemas = Lists.newArrayList();</span><br><span class="line">    schemas.addAll(selectContext.getCreatedSchemas());      <span class="comment">// 1.Insert使用了Select ⬅️</span></span><br><span class="line">    schemas.addAll(<span class="keyword">super</span>.getCreatedSchemas());</span><br><span class="line">    <span class="keyword">return</span> schemas;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> List&lt;Schema&gt; <span class="title">getCreatedSchemas</span><span class="params">()</span> </span>&#123;                   <span class="comment">// SelectAnalyzeContext</span></span><br><span class="line">    List&lt;Schema&gt; schemas = Lists.newArrayList();</span><br><span class="line">    schemas.addAll(fromClauseContext.getCreatedSchemas());  <span class="comment">// 2.Select使用了From的 ⬅️</span></span><br><span class="line">    schemas.addAll(<span class="keyword">super</span>.getCreatedSchemas());</span><br><span class="line">    <span class="keyword">return</span> schemas;</span><br><span class="line">&#125; </span><br><span class="line"><span class="function"><span class="keyword">public</span> List&lt;Schema&gt; <span class="title">getCreatedSchemas</span><span class="params">()</span> </span>&#123;                   <span class="comment">// FromClauseAnalyzeContext</span></span><br><span class="line">    List&lt;Schema&gt; schemas = <span class="keyword">new</span> ArrayList&lt;Schema&gt;();</span><br><span class="line">    <span class="keyword">for</span> (Entry&lt;String, InsertAnalyzeContext&gt; et : subQueryForStream.entrySet()) &#123;</span><br><span class="line">        String streamName = et.getKey();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; inputSchemas.size(); i++) &#123;     <span class="comment">// 4.最终都是来源于这里的</span></span><br><span class="line">            <span class="keyword">if</span> (streamName.equals(inputSchemas.get(i).getStreamName())) &#123;</span><br><span class="line">                schemas.add(inputSchemas.get(i));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        InsertAnalyzeContext sp = et.getValue();</span><br><span class="line">        schemas.addAll(sp.getCreatedSchemas());             <span class="comment">// 3.我勒个去,又回到了Insert ⬅️</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> schemas;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>对于其他的AnalyzeContext, getCreatedSchemas一般是没有的. 表结构实际上只有输入输出流和insert/select语句才有.  </p>
+</blockquote>
+<h2 id="正文二:_CQL_Statement_syntax">正文二: CQL Statement syntax</h2><p>下面结合官方的CQL语法文档配合上对应的StatementContext,AnalyzeContext一起分析常用的几种语法结构:  </p>
+<h3 id="Create_Input_Stream_Statement_syntax">Create Input Stream Statement syntax</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">INPUT</span> STREAM streamName </span><br><span class="line">columnList [streamComment]      ①数据列</span><br><span class="line">[serdeClause]                   ②反序列化</span><br><span class="line">sourceClause                    ③数据读取/数据源</span><br><span class="line">[parallelClause];               ④可选的算子并行度</span><br></pre></td></tr></table></figure>
+<p>Create Input Stream 语句定义了输入流的<code>①数据列名称,③数据读取方式和②数据反序列化方式</code>。<br>SERDE 定义了数据的反序列化方式,即如何将从inputStream中读取的数据解析成对应的完整的流的Schema。<br>系统配置了默认的序列化和反序列化类,当使用系统默认反序列化类时,SERDE子句可以省略,同时,SERDE 的相关配置属性也可以省略。<br>SOURCE 定义了数据从什么地方读取,比如从MQ消息队列中读取或者文件等其他方式读取。SOURCE 语句一定不能省略。<br>ParallelClause 语句指定了该输入算子的并发数量。</p>
+<p>使用系统内置反序列化类读取算子示例  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">INPUT</span> STREAM example</span><br><span class="line">(eventId <span class="built_in">INT</span>, eventDesc <span class="keyword">STRING</span>)</span><br><span class="line">SERDE simpleSerDe PROPERTIES (separator = <span class="string">"|"</span>)</span><br><span class="line"><span class="keyword">SOURCE</span> TCPClientInput PROPERTIES (<span class="keyword">server</span> = <span class="string">"127.0.0.1"</span>, port = <span class="string">"9999"</span>)</span><br><span class="line"><span class="keyword">Parallel</span> <span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+<p>输入流语句的Context即输入流的语法解析内容对应了语法结构的组成部分.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CreateInputStatementContext</span> <span class="keyword">extends</span> <span class="title">CreateStreamStatementContext</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> ClassNameContext deserClassName;                <span class="comment">//② 反序列化类: SERDE  </span></span><br><span class="line">    <span class="keyword">private</span> StreamPropertiesContext deserProperties;        <span class="comment">//   反序列化属性</span></span><br><span class="line">    <span class="keyword">private</span> ClassNameContext sourceClassName;               <span class="comment">//③ 数据源类: SOURCE  </span></span><br><span class="line">    <span class="keyword">private</span> StreamPropertiesContext sourceProperties;       <span class="comment">//   数据源属性</span></span><br><span class="line">    <span class="keyword">private</span> ParallelClauseContext parallelNumber;           <span class="comment">//④ 并行度: PARALLEL  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>streamName和columns是在父类CreateStreamStatementContext中定义的.<br>CreateInputStreamAnalyzer语义分析的结果已经在上面分析过了. 接下来我们看看insert和select语法,<br>分别按照A.语法结构定义(statement syntax), B.语法解析结果(statement context), C.语义解析(analyze) D.语义解析结果(analyze context).<br>最终结果都是为了得到语义解析结果. 一般都是获取语法解析的结果(StatementContext)经过计算最后设置到语义解析结果中(AnalyzeContext).    </p>
+</blockquote>
+<h3 id="Insert_Statement_syntax">Insert Statement syntax</h3><p><code>A</code>.Insert包含三种<strong>语法结构</strong>:  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">--1.Single Insert</span></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> STREAM transformTemp <span class="keyword">SELECT</span> * <span class="keyword">FROM</span> transform;</span><br><span class="line"></span><br><span class="line"><span class="comment">--2.不包含子查询的 MultiInsert</span></span><br><span class="line">FROM teststream</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> STREAM s1 <span class="keyword">SELECT</span> *</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> STREAM s2 <span class="keyword">SELECT</span> a</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> STREAM s3 <span class="keyword">SELECT</span> <span class="keyword">id</span>, <span class="keyword">name</span> <span class="keyword">WHERE</span> <span class="keyword">id</span> &gt; <span class="number">10</span> </span><br><span class="line"><span class="keyword">Parallel</span> <span class="number">4</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">--3.包含子查询的 MultiInsert</span></span><br><span class="line">FROM</span><br><span class="line">(</span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">count</span>(<span class="keyword">id</span>) <span class="keyword">as</span> <span class="keyword">id</span>, <span class="string">'sss'</span> <span class="keyword">as</span> <span class="keyword">name</span></span><br><span class="line"><span class="keyword">FROM</span> testStream(<span class="keyword">id</span> &gt;<span class="number">5</span> )[<span class="keyword">RANGE</span> <span class="number">1</span> <span class="keyword">SECONDS</span> SLIDE] <span class="keyword">GROUP</span> <span class="keyword">BY</span> ss</span><br><span class="line">)</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> STREAM s1 <span class="keyword">SELECT</span> *</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> STREAM s2 <span class="keyword">SELECT</span> a</span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> STREAM s3 <span class="keyword">SELECT</span> <span class="keyword">id</span>,<span class="keyword">name</span> <span class="keyword">WHERE</span> <span class="keyword">id</span> &gt; <span class="number">10</span>;</span><br></pre></td></tr></table></figure>
+<p>可以将数据导入一个未定义的流中,但是如果有要将多个流的数据导入一个新流,这么几个导入语句生成的schema列名称和列类型必须相同。<br>允许将select结果导入到一个不存在的流中,只要这个流不是输入和输出流,系统就会自动创建该流。  </p>
+<p>MultiInsert 语句一般用来进行单流数据的分割,它可以将一个流的数据,按照不同的处理规则,在处理完毕之后,发送至指定流。从而达到单流变多流的目的。<br>MultiInsert 语句只有一个From子句,该子句中,只允许进行简单流的定义,不允许出现窗口等复杂语法。</p>
+<p><code>B</code>.InsertStatementContext对应第一种的<strong>语法解析结果</strong>(没有并行度), MultiInsertStatementContext对应2.3两种的多级插入语法解析结果(有并行度).  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">InsertStatementContext</span> <span class="keyword">extends</span> <span class="title">ParseContext</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String streamName;                  <span class="comment">//insert into stream s1的streamName是s1</span></span><br><span class="line">    <span class="keyword">private</span> SelectStatementContext select;      <span class="comment">//select * from ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MultiInsertStatementContext</span> <span class="keyword">extends</span> <span class="title">ParseContext</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> FromClauseContext from;             <span class="comment">//FROM ...</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;MultiInsertContext&gt; inserts;   <span class="comment">//insert into ... insert into ...</span></span><br><span class="line">    <span class="keyword">private</span> ParallelClauseContext parallel;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>C</code>.insert语句的<strong>语义解析</strong>(multi insert的类似:解析from以及多条insert语句):  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">InsertStatementAnalyzer</span> <span class="keyword">extends</span> <span class="title">BaseAnalyzer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> InsertAnalyzeContext context = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">private</span> InsertStatementContext insertContext;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> AnalyzeContext <span class="title">analyze</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        String streamName = insertContext.getStreamName();  <span class="comment">//insertContext: InsertStatementContext</span></span><br><span class="line">        context.setOutputStreamName(streamName);</span><br><span class="line">        <span class="keyword">if</span> (checkSchemaExists(streamName)) &#123;</span><br><span class="line">            context.setOutputSchema(getSchemaByName(streamName));</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            context.setPipeStreamNotCreated(<span class="keyword">true</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        analyzeSelectStatement();   <span class="comment">//分析Select语句</span></span><br><span class="line">        createOutputStream();       <span class="comment">//创建输出流</span></span><br><span class="line">        <span class="keyword">return</span> context;             <span class="comment">//返回的是语义分析的结果AnalyzeContext: InsertAnalyzeContext</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>D</code>.语义解析结果AnalyzeContext: 对于第一种的insert语句(单条insert),包含了select子句.<br>InsertStatementContext 语法解析结果中含有 SelectStatementContext select.<br>InsertAnalyzeContext 语义解析结果中也含有 SelectAnalyzeContext selectContext.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">analyzeSelectStatement</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">//insertContext.getSelect()返回的是InsertStatementContext中的SelectStatementContext, 对应分析器就是SelectStatementAnalyzer</span></span><br><span class="line">    SemanticAnalyzer selectAnalzyer = SemanticAnalyzerFactory.createAnalyzer(insertContext.getSelect(), getAllSchemas());</span><br><span class="line">    <span class="keyword">if</span> (selectAnalzyer <span class="keyword">instanceof</span> SelectStatementAnalyzer) &#123;</span><br><span class="line">        <span class="comment">//创建查询语句的语义分析器, 设置查询的输出流名称为当前insert语句的输出流名称. </span></span><br><span class="line">        <span class="comment">//比如insert into stream s1 select ... 表示查询语句的输出是s1.  </span></span><br><span class="line">        ((SelectStatementAnalyzer)selectAnalzyer).setOutputStreamName(context.getOutputStreamName());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//InsertAnalyzeContext context是insert语句的语义解析结果. </span></span><br><span class="line">    <span class="comment">//还是要对查询分析器SelectStatementAnalyzer经过分析analyze得到查询语义解析结果SelectAnalyzeContext</span></span><br><span class="line">    context.setSelectContext((SelectAnalyzeContext)selectAnalzyer.analyze());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>insert中包含了select语句, 所以在语义解析insert语句时, 要首先对其包含的select进行语义解析.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">    SelectStatementContext select -----------------------------</span><br><span class="line">          |                                                   ⬇️</span><br><span class="line">    InsertStatementContext insertContext                      ⬇️  insertContext.getSelect() = SelectStatementContext</span><br><span class="line">          |                                                   ⬇️  根据ParaseContext创建对应的SemanticAnalyzer  </span><br><span class="line">InsertStatementAnalyzer.analyze()                             ⬇️  再调用语义解析器的analyze方法进行语义解析,返回值为语义解析结果AnalyzeContext</span><br><span class="line">                       |--analyzeSelectStatement() -- SelectStatementAnalyzer.analyze()</span><br><span class="line">                       |--createOutputStream()                                |</span><br><span class="line">                       |--InsertAnalyzeContext  &lt;-----------------------------|--SelectAnalyzeContext</span><br><span class="line">                               context              context.setSelectContext</span><br></pre></td></tr></table></figure>
+<p>创建输出流, select的schema也就是insert的schema.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">createOutputStream</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">//select的Schema中应该已经包含了完整的元数据,比如columns, 这里创建的输出流只是更改了输出流的名称.  </span></span><br><span class="line">    Schema outputSchema = context.getSelectContext().getSelectClauseContext().getOutputSchema();</span><br><span class="line">    outputSchema.setId(context.getOutputStreamName());          </span><br><span class="line">    outputSchema.setName(context.getOutputStreamName());        </span><br><span class="line">    outputSchema.setStreamName(context.getOutputStreamName());</span><br><span class="line">    context.setOutputSchema(outputSchema);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Select_Statement_syntax">Select Statement syntax</h3><p><code>A</code>.查询语句的语法结构:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">SelectClause </span><br><span class="line">FromClause </span><br><span class="line">[WhereClause] </span><br><span class="line">[GroupByClause] </span><br><span class="line">[HavingClause] </span><br><span class="line">[OrderbyClause] </span><br><span class="line">[LimitClause] </span><br><span class="line">[ParallelClause];</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Select语句(Statement)中的每个子句(Clause)都有自己的语法结构,因此都有自己的语法解析和语义解析.  </p>
+</blockquote>
+<p><code>B</code>.Select语句包含了多个子句, 比如select <em> from table. 则`select </em><code>对应select子句,</code>from table`对应from子句.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SelectStatementContext</span> <span class="keyword">extends</span> <span class="title">ParseContext</span> </span>&#123;  <span class="comment">//②</span></span><br><span class="line">    <span class="keyword">private</span> SelectClauseContext select;</span><br><span class="line">    <span class="keyword">private</span> FromClauseContext from;                         <span class="comment">//③</span></span><br><span class="line">    <span class="keyword">private</span> WhereClauseContext where;</span><br><span class="line">    <span class="keyword">private</span> GroupbyClauseContext groupby;</span><br><span class="line">    <span class="keyword">private</span> HavingClauseContext having;</span><br><span class="line">    <span class="keyword">private</span> OrderbyClauseContext orderby;</span><br><span class="line">    <span class="keyword">private</span> LimitClauseContext limit;</span><br><span class="line">    <span class="keyword">private</span> ParallelClauseContext parallel;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>C</code>.查询语句的语义分析(from子句的解析要优先于select子句).  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SelectStatementAnalyzer</span> <span class="keyword">extends</span> <span class="title">BaseAnalyzer</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> SelectAnalyzeContext context;                   <span class="comment">//① StatementAnalyzer的analyze结果为AnalyzerContext</span></span><br><span class="line">    <span class="keyword">private</span> SelectStatementContext selectContext;           <span class="comment">//② 语义解析StatementAnalyzer依赖于语法解析StatementContext</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> SelectAnalyzeContext <span class="title">analyze</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        fromAnalyzer();                                     <span class="comment">//③</span></span><br><span class="line">        selectAnalyzer();</span><br><span class="line">        resetOutputColumnTypes();</span><br><span class="line">        whereAnalyzer();</span><br><span class="line">        groupbyAnalyzer();</span><br><span class="line">        havingAnalyzer();</span><br><span class="line">        orderByAnalyzer();</span><br><span class="line">        limitAnalyzer();</span><br><span class="line">        parallelAnalyzer();</span><br><span class="line">        dataSourceQueryArgumentsAnalyzer();</span><br><span class="line">        <span class="keyword">return</span> context;                                     <span class="comment">//①</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>D</code>.查询的语义解析结果SelectAnalyzeContext(和SelectWithOutFromAnalyzeContext)    </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">一次查询: 带有from的比如select * from table</span><br><span class="line">SelectAnalyzeContext ---------------|</span><br><span class="line">      |                             |--FromClauseAnalyzeContext fromClauseContext</span><br><span class="line">      |                             |--ParallelClauseAnalyzeContext parallelClauseContext</span><br><span class="line">      |                             |++SelectStatementContext context   //②</span><br><span class="line">      |</span><br><span class="line">多次查询: 不带from的,比如前面multi insert,对同一个流查询多次</span><br><span class="line">SelectWithOutFromAnalyzeContext ----|</span><br><span class="line">                                    |--SelectClauseAnalyzeContext selectClauseContext</span><br><span class="line">                                    |--FilterClauseAnalzyeContext whereClauseContext</span><br><span class="line">                                    |--SelectClauseAnalyzeContext groupbyClauseContext</span><br><span class="line">                                    |--OrderByClauseAnalyzeContext orderbyClauseContext</span><br><span class="line">                                    |--FilterClauseAnalzyeContext havingClauseContext</span><br><span class="line">                                    |--LimitClauseAnalzyeContext limitClauseContext</span><br><span class="line">                                    |++MultiSelectContext context</span><br></pre></td></tr></table></figure>
+<p>下面的context是SelectAnalyzeContext, 不同解析器解析的结果也是AnalyzeContext,分别设置到SelectAnalyzeContext对应的字段中.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">fromAnalyzer</span><span class="params">()</span> </span>&#123;                                         <span class="comment">//    ②         ③</span></span><br><span class="line">    SemanticAnalyzer analyzer = SemanticAnalyzerFactory.createAnalyzer(selectContext.getFrom(), getAllSchemas());</span><br><span class="line">    context.setFromClauseContext((FromClauseAnalyzeContext)analyzer.analyze());</span><br><span class="line">&#125;   <span class="comment">//①            ③</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">groupbyAnalyzer</span><span class="params">()</span> </span>&#123;   </span><br><span class="line">    SemanticAnalyzer analyzer = SemanticAnalyzerFactory.createAnalyzer(selectContext.getGroupby(), getInputSchemas());</span><br><span class="line">    context.setGroupbyClauseContext((SelectClauseAnalyzeContext)analyzer.analyze());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>语法解析Parser</code> - <code>语法解析结果ParseContext</code> – <code>语义解析SemanticAnalyzer</code> – <code>语义解析结果AnalyzeContext</code></p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151127193205608" alt="stream-select"></p>
+<h3 id="DataSource_Statement_syntax">DataSource Statement syntax</h3><p>数据源和 From 子句一起结合使用,dataSourceBody 语法在 from 字句中也进行了定义  </p>
+<p>数据源的查询参数分为查询Schema定义(SCHEMA)和数据源查询(QUERY)两个部分。<br>Schema 的定义同 Create Input Stream 中的 schema 定义,主要用来指定数据源查询结果 的列数量、名称、类型,便于进行下一步处理。</p>
+<p>RDB 数据读取,支持多行数据读取,同时支持 CQL UDF 以及窗口和聚合运算<br>QUERY 内部的参数顺序固定,不同的数据源,有不同的参数。<br>RDB 的 SQL 中,如果不包含 Where,就会一次查询出多行记录。和原始流做了 Join 之后,最终输出多条结果。  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">--数据源定义</span></span><br><span class="line"><span class="keyword">CREATE</span> DATASOURCE rdbdatasource         <span class="comment">#dataSourceName</span></span><br><span class="line"><span class="keyword">SOURCE</span> RDBDataSource                    <span class="comment">#className</span></span><br><span class="line">PROPERTIES (                            <span class="comment">#datasourceProperties     </span></span><br><span class="line"><span class="keyword">url</span> = <span class="string">"jdbc:postgresql://127.0.0.1:1521/streaming"</span>, </span><br><span class="line">username = <span class="string">"55B5B07CF57318642D38F0CEE0666D26"</span>, </span><br><span class="line"><span class="keyword">password</span> = <span class="string">"55B5B07CF57318642D38F0CEE0666D26"</span> );</span><br><span class="line"></span><br><span class="line"><span class="comment">--数据源查询</span></span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> rs <span class="keyword">select</span> rdb.id,s.id,<span class="keyword">count</span>(rdb.id),<span class="keyword">sum</span>(s.id) </span><br><span class="line"><span class="keyword">from</span> S[<span class="keyword">rows</span> <span class="number">10</span> slide],                  <span class="comment">#普通的流可以和DataSource进行join </span></span><br><span class="line">DATASOURCE rdbdatasource                <span class="comment">#dataSourceName, 前面定义好的数据源</span></span><br><span class="line">[                                       <span class="comment">#dataSourceBody</span></span><br><span class="line"><span class="keyword">SCHEMA</span> (<span class="keyword">id</span> <span class="built_in">int</span>,<span class="keyword">name</span> <span class="keyword">String</span>,<span class="keyword">type</span> <span class="built_in">int</span>),                                       <span class="comment">#dataSourceSchema</span></span><br><span class="line"><span class="keyword">QUERY</span> (<span class="string">"select rid as id,rname,rtype from rdbtable where id = ? "</span>, s.id)    <span class="comment">#dataSourceQuery</span></span><br><span class="line">] rdb                                   <span class="comment">#sourceAlias</span></span><br><span class="line"><span class="keyword">where</span> rdb.name <span class="keyword">like</span> <span class="string">'%hdd%'</span>             <span class="comment">#dataSourceArguments</span></span><br><span class="line"><span class="keyword">group</span> <span class="keyword">by</span> rdb.id,s.id;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>原始流s的id会作为查询条件,传入数据源的SQL查询语句中, 同时数据源本身也有自己的查询条件.  </p>
+</blockquote>
+<p>CreateDataSource相关的语法解析,语义解析和CreateStreamStatement类似,就不分析了. </p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/11/26/2015-11-26-StreamCQL-schema/">StreamCQL源码阅读(2) 语法和语义解析</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年11月26日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/11/26/2015-11-26-StreamCQL-schema/" title="StreamCQL源码阅读(2) 语法和语义解析">http://github.com/zqhxuyuan/2015/11/26/2015-11-26-StreamCQL-schema/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/11/26/2015-11-26-StreamCQL-schema/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/11/27/2015-11-27-StreamCQL-operator/">
+        StreamCQL源码阅读(3) 拆分组合算子
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/11/24/2015-11-24-StreamCQL-task/">
+        StreamCQL源码阅读(1) 提交任务
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前戏:_SemanticAnalyzer"><span class="toc-number">1.</span> <span class="toc-text">前戏: SemanticAnalyzer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#正文一:_Schema"><span class="toc-number">2.</span> <span class="toc-text">正文一: Schema</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#create_stream_schema"><span class="toc-number">2.1.</span> <span class="toc-text">create stream schema</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#insert_&_select_schema"><span class="toc-number">2.2.</span> <span class="toc-text">insert &amp; select schema</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#正文二:_CQL_Statement_syntax"><span class="toc-number">3.</span> <span class="toc-text">正文二: CQL Statement syntax</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Create_Input_Stream_Statement_syntax"><span class="toc-number">3.1.</span> <span class="toc-text">Create Input Stream Statement syntax</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Insert_Statement_syntax"><span class="toc-number">3.2.</span> <span class="toc-text">Insert Statement syntax</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Select_Statement_syntax"><span class="toc-number">3.3.</span> <span class="toc-text">Select Statement syntax</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DataSource_Statement_syntax"><span class="toc-number">3.4.</span> <span class="toc-text">DataSource Statement syntax</span></a></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/11/26/2015-11-26-StreamCQL-schema/" data-title="StreamCQL源码阅读(2) 语法和语义解析" data-url="http://github.com/zqhxuyuan/2015/11/26/2015-11-26-StreamCQL-schema/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/11/27/2015-11-27-StreamCQL-operator/" title="上一篇: StreamCQL源码阅读(3) 拆分组合算子">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/11/24/2015-11-24-StreamCQL-task/" title="下一篇: StreamCQL源码阅读(1) 提交任务">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

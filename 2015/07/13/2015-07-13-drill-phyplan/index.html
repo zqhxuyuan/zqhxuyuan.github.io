@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Apache Drill源码阅读(3) 物理计划 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="大数据源码阅读系列之ApacheDrill: Apache Drill的物理计划">
+<meta name="keywords" content="drill">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Apache Drill源码阅读(3) 物理计划">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/07/13/2015-07-13-drill-phyplan/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="大数据源码阅读系列之ApacheDrill: Apache Drill的物理计划">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/calcite1.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill17.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/calcite2.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/calcite3.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/calcite4.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill18.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill19.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill20.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill13-2.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill13-1.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill14.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill15.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill16.png">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.176Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Apache Drill源码阅读(3) 物理计划">
+<meta name="twitter:description" content="大数据源码阅读系列之ApacheDrill: Apache Drill的物理计划">
+<meta name="twitter:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/calcite1.png">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-07-13-drill-phyplan" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/07/13/2015-07-13-drill-phyplan/" class="article-date">
+  	<time datetime="2015-07-12T16:00:00.000Z" itemprop="datePublished">2015-07-13</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Apache Drill源码阅读(3) 物理计划
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Source/">Source</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/drill/">drill</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>大数据源码阅读系列之ApacheDrill: Apache Drill的物理计划</p>
+<a id="more"></a>
+<p>DrillBit各个角色:<br>UserServer处理RUN_QUERY_VALUE客户端的查询请求,会将任务分派给UserWorker处理, 由worker提交工作:<br>显然worker要在构造UserServer的时候也一起构造出来, 这样在收到任务的时候, 确保立即有工人接手这份工作.<br>UserServer的构造在ServiceEngine,而服务引擎是由DrillBit创建的.<br>UserWorker是由WorkerManager管理的, 而WorkerManager也是由DrillBit创建的.<br>所以启动DrillBit服务后,参与计算的角色都已经准备好了.  </p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Explain</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WorkerBee</td>
+<td>工蜂, 真正干活的</td>
+</tr>
+<tr>
+<td>UserWorker</td>
+<td>用户操作的(工人), 通过WorkerBee构成</td>
+</tr>
+<tr>
+<td>WorkerManager</td>
+<td>工人管理员,负责选择一个工人来工作</td>
+</tr>
+<tr>
+<td>UserServer</td>
+<td>用户操作的服务端,会将工作交给UserWorker,它需要一个UserWorker</td>
+</tr>
+<tr>
+<td>Foreman</td>
+<td>包工头,监工.由UserWorker创建出来. 因为UserWorker底层是WorkerBee,所以会将WorkerBee和Foreman关联起来</td>
+</tr>
+<tr>
+<td>ServiceEngine</td>
+<td>服务引擎,管理UserServer,Controller</td>
+</tr>
+<tr>
+<td>DrillBit</td>
+<td>Drill的服务端控制进程,管理ServiceEngine,WorkerManager</td>
+</tr>
+<tr>
+<td>BootStrapContext</td>
+<td>启动DrillBit的上下文,包括配置信息,度量注册</td>
+</tr>
+<tr>
+<td>DrillbitContext</td>
+<td>DrillBit工作时候的上下文</td>
+</tr>
+<tr>
+<td>Controller</td>
+<td>不同DrillBit节点的通信</td>
+</tr>
+<tr>
+<td>ControllServer</td>
+<td>不同节点间消息传输,连接等的RPC服务端</td>
+</tr>
+<tr>
+<td>DataServer</td>
+<td>负责数据交互的RPC服务端</td>
+</tr>
+</tbody>
+</table>
+<h2 id="工人和监工的那些事">工人和监工的那些事</h2><p>首先看下UserWorker是怎么提交一个任务的:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">public class UserWorker&#123;</span><br><span class="line">  private final WorkerBee bee;</span><br><span class="line"></span><br><span class="line">  public QueryId submitWork(UserClientConnection connection, RunQuery query) &#123;</span><br><span class="line">    ThreadLocalRandom r = ThreadLocalRandom.current();</span><br><span class="line">    // create a new queryid where the first four bytes are a growing time (each new value comes earlier in sequence).  Last 12 bytes are random.</span><br><span class="line">    long time = (int) (System.currentTimeMillis()/1000);</span><br><span class="line">    long p1 = ((Integer.MAX_VALUE - time) &lt;&lt; 32) + r.nextInt();</span><br><span class="line">    long p2 = r.nextLong();</span><br><span class="line">    QueryId id = QueryId.newBuilder().setPart1(p1).setPart2(p2).build();</span><br><span class="line">    incrementer.increment(connection.getSession());</span><br><span class="line">    Foreman foreman = new Foreman(bee, bee.getContext(), connection, id, query);</span><br><span class="line">    bee.addNewForeman(foreman);</span><br><span class="line">    return id;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>返回的QueryId会由UserServer通过RPC发送给客户端, 表示客户端这一次的查询标识. 服务端已经接受了这次查询.<br>但是服务端还没有开始执行这个查询任务, 后续如果客户端需要查询结果, 可以凭这个QueryId, 就可以向服务端要数据结果.  </p>
+<p>WorkerBee从名字上看是工作的蜜蜂, 工蜂一直默默无闻地工作. 它为母蜂Foreman服务.<br>现在我们由UserWorker创建了一个Foreman. 工蜂把它加进来.    </p>
+<blockquote>
+<p>问题:<br>1.为什么不是由Foreman管理WorkerBee,而是让WorkerBee(工蜂)主动把Foreman(监工)加进来?<br>2.为什么Foreman作为一个进程,不是自己启动,而是要由工人来启动?  </p>
+</blockquote>
+<p>Foreman负责管理一次查询的所有fragments, Foreman会作为根节点/驱动节点  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * Foreman manages all the fragments (local and remote) for a single query where this is the driving/root node.</span><br><span class="line"> * The flow is as follows:</span><br><span class="line"> * - Foreman is submitted as a runnable.  被提交为可执行的</span><br><span class="line"> * - Runnable does query planning. 做什么: 查询计划</span><br><span class="line"> * - state changes from PENDING to RUNNING 状态改变</span><br><span class="line"> * - Runnable sends out starting fragments 发射起始fragments</span><br><span class="line"> * - Status listener are activated 监听器被激活</span><br><span class="line"> * - The Runnable&apos;s run() completes, but the Foreman stays around 线程的run方法结束,而Foreman还停留...做什么, 看下面的</span><br><span class="line"> * - Foreman listens for state change messages. 监听状态改变的消息</span><br><span class="line"> * - state change messages can drive the state to FAILED or CANCELED, in which case 状态消息会驱动/更新Foreman的状态</span><br><span class="line"> *   messages are sent to running fragments to terminate 消息会使得正在运行的fragments终结</span><br><span class="line"> * - when all fragments complete, state change messages drive the state to COMPLETED 当所有的fragments完成后, 状态改变的消息更新Formeman的状态为已完成</span><br><span class="line"> */</span><br><span class="line">public class Foreman implements Runnable &#123;</span><br><span class="line">  private final QueryId queryId; //the id for the query</span><br><span class="line">  private final RunQuery queryRequest; //the query to execute</span><br><span class="line">  private final QueryContext queryContext;</span><br><span class="line">  private final QueryManager queryManager; // handles lower-level details of query execution</span><br><span class="line">  private final WorkerBee bee; // provides an interface to submit tasks, used to submit additional work</span><br><span class="line">  private final DrillbitContext drillbitContext;</span><br><span class="line">  private final UserClientConnection initiatingClient; // used to send responses</span><br><span class="line"></span><br><span class="line">  // Sets up the Foreman, but does not initiate any execution. 设置Foreman, 但是并没有初始化任何的执行</span><br><span class="line">  public Foreman(final WorkerBee bee, final DrillbitContext drillbitContext, final UserClientConnection connection, final QueryId queryId, final RunQuery queryRequest) &#123;</span><br><span class="line">    this.bee = bee;</span><br><span class="line">    this.queryId = queryId;</span><br><span class="line">    this.queryRequest = queryRequest;</span><br><span class="line">    this.drillbitContext = drillbitContext;</span><br><span class="line">    this.initiatingClient = connection;</span><br><span class="line">    this.closeFuture = initiatingClient.getChannel().closeFuture();</span><br><span class="line">    closeFuture.addListener(closeListener);</span><br><span class="line">    queryContext = new QueryContext(connection.getSession(), drillbitContext);</span><br><span class="line">    queryManager = new QueryManager(queryId, queryRequest, drillbitContext.getPersistentStoreProvider(), stateListener, this);</span><br><span class="line">    recordNewState(QueryState.PENDING);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>Foreman的run方法根据RunQuery的类型执行不同的方法,比如SQL类型,则要负责将SQL语句通过Calcite解析成逻辑计划,生成物理计划,最后运行物理计划.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">private void runSQL(final String sql) throws ExecutionSetupException &#123;</span><br><span class="line">  final DrillSqlWorker sqlWorker = new DrillSqlWorker(queryContext);</span><br><span class="line">  final Pointer&lt;String&gt; textPlan = new Pointer&lt;&gt;();</span><br><span class="line">  final PhysicalPlan plan = sqlWorker.getPlan(sql, textPlan);</span><br><span class="line">  queryManager.setPlanText(textPlan.value);</span><br><span class="line">  runPhysicalPlan(plan);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="SQL_Parser">SQL Parser</h2><p>Calcite的planner对SQL进行parse解析, 生成SqlNode节点,  对于不同的SqlNode类型, 由不同的Handler进行进行解析.   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">public class DrillSqlWorker &#123;</span><br><span class="line">  private final Planner planner;  //这两个Planner都是Calcite的,负责解析成逻辑计划</span><br><span class="line">  private final HepPlanner hepPlanner;</span><br><span class="line">  private final QueryContext context;</span><br><span class="line"></span><br><span class="line">  public PhysicalPlan getPlan(String sql, Pointer&lt;String&gt; textPlan) throws ForemanSetupException &#123;</span><br><span class="line">    SqlNode sqlNode = planner.parse(sql);  //将SQL语句解析成SqlNode解析树①</span><br><span class="line">    AbstractSqlHandler handler;</span><br><span class="line">    SqlHandlerConfig config = new SqlHandlerConfig(hepPlanner, planner, context);</span><br><span class="line">    switch(sqlNode.getKind())&#123;</span><br><span class="line">    case EXPLAIN:</span><br><span class="line">      handler = new ExplainHandler(config);</span><br><span class="line">      break;</span><br><span class="line">    case SET_OPTION:</span><br><span class="line">      handler = new SetOptionHandler(context);</span><br><span class="line">      break;</span><br><span class="line">    case OTHER:</span><br><span class="line">      if(sqlNode instanceof SqlCreateTable) &#123;</span><br><span class="line">        handler = ((DrillSqlCall)sqlNode).getSqlHandler(config, textPlan);</span><br><span class="line">        break;</span><br><span class="line">      &#125;</span><br><span class="line">      if (sqlNode instanceof DrillSqlCall) &#123;</span><br><span class="line">        handler = ((DrillSqlCall)sqlNode).getSqlHandler(config);</span><br><span class="line">        break;</span><br><span class="line">      &#125;</span><br><span class="line">    default:</span><br><span class="line">      handler = new DefaultSqlHandler(config, textPlan);</span><br><span class="line">    &#125;</span><br><span class="line">    return handler.getPlan(sqlNode);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>The Drillbit that receives the query from a client or application becomes the Foreman for the query and drives the entire query.<br>A parser in the Foreman parses the SQL[①], applying custom rules[②] to convert specific SQL operators into a specific logical operator syntax that Drill understands.<br>This collection of logical operators forms a logical plan. The logical plan describes the work required to generate the query results and defines what data sources and operations to apply.  </p>
+<p>Foreman中的parser解析SQL, 并运用定制的规则, 将SQL操作符(Calcite的节点)转换成Drill认识的逻辑操作符(Drill的节点DrillRel).<br>转换后的逻辑操作符集合会组成一个逻辑计划.  注意上面的sqlNode=planner.parse(sql)对应的是SQL操作符, 转换成DrillRelNode在Handler的getPlan中完成.  </p>
+</blockquote>
+<h2 id="SqlNode(Calcite_SQL操作符)">SqlNode(Calcite SQL操作符)</h2><p>Calcite的编程API主要包括了: Operator, Rule, RelationExpression, SqlNode.  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/calcite1.png" alt></p>
+<h3 id="What’s_Rule?">What’s Rule?</h3><p>Calcite的planner对SQL进行parse解析, 除了用到Calcite自身的一些规则外, Drill也会附加一些规则getRules给它. 定义在DrillSqlWorker的构造函数中.<br>规则包括物理计划, 逻辑计划, 转换规则.  其中逻辑计划包括基本规则,用户自定义规则. 物理计划包括物理规则,存储插件的规则. 比如hive插件有自己的SQL执行转换规则.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">public DrillSqlWorker(QueryContext context) &#123;</span><br><span class="line">  FrameworkConfig config = Frameworks.newConfigBuilder() ...</span><br><span class="line">      .ruleSets(getRules(context))...  //Drill附加的规则②</span><br><span class="line">      .build();</span><br><span class="line">  this.planner = Frameworks.getPlanner(config);    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private RuleSet[] getRules(QueryContext context) &#123;</span><br><span class="line">  StoragePluginRegistry storagePluginRegistry = context.getStorage();</span><br><span class="line">  RuleSet drillLogicalRules = DrillRuleSets.mergedRuleSets(DrillRuleSets.getDrillBasicRules(context), DrillRuleSets.getJoinPermRules(context), DrillRuleSets.getDrillUserConfigurableLogicalRules(context));</span><br><span class="line">  RuleSet drillPhysicalMem = DrillRuleSets.mergedRuleSets(DrillRuleSets.getPhysicalRules(context), storagePluginRegistry.getStoragePluginRuleSet());</span><br><span class="line">  // Following is used in LOPT join OPT.</span><br><span class="line">  RuleSet logicalConvertRules = DrillRuleSets.mergedRuleSets(DrillRuleSets.getDrillBasicRules(context), DrillRuleSets.getDrillUserConfigurableLogicalRules(context));</span><br><span class="line">  RuleSet[] allRules = new RuleSet[] &#123;drillLogicalRules, drillPhysicalMem, logicalConvertRules&#125;;</span><br><span class="line">  return allRules;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>逻辑计划的基本规则, 这些规则是通用的, 不需要在物理计划阶段完成, 通用的规则尽早做.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// Get an immutable list of rules that will always be used when running logical planning.</span><br><span class="line">public static RuleSet getDrillBasicRules(QueryContext context) &#123;</span><br><span class="line">    DRILL_BASIC_RULES = new DrillRuleSet(ImmutableSet.&lt;RelOptRule&gt; builder().add( //</span><br><span class="line">    // Add support for Distinct Union (by using Union-All followed by Distinct)</span><br><span class="line">    UnionToDistinctRule.INSTANCE,</span><br><span class="line"></span><br><span class="line">    // Add support for WHERE style joins. 添加支持where类型的join</span><br><span class="line">    DrillFilterJoinRules.DRILL_FILTER_ON_JOIN,</span><br><span class="line">    DrillFilterJoinRules.DRILL_JOIN,</span><br></pre></td></tr></table></figure>
+<p>举个where类型的join规则转换: <a href="http://blog.aliyun.com/733" target="_blank" rel="noopener">http://blog.aliyun.com/733</a><br>SELECT * FROM A JOIN B ON A.ID=B.ID WHERE A.AGE&gt;10 AND B.AGE&gt;5<br><code>Predict Push Down</code>: 在遇有JOIN运算时,用户很有可能还要在JOIN之后做WHERE运算,此时就要从代数逻辑上分析,<br>WHERE中计算的条件是否可以被提前到JOIN之前运算,以此来减少JOIN运算的数据量,提升效率  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill17.png" alt></p>
+<p>那么Drill的FilterJoin规则是怎么样的呢?  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">public class DrillFilterJoinRules &#123;</span><br><span class="line">  /** Predicate that always returns true for any filter in OUTER join, and only true for EQUAL or IS_DISTINCT_FROM over RexInputRef in INNER join.</span><br><span class="line">   * With this predicate, the filter expression that return true will be kept in the JOIN OP.</span><br><span class="line">   * Example:  INNER JOIN,   L.C1 = R.C2 and L.C3 + 100 = R.C4 + 100 will be kepted in JOIN.</span><br><span class="line">   *                         L.C5 &lt; R.C6 will be pulled up into Filter above JOIN. </span><br><span class="line">   *           OUTER JOIN,   Keep any filter in JOIN.</span><br><span class="line">  */</span><br><span class="line">  public static final FilterJoinRule.Predicate EQUAL_IS_DISTINCT_FROM =</span><br><span class="line">      new FilterJoinRule.Predicate() &#123;</span><br><span class="line">        public boolean apply(Join join, JoinRelType joinType, RexNode exp) &#123;</span><br><span class="line">          // In OUTER join, we could not pull-up the filter. All we can do is keep the filter with JOIN, and then decide whether the filter could be pushed down into LEFT/RIGHT.</span><br><span class="line">          if (joinType != JoinRelType.INNER) return true;</span><br><span class="line">          List&lt;RexNode&gt; tmpLeftKeys = Lists.newArrayList();</span><br><span class="line">          List&lt;RexNode&gt; tmpRightKeys = Lists.newArrayList();</span><br><span class="line">          List&lt;RelDataTypeField&gt; sysFields = Lists.newArrayList();</span><br><span class="line">          RexNode remaining = RelOptUtil.splitJoinCondition(sysFields, join.getLeft(), join.getRight(), exp, tmpLeftKeys, tmpRightKeys, null, null);</span><br><span class="line">          if (remaining.isAlwaysTrue())  return true;</span><br><span class="line">          return false;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;;</span><br><span class="line"></span><br><span class="line">  /** Rule that pushes predicates from a Filter into the Join below them. */</span><br><span class="line">  public static final FilterJoinRule DRILL_FILTER_ON_JOIN =</span><br><span class="line">      new FilterJoinRule.FilterIntoJoinRule(true, RelFactories.DEFAULT_FILTER_FACTORY,</span><br><span class="line">          RelFactories.DEFAULT_PROJECT_FACTORY, EQUAL_IS_DISTINCT_FROM);</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这里最好要理解下Calcite的一些概念, 要不然理解起来有一定困难.<br>参考<a href="http://blog.csdn.net/yunlong34574/article/details/46375733" target="_blank" rel="noopener">http://blog.csdn.net/yunlong34574/article/details/46375733</a>了解下optiq-javaben这个项目的源码.<br>然后参考这里了解下查询下推优化:<a href="https://datapsyche.wordpress.com/2014/08/06/optiq-query-push-down-concept" target="_blank" rel="noopener">https://datapsyche.wordpress.com/2014/08/06/optiq-query-push-down-concept</a>  </p>
+</blockquote>
+<h3 id="Calcite_FilterJoinRule">Calcite FilterJoinRule</h3><p>下面引用了Optiq作者的Apache Calcite Overview的一个示例:  </p>
+<p>两张表进行join后有一个where过滤条件, 没有使用规则的话, 则要join完后才进行过滤:  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/calcite2.png" alt></p>
+<p>使用FilterJoinRule后, 把Filter提前到Join之前, 扫描之后立刻进行, 这样减少了join的数据量:  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/calcite3.png" alt></p>
+<p>那么怎么定义一个规则呢?  cal.rels是一个RelationExpression数组, 调用onMatch时, rels=[Join,Filter,Scan]<br>因此我们要获得call.rels中的Join和Filter. 使用数组索引rel(0)表示Join, rel(1)表示Filter.<br>最后调用call.transform(newJoin)将原始的RelationExpression转换成新的RelExp.  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/calcite4.png" alt></p>
+<blockquote>
+<p>注意转换后的右图Join’,Filter’上面的引号表示new. 和原来的Join,Filter是不一样的变量了.  </p>
+</blockquote>
+<p>这里我们进入Calcite的源码看看它是怎么做的. 内部类FilterIntoJoinRule的构造函数参数:  </p>
+<p>filterFactory和projectFactory分别是FilterFactoryImpl,ProjectFactoryImpl.<br>作为工厂类,它们的create方法会调用LogicalFilter,LogicalProject的create方法返回RelNode.  </p>
+<p>那么问题是这里传入的为什么是Filter和Project呢? Filter显然需要,因为我们的规则就是针对Filter和Join进行优化的.<br>Project呢? Filter肯定是针对某个字段进行过滤的, 这里的过滤字段就可以认为是先Project把结果查出来,才有机会进行过滤.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">/** Rule that tries to push filter expressions into a join condition and into the inputs of the join. */</span><br><span class="line">public static class FilterIntoJoinRule extends FilterJoinRule &#123;</span><br><span class="line">  public FilterIntoJoinRule(boolean smart, RelFactories.FilterFactory filterFactory, RelFactories.ProjectFactory projectFactory, Predicate predicate) &#123;</span><br><span class="line">    super(</span><br><span class="line">        operand(Filter.class,</span><br><span class="line">            operand(Join.class, RelOptRule.any())),</span><br><span class="line">        &quot;FilterJoinRule:filter&quot;, smart, filterFactory, projectFactory, predicate);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  @Override public void onMatch(RelOptRuleCall call) &#123;</span><br><span class="line">    Filter filter = call.rel(0);</span><br><span class="line">    Join join = call.rel(1);</span><br><span class="line">    perform(call, filter, join);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>onMatch方法和上面的图是一样的. 而具体的call.transform则在FilterJoinRule的perform中完成.  我们先看下FilterIntoJoinRule类上面的注释:<br>尝试着把filter表达式push到一个join条件里面, 并且push到join的输入. 假设join的输入是Scan,则filer会push到Scan后面.  </p>
+<p>再来看看FilterJoinRule类上面的注释: <code>Planner rule that pushes filters above and within a join node into the join node and/or its children nodes.</code> </p>
+<p>向上提升filters(为什么是向上, 向上向下的方向是什么? Scan是输入源,则Scan在上, Scan-Join-Filter转换为Scan-Filter-Join,则Filter向上提升了一个等级),<br>within表示在一个join节点内部, 原先是Scan-Join-Filter, 第一步是把Filter合并到Join里面: Scan-Join(Filter)<br>或者join节点的子节点, 从Tree的角度来看, Join下面是两张数据源表,数据源就是Join的children节点.<br>我们可以把Filterwithin到Join的孩子节点即Scan中. 即第二步就是: Scan(Filter)-Join. DAG图就是: Scan-Filter-Join. Wow!!!</p>
+<p>1.把left,right表解析出来即join.left,join.right. 以及leftFitlers,rightFilters.<br>2.根据leftFilters和left, rightFilters和right创建新的leftRel,rightRel节点<br>3.创建新的join节点,并且引用新的孩子节点(即上面的leftRel,rightRel)<br>4.调用call的transformTo,参数是最新的join节点.   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">  // create FilterRels on top of the children if any filters were pushed to them</span><br><span class="line">  final RexBuilder rexBuilder = join.getCluster().getRexBuilder();</span><br><span class="line">  RelNode leftRel = RelOptUtil.createFilter(join.getLeft(), leftFilters, filterFactory);</span><br><span class="line">  RelNode rightRel = RelOptUtil.createFilter(join.getRight(), rightFilters, filterFactory);</span><br><span class="line"></span><br><span class="line">  // create the new join node referencing the new children and containing its new join filters (if there are any)</span><br><span class="line">  final RexNode joinFilter = RexUtil.composeConjunction(rexBuilder, joinFilters, false);</span><br><span class="line"></span><br><span class="line">  RelNode newJoinRel = join.copy(join.getTraitSet(), joinFilter, leftRel, rightRel, joinType, join.isSemiJoinDone());</span><br><span class="line">  call.getPlanner().onCopy(join, newJoinRel);</span><br><span class="line">  if (!leftFilters.isEmpty()) &#123;</span><br><span class="line">    call.getPlanner().onCopy(filter, leftRel);</span><br><span class="line">  &#125;</span><br><span class="line">  if (!rightFilters.isEmpty()) &#123;</span><br><span class="line">    call.getPlanner().onCopy(filter, rightRel);</span><br><span class="line">  &#125;        </span><br><span class="line"></span><br><span class="line">  // create a FilterRel on top of the join if needed</span><br><span class="line">  RelNode newRel = RelOptUtil.createFilter(newJoinRel,</span><br><span class="line">          RexUtil.fixUp(rexBuilder, aboveFilters, newJoinRel.getRowType()),</span><br><span class="line">          filterFactory);</span><br><span class="line"></span><br><span class="line">  call.transformTo(newRel);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面我们实现了自定义规则的onMatch方法, 那么谁来调用它呢:   </p>
+<p>RelOptPlanner实现类VolcanoPlanner.fireRules-&gt;RelOptRule的实现类VolcanoRuleCall.match-&gt;matchRecurse-&gt;onMatch-&gt;getRule().onMatch(this);  </p>
+<blockquote>
+<p>Volcano的意思是火山似的,猛烈的. 由此说明规则很多的话, match调用会是很凶猛的. </p>
+</blockquote>
+<h2 id="Drill_FilterJoin_Example">Drill FilterJoin Example</h2><p>执行下面的SQL语句, 第一次不加where,第二次添加where过滤条件, 第三次where是字段比较</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">select * FROM dfs.`/home/hadoop/soft/apache-drill-1.0.0/sample-data/nation.parquet` nations</span><br><span class="line">join dfs.`/home/hadoop/soft/apache-drill-1.0.0/sample-data/region.parquet` regions</span><br><span class="line">on nations.N_REGIONKEY = regions.R_REGIONKEY</span><br><span class="line"></span><br><span class="line">select * FROM dfs.`/home/hadoop/soft/apache-drill-1.0.0/sample-data/nation.parquet` nations</span><br><span class="line">join dfs.`/home/hadoop/soft/apache-drill-1.0.0/sample-data/region.parquet` regions</span><br><span class="line">on nations.N_REGIONKEY = regions.R_REGIONKEY</span><br><span class="line">where nations.N_NATIONKEY&gt;10 and regions.R_NAME=&apos;AMERICA&apos;</span><br><span class="line"></span><br><span class="line">select * FROM dfs.`/home/hadoop/soft/apache-drill-1.0.0/sample-data/nation.parquet` nations</span><br><span class="line">join dfs.`/home/hadoop/soft/apache-drill-1.0.0/sample-data/region.parquet` regions</span><br><span class="line">on nations.N_REGIONKEY = regions.R_REGIONKEY</span><br><span class="line">where nations.N_NAME&lt;regions.R_NAME</span><br></pre></td></tr></table></figure>
+<p>下面是对应物理计划可视化图, 图1在Scan和JOIN之间有Project:  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill18.png" alt>   </p>
+<p>图2虽然where过滤在join之后, 但是经过优化后, 会先于join执行的: 即filter之后才进行join  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill19.png" alt>   </p>
+<p>图3就没这么幸运了,要在join之后才能filter.</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill20.png" alt>   </p>
+<hr>
+<h2 id="DrillRel(Drill逻辑操作符)">DrillRel(Drill逻辑操作符)</h2><p>getPlan的参数SqlNode在前面通过Calcite的解析, 结果是一颗SQL parse tree(不要以为Node就只有一个节点),<br>但它还只是Calcite认识的SQL操作符, 我们要将它转换为Drill能够认识的逻辑操作符即DrillRel.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">public PhysicalPlan getPlan(SqlNode sqlNode) throws ValidationException, RelConversionException, IOException, ForemanSetupException &#123;</span><br><span class="line">  SqlNode rewrittenSqlNode = rewrite(sqlNode);</span><br><span class="line">  TypedSqlNode validatedTypedSqlNode = validateNode(rewrittenSqlNode);</span><br><span class="line">  SqlNode validated = validatedTypedSqlNode.getSqlNode();</span><br><span class="line">  RelDataType validatedRowType = validatedTypedSqlNode.getType();</span><br><span class="line">  RelNode rel = convertToRel(validated);</span><br><span class="line">  rel = preprocessNode(rel);</span><br><span class="line">  log(&quot;Optiq Logical&quot;, rel);</span><br><span class="line"></span><br><span class="line">  DrillRel drel = convertToDrel(rel, validatedRowType);</span><br><span class="line">  log(&quot;Drill Logical&quot;, drel);</span><br><span class="line"></span><br><span class="line">  Prel prel = convertToPrel(drel);</span><br><span class="line">  log(&quot;Drill Physical&quot;, prel);</span><br><span class="line"></span><br><span class="line">  PhysicalOperator pop = convertToPop(prel);</span><br><span class="line">  PhysicalPlan plan = convertToPlan(pop);</span><br><span class="line">  log(&quot;Drill Plan&quot;, plan);</span><br><span class="line">  return plan;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>Relational Expression(Rel)</strong></p>
+<p>在查询过程中也说了: <code>执行计划总是包含一个Screen Operator,用来阻塞并且等待返回的数据. 返回的DrillRel就是逻辑计划.</code><br>SqlNode,RelNode是Calcite的节点, DrillRel是Drill的关系表达式节点,在最外层包装了一个Screen用于屏幕输出.    </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">protected DrillRel convertToDrel(RelNode relNode, RelDataType validatedRowType) &#123;</span><br><span class="line">      // Put a non-trivial topProject to ensure the final output field name is preserved, when necessary.</span><br><span class="line">      DrillRel topPreservedNameProj = addRenamedProject((DrillRel) convertedRelNode, validatedRowType);</span><br><span class="line">      return new DrillScreenRel(topPreservedNameProj.getCluster(), topPreservedNameProj.getTraitSet(), topPreservedNameProj);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>Screen Node和其他一些DrillRel的构造函数, 其中input指定了Screen的输入,表示用Screen节点包装上原先的节点, 使其成为一个新的节点.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public class DrillScreenRel extends DrillScreenRelBase implements DrillRel &#123;</span><br><span class="line">  public DrillScreenRel(RelOptCluster cluster, RelTraitSet traitSet, RelNode input) &#123;</span><br><span class="line">    super(DRILL_LOGICAL, cluster, traitSet, input);</span><br><span class="line">  &#125;</span><br><span class="line">  public LogicalOperator implement(DrillImplementor implementor) &#123;</span><br><span class="line">    LogicalOperator childOp = implementor.visitChild(this, 0, getInput());</span><br><span class="line">    return Store.builder().setInput(childOp).storageEngine(&quot;--SCREEN--&quot;).build();</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>类继承关系: DrillScreenRel &gt;&gt; DrillRel &gt;&gt; DrillRelNode &gt;&gt; RelNode<br>其中DrillRel是逻辑计划的关系表达式. 子类要实现implement方法, 返回逻辑操作符.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// Relational expression that is implemented in Drill.</span><br><span class="line">public interface DrillRel extends DrillRelNode &#123;</span><br><span class="line">  // Calling convention for relational expressions that are &quot;implemented&quot; by generating Drill logical plans</span><br><span class="line">  public static final Convention DRILL_LOGICAL = new Convention.Impl(&quot;LOGICAL&quot;, DrillRel.class);</span><br><span class="line"></span><br><span class="line">  LogicalOperator implement(DrillImplementor implementor);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill13-2.png" alt>  <img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill13-1.png" alt></p>
+<h2 id="DrillRel_Nodes_Tree_→_Drill_LogicalPlan">DrillRel Nodes Tree → Drill LogicalPlan</h2><p>DrillImplementor: <code>Context for converting a tree of DrillRel nodes into a Drill logical plan</code>  </p>
+<h2 id="物理计划Prel">物理计划Prel</h2><p>然后将逻辑计划转换为物理计划, 将DrillRel转换为Prel. 最后才是Drill的Plan. 注意Drill的物理计划和最终的Plan是有点差别的.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">protected Prel convertToPrel(RelNode drel) &#123;</span><br><span class="line">  Prel phyRelNode = (Prel) planner.transform(DrillSqlWorker.PHYSICAL_MEM_RULES, traits, drel);</span><br><span class="line"></span><br><span class="line">  /*  The order of the following transformation is important */</span><br><span class="line"></span><br><span class="line">  /*</span><br><span class="line">   * 0.) For select * from join query, we need insert project on top of scan and a top project just</span><br><span class="line">   * under screen operator. The project on top of scan will rename from * to T1*, while the top project</span><br><span class="line">   * will rename T1* to *, before it output the final result. Only the top project will allow</span><br><span class="line">   * duplicate columns, since user could &quot;explicitly&quot; ask for duplicate columns ( select *, col, *).</span><br><span class="line">   * The rest of projects will remove the duplicate column when we generate POP in json format.</span><br><span class="line">   */</span><br><span class="line">  phyRelNode = StarColumnConverter.insertRenameProject(phyRelNode);  //* is star, and this column should convert</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>转换的过程比较复杂, 而且转换的顺序也很重要. 先看第一个, 在select * from join这种情况下, 要插入两个Project.<br>一个是scan(bottom)之上, 一个是screen(top)之下. 比如下面的SQL语句:    </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">select * from dfs.`/usr/install/apache-drill-1.1.0/sample-data/nation.parquet` nations</span><br><span class="line">join dfs.`/usr/install/apache-drill-1.1.0/sample-data/region.parquet` regions</span><br><span class="line">on nations.N_REGIONKEY = regions.R_REGIONKEY;</span><br><span class="line">+--------------+-----------------+--------------+-----------------------+--------------+--------------+-----------------------+</span><br><span class="line">| N_NATIONKEY  |     N_NAME      | N_REGIONKEY  |       N_COMMENT       | R_REGIONKEY  |    R_NAME    |       R_COMMENT       |</span><br><span class="line">+--------------+-----------------+--------------+-----------------------+--------------+--------------+-----------------------+</span><br><span class="line">| 0            | ALGERIA         | 0            |  haggle. carefully f  | 0            | AFRICA       | lar deposits. blithe  |</span><br><span class="line">| 1            | ARGENTINA       | 1            | al foxes promise sly  | 1            | AMERICA      | hs use ironic, even   |</span><br></pre></td></tr></table></figure>
+<p>物理计划: </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">00-00    Screen : rowType = RecordType(ANY *, ANY *0): rowcount = 25.0, cumulative cost = &#123;62.5 rows, 402.5 cpu, 0.0 io, 0.0 network, 88.0 memory&#125;, id = 2432</span><br><span class="line">00-01   ⑤ ProjectAllowDup(*=[$0], *0=[$1]) : rowType = RecordType(ANY *, ANY *0): rowcount = 25.0, cumulative cost = &#123;60.0 rows, 400.0 cpu, 0.0 io, 0.0 network, 88.0 memory&#125;, id = 2431</span><br><span class="line">00-02   ④   Project(T0¦¦*=[$0], T1¦¦*=[$2]) : rowType = RecordType(ANY T0¦¦*, ANY T1¦¦*): rowcount = 25.0, cumulative cost = &#123;60.0 rows, 400.0 cpu, 0.0 io, 0.0 network, 88.0 memory&#125;, id = 2430</span><br><span class="line">00-03   ③     HashJoin(condition=[=($1, $3)], joinType=[inner]) : rowType = RecordType(ANY T0¦¦*, ANY N_REGIONKEY, ANY T1¦¦*, ANY R_REGIONKEY): rowcount = 25.0, cumulative cost = &#123;60.0 rows, 400.0 cpu, 0.0 io, 0.0 network, 88.0 memory&#125;, id = 2429</span><br><span class="line">00-05   ①       Project(T0¦¦*=[$0], N_REGIONKEY=[$1]) : rowType = RecordType(ANY T0¦¦*, ANY N_REGIONKEY): rowcount = 25.0, cumulative cost = &#123;25.0 rows, 50.0 cpu, 0.0 io, 0.0 network, 0.0 memory&#125;, id = 2426</span><br><span class="line">00-07              Scan(groupscan=[ParquetGroupScan [entries=[ReadEntryWithPath [path=file:/usr/install/apache-drill-1.1.0/sample-data/nation.parquet]], selectionRoot=file:/usr/install/apache-drill-1.1.0/sample-data/nation.parquet, numFiles=1, columns=[`*`]]]) : rowType = (DrillRecordRow[*, N_REGIONKEY]): rowcount = 25.0, cumulative cost = &#123;25.0 rows, 50.0 cpu, 0.0 io, 0.0 network, 0.0 memory&#125;, id = 2425</span><br><span class="line">00-04   ②       Project(T1¦¦*=[$0], R_REGIONKEY=[$1]) : rowType = RecordType(ANY T1¦¦*, ANY R_REGIONKEY): rowcount = 5.0, cumulative cost = &#123;5.0 rows, 10.0 cpu, 0.0 io, 0.0 network, 0.0 memory&#125;, id = 2428</span><br><span class="line">00-06              Scan(groupscan=[ParquetGroupScan [entries=[ReadEntryWithPath [path=file:/usr/install/apache-drill-1.1.0/sample-data/region.parquet]], selectionRoot=file:/usr/install/apache-drill-1.1.0/sample-data/region.parquet, numFiles=1, columns=[`*`]]]) : rowType = (DrillRecordRow[*, R_REGIONKEY]): rowcount = 5.0, cumulative cost = &#123;5.0 rows, 10.0 cpu, 0.0 io, 0.0 network, 0.0 memory&#125;, id = 2427</span><br></pre></td></tr></table></figure>
+<p>对应的可视化图:  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill14.png" alt></p>
+<p>物理计划中的$0, $1…这些数字代表的是as后的变量,如果是join有可能列名相同,所以也要添加project重命名防止名称冲突:    </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">① select T0.* as $0, T0.N_REGIONKEY as $1 from nations T0 </span><br><span class="line">② select T1.* as $0, T1.R_REGIONKEY as $1 from regions T1</span><br><span class="line">③ select T0.$0 as $0, T0.$1 as $1, T1.$0 as $2, T1.$1 as $3 </span><br><span class="line">   from (select T0.$0 as $0, T0.$1 as $1 from nations) T0</span><br><span class="line">   join (select T1.$0 as $2, T1.$1 as $3 from regions) T1</span><br><span class="line">   on T0.$1 = T1.$3 </span><br><span class="line">④ select $0 as $0,$2 as $1 from ( </span><br><span class="line">     select T0.$0 as $0, T0.$1 as $1, T1.$0 as $2, T1.$1 as $3 </span><br><span class="line">     from (select T0.$0 as $0, T0.$1 as $1 from nations) T0</span><br><span class="line">     join (select T1.$0 as $2, T1.$1 as $3 from regions) T1</span><br><span class="line">     on T0.$1 = T1.$3</span><br><span class="line">   )</span><br><span class="line">⑤ select $0 as *, $1 as *0 from(  </span><br><span class="line">     select $0 as $0,$2 as $1 from ( </span><br><span class="line">       select T0.$0 as $0, T0.$1 as $1, T1.$0 as $2, T1.$1 as $3 </span><br><span class="line">       from (select T0.$0 as $0, T0.$1 as $1 from nations) T0</span><br><span class="line">       join (select T1.$0 as $2, T1.$1 as $3 from regions) T1</span><br><span class="line">       on T0.$1 = T1.$3</span><br><span class="line">     )</span><br><span class="line">   )</span><br><span class="line">   select *,*0 from ...</span><br></pre></td></tr></table></figure>
+<p>上面的StarColumn规则有点复杂, 我们看下Join列冲突的规则. 对应上面的③JOIN. 将所有的列都重命名了($0,$1,$2,$3, 然后以$1,$3进行join).  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> * 1.)</span><br><span class="line"> * Join might cause naming conflicts from its left and right child.</span><br><span class="line"> * In such case, we have to insert Project to rename the conflicting names.</span><br><span class="line"> */</span><br><span class="line">phyRelNode = JoinPrelRenameVisitor.insertRenameProject(phyRelNode);</span><br></pre></td></tr></table></figure>
+<p>根据注释中说的join有left或者right child. 注意child这个词的含义. join作为根, 而left和right表分别是根的左右子节点.    </p>
+<blockquote>
+<p>为了防止名称冲突, 添加project, 这样就和上面我们看到的可视化Plan图是一一对应的了.<br>那么思考下: 这里的join插入的Project是在①和②,还是④??<br>我觉得是在④这里, 因为①和②已经在上面第一个转换规则StarColumnConverter中运用过了.  </p>
+</blockquote>
+<p>insert操作让传入的phyRelNode节点调用它的accept方法, 并接收JoinPrelRenameVisitor实例对象.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public class JoinPrelRenameVisitor extends BasePrelVisitor&lt;Prel, Void, RuntimeException&gt;&#123;</span><br><span class="line">  private static JoinPrelRenameVisitor INSTANCE = new JoinPrelRenameVisitor();</span><br><span class="line"></span><br><span class="line">  public static Prel insertRenameProject(Prel prel)&#123;</span><br><span class="line">    return prel.accept(INSTANCE, null);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>这里的Prel通过层层的规则嵌套, 最终返回的还是一个Prel, 也就是说,每次运用一个规则,都要把当前最新值传进来. Prel也实现了DrillRelNode接口.<br>DrillRelNode再结合上Visitor, 有种层层嵌套的感觉.首先注册操作符的规则,从而构成一张图,最后根据DAG图访问每个操作符的时候,再运用上规则. </p>
+<p>假设上面JoinPrelRenameVisitor的insertRenameProject的Prel是JoinPrel</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill15.png" alt></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public abstract class JoinPrel extends DrillJoinRelBase implements Prel&#123;</span><br><span class="line">  public &lt;T, X, E extends Throwable&gt; T accept(PrelVisitor&lt;T, X, E&gt; logicalVisitor, X value) throws E &#123;</span><br><span class="line">    return logicalVisitor.visitJoin(this, value);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public Iterator&lt;Prel&gt; iterator() &#123;</span><br><span class="line">    return PrelUtil.iter(getLeft(), getRight());</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>accept()的参数logicalVisitor显然就是JoinPrelRenameVisitor了. this是当前对象即JoinPrel.<br>那么就要调用JoinPrelRenameVisitor的visitJoin方法. 你看又回到Visitor来了.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">public class JoinPrelRenameVisitor extends BasePrelVisitor&lt;Prel, Void, RuntimeException&gt;&#123;</span><br><span class="line"></span><br><span class="line">  public Prel visitJoin(JoinPrel prel, Void value) throws RuntimeException &#123;</span><br><span class="line">    List&lt;RelNode&gt; children = Lists.newArrayList();</span><br><span class="line">    for(Prel child : prel)&#123;</span><br><span class="line">      child = child.accept(this, null);</span><br><span class="line">      children.add(child);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    final int leftCount = children.get(0).getRowType().getFieldCount();</span><br><span class="line">    List&lt;RelNode&gt; reNamedChildren = Lists.newArrayList();</span><br><span class="line"></span><br><span class="line">    RelNode left = prel.getJoinInput(0, children.get(0));</span><br><span class="line">    RelNode right = prel.getJoinInput(leftCount, children.get(1));</span><br><span class="line">    reNamedChildren.add(left);</span><br><span class="line">    reNamedChildren.add(right);</span><br><span class="line">    return (Prel) prel.copy(prel.getTraitSet(), reNamedChildren);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>JoinPrel是个迭代器, 因此用for-loop方式可以遍历它的节点: 即参与join的left和right表(实现了iterator方法).<br>JoinPrel的getJoinInput方法参数是offset和RelNode. offset表示join之后列的索引(两张表join后的所有列). </p>
+<p>假设我们用两张一样的表进行join,可以看到相同的列, 右边的表会被重命名:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">select * from dfs.`/usr/install/apache-drill-1.1.0/sample-data/region.parquet` region1</span><br><span class="line">join dfs.`/usr/install/apache-drill-1.1.0/sample-data/region.parquet` regions</span><br><span class="line">on region1.R_REGIONKEY = regions.R_REGIONKEY;</span><br><span class="line">+--------------+--------------+-----------------------+---------------+--------------+-----------------------+</span><br><span class="line">| R_REGIONKEY  |    R_NAME    |       R_COMMENT       | R_REGIONKEY0  |   R_NAME0    |      R_COMMENT0       |</span><br><span class="line">+--------------+--------------+-----------------------+---------------+--------------+-----------------------+</span><br><span class="line">| 0            | AFRICA       | lar deposits. blithe  | 0             | AFRICA       | lar deposits. blithe  |</span><br></pre></td></tr></table></figure>
+<p>分别调用两次getJoinInput,传入不同的offset和input, 这两个结果一定是不同的.   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// Check to make sure that the fields of the inputs are the same as the output field names.  If not, insert a project renaming them.</span><br><span class="line">public RelNode getJoinInput(int offset, RelNode input) &#123;</span><br><span class="line">  final List&lt;String&gt; fields = getRowType().getFieldNames();</span><br><span class="line">  final List&lt;String&gt; inputFields = input.getRowType().getFieldNames();</span><br><span class="line">  final List&lt;String&gt; outputFields = fields.subList(offset, offset + inputFields.size());</span><br><span class="line">  if (!outputFields.equals(inputFields)) &#123;</span><br><span class="line">    // Ensure that input field names are the same as output field names.</span><br><span class="line">    // If there are duplicate field names on left and right, fields will get lost.</span><br><span class="line">    // In such case, we need insert a rename Project on top of the input.</span><br><span class="line">    return rename(input, input.getRowType().getFieldList(), outputFields);</span><br><span class="line">  &#125; else &#123;</span><br><span class="line">    return input;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>上面的处理不知道什么情况下会进入if部分.  假设有两张表都是A,B,C三列.<br>left表不可能有重复的列名, right表相对于left而言,三个列都是重复的. 调用getJoinInput(3, rightNode){}<br>inputFields=[A,B,C], fields=[A,B,C,A,B,C]. outputFields=[A,B,C],不是相等的吗??</p>
+</blockquote>
+<p>看下相同表的join的可视化树, 对比一下就知道了, 在00-04中加了Project:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">00-00    Screen : rowType = RecordType(ANY *, ANY *0): rowcount = 5.0, cumulative cost = &#123;20.5 rows, 120.5 cpu, 0.0 io, 0.0 network, 88.0 memory&#125;, id = 1299</span><br><span class="line">00-01      ProjectAllowDup(*=[$0], *0=[$1]) : rowType = RecordType(ANY *, ANY *0): rowcount = 5.0, cumulative cost = &#123;20.0 rows, 120.0 cpu, 0.0 io, 0.0 network, 88.0 memory&#125;, id = 1298</span><br><span class="line">00-02        Project(T0¦¦*=[$0], T1¦¦*=[$2]) : rowType = RecordType(ANY T0¦¦*, ANY T1¦¦*): rowcount = 5.0, cumulative cost = &#123;20.0 rows, 120.0 cpu, 0.0 io, 0.0 network, 88.0 memory&#125;, id = 1297</span><br><span class="line">00-03          HashJoin(condition=[=($1, $3)], joinType=[inner]) : rowType = RecordType(ANY T0¦¦*, ANY R_REGIONKEY, ANY T1¦¦*, ANY R_REGIONKEY0): rowcount = 5.0, cumulative cost = &#123;20.0 rows, 120.0 cpu, 0.0 io, 0.0 network, 88.0 memory&#125;, id = 1296</span><br><span class="line">00-04            Project(T1¦¦*=[$0], R_REGIONKEY0=[$1]) : rowType = RecordType(ANY T1¦¦*, ANY R_REGIONKEY0): rowcount = 5.0, cumulative cost = &#123;5.0 rows, 10.0 cpu, 0.0 io, 0.0 network, 0.0 memory&#125;, id = 1295</span><br><span class="line">00-06              Project(T1¦¦*=[$0], R_REGIONKEY=[$1]) : rowType = RecordType(ANY T1¦¦*, ANY R_REGIONKEY): rowcount = 5.0, cumulative cost = &#123;5.0 rows, 10.0 cpu, 0.0 io, 0.0 network, 0.0 memory&#125;, id = 1294</span><br><span class="line">00-08                Scan(groupscan=[ParquetGroupScan [entries=[ReadEntryWithPath [path=file:/usr/install/apache-drill-1.1.0/sample-data/region.parquet]], selectionRoot=file:/usr/install/apache-drill-1.1.0/sample-data/region.parquet, numFiles=1, columns=[`*`]]]) : rowType = (DrillRecordRow[*, R_REGIONKEY]): rowcount = 5.0, cumulative cost = &#123;5.0 rows, 10.0 cpu, 0.0 io, 0.0 network, 0.0 memory&#125;, id = 1293</span><br><span class="line">00-05            Project(T0¦¦*=[$0], R_REGIONKEY=[$1]) : rowType = RecordType(ANY T0¦¦*, ANY R_REGIONKEY): rowcount = 5.0, cumulative cost = &#123;5.0 rows, 10.0 cpu, 0.0 io, 0.0 network, 0.0 memory&#125;, id = 1292</span><br><span class="line">00-07              Scan(groupscan=[ParquetGroupScan [entries=[ReadEntryWithPath [path=file:/usr/install/apache-drill-1.1.0/sample-data/region.parquet]], selectionRoot=file:/usr/install/apache-drill-1.1.0/sample-data/region.parquet, numFiles=1, columns=[`*`]]]) : rowType = (DrillRecordRow[*, R_REGIONKEY]): rowcount = 5.0, cumulative cost = &#123;5.0 rows, 10.0 cpu, 0.0 io, 0.0 network, 0.0 memory&#125;, id = 1291</span><br></pre></td></tr></table></figure>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill16.png" alt></p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/07/13/2015-07-13-drill-phyplan/">Apache Drill源码阅读(3) 物理计划</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年07月13日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/07/13/2015-07-13-drill-phyplan/" title="Apache Drill源码阅读(3) 物理计划">http://github.com/zqhxuyuan/2015/07/13/2015-07-13-drill-phyplan/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/07/13/2015-07-13-drill-phyplan/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/07/14/2015-07-14-drill-logical/">
+        Apache Drill源码阅读(4) 逻辑计划
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/07/12/2015-07-12-drill-rpc/">
+        Apache Drill源码阅读(2) 分析一次查询过程以及RPC
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#工人和监工的那些事"><span class="toc-number">1.</span> <span class="toc-text">工人和监工的那些事</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SQL_Parser"><span class="toc-number">2.</span> <span class="toc-text">SQL Parser</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SqlNode(Calcite_SQL操作符)"><span class="toc-number">3.</span> <span class="toc-text">SqlNode(Calcite SQL操作符)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#What’s_Rule?"><span class="toc-number">3.1.</span> <span class="toc-text">What’s Rule?</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Calcite_FilterJoinRule"><span class="toc-number">3.2.</span> <span class="toc-text">Calcite FilterJoinRule</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Drill_FilterJoin_Example"><span class="toc-number">4.</span> <span class="toc-text">Drill FilterJoin Example</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DrillRel(Drill逻辑操作符)"><span class="toc-number">5.</span> <span class="toc-text">DrillRel(Drill逻辑操作符)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DrillRel_Nodes_Tree_→_Drill_LogicalPlan"><span class="toc-number">6.</span> <span class="toc-text">DrillRel Nodes Tree → Drill LogicalPlan</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#物理计划Prel"><span class="toc-number">7.</span> <span class="toc-text">物理计划Prel</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/07/13/2015-07-13-drill-phyplan/" data-title="Apache Drill源码阅读(3) 物理计划" data-url="http://github.com/zqhxuyuan/2015/07/13/2015-07-13-drill-phyplan/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/07/14/2015-07-14-drill-logical/" title="上一篇: Apache Drill源码阅读(4) 逻辑计划">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/07/12/2015-07-12-drill-rpc/" title="下一篇: Apache Drill源码阅读(2) 分析一次查询过程以及RPC">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

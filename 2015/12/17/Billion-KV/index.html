@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>千亿KV数据存储和查询方案 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="千亿数据,一次性批量大数据量存储,查询时间要求不是很严格,10万条一天内也可以接受.">
+<meta name="keywords" content="work">
+<meta property="og:type" content="article">
+<meta property="og:title" content="千亿KV数据存储和查询方案">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/12/17/Billion-KV/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="千亿数据,一次性批量大数据量存储,查询时间要求不是很严格,10万条一天内也可以接受.">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151217161207153">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.262Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="千亿KV数据存储和查询方案">
+<meta name="twitter:description" content="千亿数据,一次性批量大数据量存储,查询时间要求不是很严格,10万条一天内也可以接受.">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151217161207153">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Billion-KV" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/12/17/Billion-KV/" class="article-date">
+  	<time datetime="2015-12-16T16:00:00.000Z" itemprop="datePublished">2015-12-17</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      千亿KV数据存储和查询方案
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/work/">work</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/work/">work</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>千亿数据,一次性批量大数据量存储,查询时间要求不是很严格,10万条一天内也可以接受.<br><a id="more"></a></p>
+<h2 id="背景">背景</h2><p>md5是不可解密的. 通常网站<a href="http://www.cmd5.com/" target="_blank" rel="noopener">http://www.cmd5.com/</a>宣称的解密都是有一个MD5到值的映射数据库(彩虹表).<br>做法是提前将数据用MD5加密,然后保存成MD5到原数据的映射关系,解密时只要查询MD5对应的值就可以了.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151217161207153" alt="cmd5"></p>
+<p>业务数据将近1000亿,估算下来大概占用6T. 由于MD5的数据是32位,而且每一位都属于0-f.<br>如果直接查询生成的6T数据,速度估计很慢. 于是想到分区, 比如以32位MD5的前几位相同的作为一个分区,<br>查询时首先将MD5路由到指定的分区, 再查询这个分区的所有数据,这样每个分区的数据量就会少很多.  </p>
+<p>原始文件data.txt(最后两个字段表示MD5的前四位):  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">111111111111111,001e5a2b1c68d7b7dddddddddddddddc,00,1e</span><br><span class="line">222222222222222,01271cc012464ae8ccccccccccccccce,01,27</span><br></pre></td></tr></table></figure>
+<h2 id="Hive分区(×)">Hive分区(×)</h2><p>临时表和分区表:  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">EXTERNAL</span> <span class="keyword">TABLE</span> <span class="string">`mob_mdf_tmp`</span>(</span><br><span class="line">  <span class="string">`mob`</span> <span class="keyword">string</span>,</span><br><span class="line">  <span class="string">`mdf`</span> <span class="keyword">string</span>,</span><br><span class="line">  <span class="string">`mdf_1`</span> <span class="keyword">string</span>,</span><br><span class="line">  <span class="string">`mdf_2`</span> <span class="keyword">string</span></span><br><span class="line">  )</span><br><span class="line"><span class="keyword">ROW</span> <span class="keyword">FORMAT</span> <span class="keyword">delimited</span> <span class="keyword">fields</span> <span class="keyword">terminated</span> <span class="keyword">by</span> <span class="string">','</span></span><br><span class="line">LOCATION <span class="string">'hdfs://tdhdfs/user/tongdun/mob_mdf_tmp'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">EXTERNAL</span> <span class="keyword">TABLE</span> <span class="string">`mob_mdf`</span>(</span><br><span class="line">  <span class="string">`mob`</span> <span class="keyword">string</span>,</span><br><span class="line">  <span class="string">`mdf`</span> <span class="keyword">string</span></span><br><span class="line">  )</span><br><span class="line">PARTITIONED <span class="keyword">BY</span> (</span><br><span class="line">  mdf_1 <span class="keyword">string</span>,</span><br><span class="line">  mdf_2 <span class="keyword">string</span>)</span><br><span class="line"><span class="keyword">stored</span> <span class="keyword">as</span> parquet</span><br><span class="line">LOCATION <span class="string">'hdfs://tdhdfs/user/tongdun/mob_mdf'</span>;</span><br></pre></td></tr></table></figure>
+<p>将原始文件导入到临时表(或者用hive的load命令),然后读取临时表,加载数据到分区表 </p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line">file=<span class="variable">$1</span></span><br><span class="line">/usr/install/hadoop/bin/hadoop fs -put <span class="variable">$file</span> /user/tongdun/mod_mdf_tmp</span><br><span class="line"><span class="comment">#LOAD DATA LOCAL INPATH 'id.txt' INTO TABLE id_mdf PARTITION(mdf_1='ab',mdf_2='cd');</span></span><br><span class="line"><span class="comment">#LOAD DATA LOCAL INPATH 'id.txt' INTO TABLE id_mdf_tmp;</span></span><br><span class="line"></span><br><span class="line">/usr/install/apache-hive/bin/hive -e <span class="string">"</span></span><br><span class="line"><span class="string">set hive.exec.dynamic.partition=true; </span></span><br><span class="line"><span class="string">set hive.exec.dynamic.partition.mode=nonstrict; </span></span><br><span class="line"><span class="string">SET hive.exec.max.dynamic.partitions=100000;</span></span><br><span class="line"><span class="string">SET hive.exec.max.dynamic.partitions.pernode=100000;</span></span><br><span class="line"><span class="string">set mapreduce.map.memory.mb=5120;</span></span><br><span class="line"><span class="string">set mapreduce.reduce.memory.mb=5120;</span></span><br><span class="line"><span class="string">INSERT into TABLE mod_mdf PARTITION (mdf_1,mdf_2) SELECT mod,mdf,mdf_1,mdf_2 FROM mod_mdf_tmp;</span></span><br><span class="line"><span class="string">msck repair table mod_mdf;</span></span><br><span class="line"><span class="string">"</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>问题:将原始文件导入到HDFS是很快的,基本分分钟搞定.但是转换成分区的Hive表,速度起慢无比. %&gt;_&lt;%_</p>
+</blockquote>
+<h2 id="AWK脚本处理分区">AWK脚本处理分区</h2><p><strong>A.原始文件首先拆分成一级文件,再拆分成二级文件(×)</strong></p>
+<p>一级拆分:  <code>awk -F, &#39;{print &gt;&gt; $3}&#39; data.txt</code></p>
+<p>上面的awk命令会按照第三列即MD5的前两个字符分组生成不同的文件. 比如生成00,01文件.<br>然后进行二级拆分: 遍历所有的一级文件, 生成二级文件. 比如001e.txt, 0127.txt.  </p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">nums=(<span class="string">'0'</span> <span class="string">'1'</span> <span class="string">'2'</span> <span class="string">'3'</span> <span class="string">'4'</span> <span class="string">'5'</span> <span class="string">'6'</span> <span class="string">'7'</span> <span class="string">'8'</span> <span class="string">'9'</span> <span class="string">'a'</span> <span class="string">'b'</span> <span class="string">'c'</span> <span class="string">'d'</span> <span class="string">'e'</span> <span class="string">'f'</span>)</span><br><span class="line"><span class="keyword">for</span> n1 <span class="keyword">in</span> <span class="variable">$&#123;nums[@]&#125;</span>;</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">  <span class="keyword">for</span> n2 <span class="keyword">in</span> <span class="variable">$&#123;nums[@]&#125;</span>;</span><br><span class="line">  <span class="keyword">do</span></span><br><span class="line">    var=<span class="variable">$n1</span><span class="variable">$n2</span></span><br><span class="line">    awk -F, <span class="string">'&#123;OFS=",";print $1,$2 &gt;&gt; $3_$4".txt"&#125;'</span> <span class="variable">$var</span></span><br><span class="line">  <span class="keyword">done</span></span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">"end."</span></span><br></pre></td></tr></table></figure>
+<p>缺点: 每个数据文件都必须在自己的范围内生成一级文件, 然后在自己的一级文件基础上生成二级文件.<br>最后所有的二级文件要合并为一个文件. 比较麻烦, %&gt;_&lt;%_ </p>
+<p><strong>B.原始文件直接生成两级拆分文件</strong></p>
+<p>直接拆分成两级的:  <code>awk -F, &#39;{OFS=&quot;,&quot;;print $1,$2 &gt;&gt; $3_$4&quot;.txt&quot;}&#39; data.txt</code><br>优点: 由于有多个原始数据文件, 执行同样的awk命令, 生成最终结果不需要任何处理.<br>问题: 大文件分组,速度比较慢,而且不像上面的分成两次,0000.txt文件并不会立刻有数据生成.<br>同样还有一个问题: 如果多个文件一起追加<code>&gt;&gt;</code>数据, 会产生冲突,即写到同一行.  </p>
+<p><strong>C.切分原始大文件(×)</strong></p>
+<p>对原始大文件(20G~100G)先split: <code>split -C 2014m $file</code>,再进行上面的二级拆分过程.<br>结果: 27G切分成2G一个文件, 耗时538s. 估算6T数据需要500h~20D. %&gt;_&lt;%_</p>
+<h2 id="paldb@linkedin(×)">paldb@linkedin(×)</h2><p>linkedin开源的<a href="https://github.com/linkedin/PalDB">paldb</a>声称对于写一次的kv存储读取性能很好. 但是一个严重的问题是不支持在已有的db文件中新增数据.  </p>
+<blockquote>
+<p>Can you open a store for writing subsequent times?<br>No, the final binary file is created when StoreWriter.close() is called.</p>
+</blockquote>
+<p>所以要读取所有的原始文件后,不能一个一个文件地处理. 这期间StoreWriter要一直打开,下面是索引文件的代码:    </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//直接读取所有原始文件, 生成paldb</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">indexRawFile</span><span class="params">(String[] files)</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    List&lt;String&gt; prefix = generateFile();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//提前准备好Writer</span></span><br><span class="line">    Map&lt;String,StoreWriter&gt; maps = <span class="keyword">new</span> HashMap();</span><br><span class="line">    <span class="keyword">for</span>(String pref : prefix)&#123;</span><br><span class="line">        StoreWriter writer = PalDB.createWriter(<span class="keyword">new</span> File(folder + pref + <span class="string">".paldb"</span>));</span><br><span class="line">        maps.put(pref, writer);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(String filepath : files)&#123;</span><br><span class="line">        File file = <span class="keyword">new</span> File(folder + filepath);</span><br><span class="line">        BufferedInputStream fis = <span class="keyword">new</span> BufferedInputStream(<span class="keyword">new</span> FileInputStream(file));</span><br><span class="line">        BufferedReader reader = <span class="keyword">new</span> BufferedReader(<span class="keyword">new</span> InputStreamReader(fis,<span class="string">"utf-8"</span>),<span class="number">5</span>*<span class="number">1024</span>*<span class="number">1024</span>);<span class="comment">// 用5M的缓冲读取文本文件</span></span><br><span class="line"></span><br><span class="line">        String line = <span class="string">""</span>;</span><br><span class="line">        <span class="keyword">while</span>((line = reader.readLine()) != <span class="keyword">null</span>)&#123;</span><br><span class="line">            String[] data = line.split(<span class="string">","</span>);</span><br><span class="line">            <span class="comment">//根据前两位, 确定要使用哪个Writer. 相同2位前缀的记录写到同一个db文件里</span></span><br><span class="line">            String prefData = data[<span class="number">2</span>];</span><br><span class="line">            maps.get(prefData).put(data[<span class="number">1</span>], data[<span class="number">0</span>]);</span><br><span class="line">        &#125;</span><br><span class="line">        fis.close();</span><br><span class="line">        reader.close();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (Map.Entry&lt;String, StoreWriter&gt; entry : maps.entrySet()) &#123;</span><br><span class="line">        entry.getValue().close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>查询一条记录就很简单了, 首先解析出MD5的前两位, 找到对应的paldb文件, 直接读取:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">System.out.println(<span class="string">"QUERYING&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;"</span>);</span><br><span class="line">String file = md5.substring(<span class="number">0</span>,<span class="number">2</span>) + <span class="string">".paldb"</span>;</span><br><span class="line">StoreReader reader = PalDB.createReader(<span class="keyword">new</span> File(folder + file));</span><br><span class="line">String id = reader.get(md5);</span><br><span class="line">System.out.println(id);</span><br></pre></td></tr></table></figure>
+<h2 id="sparkey@spotify">sparkey@spotify</h2><p><a href="https://github.com/spotify/sparkey">sparkey</a>也声称对于<code>read-heavy systems with infrequent large bulk inserts</code>对于经常读,不经常(大批量)写的性能很好.  </p>
+<p>sparkey有两种文件:索引文件(index file)和日志文件(log file). </p>
+<h2 id="Spark_BulkLoad">Spark BulkLoad</h2><ul>
+<li>HBaseRDD: <a href="https://github.com/unicredit/hbase-rdd">https://github.com/unicredit/hbase-rdd</a>  </li>
+<li>SparkOnHBase在最新的HBase版本中已经合并到了hbase代码中.  </li>
+</ul>
+<p>建立一个columnfamily=id. 并且在这个cf下有一个column=id存储id数据(cf必须事先建立,column则是动态的). </p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">create <span class="string">'data.md5_id'</span>,<span class="string">'id'</span></span><br><span class="line">put <span class="string">'data.md5_id'</span>,<span class="string">'a9fdddddddddddddddddddddddddddde'</span>,<span class="string">'id:id'</span>,<span class="string">'111111111111'</span></span><br><span class="line">get <span class="string">'data.md5_id'</span>,<span class="string">'a9fdddddddddddddddddddddddddddde'</span></span><br><span class="line">scan <span class="string">'data.md5_id'</span></span><br></pre></td></tr></table></figure>
+<p>Spark的基本思路是: 读取文本文件, 构造<code>RowKey -&gt; Map&lt;CF -&gt; Map&lt;Column -&gt; Value&gt;&gt;</code>的RDD:  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> rdd = sc.textFile(folder).map(&#123; line =&gt;</span><br><span class="line">  <span class="keyword">val</span> data = line split <span class="string">","</span></span><br><span class="line">  <span class="keyword">val</span> content = <span class="type">Map</span>(cf -&gt; <span class="type">Map</span>(column -&gt; data(<span class="number">0</span>)))</span><br><span class="line">  data(<span class="number">1</span>) -&gt; content</span><br><span class="line">&#125;)</span><br><span class="line">rdd.toHBaseBulk(table)</span><br></pre></td></tr></table></figure>
+<h2 id="HBase_BulkLoad">HBase BulkLoad</h2><p>HBase的BulkLoad分为两个节点: 运行MapReduce生成HFile文件, 导入到HBase集群  </p>
+<p><strong>数据存储:</strong> <a href="http://zqhxuyuan.github.io/2015/12/19/2015-12-19-HBase-BulkLoad/" target="_blank" rel="noopener">http://zqhxuyuan.github.io/2015/12/19/2015-12-19-HBase-BulkLoad/</a>  </p>
+<table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Output</th>
+<th>Time</th>
+<th>multi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>26G</td>
+<td>87.3G</td>
+<td>20min</td>
+<td>3.3</td>
+</tr>
+<tr>
+<td>806.5G</td>
+<td>2.6T</td>
+<td>10h</td>
+<td>3.3</td>
+</tr>
+<tr>
+<td>6T</td>
+<td>18T</td>
+<td>…</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p><strong>查询(多线程)</strong>: <a href="http://zqhxuyuan.github.io/2015/12/21/2015-12-21-HBase-Query/" target="_blank" rel="noopener">http://zqhxuyuan.github.io/2015/12/21/2015-12-21-HBase-Query/</a>   </p>
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Storage</th>
+<th>Query</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mob</td>
+<td>35亿</td>
+<td>18万</td>
+<td>15min</td>
+</tr>
+<tr>
+<td>id</td>
+<td>1000亿</td>
+</tr>
+</tbody>
+</table>
+<p><strong>存在的问题:</strong> 在生成HFile时,是对每个原始文件做MR任务的,即每个原始文件都启动一个MR作业生成HFile.<br>这样只保证了Reduce生成的HFile在这个原始文件是有序的.不能保证所有原始文件生成的HFile是全局有序的.  </p>
+<p>这样当只导入第一个文件夹时,BulkLoad是直接移动文件.但是导入接下来生成的文件夹时,就会发生Split操作!<br>虽然每个MapReduce生成的HFile在这个文件夹内是有序的. 但是不能保证所有MR作业的HFile是全局有序的!  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">      MapReduce/importtsv                 completebulkload(mv)           </span><br><span class="line">txt1  -------------------&gt;  HFile(00-03)  --------------------&gt;   Region </span><br><span class="line">                            HFile(03-10)  --------------------&gt;   Region </span><br><span class="line">                            HFile(10-30) ️ --------------------&gt;   Region</span><br><span class="line"></span><br><span class="line">      MapReduce/importtsv                 bulkload(split and copy!)</span><br><span class="line">txt2  -------------------&gt;  HFile(01-04)  </span><br><span class="line">                            HFile(04-06)</span><br><span class="line">                            HFile(06-15)</span><br></pre></td></tr></table></figure>
+<p>数据验证:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">hbase(main):002:0&gt; get &apos;data.md5_mob2&apos;,&apos;2774f8075a3a7707ddf6b3429c78c041&apos;</span><br><span class="line">COLUMN                                             CELL</span><br><span class="line">0 row(s) in 0.2790 seconds</span><br><span class="line"></span><br><span class="line">hbase(main):003:0&gt; get &apos;data.md5_mob2&apos;,&apos;695c52195b25cd74fef1a02f4947d2b5&apos;</span><br><span class="line">COLUMN                                             CELL</span><br><span class="line"> mob:c1                                            timestamp=1450535656819, value=69</span><br><span class="line"> mob:c2                                            timestamp=1450535656819, value=5c</span><br><span class="line"> mob:mob                                           timestamp=1450535656819, value=13829274666</span><br><span class="line">3 row(s) in 0.0640 seconds</span><br></pre></td></tr></table></figure>
+<h2 id="Cassandra">Cassandra</h2><p>Cassandra和HBase都是列式数据库.HBase因为使用MapReduce,所以读取HDFS上的大文件时,会分成多个Map任务.<br>Cassandra导入数据不可避免的是需要读取原始的大文件,一种直接生成SSTable,一种是读取后直接写入到集群中.  </p>
+<h3 id="SSTable_Writer">SSTable Writer</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//构造Cassandra的Writer对象</span></span><br><span class="line">CQLSSTableWriter.Builder builder = CQLSSTableWriter.builder();</span><br><span class="line">builder.inDirectory(outputDir).forTable(SCHEMA).using(INSERT_STMT).withPartitioner(<span class="keyword">new</span> Murmur3Partitioner());</span><br><span class="line">CQLSSTableWriter writer = builder.build();</span><br><span class="line"></span><br><span class="line"><span class="comment">//读取大文件,写入到Writer对象,最终会生成SSTable文件</span></span><br><span class="line"><span class="keyword">while</span> ((line = reader.readLine()) != <span class="keyword">null</span>) &#123;</span><br><span class="line">    writer.addRow(line.split(<span class="string">","</span>)[<span class="number">1</span>],line.split(<span class="string">","</span>)[<span class="number">0</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>默认生成的每个Data文件是72MB.  </p>
+<table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Output</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4.8G*2=9G</td>
+<td>19G</td>
+<td>12min*2</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>单独地遍历文件,不做任何事情,耗时100s=2min. 则读取6T的文件,耗时2000min=33hour.   </p>
+</blockquote>
+<h3 id="Driver_API">Driver API</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">  List&lt;Statement&gt; statementList = <span class="keyword">new</span> ArrayList();</span><br><span class="line">  <span class="keyword">while</span> ((line = reader.readLine()) != <span class="keyword">null</span>) &#123;</span><br><span class="line">      BoundStatement bound = insert.bind(line.split(<span class="string">","</span>)[<span class="number">1</span>],line.split(<span class="string">","</span>)[<span class="number">0</span>]);</span><br><span class="line">      statementList.add(bound);</span><br><span class="line">      <span class="keyword">if</span>(statementList.size() &gt;= <span class="number">65535</span>)&#123;</span><br><span class="line">          flush(statementList);</span><br><span class="line">          statementList.clear();</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 批量写入</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">flush</span><span class="params">(List&lt;Statement&gt; buffer)</span> </span>&#123;</span><br><span class="line">    BatchStatement batch = <span class="keyword">new</span> BatchStatement(BatchStatement.Type.UNLOGGED);</span><br><span class="line">    <span class="keyword">for</span> (Statement bound : buffer) &#123;</span><br><span class="line">        batch.add(bound);</span><br><span class="line">    &#125;</span><br><span class="line">    client.execute(batch);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="KV_DataBase">KV DataBase</h2><p>其实我们的业务中只是KeyValue,最适合的不是列式数据库,而是KV数据库.常见的KV数据库有:MemCache,Redis,LevelDB/RocksDB,Riak.  </p>
+<h3 id="LevelDB">LevelDB</h3><blockquote>
+<p>一个数据库一次只能被一个进程打开。leveldb的实现要求使用来自操作系统的锁来阻止对数据库的滥用。在单进程中，同一个leveldb::DB对象可以被多个并发线程安全地共享。即，针对同一个数据库，在没有任何外部同步措施的前提下（leveldb实现本身将会自动去做所需要的同步过程），不同的线程可以写入迭代器或者获取迭代器或者调用Get方法。但是，其它的对象（比如Iterator和WriteBatch）可能需要外部的同步过程。如果两个线程共享一个这样的对象，这俩线程必须通过它们各自的加锁协议（locking protocol）来保护对这个对象的访问。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">-rw-r--r--. 1 qihuang.zheng users     0 12月 24 11:44 000003.log</span><br><span class="line">-rw-r--r--. 1 qihuang.zheng users    16 12月 24 11:44 CURRENT</span><br><span class="line">-rw-r--r--. 1 qihuang.zheng users     0 12月 24 11:44 LOCK</span><br><span class="line">-rw-r--r--. 1 qihuang.zheng users    57 12月 24 11:44 LOG</span><br><span class="line">-rw-r--r--. 1 qihuang.zheng users 65536 12月 24 11:44 MANIFEST-000002</span><br><span class="line">⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇⬇</span><br><span class="line">-rw-r--r--. 1 qihuang.zheng users 2116214 12月 24 11:49 000408.sst</span><br><span class="line">...</span><br><span class="line">-rw-r--r--. 1 qihuang.zheng users 3080192 12月 24 11:55 001210.sst</span><br><span class="line">-rw-r--r--. 1 qihuang.zheng users      16 12月 24 11:44 CURRENT</span><br><span class="line">-rw-r--r--. 1 qihuang.zheng users       0 12月 24 11:44 LOCK</span><br><span class="line">-rw-r--r--. 1 qihuang.zheng users  215845 12月 24 11:55 LOG</span><br><span class="line">-rw-r--r--. 1 qihuang.zheng users  196608 12月 24 11:55 MANIFEST-000002</span><br></pre></td></tr></table></figure>
+<p>可以看到旧的sst(SSTable)不断被删除,并用新的sst文件代替. 但是速度在处理大文件时依旧很慢.  </p>
+<p>结论: 涉及到要读取原始文件,遍历每一行,然后调用存储的写入方式即使采用批量,也会很慢.<br>而HBase的BulkLoad会开启多个Map任务读取大文件,因此速度会比遍历读取大文件要快.   </p>
+<h2 id="happybase">happybase</h2><p>既然读取大文件很慢,能不能在生成md5数据的时候不写文件, 直接写到目标数据库.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> happybase</span><br><span class="line">connection = happybase.Connection(<span class="string">'192.168.47.213'</span>)</span><br><span class="line">table = connection.table(<span class="string">'data.md5_id2'</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">write_data</span><span class="params">(li)</span>:</span></span><br><span class="line">    batch = table.batch(wal=<span class="keyword">False</span>)</span><br><span class="line">    <span class="keyword">for</span> ele <span class="keyword">in</span> li:</span><br><span class="line">        <span class="comment">#wf.write(','.join(ele) + '\n')</span></span><br><span class="line">        <span class="comment">#wf.flush()</span></span><br><span class="line">        batch.put(ele[<span class="number">0</span>], &#123;<span class="string">'id:id'</span>: ele[<span class="number">1</span>]&#125;)</span><br><span class="line">    batch.send()</span><br></pre></td></tr></table></figure>
+<p>运行一个省份(35,记录数34亿)耗时:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2015-12-29 09:53:38 350100 19550229 999 60000</span><br><span class="line">2015-12-31 02:35:38 359002 20011119 999 3457560000</span><br></pre></td></tr></table></figure>
+<h2 id="其他">其他</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">删除文件名长度=4的所有文件(不包括文件名后缀)</span><br><span class="line">find . -type f | grep -P &apos;/.&#123;8&#125;$&apos; | xargs rm</span><br><span class="line">a=($(ls | grep -E &apos;[0-9a-f]&#123;4&#125;.txt&apos;)) &amp;&amp; for i in &quot;$&#123;a[@]&#125;&quot;;do rm -rf &quot;$i&quot;;done</span><br><span class="line"></span><br><span class="line">查看进程的文件句柄数量(开了两个进程在跑,每个进程用了16^4=65535)</span><br><span class="line">[qihuang.zheng@192-168-47-248 version2]$ lsof -n|awk &apos;&#123;print $2&#125;&apos;|sort|uniq -c |sort -nr|head -2</span><br><span class="line">  65562 6516</span><br><span class="line">  65562 10230</span><br><span class="line">[qihuang.zheng@192-168-47-248 version2]$ jps</span><br><span class="line">6516 GenIdCardRawFile</span><br><span class="line">10230 GenIdCardRawFile</span><br></pre></td></tr></table></figure>
+<h2 id="Final:Cassandra">Final:Cassandra</h2><h3 id="数据存储">数据存储</h3><p><strong>建表,列名统一为md5和id</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">CREATE KEYSPACE data WITH replication = &#123;</span><br><span class="line">  &apos;class&apos;: &apos;NetworkTopologyStrategy&apos;,</span><br><span class="line">  &apos;DC2&apos;: &apos;1&apos;,</span><br><span class="line">  &apos;DC1&apos;: &apos;1&apos;</span><br><span class="line">&#125;;</span><br><span class="line">use data;</span><br><span class="line"></span><br><span class="line">CREATE TABLE md5_id (</span><br><span class="line">  md5 text,</span><br><span class="line">  id text,</span><br><span class="line">  PRIMARY KEY (md5)</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">CREATE TABLE md5_mob (</span><br><span class="line">  md5 text,</span><br><span class="line">  id text,</span><br><span class="line">  PRIMARY KEY (md5)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p><strong>存储时,指定tbl比如md5_id或者md5_mob</strong></p>
+<pre><code>nohup java -cp /home/qihuang.zheng/rainbow-table-<span class="number">1.0</span>-SNAPSHOT-jar-with-dependencies<span class="class">.jar</span> \
+com<span class="class">.td</span><span class="class">.bigdata</span><span class="class">.rainbowtable</span><span class="class">.store</span><span class="class">.Rainbow2Cassandra</span> \
+-size <span class="number">5000</span> -host <span class="number">192.168</span>.<span class="number">48.47</span> -tbl md5_mob &gt; rainbow-<span class="tag">table</span><span class="class">.log</span> <span class="number">2</span>&gt;&amp;<span class="number">1</span> &amp;
+</code></pre><p>单机SSD，设置批处理大小为5000，不能设置太大，写入记录数36亿，耗时52小时（身份证表）。  </p>
+<pre><code><span class="keyword">total</span> cost[normal]:75705 <span class="literal">s</span>
+<span class="keyword">total</span> cost[<span class="keyword">error</span>]:0 <span class="literal">s</span>
+</code></pre><h3 id="结果手工验证">结果手工验证</h3><p>根据md5查询一条记录，大概在6ms之内，看起来能满足线上的要求了。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">cqlsh:data&gt; select * from md5_mob where md5=&apos;00905121bedd2bb93247f4bd55ff6a73&apos;</span><br><span class="line"> activity                                                                                  | timestamp    | source        | source_elapsed</span><br><span class="line">-------------------------------------------------------------------------------------------+--------------+---------------+----------------</span><br><span class="line">                                                                        execute_cql3_query | 11:57:08,100 | 192.168.48.47 |              0</span><br><span class="line"> Parsing select * from md5_mob where md5=&apos;00905121bedd2bb93247f4bd55ff6a73&apos;\n LIMIT 10000; | 11:57:08,102 | 192.168.48.47 |           1340</span><br><span class="line">                                                                       Preparing statement | 11:57:08,103 | 192.168.48.47 |           2529</span><br><span class="line">                                               Executing single-partition query on md5_mob | 11:57:08,104 | 192.168.48.47 |           3576</span><br><span class="line">                                                              Acquiring sstable references | 11:57:08,104 | 192.168.48.47 |           3711</span><br><span class="line">                                                               Merging memtable tombstones | 11:57:08,104 | 192.168.48.47 |           3822</span><br><span class="line">                                     Partition index with 0 entries found for sstable 2790 | 11:57:08,105 | 192.168.48.47 |           4726</span><br><span class="line">                                               Seeking to partition beginning in data file | 11:57:08,105 | 192.168.48.47 |           4765</span><br><span class="line">                 Skipped 0/1 non-slice-intersecting sstables, included 0 due to tombstones | 11:57:08,106 | 192.168.48.47 |           5570</span><br><span class="line">                                                Merging data from memtables and 1 sstables | 11:57:08,106 | 192.168.48.47 |           5597</span><br><span class="line">                                                         Read 1 live and 0 tombstone cells | 11:57:08,106 | 192.168.48.47 |           5728</span><br><span class="line">                                                                          Request complete | 11:57:08,106 | 192.168.48.47 |           6243</span><br></pre></td></tr></table></figure>
+<p>发生一次查询后查看系统的状态</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@192-168-48-47 ~]$ nodetool cfstats data.md5_mob</span><br><span class="line">Keyspace: data</span><br><span class="line">  Read Count: 1</span><br><span class="line">  Read Latency: 2.361 ms.</span><br><span class="line">  Write Count: 3600002520</span><br><span class="line">  Write Latency: 0.008993030521545303 ms.</span><br><span class="line">  Pending Tasks: 0</span><br><span class="line">    Table: md5_mob</span><br><span class="line">    SSTable count: 11</span><br><span class="line">    Space used (live), bytes: 372167591162</span><br><span class="line">    Space used (total), bytes: 372167591162</span><br><span class="line">    Off heap memory used (total), bytes: 5780134424</span><br><span class="line">    SSTable Compression Ratio: 0.57171179318478</span><br><span class="line">    Number of keys (estimate): 3599990528</span><br><span class="line">    Memtable cell count: 20292</span><br><span class="line">    Memtable data size, bytes: 9344184</span><br><span class="line">    Memtable switch count: 9599</span><br><span class="line">    Local read count: 1</span><br><span class="line">    Local read latency: 2.361 ms</span><br><span class="line">    Local write count: 3600002520</span><br><span class="line">    Local write latency: 0.000 ms</span><br><span class="line">    Pending tasks: 0</span><br><span class="line">    Bloom filter false positives: 0</span><br><span class="line">    Bloom filter false ratio: 0.00000</span><br><span class="line">    Bloom filter space used, bytes: 4500010896</span><br><span class="line">    Bloom filter off heap memory used, bytes: 4,500,010,808</span><br><span class="line">    Index summary off heap memory used, bytes: 1237496744</span><br><span class="line">    Compression metadata off heap memory used, bytes: 42626872</span><br><span class="line">    Compacted partition minimum bytes: 87</span><br><span class="line">    Compacted partition maximum bytes: 103</span><br><span class="line">    Compacted partition mean bytes: 103</span><br><span class="line">    Average live cells per slice (last five minutes): 1.0</span><br><span class="line">    Average tombstones per slice (last five minutes): 0.0</span><br></pre></td></tr></table></figure>
+<p>查看直方统计图：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@192-168-48-47 ~]$ nodetool cfhistograms data md5_mob</span><br><span class="line">data/md5_mob histograms</span><br><span class="line"></span><br><span class="line">SSTables per Read</span><br><span class="line">1 sstables: 1</span><br><span class="line"></span><br><span class="line">Write Latency (microseconds)</span><br><span class="line">      1 us: 57588</span><br><span class="line">      2 us: 10773767</span><br><span class="line">      3 us: 87425134</span><br><span class="line">      4 us: 309487598</span><br><span class="line">      5 us: 632214057</span><br><span class="line">      6 us: 802464460</span><br><span class="line">      7 us: 704315044</span><br><span class="line">      8 us: 477557852</span><br><span class="line">     10 us: 419183030</span><br><span class="line">     12 us: 108322995</span><br><span class="line">     14 us: 28197472</span><br><span class="line">     17 us: 10274579</span><br><span class="line">     20 us: 2620990</span><br><span class="line">     24 us: 1673315</span><br><span class="line">     29 us: 1436756</span><br><span class="line">     35 us: 833132</span><br><span class="line">     42 us: 328493</span><br><span class="line">     50 us: 154832</span><br><span class="line">     60 us: 119731</span><br><span class="line">     72 us: 109200</span><br><span class="line">     86 us: 111004</span><br><span class="line">    103 us: 87783</span><br><span class="line">    124 us: 95593</span><br><span class="line">    149 us: 94378</span><br><span class="line">    179 us: 93731</span><br><span class="line">    215 us: 102252</span><br><span class="line">    258 us: 107963</span><br><span class="line">    310 us: 109766</span><br><span class="line">    372 us: 112553</span><br><span class="line">    446 us: 110686</span><br><span class="line">    535 us: 108196</span><br><span class="line">    642 us: 101888</span><br><span class="line">    770 us: 96206</span><br><span class="line">    924 us: 90912</span><br><span class="line">   1109 us: 88118</span><br><span class="line">   1331 us: 83811</span><br><span class="line">   1597 us: 80263</span><br><span class="line">   1916 us: 75550</span><br><span class="line">   2299 us: 73414</span><br><span class="line">   2759 us: 65003</span><br><span class="line">   3311 us: 57738</span><br><span class="line">   3973 us: 46244</span><br><span class="line">   4768 us: 42409</span><br><span class="line">   5722 us: 72641</span><br><span class="line">   6866 us: 106743</span><br><span class="line">   8239 us: 84552</span><br><span class="line">   9887 us: 47690</span><br><span class="line">  11864 us: 36826</span><br><span class="line">  14237 us: 26347</span><br><span class="line">  17084 us: 13423</span><br><span class="line">  20501 us: 7169</span><br><span class="line">  24601 us: 3241</span><br><span class="line">  29521 us: 1327</span><br><span class="line">  35425 us: 547</span><br><span class="line">  42510 us: 242</span><br><span class="line">  51012 us: 82</span><br><span class="line">  61214 us: 31</span><br><span class="line">  73457 us: 31</span><br><span class="line">  88148 us: 255</span><br><span class="line"> 105778 us: 244</span><br><span class="line"> 126934 us: 322</span><br><span class="line"> 152321 us: 1882</span><br><span class="line"> 182785 us: 4259</span><br><span class="line"> 219342 us: 5060</span><br><span class="line"> 263210 us: 3006</span><br><span class="line"> 315852 us: 629</span><br><span class="line"> 379022 us: 340</span><br><span class="line"> 454826 us: 95</span><br><span class="line"> 545791 us: 13</span><br><span class="line"> 654949 us: 5</span><br><span class="line"> 785939 us: 10</span><br><span class="line"> 943127 us: 0</span><br><span class="line">1131752 us: 19</span><br><span class="line">1358102 us: 0</span><br><span class="line">1629722 us: 0</span><br><span class="line">1955666 us: 0</span><br><span class="line">2346799 us: 2</span><br><span class="line">2816159 us: 1</span><br><span class="line"></span><br><span class="line">Read Latency (microseconds)</span><br><span class="line">2759 us: 1</span><br><span class="line"></span><br><span class="line">Partition Size (bytes)</span><br><span class="line">103 bytes: 3599989854</span><br><span class="line"></span><br><span class="line">Cell Count per Partition</span><br><span class="line">2 cells: 3599989854</span><br></pre></td></tr></table></figure>
+<h3 id="随机查询RT是否满足">随机查询RT是否满足</h3>
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/12/17/Billion-KV/">千亿KV数据存储和查询方案</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年12月17日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/12/17/Billion-KV/" title="千亿KV数据存储和查询方案">http://github.com/zqhxuyuan/2015/12/17/Billion-KV/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/12/17/Billion-KV/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/12/18/2015-12-18-Spark-HBase-RDD/">
+        HBase-RDD
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/12/16/2015-12-16-Apache-HBase/">
+        Hello HBase
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#背景"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Hive分区(×)"><span class="toc-number">2.</span> <span class="toc-text">Hive分区(×)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AWK脚本处理分区"><span class="toc-number">3.</span> <span class="toc-text">AWK脚本处理分区</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#paldb@linkedin(×)"><span class="toc-number">4.</span> <span class="toc-text">paldb@linkedin(×)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sparkey@spotify"><span class="toc-number">5.</span> <span class="toc-text">sparkey@spotify</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Spark_BulkLoad"><span class="toc-number">6.</span> <span class="toc-text">Spark BulkLoad</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HBase_BulkLoad"><span class="toc-number">7.</span> <span class="toc-text">HBase BulkLoad</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Cassandra"><span class="toc-number">8.</span> <span class="toc-text">Cassandra</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#SSTable_Writer"><span class="toc-number">8.1.</span> <span class="toc-text">SSTable Writer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Driver_API"><span class="toc-number">8.2.</span> <span class="toc-text">Driver API</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#KV_DataBase"><span class="toc-number">9.</span> <span class="toc-text">KV DataBase</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#LevelDB"><span class="toc-number">9.1.</span> <span class="toc-text">LevelDB</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#happybase"><span class="toc-number">10.</span> <span class="toc-text">happybase</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他"><span class="toc-number">11.</span> <span class="toc-text">其他</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Final:Cassandra"><span class="toc-number">12.</span> <span class="toc-text">Final:Cassandra</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#数据存储"><span class="toc-number">12.1.</span> <span class="toc-text">数据存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#结果手工验证"><span class="toc-number">12.2.</span> <span class="toc-text">结果手工验证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#随机查询RT是否满足"><span class="toc-number">12.3.</span> <span class="toc-text">随机查询RT是否满足</span></a></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/12/17/Billion-KV/" data-title="千亿KV数据存储和查询方案" data-url="http://github.com/zqhxuyuan/2015/12/17/Billion-KV/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/12/18/2015-12-18-Spark-HBase-RDD/" title="上一篇: HBase-RDD">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/12/16/2015-12-16-Apache-HBase/" title="下一篇: Hello HBase">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

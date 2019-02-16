@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Druid源码解析(1) Guice和Realtime流程 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Druid is a fast column-oriented distributed data store. http://druid.io/">
+<meta name="keywords" content="druid">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Druid源码解析(1) Guice和Realtime流程">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/12/08/2015-12-08-Druid-source/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Druid is a fast column-oriented distributed data store. http://druid.io/">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151208144543081">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151208155730186">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151209110336447">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151209090705224">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.203Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Druid源码解析(1) Guice和Realtime流程">
+<meta name="twitter:description" content="Druid is a fast column-oriented distributed data store. http://druid.io/">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151208144543081">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-12-08-Druid-source" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/12/08/2015-12-08-Druid-source/" class="article-date">
+  	<time datetime="2015-12-07T16:00:00.000Z" itemprop="datePublished">2015-12-08</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Druid源码解析(1) Guice和Realtime流程
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Source/">Source</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/druid/">druid</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Druid is a fast column-oriented distributed data store. <a href="http://druid.io/" target="_blank" rel="noopener">http://druid.io/</a></p>
+<a id="more"></a>
+<p>当启动Druid的服务,会启动一个java进程,比如<code>run_example_server.sh</code>会启动<code>io.druid.cli.Main example realtime</code>.  </p>
+<h2 id="Guice_Inject">Guice Inject</h2><p>Main的buidler类包含了多种服务组, 比如server服务包括了Druid的大部分组件: 协调,历史,Broker,实时,Overlord等.  </p>
+<h3 id="injectMembers和toInstance注入实例化好的对象">injectMembers和toInstance注入实例化好的对象</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> Injector injector = GuiceInjectors.makeStartupInjector();</span><br><span class="line"><span class="keyword">final</span> Cli&lt;Runnable&gt; cli = builder.build();</span><br><span class="line"><span class="keyword">final</span> Runnable command = cli.parse(args);</span><br><span class="line">injector.injectMembers(command);            <span class="comment">//command已经是实例化好的线程类,直接注入</span></span><br><span class="line">command.run();</span><br></pre></td></tr></table></figure>
+<p>Guice是个DI框架.客户端使用对象的流程是: 创建Injector,从Injector中获取实例,调用实例的方法. 客户端解析出来的命令是一个Runnable.<br>CliRealtime继承了ServerRunnable(又继承了GuiceRunnable). 在makeInjector调用的Initialization初始化会添加很多Module.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151208144543081" alt="guice_client"></p>
+<p>CliRealtime的getModules()主要是RealtimeModule. 每个节点都要注册自己职责范围内的Modules.<br>ReailtimeModule绑定了SegmentPublisher,ChatHandlerProvider,RealtimeManager等.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">JsonConfigProvider.bind(binder, <span class="string">"druid.realtime"</span>, RealtimeManagerConfig.class);</span><br><span class="line">binder.bind(<span class="keyword">new</span> TypeLiteral&lt;List&lt;FireDepartment&gt;&gt;()&#123;&#125;).toProvider(FireDepartmentsProvider.class).in(LazySingleton.class);   <span class="comment">//①</span></span><br><span class="line"></span><br><span class="line">JsonConfigProvider.bind(binder, <span class="string">"druid.realtime.cache"</span>, CacheConfig.class);</span><br><span class="line">binder.install(<span class="keyword">new</span> CacheModule());</span><br><span class="line"></span><br><span class="line">binder.bind(QuerySegmentWalker.class).to(RealtimeManager.class).in(ManageLifecycle.class);</span><br><span class="line">binder.bind(NodeTypeConfig.class).toInstance(<span class="keyword">new</span> NodeTypeConfig(<span class="string">"realtime"</span>));</span><br></pre></td></tr></table></figure>
+<p>toInstance也绑定的也是一个实例化对象,而没有接口. 比如NodeTypeConfig并不是一个接口,而是一个正常的类.<br><a href="https://github.com/google/guice/wiki/Injections#on-demand-injection">https://github.com/google/guice/wiki/Injections#on-demand-injection</a></p>
+<h3 id="Provider的get方法返回值绑定实现类">Provider的get方法返回值绑定实现类</h3><p>重要的是RealtimeManager,它的构造函数有三个List<firedepartment>,QueryRunnerFactoryConglomerate. 最后一个参数chiefs直接在构造函数中初始化.<br>前面两个需要通过@Inject注入. 其中①List<firedepartment>是泛型类,所以通过上面的TypeLiteral使用FireDepartmentsProvider注入.  </firedepartment></firedepartment></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RealtimeManager</span> <span class="keyword">implements</span> <span class="title">QuerySegmentWalker</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> List&lt;FireDepartment&gt; fireDepartments;           <span class="comment">//①</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> QueryRunnerFactoryConglomerate conglomerate;    <span class="comment">//②</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String, List&lt;FireChief&gt;&gt; chiefs;  <span class="comment">//key=data source name,value=FireChiefs of all partition of that data source</span></span><br><span class="line"></span><br><span class="line">  <span class="meta">@Inject</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="title">RealtimeManager</span><span class="params">(List&lt;FireDepartment&gt; fireDepartments, QueryRunnerFactoryConglomerate conglomerate)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.fireDepartments = fireDepartments;</span><br><span class="line">    <span class="keyword">this</span>.conglomerate = conglomerate;</span><br><span class="line">    <span class="keyword">this</span>.chiefs = Maps.newHashMap();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对象的注入使用Provider:FireDepartmentsProvider,Provider的get方法返回值会作为List<firedepartment>的实现类.<br>而FireDepartmentsProvider的构造方法需要注入 ObjectMapper 和 RealtimeManagerConfig.其中RealtimeManagerConfig在bind Provider前已经注入.    </firedepartment></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FireDepartmentsProvider</span> <span class="keyword">implements</span> <span class="title">Provider</span>&lt;<span class="title">List</span>&lt;<span class="title">FireDepartment</span>&gt;&gt;</span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> List&lt;FireDepartment&gt; fireDepartments = Lists.newArrayList();</span><br><span class="line">  <span class="function"><span class="keyword">public</span> List&lt;FireDepartment&gt; <span class="title">get</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> fireDepartments; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="注解和Provides绑定实现类">注解和Provides绑定实现类</h3><p>ObjectMapper是jackson的内部类,druid的实现类是DefaultObjectMapper. 绑定ObjectMapper也是在初始化的JacksonModule中.<br>这里的to使用了注解方式, 因为注解的类型是Json, 所以对应的是jsonMapper())创建的DefaultObjectMapper(这里是一个Provides方法,类似于Provider).  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JacksonModule</span> <span class="keyword">implements</span> <span class="title">Module</span></span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">configure</span><span class="params">(Binder binder)</span></span>&#123;</span><br><span class="line">    binder.bind(ObjectMapper.class).to(Key.get(ObjectMapper.class, Json.class));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Provides</span> <span class="meta">@LazySingleton</span> <span class="meta">@Json</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> ObjectMapper <span class="title">jsonMapper</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> DefaultObjectMapper();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="JSON_Property">JSON Property</h3><p>前面JsonConfigProvider绑定的druid.realtime,使用RealtimeManagerConfig,而它只有一个属性@JsonProperty private File specFile<br>在FireDepartmentsProvider的构造方法中会使用DefaultObjectMapper读取启动进程时<code>druid.realtime.specFile</code>指定的json文件.  </p>
+<p>FireDepartment的三个属性字段dataSchema,ioConfig,tuningConfig正好对应了specFile中的json属性. 所以整个流程是:<br>指定specFile文件,创建DefaultObjectMapper(JacksonModule),DefaultObjectMapper读取JSON文件,构造FireDepartmentsProvider,返回List<firedepartment>  </firedepartment></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@JsonCreator</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">FireDepartment</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    @JsonProperty(<span class="string">"dataSchema"</span>)</span> DataSchema dataSchema,</span></span><br><span class="line"><span class="function">    @<span class="title">JsonProperty</span><span class="params">(<span class="string">"ioConfig"</span>)</span> RealtimeIOConfig ioConfig,</span></span><br><span class="line"><span class="function">    @<span class="title">JsonProperty</span><span class="params">(<span class="string">"tuningConfig"</span>)</span> RealtimeTuningConfig tuningConfig</span></span><br><span class="line"><span class="function">)</span></span><br></pre></td></tr></table></figure>
+<h3 id="别的Module注入同样可用">别的Module注入同样可用</h3><p>我们并没有看到②QueryRunnerFactoryConglomerate在这里被注入. 怎么办呢? 进入该接口,查看它比较重要的实现类DefaultQueryRunnerFactoryConglomerate.<br>然后CMD+单机查看它的Usages,只有StorageNodeModule的configure方法,它也是一个Module,被Usage的方法恰好在Initialization初始化的时候.    </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StorageNodeModule</span> <span class="keyword">implements</span> <span class="title">Module</span></span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">configure</span><span class="params">(Binder binder)</span> </span>&#123;</span><br><span class="line">    JsonConfigProvider.bind(binder, <span class="string">"druid.server"</span>, DruidServerConfig.class);</span><br><span class="line">    JsonConfigProvider.bind(binder, <span class="string">"druid.segmentCache"</span>, SegmentLoaderConfig.class);</span><br><span class="line"></span><br><span class="line">    binder.bind(NodeTypeConfig.class).toProvider(Providers.&lt;NodeTypeConfig&gt;of(<span class="keyword">null</span>));</span><br><span class="line">    binder.bind(QueryableIndexFactory.class).to(MMappedQueryableIndexFactory.class).in(LazySingleton.class);</span><br><span class="line">    binder.bind(ColumnConfig.class).to(DruidProcessingConfig.class);</span><br><span class="line"></span><br><span class="line">    binder.bind(QueryRunnerFactoryConglomerate.class).to(DefaultQueryRunnerFactoryConglomerate.class).in(LazySingleton.class);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于DefaultQueryRunnerFactoryConglomerate的构造函数也需要注入:<code>Map&lt;Class&lt;? extends Query&gt;, QueryRunnerFactory&gt; factories</code><br>同样使用Usage进入QueryRunnerFactory,进入其中一个实现类TimeBoundaryQueryRunnerFactory,在进入其Usage是QueryRunnerFactoryModule<br>可以看到只要是接口要绑定到某个实现类上, 最后一定是使用Guice的Module来完成的.  </p>
+<h3 id="MapBinder注入Map">MapBinder注入Map</h3><p>TimeBoundaryQueryRunnerFactory的构造函数也依赖了QueryWatcher,正好也在QueryRunnerFactoryModule一并解决了:<br>其中mappings定义了Druid支持的各种查询类,对应的查询工厂类. MapBinder是Guice中一种支持Map对象的注入(也用到了TypeLiteral).  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">QueryRunnerFactoryModule</span> <span class="keyword">extends</span> <span class="title">QueryToolChestModule</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Map&lt;Class&lt;? extends Query&gt;, Class&lt;? extends QueryRunnerFactory&gt;&gt; mappings =</span><br><span class="line">      ImmutableMap.&lt;Class&lt;? extends Query&gt;, Class&lt;? extends QueryRunnerFactory&gt;&gt;builder()</span><br><span class="line">                  .put(TimeseriesQuery.class, TimeseriesQueryRunnerFactory.class)</span><br><span class="line">                  .put(TimeBoundaryQuery.class, TimeBoundaryQueryRunnerFactory.class)</span><br><span class="line">                  .....build();</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">configure</span><span class="params">(Binder binder)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>.configure(binder);</span><br><span class="line">    binder.bind(QueryWatcher.class).to(QueryManager.class).in(LazySingleton.class);</span><br><span class="line">    binder.bind(QueryManager.class).in(LazySingleton.class);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> MapBinder&lt;Class&lt;? extends Query&gt;, QueryRunnerFactory&gt; queryFactoryBinder = DruidBinders.queryRunnerFactoryBinder(binder);</span><br><span class="line">    <span class="keyword">for</span> (Map.Entry&lt;Class&lt;? extends Query&gt;, Class&lt;? extends QueryRunnerFactory&gt;&gt; entry : mappings.entrySet()) &#123;</span><br><span class="line">      queryFactoryBinder.addBinding(entry.getKey()).to(entry.getValue());   <span class="comment">//注入Map的key和value,对应factories</span></span><br><span class="line">      binder.bind(entry.getValue()).in(LazySingleton.class);                <span class="comment">//最好还要注入一下value</span></span><br><span class="line">    &#125;</span><br><span class="line">    binder.bind(GroupByQueryEngine.class).in(LazySingleton.class);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>QueryRunnerFactory具体实现类中是查询的具体实现,这里有XXXQuery,XXXQueryRunner,XXXQueryToolChest,XXXResultValue等.<br>以<code>run_example_client.sh</code>为例,它的查询类型是timeBoundary,对应TimeBoundaryQuery.  </p>
+<h2 id="RealtimeManager">RealtimeManager</h2><p>RealtimeManager构造函数需要的List<firedepartment>和QueryRunnerFactoryConglomerate都注入之后,在start方法就可以开工了.<br>fireDepartments的每个FireDepartment会被构造成FireChief,FireDepartment的DataSchema的DataSource都对应了一个FireChief.<br>FireChief包括FireDepartment(数据源),Firehose(怎么读取,迭代器,Source),Plumber(Sink).<br>FireChief线程会initPlumber初始化Plumber, 由Plumber启动作业, initFirehose初始化Firehose连接数据源,最后runFirehose读取数据.  </firedepartment></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  plumber = initPlumber();    <span class="comment">//fireDepartment.findPlumber() 先找到水管(水龙头)</span></span><br><span class="line">  plumber.startJob();         <span class="comment">//准备工作,接上管子</span></span><br><span class="line">  firehose = initFirehose();  <span class="comment">//fireDepartment.connect() (向消防局申请一条)消防带,给消防带接上水龙头</span></span><br><span class="line">  runFirehose(firehose);      <span class="comment">//开始消防工作,水会从源头数据源不断流出来</span></span><br><span class="line">  plumber.finishJob();        <span class="comment">//完成工作,卸掉消防带,关闭水龙头</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151208155730186" alt="fire_flow"></p>
+<h3 id="Firehose">Firehose</h3><p>Firehose消防带连接的是水源,当数据不断注入数据源(比如Kafka),则从消防水管会源源不断喷射出水流,喷射出来的就是InputRow.Firehose类似一个迭代器.        </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">runFirehose</span><span class="params">(Firehose firehose)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">final</span> Supplier&lt;Committer&gt; committerSupplier = Committers.supplierFromFirehose(firehose);</span><br><span class="line">  <span class="keyword">while</span> (firehose.hasMore()) &#123;</span><br><span class="line">    <span class="keyword">final</span> InputRow inputRow = firehose.nextRow();</span><br><span class="line">    lateEvent = plumber.add(inputRow, committerSupplier) == -<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">if</span> (indexLimitExceeded || lateEvent) &#123;</span><br><span class="line">      plumber.persist(committerSupplier.get());</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Firehose通过spec文件的ioConfig的firehose属性①,获取到FirehoseFactory后,根据dataSchema的parser②得到firehoseParser,从而创建Firehose.<br>为什么Firehose需要dataSchema,因为输出的数据依赖于输入数据的格式,parser用来如何解析输入源数据.parseSpec会指定输入数据的格式,时间撮和维度字段.   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Firehose <span class="title">connect</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> ioConfig.getFirehoseFactory().connect(dataSchema.getParser());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以Kafka数据源为例,①firehose的type得到KafkaEightFirehoseFactory. 有三个属性:consumerProps,feed和FirehoseFactory中的type.  </p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">"ioConfig" : &#123;</span><br><span class="line">  "type" : "realtime",</span><br><span class="line">  "firehose": &#123;             //①</span><br><span class="line">    "type": "kafka-0.8",    //对应KafkaEightFirehoseFactory</span><br><span class="line">    "consumerProps": &#123;</span><br><span class="line">      "zookeeper.connect": "localhost:2181",</span><br><span class="line">      ...</span><br><span class="line">    &#125;,</span><br><span class="line">    "feed": "wikipedia"</span><br><span class="line">  &#125;,</span><br><span class="line">  "plumber": &#123;</span><br><span class="line">    "type": "realtime"</span><br><span class="line">  &#125;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<h3 id="DataSchema">DataSchema</h3><p>DataSchema有四个json属性,它的构造函数参数ObjectMapper是依赖注入进来的. dataSchema.getParser()获得InputRowParser.<br>parser里面又配置了多个属性,所以在读取spec文件的时候,会将parser的JSON信息转换为Map.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@JsonCreator</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">DataSchema</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    @JsonProperty(<span class="string">"dataSource"</span>)</span> String dataSource,</span></span><br><span class="line"><span class="function">    @<span class="title">JsonProperty</span><span class="params">(<span class="string">"parser"</span>)</span> Map&lt;String, Object&gt; parser,</span></span><br><span class="line"><span class="function">    @<span class="title">JsonProperty</span><span class="params">(<span class="string">"metricsSpec"</span>)</span> AggregatorFactory[] aggregators,</span></span><br><span class="line"><span class="function">    @<span class="title">JsonProperty</span><span class="params">(<span class="string">"granularitySpec"</span>)</span> GranularitySpec granularitySpec,</span></span><br><span class="line"><span class="function">    @JacksonInject ObjectMapper jsonMapper</span></span><br><span class="line"><span class="function">)</span></span><br></pre></td></tr></table></figure>
+<p>下面是wikipedia的DataSchema spec文件.  </p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">"dataSchema" : &#123;</span><br><span class="line">  "dataSource" : "wikipedia",</span><br><span class="line">  "parser" : &#123;              //②</span><br><span class="line">    "type" : "string",      //对应StringInputRowParser</span><br><span class="line">    "parseSpec" : &#123;</span><br><span class="line">      "format" : "json",</span><br><span class="line">      "timestampSpec" : &#123;</span><br><span class="line">        "column" : "timestamp",</span><br><span class="line">        "format" : "auto"</span><br><span class="line">      &#125;,</span><br><span class="line">      "dimensionsSpec" : &#123;</span><br><span class="line">        "dimensions": ["page","language","user","unpatrolled","newPage","robot","anonymous","namespace","continent","country","region","city"],</span><br><span class="line">        "dimensionExclusions" : [],</span><br><span class="line">        "spatialDimensions" : []</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  "metricsSpec" : [&#123;</span><br><span class="line">    "type" : "count",</span><br><span class="line">    "name" : "count"</span><br><span class="line">  &#125;],</span><br><span class="line">  "granularitySpec" : &#123;</span><br><span class="line">    "type" : "uniform",</span><br><span class="line">    "segmentGranularity" : "DAY",</span><br><span class="line">    "queryGranularity" : "NONE"</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如何从JSON转换而来的Map得到InputRowParser,因为格式是固定的,所以在获取到parser后,分别获取timestampSpec和dimensionsSpec. <code>spec是说明书的意思,按照说明书吃药,没错</code>   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> InputRowParser <span class="title">getParser</span><span class="params">()</span></span>&#123;</span><br><span class="line">  <span class="keyword">final</span> InputRowParser inputRowParser = jsonMapper.convertValue(<span class="keyword">this</span>.parser, InputRowParser.class);</span><br><span class="line">  <span class="keyword">final</span> DimensionsSpec dimensionsSpec = inputRowParser.getParseSpec().getDimensionsSpec();</span><br><span class="line">  <span class="keyword">final</span> TimestampSpec timestampSpec = inputRowParser.getParseSpec().getTimestampSpec();</span><br><span class="line">  <span class="keyword">return</span> inputRowParser.withParseSpec(        <span class="comment">//进入parseSpec</span></span><br><span class="line">      inputRowParser.getParseSpec()           <span class="comment">//获取parseSpec</span></span><br><span class="line">            .withDimensionsSpec(              <span class="comment">//进入dimensionsSpec</span></span><br><span class="line">                dimensionsSpec                <span class="comment">//获取dimensionsSpec</span></span><br><span class="line">                    .withDimensionExclusions( <span class="comment">//过滤dimensionExclusions</span></span><br><span class="line">                        Sets.difference(dimensionExclusions, dimSet)</span><br><span class="line">                    )</span><br><span class="line">            )</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="KafkaEightFirehoseFactory">KafkaEightFirehoseFactory</h3><p>KafkaEightFirehoseFactory的connect方法会返回匿名的Firehose对象,它的nextRow方法会根据parser解析kafka的输入数据.<br>读取Kafka数据使用配置的consumerProps和feed,即可确定要连接的zk和topic. 然后创建一个消费者,数据保存在ConsumerIterator中.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> ConsumerConnector connector = Consumer.createJavaConsumerConnector(<span class="keyword">new</span> ConsumerConfig(consumerProps));</span><br><span class="line"><span class="keyword">final</span> Map&lt;String, List&lt;KafkaStream&lt;<span class="keyword">byte</span>[], <span class="keyword">byte</span>[]&gt;&gt;&gt; streams = connector.createMessageStreams(ImmutableMap.of(feed,<span class="number">1</span>));</span><br><span class="line"><span class="keyword">final</span> List&lt;KafkaStream&lt;<span class="keyword">byte</span>[], <span class="keyword">byte</span>[]&gt;&gt; streamList = streams.get(feed);</span><br><span class="line"><span class="keyword">final</span> KafkaStream&lt;<span class="keyword">byte</span>[], <span class="keyword">byte</span>[]&gt; stream = streamList.get(<span class="number">0</span>);</span><br><span class="line"><span class="keyword">final</span> ConsumerIterator&lt;<span class="keyword">byte</span>[], <span class="keyword">byte</span>[]&gt; iter = stream.iterator();</span><br></pre></td></tr></table></figure>
+<p>stream就是kafka的消息流. 通过迭代消息流中的message, 使用InputRowParser解析数据, 返回的就是InputRow.<br>再接上RealtimeManager的runFirehose会调用Firehose的nextRow读取数据, 整个流程就完成了: DataSchema定义-InputRowParser解析-InputRow.   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> <span class="keyword">new</span> Firehose() &#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasMore</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> iter.hasNext();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> InputRow <span class="title">nextRow</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">byte</span>[] message = iter.next().message();</span><br><span class="line">    <span class="keyword">return</span> theParser.parse(ByteBuffer.wrap(message));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151209110336447" alt="druid_row"></p>
+<h3 id="RealtimePlumber">RealtimePlumber</h3><p>从Firehose读取的每一行InputRow都会添加到Plumber中.每一行数据都有一个时间撮timestamp.truncatedTime是使用segmentGranularity对时间撮进行截断.<br>由于每条记录最终都要存在于一个Segment中,而Segment是以Interval指定的时间间隔存储.比如间隔为1h的Segment:20151011-100000~20151011-110000.<br>sinks保存的是截断的时间撮对应Sink.Sink保存的是这段时间内的所有事件.获取到Sink后往Sink中添加这一行记录. Sink底层使用了IncrementalIndex增量索引.<br>如果Sink不能再添加新的一行(比如Segment大小达到阈值)或者与达到刷新时间的间隔(IntermediatePersistPeriod,默认10分钟),就会将Sink中的数据进行持久化.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">add</span><span class="params">(InputRow row, Supplier&lt;Committer&gt; committerSupplier)</span> <span class="keyword">throws</span> IndexSizeExceededException </span>&#123;</span><br><span class="line">  <span class="keyword">final</span> Sink sink = getSink(row.getTimestampFromEpoch());</span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">int</span> numRows = sink.add(row);</span><br><span class="line">  <span class="keyword">if</span> (!sink.canAppendRow() || System.currentTimeMillis() &gt; nextFlush) &#123;</span><br><span class="line">    persist(committerSupplier.get());</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> numRows;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> Sink <span class="title">getSink</span><span class="params">(<span class="keyword">long</span> timestamp)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">final</span> Granularity segmentGranularity = schema.getGranularitySpec().getSegmentGranularity();</span><br><span class="line">  <span class="keyword">final</span> VersioningPolicy versioningPolicy = config.getVersioningPolicy();</span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">long</span> truncatedTime = segmentGranularity.truncate(<span class="keyword">new</span> DateTime(timestamp)).getMillis();</span><br><span class="line">  Sink retVal = sinks.get(truncatedTime);</span><br><span class="line">  <span class="keyword">if</span> (retVal == <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="keyword">final</span> Interval sinkInterval = <span class="keyword">new</span> Interval(<span class="keyword">new</span> DateTime(truncatedTime),segmentGranularity.increment(<span class="keyword">new</span> DateTime(truncatedTime)));</span><br><span class="line">    retVal = <span class="keyword">new</span> Sink(sinkInterval, schema, config, versioningPolicy.getVersion(sinkInterval));</span><br><span class="line">    segmentAnnouncer.announceSegment(retVal.getSegment());</span><br><span class="line">    sinks.put(truncatedTime, retVal);</span><br><span class="line">    sinkTimeline.add(retVal.getInterval(), retVal.getVersion(), <span class="keyword">new</span> SingleElementPartitionChunk&lt;Sink&gt;(retVal));</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> retVal;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在初次创建一个Sink的时候,会通过segmentAnnouncer通知生成一个新的Segment. 实际上是通知ZooKeeper创建对应的临时节点.<br>然后往sinks中添加截断的时间撮和Sink的映射关系,假设后面事件的截断时间撮(比如都在同一个小时内),就直接使用创建好的Sink.<br>sinkTimeline是Sink的时间线,除了Interval,还有版本信息,分区编号. 比如一个Segment在同一个小时内数据量太大,会分成多个分区.    </p>
+<p>Sink使用了FireHydrant和IncrementalIndex增量索引. 我们知道Druid存储的并不是原始数据,而是Roll-up后的结果.<br>在前面getSink第一次创建Sink的时候, 也会顺带创建FireHydrant和OnheapIncrementalIndex(在堆中的增量索引)以及DataSegment!<br>因为实时数据写入到实时节点,经过索引后,这些数据要能够立即被查询到. 所以经过Roll-up后的数据是放在实时节点的内存中的.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151209090705224" alt="druid_index"></p>
+<h3 id="IncrementalIndex">IncrementalIndex</h3><p>添加一行InputRow会从FireHydrant中获取出OnheapIncrementalIndex,往增量索引中添加一条记录.  </p>
+<ul>
+<li>dimensions: 一行记录的所有列名称,从dataSchema的dimensionsSpec/dimensions指定  </li>
+<li>dimensionValues: 某个dimension的列值, 可以是数组有多个值  </li>
+<li>dimensionOrder: &lt;dimension, order&gt; 每个dimension列名的位置  </li>
+<li>dimValues: DimensionHolder&lt;dimension, DimDim&gt; 通过canonical可以快速判断列值是否存在  </li>
+<li>dims[][]: dims[index]中的index来自于dimensionOrder对应的order顺序, 值=getDimVals(DimDim, dimensionValues)  </li>
+<li>TimeAndDims: 时间撮和dims组成  </li>
+<li>metrics AggregatorFactory[]: 聚合算子的构造工厂,通过工厂类的factorize可以构造出算子  </li>
+<li>aggs AggregatorType[]: metrics指标列对应的每个Aggregator算子  </li>
+</ul>
+<p>在准备了上面的这些数据后, IncrementalIndex调用addToFacts添加facts, OnheapIncrementalIndex的实现会使用构造好的聚合算子,开始聚合操作.    </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OnheapIncrementalIndex</span> <span class="keyword">extends</span> <span class="title">IncrementalIndex</span>&lt;<span class="title">Aggregator</span>&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ConcurrentHashMap&lt;Integer, Aggregator[]&gt; aggregators = <span class="keyword">new</span> ConcurrentHashMap&lt;&gt;();</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ConcurrentNavigableMap&lt;TimeAndDims, Integer&gt; facts = <span class="keyword">new</span> ConcurrentSkipListMap&lt;&gt;();</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">protected</span> Integer <span class="title">addToFacts</span><span class="params">(AggregatorFactory[] metrics, <span class="keyword">boolean</span> deserializeComplexMetrics, InputRow row,</span></span></span><br><span class="line"><span class="function"><span class="params">      AtomicInteger numEntries, TimeAndDims key, ThreadLocal&lt;InputRow&gt; rowContainer, Supplier&lt;InputRow&gt; rowSupplier)</span></span>&#123;</span><br><span class="line">      Aggregator[] aggs = <span class="keyword">new</span> Aggregator[metrics.length];</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; metrics.length; i++) &#123;</span><br><span class="line">        <span class="keyword">final</span> AggregatorFactory agg = metrics[i];</span><br><span class="line">        aggs[i] = agg.factorize(makeColumnSelectorFactory(agg, rowSupplier, deserializeComplexMetrics));</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      rowContainer.set(row);        <span class="comment">//线程安全操作, 在开始聚合前设置为当前行</span></span><br><span class="line">      <span class="keyword">for</span> (Aggregator agg : aggs) &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (agg) &#123;</span><br><span class="line">          agg.aggregate();          <span class="comment">//这里调用聚合算子的aggregate会发生聚合操作</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      rowContainer.set(<span class="keyword">null</span>);       <span class="comment">//结束当前行的聚合操作后, 设置为空</span></span><br><span class="line">      <span class="keyword">return</span> numEntries.get();      </span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>InputRow添加到IncrementalIndex, 会加入到增量索引的facts中. facts的TimeAndDims包含了时间撮和维度信息.<br>经过Roll-up的聚合算子会进行聚合操作,聚合结果也可以通过IncrementalIndex的相关getXXXValue获取.  </p>
+<h3 id="persistHydrant">persistHydrant</h3><p>在persist持久化最开始, 会进行swap操作:创建一个新的FireHydrant,返回旧的FireHydrant.   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">persist</span><span class="params">(<span class="keyword">final</span> Committer committer)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">final</span> List&lt;Pair&lt;FireHydrant, Interval&gt;&gt; indexesToPersist = Lists.newArrayList();</span><br><span class="line">  <span class="keyword">for</span> (Sink sink : sinks.values()) &#123;    <span class="comment">//每个Sink都要进行切换, 旧的保存, 新的存储最新的实时数据</span></span><br><span class="line">    <span class="keyword">if</span> (sink.swappable()) &#123;           </span><br><span class="line">      indexesToPersist.add(Pair.of(sink.swap(), sink.getInterval()));</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (Pair&lt;FireHydrant, Interval&gt; pair : indexesToPersist) &#123;</span><br><span class="line">    persistHydrant(pair.lhs, schema, pair.rhs, metadata));</span><br><span class="line">  &#125;</span><br><span class="line">  committer.run();</span><br><span class="line">  resetNextFlush();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">int</span> <span class="title">persistHydrant</span><span class="params">(FireHydrant indexToPersist, DataSchema schema, Interval interval, Map&lt;String, Object&gt; metaData)</span></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> numRows = indexToPersist.getIndex().size();     <span class="comment">//增量索引中的行数</span></span><br><span class="line">  <span class="keyword">final</span> IndexSpec indexSpec = config.getIndexSpec();  <span class="comment">//索引配置,在tuningConfig中,比如bitmap类型,列压缩格式</span></span><br><span class="line">  <span class="keyword">final</span> File persistedFile = indexMerger.persist(     <span class="comment">//合并索引</span></span><br><span class="line">      indexToPersist.getIndex(),</span><br><span class="line">      <span class="keyword">new</span> File(computePersistDir(schema, interval), String.valueOf(indexToPersist.getCount())),</span><br><span class="line">      metaData,</span><br><span class="line">      indexSpec</span><br><span class="line">  );</span><br><span class="line">  indexToPersist.swapSegment(                         <span class="comment">//增量索引转换为可查询的索引片</span></span><br><span class="line">      <span class="keyword">new</span> QueryableIndexSegment(indexToPersist.getSegment().getIdentifier(), indexIO.loadIndex(persistedFile))</span><br><span class="line">  );</span><br><span class="line">  <span class="keyword">return</span> numRows;    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>持久化增量索引,IndexMerge.persist会进一步调用merge,创建IncrementalIndexAdapter适配器.因为indexToPersist是OnHeapIncrementalIndex      </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">return merge(</span><br><span class="line">    Arrays.&lt;IndexableAdapter&gt;asList(new IncrementalIndexAdapter(dataInterval, index, indexSpec.getBitmapSerdeFactory().getBitmapFactory())),</span><br><span class="line">    index.getMetricAggs(), outDir, segmentMetadata, indexSpec, progress</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>IndexMerge会对维度和指标合并成mergedDimensions,mergedMetrics,还有每一行的合并函数rowMergerFn. 最后makeIndexFiles创建索引文件.  </p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/12/08/2015-12-08-Druid-source/">Druid源码解析(1) Guice和Realtime流程</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年12月08日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/12/08/2015-12-08-Druid-source/" title="Druid源码解析(1) Guice和Realtime流程">http://github.com/zqhxuyuan/2015/12/08/2015-12-08-Druid-source/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/12/08/2015-12-08-Druid-source/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/12/09/2015-12-09-Apache-Apex/">
+        Apache Apex 流处理和批处理统一框架
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/12/07/2015-12-07-Druid-WhitePaper/">
+        Druid White Paper(大数据实时统计分析数据存储)
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Guice_Inject"><span class="toc-number">1.</span> <span class="toc-text">Guice Inject</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#injectMembers和toInstance注入实例化好的对象"><span class="toc-number">1.1.</span> <span class="toc-text">injectMembers和toInstance注入实例化好的对象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Provider的get方法返回值绑定实现类"><span class="toc-number">1.2.</span> <span class="toc-text">Provider的get方法返回值绑定实现类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#注解和Provides绑定实现类"><span class="toc-number">1.3.</span> <span class="toc-text">注解和Provides绑定实现类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JSON_Property"><span class="toc-number">1.4.</span> <span class="toc-text">JSON Property</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#别的Module注入同样可用"><span class="toc-number">1.5.</span> <span class="toc-text">别的Module注入同样可用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MapBinder注入Map"><span class="toc-number">1.6.</span> <span class="toc-text">MapBinder注入Map</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RealtimeManager"><span class="toc-number">2.</span> <span class="toc-text">RealtimeManager</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Firehose"><span class="toc-number">2.1.</span> <span class="toc-text">Firehose</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DataSchema"><span class="toc-number">2.2.</span> <span class="toc-text">DataSchema</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#KafkaEightFirehoseFactory"><span class="toc-number">2.3.</span> <span class="toc-text">KafkaEightFirehoseFactory</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#RealtimePlumber"><span class="toc-number">2.4.</span> <span class="toc-text">RealtimePlumber</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IncrementalIndex"><span class="toc-number">2.5.</span> <span class="toc-text">IncrementalIndex</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#persistHydrant"><span class="toc-number">2.6.</span> <span class="toc-text">persistHydrant</span></a></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/12/08/2015-12-08-Druid-source/" data-title="Druid源码解析(1) Guice和Realtime流程" data-url="http://github.com/zqhxuyuan/2015/12/08/2015-12-08-Druid-source/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/12/09/2015-12-09-Apache-Apex/" title="上一篇: Apache Apex 流处理和批处理统一框架">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/12/07/2015-12-07-Druid-WhitePaper/" title="下一篇: Druid White Paper(大数据实时统计分析数据存储)">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

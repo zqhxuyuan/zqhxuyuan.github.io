@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Cassandra G1 GC | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Cassandra G1 GC使用，案例参考文档：https://medium.com/@mlowicki/move-cassandra-2-1-to-g1-garbage-collector-b9fb27365509#.7ugg78nq7http://www.oracle.com/technetwork/cn/articles/java/g1gc-1984535-zhs.html">
+<meta name="keywords" content="cassandra">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cassandra G1 GC">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/07/07/Cassandra-GC-G1/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Cassandra G1 GC使用，案例参考文档：https://medium.com/@mlowicki/move-cassandra-2-1-to-g1-garbage-collector-b9fb27365509#.7ugg78nq7http://www.oracle.com/technetwork/cn/articles/java/g1gc-1984535-zhs.html">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160707150022099">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160707150142788">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.292Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cassandra G1 GC">
+<meta name="twitter:description" content="Cassandra G1 GC使用，案例参考文档：https://medium.com/@mlowicki/move-cassandra-2-1-to-g1-garbage-collector-b9fb27365509#.7ugg78nq7http://www.oracle.com/technetwork/cn/articles/java/g1gc-1984535-zhs.html">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160707150022099">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Cassandra-GC-G1" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/07/07/Cassandra-GC-G1/" class="article-date">
+  	<time datetime="2016-07-06T16:00:00.000Z" itemprop="datePublished">2016-07-07</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Cassandra G1 GC
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/cassandra/">cassandra</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cassandra/">cassandra</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Cassandra G1 GC使用，案例<br>参考文档：<br><a href="https://medium.com/@mlowicki/move-cassandra-2-1-to-g1-garbage-collector-b9fb27365509#.7ugg78nq7" target="_blank" rel="noopener">https://medium.com/@mlowicki/move-cassandra-2-1-to-g1-garbage-collector-b9fb27365509#.7ugg78nq7</a><br><a href="http://www.oracle.com/technetwork/cn/articles/java/g1gc-1984535-zhs.html" target="_blank" rel="noopener">http://www.oracle.com/technetwork/cn/articles/java/g1gc-1984535-zhs.html</a><br><a id="more"></a></p>
+<h2 id="G1_GC">G1 GC</h2><p>关键词：调整</p>
+<p>G1 GC 有一个力求达到的暂停时间目标（软实时）。在年轻代回收期间，G1 GC 会调整其年轻代空间（eden 和存活空间大小）以满足软实时目标。<br>在混合回收期间，G1 GC 会根据混合垃圾回收的目标次数调整所回收的旧区域数量，并调整堆的每个区域中存活对象的百分比，以及总体可接受的堆废物百分比。  </p>
+<h2 id="从CMS迁移到G1">从CMS迁移到G1</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">#MAX_HEAP_SIZE=&quot;8192M&quot;</span><br><span class="line">#HEAP_NEWSIZE=&quot;2048M&quot;</span><br><span class="line">MAX_HEAP_SIZE=&quot;16384M&quot;</span><br><span class="line"></span><br><span class="line">#calculate_heap_sizes函数定义的地方可以不用删除，只要调用的地方去掉就可以</span><br><span class="line">#if [ &quot;x$MAX_HEAP_SIZE&quot; = &quot;x&quot; ] &amp;&amp; [ &quot;x$HEAP_NEWSIZE&quot; = &quot;x&quot; ]; then</span><br><span class="line">#    calculate_heap_sizes</span><br><span class="line">#else</span><br><span class="line">#    if [ &quot;x$MAX_HEAP_SIZE&quot; = &quot;x&quot; ] || [ &quot;x$HEAP_NEWSIZE&quot; = &quot;x&quot; ]; then</span><br><span class="line">#        echo &quot;please set or unset MAX_HEAP_SIZE and HEAP_NEWSIZE in pairs (see cassandra-env.sh)&quot;</span><br><span class="line">#        exit 1</span><br><span class="line">#    fi</span><br><span class="line">#fi</span><br><span class="line"></span><br><span class="line">JVM_OPTS=&quot;$JVM_OPTS -Xms$&#123;MAX_HEAP_SIZE&#125;&quot;</span><br><span class="line">JVM_OPTS=&quot;$JVM_OPTS -Xmx$&#123;MAX_HEAP_SIZE&#125;&quot;</span><br><span class="line">#JVM_OPTS=&quot;$JVM_OPTS -Xmn$&#123;HEAP_NEWSIZE&#125;&quot;  #G1不需要配置New</span><br><span class="line">#JVM_OPTS=&quot;$JVM_OPTS -Xms16G&quot;   #这些原本是不存在的，都去掉</span><br><span class="line">#JVM_OPTS=&quot;$JVM_OPTS -Xmx16G&quot;</span><br><span class="line">#JVM_OPTS=&quot;$JVM_OPTS -Xmn4G&quot;</span><br><span class="line">#JVM_OPTS=&quot;$JVM_OPTS -XX:MaxDirectMemorySize=6G&quot;</span><br><span class="line">#JVM_OPTS=&quot;$JVM_OPTS -XX:+HeapDumpOnOutOfMemoryError&quot;</span><br><span class="line"></span><br><span class="line">#JVM_OPTS=&quot;$JVM_OPTS -XX:+UseParNewGC&quot;</span><br><span class="line">#JVM_OPTS=&quot;$JVM_OPTS -XX:+UseConcMarkSweepGC&quot;</span><br><span class="line">#JVM_OPTS=&quot;$JVM_OPTS -XX:+CMSParallelRemarkEnabled&quot;</span><br><span class="line">#JVM_OPTS=&quot;$JVM_OPTS -XX:SurvivorRatio=8&quot;</span><br><span class="line">#JVM_OPTS=&quot;$JVM_OPTS -XX:MaxTenuringThreshold=1&quot;</span><br><span class="line">#JVM_OPTS=&quot;$JVM_OPTS -XX:CMSInitiatingOccupancyFraction=75&quot;</span><br><span class="line">#JVM_OPTS=&quot;$JVM_OPTS -XX:+UseCMSInitiatingOccupancyOnly&quot;</span><br><span class="line"> JVM_OPTS=&quot;$JVM_OPTS -XX:+UseTLAB&quot;</span><br><span class="line"> JVM_OPTS=&quot;$JVM_OPTS -XX:CompileCommandFile=$CASSANDRA_CONF/hotspot_compiler&quot;</span><br><span class="line">#JVM_OPTS=&quot;$JVM_OPTS -XX:CMSWaitDuration=10000&quot;</span><br><span class="line">JVM_OPTS=&quot;$JVM_OPTS -XX:+UseG1GC&quot;</span><br><span class="line">JVM_OPTS=&quot;$JVM_OPTS -XX:MaxGCPauseMillis=500&quot;</span><br><span class="line">JVM_OPTS=&quot;$JVM_OPTS -XX:G1RSetUpdatingPauseTimePercent=5&quot;</span><br><span class="line">JVM_OPTS=&quot;$JVM_OPTS -XX:+AlwaysPreTouch&quot;</span><br><span class="line">JVM_OPTS=&quot;$JVM_OPTS -XX:-UseBiasedLocking&quot;</span><br><span class="line"></span><br><span class="line">## note: bash evals ‘1.7.x’ as &gt; ‘1.7’ so this is really a &gt;= 1.7 jvm check</span><br><span class="line">#if &#123; [ &quot;$JVM_VERSION&quot; \&gt; &quot;1.7&quot; ] &amp;&amp; [ &quot;$JVM_VERSION&quot; \&lt; &quot;1.8.0&quot; ] &amp;&amp; [ &quot;$JVM_PATCH_VERSION&quot; -ge &quot;60&quot; ]; &#125; || [ &quot;$JVM_VERSION&quot; \&gt; &quot;1.8&quot; ] ; then</span><br><span class="line">#    JVM_OPTS=&quot;$JVM_OPTS -XX:+CMSParallelInitialMarkEnabled -XX:+CMSEdenChunksRecordAlways -XX:CMSWaitDuration=10000&quot;</span><br><span class="line">#fi</span><br></pre></td></tr></table></figure>
+<p>cassandra.yaml需要修改的配置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">table_allocation_type: offheap_objects</span><br><span class="line">memtable_offheap_space_in_mb: 2048</span><br></pre></td></tr></table></figure>
+<p>CMS切换为G1脚本：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/install/cassandra/conf</span><br><span class="line">mv cassandra-env.sh /usr/install/cassandra/conf/cassandra-env.sh.cms_20160621</span><br><span class="line">host=`ifconfig | grep &quot;192.168.4&quot; | awk &apos;/inet addr/&#123;sub(&quot;addr:&quot;,&quot;&quot;); print $2&#125;&apos;`</span><br><span class="line">comp=`cat /usr/install/cassandra/conf/cassandra.yaml | grep compactors`</span><br><span class="line">wget http://192.168.47.211:8000/cassandra-env.sh</span><br><span class="line">sed -i -e &quot;s/localhost/$host/g&quot; cassandra-env.sh</span><br><span class="line">sed -i -e &quot;s/heap_buffers/offheap_objects/g&quot; cassandra.yaml</span><br><span class="line"></span><br><span class="line">echo &quot;memtable_offheap_space_in_mb: 2048&quot; &gt;&gt; cassandra.yaml</span><br><span class="line">sed -i -e &quot;s/$comp/concurrent_compactors: 4/g&quot; cassandra.yaml</span><br><span class="line"></span><br><span class="line">/usr/install/cassandra/bin/nodetool flush</span><br><span class="line">/usr/install/cassandra/bin/nodetool stopdaemon</span><br><span class="line">/usr/install/cassandra/bin/cassandra</span><br></pre></td></tr></table></figure>
+<h2 id="比较GC时间">比较GC时间</h2><h3 id="使用CMS，FGC问题很严重">使用CMS，FGC问题很严重</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">163仍然使用CMS，22号：</span><br><span class="line">[admin@fp-cass048163 ~]$ jstat -gcutil 30764 1000</span><br><span class="line">  S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT</span><br><span class="line">  0.00   3.91  58.22  29.55  59.81 1554565 45480.263  7069 2087.903 47568.166</span><br><span class="line">  6.93   0.00   5.53  29.62  59.81 1554566 45480.290  7069 2087.903 47568.193</span><br><span class="line">  6.93   0.00  46.36  29.62  59.81 1554566 45480.290  7069 2087.903 47568.193</span><br><span class="line">24号：</span><br><span class="line">[admin@fp-cass048163 ~]$ jstat -gcutil 30764 1000</span><br><span class="line">  S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT</span><br><span class="line">  0.00   6.79  26.05  68.01  59.81 1613189 47191.337  7335 2159.359 49350.696</span><br><span class="line">  0.00   6.79  63.72  68.01  59.81 1613189 47191.337  7335 2159.359 49350.696</span><br><span class="line">  6.86   0.00   2.59  68.13  59.81 1613190 47191.368  7335 2159.359 49350.726</span><br><span class="line">  6.86   0.00  38.73  68.13  59.81 1613190 47191.368  7335 2159.359 49350.726</span><br><span class="line">  6.86   0.00  77.89  68.13  59.81 1613190 47191.368  7335 2159.359 49350.726</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>统计时间</th>
+<th>GC次数（超过200ms）</th>
+<th>超过1s</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2016-06-01</td>
+<td>73</td>
+<td>16</td>
+</tr>
+<tr>
+<td>2016-06-02</td>
+<td>469</td>
+<td>103</td>
+</tr>
+<tr>
+<td>2016-06-03</td>
+<td>81</td>
+<td>2</td>
+</tr>
+<tr>
+<td>2016-06-04</td>
+<td>228</td>
+<td>28</td>
+</tr>
+<tr>
+<td>2016-06-05</td>
+<td>618</td>
+<td>137</td>
+</tr>
+<tr>
+<td>2016-06-06</td>
+<td>312</td>
+<td>47</td>
+</tr>
+<tr>
+<td>2016-06-07</td>
+<td>63</td>
+<td>9</td>
+</tr>
+<tr>
+<td>2016-06-08</td>
+<td>273</td>
+<td>60</td>
+</tr>
+<tr>
+<td>2016-06-09</td>
+<td>64</td>
+<td>7</td>
+</tr>
+<tr>
+<td>2016-06-10</td>
+<td>66</td>
+<td>8</td>
+</tr>
+<tr>
+<td>2016-06-11</td>
+<td>79</td>
+<td>8</td>
+</tr>
+<tr>
+<td>2016-06-12</td>
+<td>1037</td>
+<td>244</td>
+</tr>
+<tr>
+<td>2016-06-13</td>
+<td>1160</td>
+<td>277</td>
+</tr>
+<tr>
+<td>2016-06-14</td>
+<td>65</td>
+<td>9</td>
+</tr>
+<tr>
+<td>2016-06-15</td>
+<td>82</td>
+<td>10</td>
+</tr>
+<tr>
+<td>2016-06-16</td>
+<td>880</td>
+<td>221</td>
+</tr>
+<tr>
+<td>2016-06-17</td>
+<td>622</td>
+<td>137</td>
+</tr>
+<tr>
+<td>2016-06-18</td>
+<td>1454</td>
+<td>343</td>
+</tr>
+<tr>
+<td>2016-06-19</td>
+<td>68</td>
+<td>5</td>
+</tr>
+<tr>
+<td>2016-06-20</td>
+<td>654</td>
+<td>175</td>
+</tr>
+<tr>
+<td>2016-06-21</td>
+<td>338</td>
+<td>87</td>
+</tr>
+</tbody>
+</table>
+<p>最后一条数据6-21号这天数据不是很准，因为这一天从CMS切换到G1</p>
+<h3 id="使用G1">使用G1</h3><p>在162上测试，YGC超过200ms的都很少了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[admin@fp-cass048162 logs]$ tail -f system.log | grep GC</span><br><span class="line">2016-06-21 11:14:12,947 - G1 Young Generation GC in 246ms.  G1 Eden Space: 8917090304 -&gt; 0; G1 Old Gen: 6059796976 -&gt; 6071479536; G1 Survivor Space: 167772160 -&gt; 293601280</span><br><span class="line">2016-06-21 11:15:36,990 - G1 Young Generation GC in 245ms.  G1 Eden Space: 8506048512 -&gt; 0; G1 Old Gen: 6200014560 -&gt; 6216498552;</span><br><span class="line">2016-06-21 13:22:22,631 - G1 Young Generation GC in 283ms.  G1 Eden Space: 8849981440 -&gt; 0; G1 Old Gen: 5812656096 -&gt; 5823218856; G1 Survivor Space: 327155712 -&gt; 335544320</span><br><span class="line">2016-06-21 13:50:59,920 - G1 Young Generation GC in 241ms.  G1 Eden Space: 10032775168 -&gt; 0; G1 Old Gen: 4619885032 -&gt; 4633499088; G1 Survivor Space: 268435456 -&gt; 276824064</span><br></pre></td></tr></table></figure>
+<p>✅ 162开启G1，22号到24号为止，没有发生一次FGC，下面是24号统计的信息：YGCT/YGC=2496/28780=0.086=86ms</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[admin@fp-cass048162 ~]$ jstat -gcutil 47069 1000</span><br><span class="line">  S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT</span><br><span class="line">  0.00 100.00  12.13  78.58  97.10  28780 2496.678     0    0.000 2496.678</span><br><span class="line">  0.00 100.00  24.17  78.58  97.10  28780 2496.678     0    0.000 2496.678</span><br><span class="line">  0.00 100.00  35.87  78.58  97.10  28780 2496.678     0    0.000 2496.678</span><br><span class="line">  0.00 100.00  47.74  78.58  97.10  28780 2496.678     0    0.000 2496.678</span><br><span class="line">  0.00 100.00  59.27  78.58  97.10  28780 2496.678     0    0.000 2496.678</span><br></pre></td></tr></table></figure>
+<p>✅ 171开启G1，22号（运行一天，没有发生一次FGC)：YGCT/YGC=494/6258=0.078=78ms</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[admin@cass048171 ~]$ jstat -gcutil 27229 1000</span><br><span class="line">  S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT</span><br><span class="line">  0.00 100.00  60.11  80.74  96.16   6258  494.761     0    0.000  494.761</span><br><span class="line">  0.00 100.00  74.05  80.74  96.16   6258  494.761     0    0.000  494.761</span><br><span class="line">  0.00 100.00  88.07  80.74  96.16   6258  494.761     0    0.000  494.761</span><br><span class="line">  0.00 100.00   7.06  80.81  96.16   6259  494.846     0    0.000  494.846</span><br></pre></td></tr></table></figure>
+<h3 id="GC统计历史数据">GC统计历史数据</h3><blockquote>
+<p>注：由于Cassandra日志文件会进行滚动，所以当前日志文件用grep，以前的文件用zgrep统计<br>统计CMS一般在压缩文件中查找：ConcurrentMarkSweep<br>统计G1一般在当前文件中查找：G1 Old Generation GC（当然也可以在压缩文件中找）</p>
+</blockquote>
+<h4 id="所有GC统计（当前文件，压缩文件）：">所有GC统计（当前文件，压缩文件）：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">当前文件，所有GC，按天统计</span><br><span class="line">$ grep &apos;GC&apos; /usr/install/cassandra/logs/system.log | awk &apos;&#123;print $4&#125;&apos; | sort | uniq -c | awk &apos;&#123;print $2&quot; &quot;$1&#125;&apos; | tail</span><br><span class="line">2016-06-25 29</span><br><span class="line">2016-06-26 55</span><br><span class="line">压缩文件，所有GC，按天统计</span><br><span class="line">$ zgrep &apos;GC&apos; /usr/install/cassandra/logs/system.log.*.zip | awk &apos;&#123;print $4&#125;&apos; | sort | uniq -c | awk &apos;&#123;print $2&quot; &quot;$1&#125;&apos; | tail</span><br><span class="line">2016-06-16 880</span><br><span class="line">2016-06-17 622</span><br><span class="line">2016-06-18 1454</span><br><span class="line">2016-06-19 68</span><br><span class="line">2016-06-20 654</span><br><span class="line">2016-06-21 362</span><br><span class="line">2016-06-22 22</span><br><span class="line">2016-06-23 84</span><br><span class="line">2016-06-24 46</span><br><span class="line">2016-06-25 62</span><br></pre></td></tr></table></figure>
+<h4 id="超过10s的GC（当前文件，压缩文件）">超过10s的GC（当前文件，压缩文件）</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ zgrep &apos;GC in [0-9][0-9][0-9][0-9]&apos; /usr/install/cassandra/logs/system.log.*.zip | awk &apos;&#123;print $4&#125;&apos; | sort | uniq -c | awk &apos;&#123;print $2&quot; &quot;$1&#125;&apos; | tail</span><br><span class="line">2016-06-13 280</span><br><span class="line">2016-06-14 10</span><br><span class="line">2016-06-15 11</span><br><span class="line">2016-06-16 224</span><br><span class="line">2016-06-17 139</span><br><span class="line">2016-06-18 346</span><br><span class="line">2016-06-19 5</span><br><span class="line">2016-06-20 177</span><br><span class="line">2016-06-21 88</span><br><span class="line">2016-06-23 1</span><br><span class="line"></span><br><span class="line">$ grep &apos;GC in [0-9][0-9][0-9][0-9]&apos; /usr/install/cassandra/logs/system.log | awk &apos;&#123;print $4&#125;&apos; | sort | uniq -c | awk &apos;&#123;print $2&quot; &quot;$1&#125;&apos; | tail</span><br></pre></td></tr></table></figure>
+<h4 id="当前文件统计（所有GC，超过10s）***">当前文件统计（所有GC，超过10s）***</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">当前文件，所有GC，按时段统计</span><br><span class="line">grep &apos;GC&apos; /usr/install/cassandra/logs/system.log | awk &apos;&#123;print $4&quot;:&quot;substr($5,0,2)&#125;&apos; | uniq -c | awk &apos;&#123;print $2&quot; &quot;$1&#125;&apos; | sort </span><br><span class="line">当前文件，超过10s的所有GC，按天统计</span><br><span class="line">grep &apos;GC in [0-9][0-9][0-9][0-9]&apos; /usr/install/cassandra/logs/system.log | awk &apos;&#123;print $4&#125;&apos; | uniq -c | awk &apos;&#123;print $2&quot; &quot;$1&#125;&apos; | sort </span><br><span class="line">当前文件，超过10s的GC，按时段统计</span><br><span class="line">grep &apos;GC in [0-9][0-9][0-9][0-9]&apos; /usr/install/cassandra/logs/system.log | awk &apos;&#123;print $4&quot;:&quot;substr($5,0,2)&#125;&apos; | uniq -c | awk &apos;&#123;print $2&quot; &quot;$1&#125;&apos; | sort</span><br></pre></td></tr></table></figure>
+<h4 id="压缩文件统计（所有GC，超过10s）">压缩文件统计（所有GC，超过10s）</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">压缩文件，所有GC，按时段统计</span><br><span class="line">zgrep &apos;GC&apos; /usr/install/cassandra/logs/system.log.1.zip | awk &apos;&#123;print $4&quot;:&quot;substr($5,0,2)&#125;&apos; | sort | uniq -c | awk &apos;&#123;print $2&quot; &quot;$1&#125;&apos; </span><br><span class="line">压缩文件，超过10s的所有GC，按天统计</span><br><span class="line">zgrep &apos;GC in [0-9][0-9][0-9][0-9]ms&apos; /usr/install/cassandra/logs/system.log.1.zip | awk &apos;&#123;print $4&#125;&apos; | sort | uniq -c | awk &apos;&#123;print $2&quot; &quot;$1&#125;&apos;</span><br></pre></td></tr></table></figure>
+<h4 id="压缩文件的CMS，当前文件的G1">压缩文件的CMS，当前文件的G1</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">压缩文件，CMS GC，按天统计</span><br><span class="line">$ zgrep &apos;ConcurrentMarkSweep&apos; /usr/install/cassandra/logs/system.log.*.zip | awk &apos;&#123;print $4&#125;&apos; | sort | uniq -c | awk &apos;&#123;print $2&quot; &quot;$1&#125;&apos; | tail</span><br><span class="line">2016-06-12 1023</span><br><span class="line">2016-06-13 1138</span><br><span class="line">2016-06-14 60</span><br><span class="line">2016-06-15 75</span><br><span class="line">2016-06-16 868</span><br><span class="line">2016-06-17 612</span><br><span class="line">2016-06-18 1438</span><br><span class="line">2016-06-19 62</span><br><span class="line">2016-06-20 635</span><br><span class="line">2016-06-21 326</span><br><span class="line">当前文件，G1 GC，按天统计</span><br><span class="line">$ grep &apos;G1 Old Generation GC&apos; /usr/install/cassandra/logs/system.log | awk &apos;&#123;print $4&#125;&apos; | sort | uniq -c | awk &apos;&#123;print $2&quot; &quot;$1&#125;&apos;</span><br></pre></td></tr></table></figure>
+<h2 id="并不是说不会FGC了">并不是说不会FGC了</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[admin@fp-cass048162 ~]$ grep &apos;GC&apos; /usr/install/cassandra/logs/system.log | wc -l</span><br><span class="line">134</span><br><span class="line">[admin@fp-cass048162 ~]$ grep &apos;GC in [0-9][0-9][0-9][0-9]&apos; /usr/install/cassandra/logs/system.log | wc -l</span><br><span class="line">1</span><br></pre></td></tr></table></figure>
+<p>咦，还是有一个超过10s的GC：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">2016-06-23 08:09:25,970 - G1 Young Generation GC in 206ms.   G1 Eden Space: 9646899200 -&gt; 0; G1 Old Gen: 4639205352 -&gt; 5004258312;   G1 Survivor Space: 511705088 -&gt; 176160768</span><br><span class="line">2016-06-23 09:47:38,757 - G1 Young Generation GC in 3770ms.  G1 Eden Space: 8027897856 -&gt; 0; G1 Old Gen: 6979980640 -&gt; 13109433016;  G1 Survivor Space: 150994944 -&gt; 1023410176</span><br><span class="line">2016-06-23 09:47:39,607 - G1 Young Generation GC in 780ms.   G1 Eden Space: 159383552 -&gt; 0;  G1 Old Gen: 13109433016 -&gt; 14160738744; G1 Survivor Space: 1023410176 -&gt; 75497472</span><br><span class="line">2016-06-23 10:18:11,557 - G1 Young Generation GC in 257ms.   G1 Eden Space: 771751936 -&gt; 0;  G1 Old Gen: 6197828584 -&gt; 5781983928;   G1 Survivor Space: 83886080 -&gt; 92274688</span><br></pre></td></tr></table></figure>
+<p>同样的情况发生在171上：24号：<br>YGCT/YGC=3051/57162=0.053=53ms<br>FTCT/FGC=63/2=30s！！！</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">[admin@cass048171 ~]$ jstat -gcutil 27229 1000</span><br><span class="line">  S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT</span><br><span class="line">  0.00 100.00  25.22  86.72  96.99  57162 3051.206     2   63.878 3115.084</span><br><span class="line">  0.00 100.00  53.48  86.72  96.99  57162 3051.206     2   63.878 3115.084</span><br><span class="line">  0.00 100.00  78.70  86.65  96.99  57162 3051.206     2   63.878 3115.084</span><br><span class="line"></span><br><span class="line">[admin@cass048171 ~]$ grep &apos;GC in [0-9][0-9][0-9][0-9]&apos; /usr/install/cassandra/logs/system.log | wc -l</span><br><span class="line">4</span><br><span class="line">[admin@cass048171 ~]$ grep &apos;GC&apos; /usr/install/cassandra/logs/system.log | wc -l</span><br><span class="line">24</span><br><span class="line"></span><br><span class="line">2016-06-23 10:33:10,706 - G1 Young Generation GC in 353ms.    G1 Eden Space: 10049552384 -&gt; 0; G1 Old Gen: 5018700376 -&gt; 5039128024;   G1 Survivor Space: 134217728 -&gt; 914358272</span><br><span class="line">2016-06-23 10:33:36,366 - G1 Young Generation GC in 21135ms.  G1 Eden Space: 8438939648 -&gt; 0;  G1 Old Gen: 5039128024 -&gt; 13030534304;  G1 Survivor Space: 914358272 -&gt; 1174405120   🙅</span><br><span class="line">2016-06-23 10:33:37,667 - G1 Young Generation GC in 1209ms.   G1 Eden Space: 8388608 -&gt; 0;     G1 Old Gen: 13030534304 -&gt; 14225910944; G1 Survivor Space: 1174405120 -&gt; 58720256    🙅</span><br><span class="line">2016-06-23 10:33:38,638 - G1 Young Generation GC in 259ms.    G1 Eden Space: 796917760 -&gt; 0;   G1 Old Gen: 14225910944 -&gt; 14276242592; G1 Survivor Space: 58720256 -&gt; 75497472</span><br><span class="line">2016-06-23 10:33:48,066 - G1 Young Generation GC in 1096ms.   G1 Eden Space: 771751936 -&gt; 0;   G1 Old Gen: 16117542048 -&gt; 15689723040; G1 Survivor Space: 83886080 -&gt; 33554432      🙅</span><br><span class="line">2016-06-23 17:58:26,833 - G1 Young Generation GC in 261ms.    G1 Eden Space: 796917760 -&gt; 0;   G1 Old Gen: 13005169216 -&gt; 12363114936;</span><br><span class="line">2016-06-23 21:01:43,202 - G1 Young Generation GC in 268ms.    G1 Eden Space: 796917760 -&gt; 0;   G1 Old Gen: 14009140736 -&gt; 13586786088; G1 Survivor Space: 58720256 -&gt; 67108864</span><br><span class="line">2016-06-23 22:54:34,508 - G1 Old Generation GC in 35275ms.                                     G1 Old Gen: 14394600712 -&gt; 10991951608; G1 Survivor Space: 25165824 -&gt; 0             🙅(FGC)</span><br><span class="line">2016-06-23 22:56:53,104 - G1 Young Generation GC in 229ms.    G1 Eden Space: 796917760 -&gt; 0;   G1 Old Gen: 6362278144 -&gt; 4860703680;   G1 Survivor Space: 58720256 -&gt; 33554432</span><br><span class="line">2016-06-23 22:56:54,109 - G1 Young Generation GC in 263ms.    G1 Eden Space: 822083584 -&gt; 0;   G1 Old Gen: 4860703680 -&gt; 3774189968;   G1 Survivor Space: 33554432 -&gt; 50331648</span><br><span class="line">2016-06-24 01:15:31,753 - G1 Young Generation GC in 251ms.    G1 Eden Space: 10141827072 -&gt; 0; G1 Old Gen: 4901503760 -&gt; 4907845240;   G1 Survivor Space: 134217728 -&gt; 687865856</span><br><span class="line">2016-06-24 01:15:38,930 - G1 Young Generation GC in 252ms.    G1 Eden Space: 9026142208 -&gt; 0;  G1 Old Gen: 4907845240 -&gt; 4959650376;   G1 Survivor Space: 687865856 -&gt; 645922816</span><br><span class="line">2016-06-24 01:15:46,310 - G1 Young Generation GC in 263ms.    G1 Eden Space: 9059696640 -&gt; 0;  G1 Old Gen: 4959650376 -&gt; 5025814888;   G1 Survivor Space: 645922816 -&gt; 637534208</span><br><span class="line">2016-06-24 01:15:53,692 - G1 Young Generation GC in 232ms.    G1 Eden Space: 9009364992 -&gt; 0;  G1 Old Gen: 5025814888 -&gt; 5035267128;   G1 Survivor Space: 637534208 -&gt; 645922816</span><br><span class="line">2016-06-24 01:16:01,092 - G1 Young Generation GC in 234ms.    G1 Eden Space: 8984199168 -&gt; 0;  G1 Old Gen: 5035267128 -&gt; 5635307288;   G1 Survivor Space: 645922816 -&gt; 100663296</span><br><span class="line">2016-06-24 02:40:23,736 - G1 Young Generation GC in 205ms.    G1 Eden Space: 771751936 -&gt; 0;   G1 Old Gen: 5298934024 -&gt; 4154593728;</span><br><span class="line">2016-06-24 04:47:09,843 - G1 Young Generation GC in 429ms.    G1 Eden Space: 8833204224 -&gt; 0;  G1 Old Gen: 6350837368 -&gt; 6645919712;   G1 Survivor Space: 75497472 -&gt; 1115684864</span><br><span class="line">2016-06-24 04:47:10,624 - G1 Young Generation GC in 476ms.    G1 Eden Space: 545259520 -&gt; 0;   G1 Old Gen: 6645919712 -&gt; 7641490784;   G1 Survivor Space: 1115684864 -&gt; 142606336</span><br><span class="line">2016-06-24 04:47:16,581 - G1 Young Generation GC in 796ms.    G1 Eden Space: 6660554752 -&gt; 0;  G1 Old Gen: 7779693536 -&gt; 8886989792;   G1 Survivor Space: 142606336 -&gt; 855638016</span><br><span class="line">2016-06-24 04:47:17,526 - G1 Young Generation GC in 875ms.    G1 Eden Space: 8388608 -&gt; 0;     G1 Old Gen: 8886989792 -&gt; 8136209376;   G1 Survivor Space: 855638016 -&gt; 58720256</span><br><span class="line">2016-06-24 04:47:18,447 - G1 Young Generation GC in 286ms.    G1 Eden Space: 796917760 -&gt; 0;   G1 Old Gen: 8136209376 -&gt; 7452538096;   G1 Survivor Space: 58720256 -&gt; 109051904</span><br><span class="line">2016-06-24 04:47:19,135 - G1 Young Generation GC in 217ms.    G1 Eden Space: 746586112 -&gt; 0;   G1 Old Gen: 7452538096 -&gt; 7683224816;</span><br><span class="line">2016-06-24 04:47:24,022 - G1 Young Generation GC in 202ms.    G1 Eden Space: 2147483648 -&gt; 0;  G1 Old Gen: 8652109040 -&gt; 8836658416;   G1 Survivor Space: 109051904 -&gt; 285212672</span><br><span class="line">2016-06-24 04:47:29,255 - G1 Young Generation GC in 263ms.    G1 Eden Space: 536870912 -&gt; 0;   G1 Old Gen: 8853435632 -&gt; 8970333808;   G1 Survivor Space: 318767104 -&gt; 58720256</span><br></pre></td></tr></table></figure>
+<p>如果将GC时间和Compaction对照，会发现时间是对应的。但是这能说明什么问题，是因为Compaction导致GC的吗？</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">[admin@cass048171 ~]$ cat /usr/install/cassandra/logs/system.log | grep CompactionManager</span><br><span class="line">INFO  [Service Thread] 2016-06-23 10:33:10,755 StatusLogger.java:75 - CompactionManager                 4        17</span><br><span class="line">INFO  [Service Thread] 2016-06-23 10:33:37,642 StatusLogger.java:75 - CompactionManager                 5        18</span><br><span class="line">INFO  [Service Thread] 2016-06-23 10:33:37,726 StatusLogger.java:75 - CompactionManager                 5        18</span><br><span class="line">INFO  [Service Thread] 2016-06-23 10:33:38,680 StatusLogger.java:75 - CompactionManager                 5        18</span><br><span class="line">INFO  [Service Thread] 2016-06-23 10:33:48,084 StatusLogger.java:75 - CompactionManager                 5        18</span><br><span class="line">INFO  [Service Thread] 2016-06-23 17:58:26,881 StatusLogger.java:75 - CompactionManager                 6        61</span><br><span class="line">INFO  [Service Thread] 2016-06-23 21:01:43,258 StatusLogger.java:75 - CompactionManager                 6        73</span><br><span class="line">INFO  [Service Thread] 2016-06-23 22:54:34,576 StatusLogger.java:75 - CompactionManager                 5        81</span><br><span class="line">INFO  [Service Thread] 2016-06-23 22:56:53,115 StatusLogger.java:75 - CompactionManager                 5        71</span><br><span class="line">INFO  [Service Thread] 2016-06-23 22:56:54,124 StatusLogger.java:75 - CompactionManager                 5        71</span><br><span class="line">INFO  [Service Thread] 2016-06-24 01:15:31,762 StatusLogger.java:75 - CompactionManager                 5        66</span><br><span class="line">INFO  [Service Thread] 2016-06-24 01:15:38,940 StatusLogger.java:75 - CompactionManager                 5        66</span><br><span class="line">INFO  [Service Thread] 2016-06-24 01:15:46,321 StatusLogger.java:75 - CompactionManager                 5        66</span><br><span class="line">INFO  [Service Thread] 2016-06-24 01:15:53,717 StatusLogger.java:75 - CompactionManager                 5        66</span><br><span class="line">INFO  [Service Thread] 2016-06-24 01:16:01,106 StatusLogger.java:75 - CompactionManager                 5        66</span><br><span class="line">INFO  [Service Thread] 2016-06-24 02:40:23,752 StatusLogger.java:75 - CompactionManager                 5        44</span><br><span class="line">INFO  [Service Thread] 2016-06-24 04:47:09,879 StatusLogger.java:75 - CompactionManager                 6        35</span><br><span class="line">INFO  [Service Thread] 2016-06-24 04:47:10,636 StatusLogger.java:75 - CompactionManager                 6        35</span><br><span class="line">INFO  [Service Thread] 2016-06-24 04:47:17,491 StatusLogger.java:75 - CompactionManager                 6        35</span><br><span class="line">INFO  [Service Thread] 2016-06-24 04:47:17,555 StatusLogger.java:75 - CompactionManager                 6        35</span><br><span class="line">INFO  [Service Thread] 2016-06-24 04:47:18,458 StatusLogger.java:75 - CompactionManager                 6        35</span><br><span class="line">INFO  [Service Thread] 2016-06-24 04:47:19,150 StatusLogger.java:75 - CompactionManager                 6        35</span><br><span class="line">INFO  [Service Thread] 2016-06-24 04:47:24,031 StatusLogger.java:75 - CompactionManager                 6        35</span><br><span class="line">INFO  [Service Thread] 2016-06-24 04:47:29,287 StatusLogger.java:75 - CompactionManager                 6        35</span><br></pre></td></tr></table></figure>
+<h2 id="长时间的YGC案例">长时间的YGC案例</h2><p>业务监控系统：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160707150022099" alt="c_ygc_monitor"></p>
+<p>OpsCenter：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160707150142788" alt="c_ygc_ops"></p>
+<p>Cassandra日志文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[admin@cass048171 ~]$ grep &apos;GC in [0-9][0-9][0-9]&apos; /usr/install/cassandra/logs/system.log</span><br><span class="line">INFO  [Service Thread] 2016-07-07 08:19:08,106 GCInspector.java:258 - G1 Young Generation GC in 204ms.  G1 Eden Space:  696254464 -&gt; 0;  G1 Old Gen:  7281313536 -&gt;  5909453064; G1 Survivor Space:  159383552 -&gt;   92274688;</span><br><span class="line">INFO  [Service Thread] 2016-07-07 08:19:09,324 GCInspector.java:258 - G1 Young Generation GC in 313ms.  G1 Eden Space:  763363328 -&gt; 0;  G1 Old Gen:  5909453064 -&gt;  5497545648; G1 Survivor Space:   92274688 -&gt;  100663296;</span><br><span class="line">INFO  [Service Thread] 2016-07-07 08:59:00,400 GCInspector.java:258 - G1 Young Generation GC in 270ms.  G1 Eden Space:  763363328 -&gt; 0;  G1 Old Gen:  3972003048 -&gt;  3531601136; G1 Survivor Space:   92274688 -&gt;   67108864;</span><br><span class="line">INFO  [Service Thread] 2016-07-07 09:49:47,102 GCInspector.java:258 - G1 Young Generation GC in 17887ms.G1 Eden Space: 8875147264 -&gt; 0;  G1 Old Gen:  6224121000 -&gt; 11796004824; G1 Survivor Space:  125829120 -&gt; 1132462080;</span><br><span class="line">INFO  [Service Thread] 2016-07-07 09:49:48,795 GCInspector.java:258 - G1 Young Generation GC in 536ms.  G1 Eden Space: 1241513984 -&gt; 0;  G1 Old Gen: 11796004824 -&gt; 13020741592; G1 Survivor Space: 1132462080 -&gt;  301989888;</span><br><span class="line">INFO  [Service Thread] 2016-07-07 09:49:51,681 GCInspector.java:258 - G1 Young Generation GC in 464ms.  G1 Eden Space: 1619001344 -&gt; 0;  G1 Old Gen: 13020741592 -&gt; 13700218840; G1 Survivor Space:  301989888 -&gt;  243269632;</span><br><span class="line">INFO  [Service Thread] 2016-07-07 09:49:53,068 GCInspector.java:258 - G1 Young Generation GC in 311ms.  G1 Eden Space: 1006632960 -&gt; 0;  G1 Old Gen: 13700218840 -&gt; 14111260632; G1 Survivor Space:  243269632 -&gt;  159383552;</span><br><span class="line">INFO  [Service Thread] 2016-07-07 09:49:54,076 GCInspector.java:258 - G1 Young Generation GC in 263ms.  G1 Eden Space:  746586112 -&gt; 0;  G1 Old Gen: 14111260632 -&gt; 14463582168; G1 Survivor Space:  159383552 -&gt;  117440512;</span><br><span class="line">INFO  [Service Thread] 2016-07-07 09:49:55,003 GCInspector.java:258 - G1 Young Generation GC in 236ms.  G1 Eden Space:  738197504 -&gt; 0;  G1 Old Gen: 14463582168 -&gt; 14803320800; G1 Survivor Space:  117440512 -&gt;  109051904;</span><br><span class="line">INFO  [Service Thread] 2016-07-07 09:49:55,916 GCInspector.java:258 - G1 Young Generation GC in 225ms.  G1 Eden Space:  746586112 -&gt; 0;  G1 Old Gen: 14803320800 -&gt; 15096922080;</span><br><span class="line">INFO  [Service Thread] 2016-07-07 09:49:57,943 GCInspector.java:258 - G1 Young Generation GC in 202ms.  G1 Eden Space:  746586112 -&gt; 0;  G1 Old Gen: 15390523360 -&gt; 15717679072;</span><br><span class="line">INFO  [Service Thread] 2016-07-07 09:50:02,743 GCInspector.java:258 - G1 Young Generation GC in 251ms.  G1 Eden Space:  830472192 -&gt; 0;  G1 Old Gen: 10585068072 -&gt;  9267343240; G1 Survivor Space: 25165824 -&gt; 33554432;</span><br><span class="line">INFO  [Service Thread] 2016-07-07 09:50:04,138 GCInspector.java:258 - G1 Young Generation GC in 326ms.  G1 Eden Space:  822083584 -&gt; 0;  G1 Old Gen:  9267343240 -&gt;  8527731712;</span><br><span class="line">INFO  [Service Thread] 2016-07-07 09:50:28,182 GCInspector.java:258 - G1 Young Generation GC in 204ms.  G1 Eden Space:  796917760 -&gt; 0;  G1 Old Gen:  8527855792 -&gt;  8195194872; G1 Survivor Space: 58720256 -&gt; 100663296;</span><br></pre></td></tr></table></figure>
+<p><code>2016-07-07 09:49:47</code>发生17s的YGC，堆中各个代的大小： </p>
+<blockquote>
+<p>在/var/log/cassandra/gc.log中是：2016-07-07T09:49:47</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">G1 Young Generation GC in 17887ms.                  YGC花费了17s</span><br><span class="line">G1 Eden Space: 8,875,147,264 -&gt; 0;                  8G -&gt; 0      新生代</span><br><span class="line">G1 Old Gen: 6,224,121,000 -&gt; 11,796,004,824;        6G -&gt; 11G  </span><br><span class="line">G1 Survivor Space: 125,829,120 -&gt; 1,132,462,080;    125M -&gt; 1G</span><br></pre></td></tr></table></figure>
+<p>Eden从8G减少到0，Survivor从125M增加到1G，其实很好理解：<br>对象从Eden转移到了Survivor，所以Eden减少，Survivor增加。<br>Old也会增加的原因是：在GC的时候，Survivor的对象到达年龄计数器后，也会转移到Old。<br>所以Survivor增加的空间并不一定都是从Eden转移过来的，因为Survivor有一部分会转移到Old。<br>同时并不是Eden的所有对象都会转移到Survivor，只有需要的对象才会转移到Survivor。  </p>
+<p>按照正常转移方式，Old增加的大小，最多不会超过Survivor的大小。但是上面Old从6G增加到11G，<br>而Survivor在GC前只有125M，所以正常来说，就算Survivor的所有对象都转移到Old最多也不会超过7G！  </p>
+<p>那么唯一的解释是：Eden的对象直接被转移到了Old！<br>Eden总共有8G，转移了1G到Survivor，并且有4G跳过Survivor直接转移到Old！  </p>
+<blockquote>
+<p>新生代8G看起来有点大，对比其他日志，最大的也才1.6G。</p>
+</blockquote>
+<p>年轻代的GC：存活对象会被拷贝/移动到一个或多个“Survivor”区域，存活时间够长的直接移到“老年代”区域。<br>这里会stop the world，但young GC的过程是多线程执行的。  </p>
+<p>结论：YGC会STW，如果YGC时间很长，应用程序暂停时间就很长！</p>
+<p><strong>总体GC时间</strong>  </p>
+<p>上gc.log：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">下面这两条只是作为对比：</span><br><span class="line">2016-07-07T09:49:22.341+0800: 942859.604: Total time for which application threads were stopped: 0.0814731 seconds, Stopping threads took: 0.0002340 seconds</span><br><span class="line">2016-07-07T09:49:29.213+0800: 942866.476: Total time for which application threads were stopped: 0.0012369 seconds, Stopping threads took: 0.0002430 seconds</span><br><span class="line"></span><br><span class="line">这里才开始比较严重的YGC：</span><br><span class="line">&#123;Heap before GC invocations=159966 (full 2):</span><br><span class="line"> garbage-first heap   total 16777216K, used 14876451K [0x00000003c0000000, 0x00000003c0804000, 0x00000007c0000000)</span><br><span class="line">  region size 8192K, 1074 young (8798208K), 15 survivors (122880K)</span><br><span class="line"> Metaspace       used 35401K, capacity 35916K, committed 36224K, reserved 1081344K</span><br><span class="line">  class space    used 3719K, capacity 3839K, committed 3968K, reserved 1048576K</span><br><span class="line">2016-07-07T09:49:29.213+0800: 942866.477: [GC pause (GCLocker Initiated GC) (young)  →YGC,暂停在GCLocker Initiated GC阶段</span><br><span class="line">Desired survivor size 566231040 bytes, new threshold 15 (max 15)  中间这一段打印的是存活区的信息</span><br><span class="line">- age   1:   16845608 bytes,   16845608 total</span><br><span class="line">- age   2:    6895480 bytes,   23741088 total</span><br><span class="line">- age   3:    7210040 bytes,   30951128 total</span><br><span class="line">- age   4:    6712376 bytes,   37663504 total</span><br><span class="line">- age   5:    6050320 bytes,   43713824 total</span><br><span class="line">- age   6:    5356392 bytes,   49070216 total</span><br><span class="line">- age   7:    5514552 bytes,   54584768 total</span><br><span class="line">- age   8:    5607616 bytes,   60192384 total</span><br><span class="line">- age   9:    5430416 bytes,   65622800 total</span><br><span class="line">- age  10:    5450352 bytes,   71073152 total</span><br><span class="line">- age  11:    5550480 bytes,   76623632 total</span><br><span class="line">- age  12:    5110560 bytes,   81734192 total</span><br><span class="line">- age  13:    5440256 bytes,   87174448 total</span><br><span class="line">- age  14:    5565200 bytes,   92739648 total</span><br><span class="line">- age  15:    5550672 bytes,   98290320 total</span><br><span class="line"> (to-space exhausted), 17.8874292 secs]  → YGC花费了17s</span><br></pre></td></tr></table></figure>
+<p>关于G1日志文件的分析参考：<a href="https://blogs.oracle.com/g1gc/entry/g1gc_logs_how_to_print" target="_blank" rel="noopener">https://blogs.oracle.com/g1gc/entry/g1gc_logs_how_to_print</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2014-07-16T11:14:35.792-0700: 11.871: [GC pause (G1 Evacuation Pause) (young),0.0178446 secs]</span><br><span class="line">Date-and-time: timestamp [GC (gc-cause-is-evacuation-pause) (gc-type-is-young-gc), total-gc-pause-in-sec]</span><br></pre></td></tr></table></figure>
+<p>对应我们这里的日志文件：<br>2016-07-07T09:49:29.213+0800: 942866.477: [GC pause (GCLocker Initiated GC) (young) (to-space exhausted), 17.8874292 secs]</p>
+<p>在GC类型（这里是young，具体阶段是：GCLocker Initiated GC）之后的是GC的原因：to空间耗尽了。</p>
+<blockquote>
+<p>问题：为什么to空间不够？  </p>
+</blockquote>
+<p><a href="http://bboniao.com/jvm/2014-03/g1garbage-first.html" target="_blank" rel="noopener">http://bboniao.com/jvm/2014-03/g1garbage-first.html</a><br><a href="https://www.infoq.com/articles/tuning-tips-G1-GC" target="_blank" rel="noopener">https://www.infoq.com/articles/tuning-tips-G1-GC</a>  </p>
+<p>解决方案：</p>
+<ul>
+<li>-XX:G1ReservePercent 增加预存内存量</li>
+<li>-XX:InitiatingHeapOccupancyPercent 减少此值,提前启动标记周期</li>
+<li>-XX:ConcGCThreads 增加并行标记线程的数目</li>
+</ul>
+<p>参考线上API的GC设置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:G1ReservePercent=30 -XX:InitiatingHeapOccupancyPercent=30 -XX:ConcGCThreads=4</span><br></pre></td></tr></table></figure>
+<p>JVM_OPTS=”$JVM_OPTS -XX:G1ReservePercent=30”  10<br>JVM_OPTS=”$JVM_OPTS -XX:InitiatingHeapOccupancyPercent=30”  45<br>JVM_OPTS=”$JVM_OPTS -XX:ConcGCThreads=4”</p>
+<p><strong>GC各个阶段</strong>  </p>
+<p>接下来打印了各个阶段的GC时间：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">[Parallel Time: 16666.1 ms, GC Workers: 13]  ==》并行收集花了16s</span><br><span class="line">   [GC Worker Start (ms): Min: 942866476.9, Avg: 942866477.0, Max: 942866477.1, Diff: 0.2]</span><br><span class="line">   [Ext Root Scanning (ms): Min: 2.9, Avg: 3.0, Max: 3.1, Diff: 0.2, Sum: 39.0]</span><br><span class="line">   [Update RS (ms): Min: 71.8, Avg: 72.2, Max: 72.7, Diff: 0.9, Sum: 938.2]</span><br><span class="line">      [Processed Buffers: Min: 52, Avg: 75.5, Max: 102, Diff: 50, Sum: 982]</span><br><span class="line">   [Scan RS (ms): Min: 0.1, Avg: 0.2, Max: 0.4, Diff: 0.3, Sum: 2.1]</span><br><span class="line">   [Code Root Scanning (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.1]</span><br><span class="line">   [Object Copy (ms): Min: 16589.9, Avg: 16590.4, Max: 16590.6, Diff: 0.7, Sum: 215675.3]  ==&gt;主要在这里！</span><br><span class="line">   [Termination (ms): Min: 0.0, Avg: 0.1, Max: 0.2, Diff: 0.2, Sum: 1.3]</span><br><span class="line">      [Termination Attempts: Min: 1, Avg: 1.0, Max: 1, Diff: 0, Sum: 13]</span><br><span class="line">   [GC Worker Other (ms): Min: 0.0, Avg: 0.1, Max: 0.1, Diff: 0.1, Sum: 0.7]</span><br><span class="line">   [GC Worker Total (ms): Min: 16665.8, Avg: 16665.9, Max: 16666.0, Diff: 0.2, Sum: 216656.7]</span><br><span class="line">   [GC Worker End (ms): Min: 942883142.9, Avg: 942883142.9, Max: 942883142.9, Diff: 0.1]</span><br><span class="line">[Code Root Fixup: 0.1 ms]</span><br><span class="line">[Code Root Purge: 0.0 ms]</span><br><span class="line">[Clear CT: 2.0 ms]</span><br><span class="line">[Other: 1219.2 ms]</span><br><span class="line">   [Evacuation Failure: 1212.5 ms]  ==&gt;疏散失败！</span><br><span class="line">   [Choose CSet: 0.0 ms]</span><br><span class="line">   [Ref Proc: 0.7 ms]</span><br><span class="line">   [Ref Enq: 0.0 ms]</span><br><span class="line">   [Redirty Cards: 4.4 ms]</span><br><span class="line">   [Humongous Register: 0.1 ms]</span><br><span class="line">   [Humongous Reclaim: 0.1 ms]</span><br><span class="line">   [Free CSet: 0.7 ms]</span><br><span class="line">[Eden: 8472.0M(8464.0M)-&gt;0.0B(1184.0M) Survivors: 120.0M-&gt;1080.0M Heap: 14.2G(16.0G)-&gt;12.0G(16.0G)]</span><br></pre></td></tr></table></figure>
+<p><strong>堆内存变化</strong>  </p>
+<p>上面最后一行是本次GC的堆信息，区域：GC前大小-&gt;GC后大小，括号里是Capacity（也有可能变化）  </p>
+<p>Heap的Capacity等于-Xms和-Xmx的值=16G，这个是不会变的，但是Eden的大小是会变化，比如GC前Capacity=8G，GC后变成了1G。</p>
+<p>Young中分成Eden和Survivor，其中Eden和Survivor是成比例的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[Eden: used-enden-before-gc(eden-capacity)-&gt;used-eden-after-gc(eden-capacity-for-next-gc) </span><br><span class="line">Survivors: used-survivors-before-gc-&gt;used-survivors-before-gc </span><br><span class="line">Heap: used-heap-before-gc(heap-capacity)-&gt;used-heap-after-gc(heap-capacity-for-next-gc)]</span><br></pre></td></tr></table></figure>
+<p>这里打印的堆信息其实和Cassandra的system.log是一致的，不过上面的日志并没有打印Old！</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">G1 Young Generation GC in 17887ms.                  YGC花费了17s</span><br><span class="line">G1 Eden Space: 8,875,147,264 -&gt; 0;                  8G -&gt; 0      新生代GC前8G，GC后清空</span><br><span class="line">G1 Old Gen: 6,224,121,000 -&gt; 11,796,004,824;        6G -&gt; 11G    老年代从6G增加到11G</span><br><span class="line">G1 Survivor Space: 125,829,120 -&gt; 1,132,462,080;    125M -&gt; 1G   存活区从125M增加到1G</span><br></pre></td></tr></table></figure>
+<p>查看其它正常的堆变化情况，会发现基本上Survivor不会增大到1G，而且Heap一般</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[admin@cass048171 ~]$ cat /var/log/cassandra/gc.log.4.current | grep Eden | tail</span><br><span class="line">   [Eden: 4952.0M(4952.0M)-&gt;0.0B(696.0M) Survivors: 120.0M-&gt;120.0M Heap: 14.1G(16.0G)-&gt;9511.6M(16.0G)]</span><br><span class="line">   [Eden: 696.0M(696.0M)-&gt;0.0B(5056.0M) Survivors: 120.0M-&gt;80.0M Heap: 10207.6M(16.0G)-&gt;9455.0M(16.0G)]</span><br><span class="line">   [Eden: 5056.0M(5056.0M)-&gt;0.0B(5040.0M) Survivors: 80.0M-&gt;88.0M Heap: 14.2G(16.0G)-&gt;9463.0M(16.0G)]</span><br><span class="line">   [Eden: 5040.0M(5040.0M)-&gt;0.0B(4992.0M) Survivors: 88.0M-&gt;112.0M Heap: 14.2G(16.0G)-&gt;9483.0M(16.0G)]</span><br><span class="line">   [Eden: 4992.0M(4992.0M)-&gt;0.0B(4976.0M) Survivors: 112.0M-&gt;120.0M Heap: 14.1G(16.0G)-&gt;9491.0M(16.0G)]</span><br><span class="line">   [Eden: 4976.0M(4976.0M)-&gt;0.0B(696.0M) Survivors: 120.0M-&gt;120.0M Heap: 14.1G(16.0G)-&gt;9495.0M(16.0G)]</span><br><span class="line">   [Eden: 696.0M(696.0M)-&gt;0.0B(5024.0M) Survivors: 120.0M-&gt;80.0M Heap: 10191.0M(16.0G)-&gt;9488.6M(16.0G)]</span><br><span class="line">   [Eden: 5024.0M(5024.0M)-&gt;0.0B(5008.0M) Survivors: 80.0M-&gt;88.0M Heap: 14.2G(16.0G)-&gt;9496.6M(16.0G)]</span><br><span class="line">   [Eden: 5008.0M(5008.0M)-&gt;0.0B(4960.0M) Survivors: 88.0M-&gt;112.0M Heap: 14.2G(16.0G)-&gt;9524.6M(16.0G)]</span><br><span class="line">   [Eden: 4968.0M(4960.0M)-&gt;0.0B(4944.0M) Survivors: 112.0M-&gt;120.0M Heap: 14.1G(16.0G)-&gt;9532.6M(16.0G)]</span><br></pre></td></tr></table></figure>
+<p><strong>GC前后统计</strong>  </p>
+<p>最后是Heap在GC前后的统计，这里把GC前的也放在一起进行比较：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#123;Heap before GC invocations=159966 (full 2):</span><br><span class="line"> garbage-first heap   total 16777216K, used 14876451K [0x00000003c0000000, 0x00000003c0804000, 0x00000007c0000000)</span><br><span class="line">  region size 8192K, 1074 young (8798208K), 15 survivors (122880K)</span><br><span class="line"> Metaspace       used 35401K, capacity 35916K, committed 36224K, reserved 1081344K</span><br><span class="line">  class space    used 3719K, capacity 3839K, committed 3968K, reserved 1048576K</span><br><span class="line"></span><br><span class="line">Heap after GC invocations=159967 (full 2):</span><br><span class="line"> garbage-first heap   total 16777216K, used 12625455K [0x00000003c0000000, 0x00000003c0804000, 0x00000007c0000000)</span><br><span class="line">  region size 8192K, 135 young (1105920K), 135 survivors (1105920K)</span><br><span class="line"> Metaspace       used 35401K, capacity 35916K, committed 36224K, reserved 1081344K</span><br><span class="line">  class space    used 3719K, capacity 3839K, committed 3968K, reserved 1048576K</span><br><span class="line">&#125;</span><br><span class="line"> [Times: user=41.47 sys=3.94, real=17.88 secs]</span><br><span class="line">2016-07-07T09:49:47.101+0800: 942884.364: Total time for which application threads were stopped: 17.8884392 seconds, Stopping threads took: 0.0001048 seconds</span><br></pre></td></tr></table></figure>
+<h2 id="其他调优">其他调优</h2><p>The ratio user/real should be close to the number of parallel gc threads.<br>user和real的比值是并行的GC线程，这里41.47/17.88=2.3</p>
+<p>-XX:ConcGCThreads：Max((ParallelGCThreads#+2)/4,1)</p>
+<p>RegionSize默认=HeapSize/2048，这里Heap=16G，RegionSize=8M =》 region size 8192K</p>
+<h2 id="后面的一些正常GC日志">后面的一些正常GC日志</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br></pre></td><td class="code"><pre><span class="line">2016-07-07T09:49:48.103+0800: 942885.366: Total time for which application threads were stopped: 0.0013006 seconds, Stopping threads took: 0.0002328 seconds</span><br><span class="line">&#123;Heap before GC invocations=159967 (full 2):</span><br><span class="line"> garbage-first heap   total 16777216K, used 13837871K [0x00000003c0000000, 0x00000003c0804000, 0x00000007c0000000)</span><br><span class="line">  region size 8192K, 283 young (2318336K), 135 survivors (1105920K)</span><br><span class="line"> Metaspace       used 35401K, capacity 35916K, committed 36224K, reserved 1081344K</span><br><span class="line">  class space    used 3719K, capacity 3839K, committed 3968K, reserved 1048576K</span><br><span class="line">2016-07-07T09:49:48.248+0800: 942885.511: [GC pause (G1 Evacuation Pause) (young) (initial-mark), 0.5353097 secs]</span><br><span class="line">   [Parallel Time: 528.2 ms, GC Workers: 13]</span><br><span class="line">      [GC Worker Start (ms): Min: 942885512.0, Avg: 942885512.1, Max: 942885512.2, Diff: 0.2]</span><br><span class="line">      [Ext Root Scanning (ms): Min: 2.9, Avg: 3.0, Max: 3.1, Diff: 0.2, Sum: 38.7]</span><br><span class="line">      [Update RS (ms): Min: 28.9, Avg: 29.2, Max: 30.6, Diff: 1.8, Sum: 379.2]</span><br><span class="line">         [Processed Buffers: Min: 54, Avg: 84.8, Max: 133, Diff: 79, Sum: 1103]</span><br><span class="line">      [Scan RS (ms): Min: 14.6, Avg: 16.2, Max: 16.5, Diff: 1.9, Sum: 210.2]</span><br><span class="line">      [Code Root Scanning (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.1]</span><br><span class="line">      [Object Copy (ms): Min: 479.2, Avg: 479.4, Max: 479.5, Diff: 0.3, Sum: 6231.7]</span><br><span class="line">      [Termination (ms): Min: 0.0, Avg: 0.2, Max: 0.3, Diff: 0.3, Sum: 3.1]</span><br><span class="line">         [Termination Attempts: Min: 1, Avg: 395.1, Max: 486, Diff: 485, Sum: 5136]</span><br><span class="line">      [GC Worker Other (ms): Min: 0.0, Avg: 0.1, Max: 0.1, Diff: 0.1, Sum: 0.8]</span><br><span class="line">      [GC Worker Total (ms): Min: 527.9, Avg: 528.0, Max: 528.1, Diff: 0.2, Sum: 6863.7]</span><br><span class="line">      [GC Worker End (ms): Min: 942886040.0, Avg: 942886040.0, Max: 942886040.1, Diff: 0.1]</span><br><span class="line">   [Code Root Fixup: 0.1 ms]</span><br><span class="line">   [Code Root Purge: 0.0 ms]</span><br><span class="line">   [Clear CT: 1.4 ms]</span><br><span class="line">   [Other: 5.6 ms]</span><br><span class="line">      [Choose CSet: 0.0 ms]</span><br><span class="line">      [Ref Proc: 0.4 ms]</span><br><span class="line">      [Ref Enq: 0.0 ms]</span><br><span class="line">      [Redirty Cards: 3.1 ms]</span><br><span class="line">      [Humongous Register: 0.0 ms]</span><br><span class="line">      [Humongous Reclaim: 0.1 ms]</span><br><span class="line">      [Free CSet: 0.7 ms]</span><br><span class="line">   [Eden: 1184.0M(1184.0M)-&gt;0.0B(1544.0M) Survivors: 1080.0M-&gt;288.0M Heap: 13.2G(16.0G)-&gt;12.4G(16.0G)]</span><br><span class="line">Heap after GC invocations=159968 (full 2):</span><br><span class="line"> garbage-first heap   total 16777216K, used 13010479K [0x00000003c0000000, 0x00000003c0804000, 0x00000007c0000000)</span><br><span class="line">  region size 8192K, 36 young (294912K), 36 survivors (294912K)</span><br><span class="line"> Metaspace       used 35401K, capacity 35916K, committed 36224K, reserved 1081344K</span><br><span class="line">  class space    used 3719K, capacity 3839K, committed 3968K, reserved 1048576K</span><br><span class="line">&#125;</span><br><span class="line"> [Times: user=6.90 sys=0.01, real=0.54 secs]</span><br><span class="line">2016-07-07T09:49:48.784+0800: 942886.047: [GC concurrent-root-region-scan-start]</span><br><span class="line">2016-07-07T09:49:48.784+0800: 942886.047: Total time for which application threads were stopped: 0.5368812 seconds, Stopping threads took: 0.0002119 seconds</span><br><span class="line">2016-07-07T09:49:48.973+0800: 942886.236: [GC concurrent-root-region-scan-end, 0.1896420 secs]</span><br><span class="line">2016-07-07T09:49:48.973+0800: 942886.236: [GC concurrent-mark-start]</span><br><span class="line">&#123;Heap before GC invocations=159968 (full 2):</span><br><span class="line"> garbage-first heap   total 16777216K, used 14591535K [0x00000003c0000000, 0x00000003c0804000, 0x00000007c0000000)</span><br><span class="line">  region size 8192K, 229 young (1875968K), 36 survivors (294912K)</span><br><span class="line"> Metaspace       used 35401K, capacity 35916K, committed 36224K, reserved 1081344K</span><br><span class="line">  class space    used 3719K, capacity 3839K, committed 3968K, reserved 1048576K</span><br><span class="line">2016-07-07T09:49:51.216+0800: 942888.479: [GC pause (G1 Evacuation Pause) (young)</span><br><span class="line">Desired survivor size 121634816 bytes, new threshold 1 (max 15)</span><br><span class="line">- age   1:  277632680 bytes,  277632680 total</span><br><span class="line">, 0.4639409 secs]</span><br><span class="line">   [Parallel Time: 455.9 ms, GC Workers: 13]</span><br><span class="line">      [GC Worker Start (ms): Min: 942888479.3, Avg: 942888479.4, Max: 942888479.5, Diff: 0.3]</span><br><span class="line">      [Ext Root Scanning (ms): Min: 2.8, Avg: 3.0, Max: 3.1, Diff: 0.2, Sum: 38.4]</span><br><span class="line">      [Update RS (ms): Min: 166.4, Avg: 167.6, Max: 168.7, Diff: 2.4, Sum: 2178.7]</span><br><span class="line">         [Processed Buffers: Min: 59, Avg: 81.7, Max: 109, Diff: 50, Sum: 1062]</span><br><span class="line">      [Scan RS (ms): Min: 6.8, Avg: 7.9, Max: 8.2, Diff: 1.4, Sum: 102.4]</span><br><span class="line">      [Code Root Scanning (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]</span><br><span class="line">      [Object Copy (ms): Min: 277.0, Avg: 277.0, Max: 277.1, Diff: 0.2, Sum: 3601.5]</span><br><span class="line">      [Termination (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]</span><br><span class="line">         [Termination Attempts: Min: 1, Avg: 1.0, Max: 1, Diff: 0, Sum: 13]</span><br><span class="line">      [GC Worker Other (ms): Min: 0.0, Avg: 0.1, Max: 0.1, Diff: 0.1, Sum: 0.8]</span><br><span class="line">      [GC Worker Total (ms): Min: 455.5, Avg: 455.6, Max: 455.7, Diff: 0.2, Sum: 5923.0]</span><br><span class="line">      [GC Worker End (ms): Min: 942888935.0, Avg: 942888935.0, Max: 942888935.1, Diff: 0.1]</span><br><span class="line">   [Code Root Fixup: 0.3 ms]</span><br><span class="line">   [Code Root Purge: 0.0 ms]</span><br><span class="line">   [Clear CT: 1.2 ms]</span><br><span class="line">   [Other: 6.6 ms]</span><br><span class="line">      [Choose CSet: 0.0 ms]</span><br><span class="line">      [Ref Proc: 3.6 ms]</span><br><span class="line">      [Ref Enq: 0.0 ms]</span><br><span class="line">      [Redirty Cards: 1.7 ms]</span><br><span class="line">      [Humongous Register: 0.1 ms]</span><br><span class="line">      [Humongous Reclaim: 0.1 ms]</span><br><span class="line">      [Free CSet: 0.5 ms]</span><br><span class="line">   [Eden: 1544.0M(1544.0M)-&gt;0.0B(960.0M) Survivors: 288.0M-&gt;232.0M Heap: 13.9G(16.0G)-&gt;13.0G(16.0G)]</span><br><span class="line">Heap after GC invocations=159969 (full 2):</span><br><span class="line"> garbage-first heap   total 16777216K, used 13616687K [0x00000003c0000000, 0x00000003c0804000, 0x00000007c0000000)</span><br><span class="line">  region size 8192K, 29 young (237568K), 29 survivors (237568K)</span><br><span class="line"> Metaspace       used 35401K, capacity 35916K, committed 36224K, reserved 1081344K</span><br><span class="line">  class space    used 3719K, capacity 3839K, committed 3968K, reserved 1048576K</span><br><span class="line">&#125;</span><br><span class="line"> [Times: user=5.99 sys=0.00, real=0.46 secs]</span><br><span class="line">2016-07-07T09:49:51.680+0800: 942888.943: Total time for which application threads were stopped: 0.4655046 seconds, Stopping threads took: 0.0001802 seconds</span><br><span class="line">2016-07-07T09:49:51.680+0800: 942888.943: [GC concurrent-mark-reset-for-overflow]</span><br><span class="line">&#123;Heap before GC invocations=159969 (full 2):</span><br><span class="line"> garbage-first heap   total 16777216K, used 14599727K [0x00000003c0000000, 0x00000003c0804000, 0x00000007c0000000)</span><br><span class="line">  region size 8192K, 149 young (1220608K), 29 survivors (237568K)</span><br><span class="line"> Metaspace       used 35401K, capacity 35916K, committed 36224K, reserved 1081344K</span><br><span class="line">  class space    used 3719K, capacity 3839K, committed 3968K, reserved 1048576K</span><br><span class="line">2016-07-07T09:49:52.756+0800: 942890.019: [GC pause (G1 Evacuation Pause) (young)</span><br><span class="line">Desired survivor size 79691776 bytes, new threshold 1 (max 15)</span><br><span class="line">- age   1:  243266912 bytes,  243266912 total</span><br><span class="line">, 0.3106738 secs]</span><br><span class="line">   [Parallel Time: 303.5 ms, GC Workers: 13]</span><br><span class="line">      [GC Worker Start (ms): Min: 942890019.9, Avg: 942890020.0, Max: 942890020.0, Diff: 0.1]</span><br><span class="line">      [Ext Root Scanning (ms): Min: 3.0, Avg: 3.0, Max: 3.1, Diff: 0.1, Sum: 39.2]</span><br><span class="line">      [Update RS (ms): Min: 112.8, Avg: 114.5, Max: 115.1, Diff: 2.3, Sum: 1488.6]</span><br><span class="line">         [Processed Buffers: Min: 52, Avg: 75.5, Max: 115, Diff: 63, Sum: 981]</span><br><span class="line">      [Scan RS (ms): Min: 3.4, Avg: 3.9, Max: 4.1, Diff: 0.6, Sum: 50.8]</span><br><span class="line">      [Code Root Scanning (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]</span><br><span class="line">      [Object Copy (ms): Min: 181.6, Avg: 181.7, Max: 181.8, Diff: 0.2, Sum: 2362.2]</span><br><span class="line">      [Termination (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]</span><br><span class="line">         [Termination Attempts: Min: 1, Avg: 1.0, Max: 1, Diff: 0, Sum: 13]</span><br><span class="line">      [GC Worker Other (ms): Min: 0.0, Avg: 0.1, Max: 0.1, Diff: 0.1, Sum: 0.7]</span><br><span class="line">      [GC Worker Total (ms): Min: 303.3, Avg: 303.3, Max: 303.4, Diff: 0.1, Sum: 3943.4]</span><br><span class="line">      [GC Worker End (ms): Min: 942890323.3, Avg: 942890323.3, Max: 942890323.4, Diff: 0.1]</span><br><span class="line">   [Code Root Fixup: 0.1 ms]</span><br><span class="line">   [Code Root Purge: 0.0 ms]</span><br><span class="line">   [Clear CT: 0.9 ms]</span><br><span class="line">   [Other: 6.1 ms]</span><br><span class="line">      [Choose CSet: 0.0 ms]</span><br><span class="line">      [Ref Proc: 3.8 ms]</span><br><span class="line">      [Ref Enq: 0.0 ms]</span><br><span class="line">      [Redirty Cards: 1.1 ms]</span><br><span class="line">      [Humongous Register: 0.1 ms]</span><br><span class="line">      [Humongous Reclaim: 0.1 ms]</span><br><span class="line">      [Free CSet: 0.3 ms]</span><br><span class="line">   [Eden: 960.0M(960.0M)-&gt;0.0B(712.0M) Survivors: 232.0M-&gt;152.0M Heap: 13.9G(16.0G)-&gt;13.3G(16.0G)]</span><br><span class="line">Heap after GC invocations=159970 (full 2):</span><br><span class="line"> garbage-first heap   total 16777216K, used 13936175K [0x00000003c0000000, 0x00000003c0804000, 0x00000007c0000000)</span><br><span class="line">  region size 8192K, 19 young (155648K), 19 survivors (155648K)</span><br><span class="line"> Metaspace       used 35401K, capacity 35916K, committed 36224K, reserved 1081344K</span><br><span class="line">  class space    used 3719K, capacity 3839K, committed 3968K, reserved 1048576K</span><br><span class="line">&#125;</span><br><span class="line"> [Times: user=4.00 sys=0.01, real=0.31 secs]</span><br><span class="line">2016-07-07T09:49:53.067+0800: 942890.330: Total time for which application threads were stopped: 0.3122465 seconds, Stopping threads took: 0.0002199 seconds</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU    CCSC   CCSU   YGC     YGCT    FGC    FGCT     GCT</span><br><span class="line"> 0.0   90112.0  0.0   90112.0 2080768.0 1032192.0 14606336.0 11107990.3 36220.0 35414.9 3964.0 3758.7   3240  230.268   0      0.000  230.268</span><br><span class="line"> 0.0   90112.0  0.0   90112.0 2080768.0 1556480.0 14606336.0 11107990.3 36220.0 35414.9 3964.0 3758.7   3240  230.268   0      0.000  230.268</span><br><span class="line"> 0.0   90112.0  0.0   90112.0 2080768.0 1974272.0 14606336.0 11107990.3 36220.0 35414.9 3964.0 3758.7   3240  230.268   0      0.000  230.268</span><br><span class="line"> 0.0   90112.0  0.0   90112.0 2080768.0 1974272.0 14606336.0 11107990.3 36220.0 35414.9 3964.0 3758.7   3240  230.268   0      0.000  230.268</span><br><span class="line"> 0.0   90112.0  0.0   90112.0 2080768.0 319488.0 14606336.0 11111529.3 36220.0 35414.9 3964.0 3758.7   3241  230.308   0      0.000  230.308</span><br><span class="line"> 0.0   90112.0  0.0   90112.0 2080768.0 606208.0 14606336.0 11111529.3 36220.0 35414.9 3964.0 3758.7   3241  230.308   0      0.000  230.308</span><br><span class="line"> 0.0   90112.0  0.0   90112.0 2080768.0 892928.0 14606336.0 11111529.3 36220.0 35414.9 3964.0 3758.7   3241  230.308   0      0.000  230.308</span><br><span class="line"> 0.0   90112.0  0.0   90112.0 2080768.0 1228800.0 14606336.0 11111529.3 36220.0 35414.9 3964.0 3758.7   3241  230.308   0      0.000  230.308</span><br><span class="line"> 0.0   90112.0  0.0   90112.0 2080768.0 1581056.0 14606336.0 11111529.3 36220.0 35414.9 3964.0 3758.7   3241  230.308   0      0.000  230.308</span><br><span class="line"> 0.0   90112.0  0.0   90112.0 2080768.0 1941504.0 14606336.0 11111529.3 36220.0 35414.9 3964.0 3758.7   3241  230.308   0      0.000  230.308</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 286720.0 14598144.0 11118135.9 36220.0 35414.9 3964.0 3758.7   3242  230.347   0      0.000  230.347</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 606208.0 14598144.0 11118135.9 36220.0 35414.9 3964.0 3758.7   3242  230.347   0      0.000  230.347</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 950272.0 14598144.0 11118135.9 36220.0 35414.9 3964.0 3758.7   3242  230.347   0      0.000  230.347</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 1269760.0 14598144.0 11118135.9 36220.0 35414.9 3964.0 3758.7   3242  230.347   0      0.000  230.347</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 1622016.0 14598144.0 11118135.9 36220.0 35414.9 3964.0 3758.7   3242  230.347   0      0.000  230.347</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 1974272.0 14598144.0 11118135.9 36220.0 35414.9 3964.0 3758.7   3242  230.347   0      0.000  230.347</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 311296.0 14598144.0 11119663.4 36220.0 35414.9 3964.0 3758.7   3243  230.387   0      0.000  230.387</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 688128.0 14598144.0 11119663.4 36220.0 35414.9 3964.0 3758.7   3243  230.387   0      0.000  230.387</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 1097728.0 14598144.0 11119663.4 36220.0 35414.9 3964.0 3758.7   3243  230.387   0      0.000  230.387</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 1425408.0 14598144.0 11119663.4 36220.0 35414.9 3964.0 3758.7   3243  230.387   0      0.000  230.387</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 1769472.0 14598144.0 11119663.4 36220.0 35414.9 3964.0 3758.7   3243  230.387   0      0.000  230.387</span><br><span class="line"> 0.0   81920.0  0.0   81920.0 2088960.0 90112.0  14606336.0 11122090.6 36220.0 35414.9 3964.0 3758.7   3244  230.429   0      0.000  230.429</span><br><span class="line"> 0.0   81920.0  0.0   81920.0 2088960.0 409600.0 14606336.0 11113898.6 36220.0 35414.9 3964.0 3758.7   3244  230.429   0      0.000  230.429</span><br><span class="line"> 0.0   81920.0  0.0   81920.0 2088960.0 860160.0 14606336.0 11113898.6 36220.0 35414.9 3964.0 3758.7   3244  230.429   0      0.000  230.429</span><br><span class="line"> 0.0   81920.0  0.0   81920.0 2088960.0 1294336.0 14606336.0 11113898.6 36220.0 35414.9 3964.0 3758.7   3244  230.429   0      0.000  230.429</span><br><span class="line"> 0.0   81920.0  0.0   81920.0 2088960.0 1744896.0 14606336.0 11113898.6 36220.0 35414.9 3964.0 3758.7   3244  230.429   0      0.000  230.429</span><br><span class="line"> 0.0   81920.0  0.0   81920.0 802816.0 237568.0 15892480.0 11121098.8 36220.0 35414.9 3964.0 3758.7   3245  230.472   0      0.000  230.472</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2113536.0 98304.0  14589952.0 11111715.9 36220.0 35414.9 3964.0 3758.7   3246  230.523   0      0.000  230.523</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2113536.0 704512.0 14589952.0 11111715.9 36220.0 35414.9 3964.0 3758.7   3246  230.523   0      0.000  230.523</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2113536.0 1327104.0 14589952.0 11111715.9 36220.0 35414.9 3964.0 3758.7   3246  230.523   0      0.000  230.523</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2113536.0 1949696.0 14589952.0 11111715.9 36220.0 35414.9 3964.0 3758.7   3246  230.523   0      0.000  230.523</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 507904.0 14598144.0 11121792.3 36220.0 35414.9 3964.0 3758.7   3247  230.570   0      0.000  230.570</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 1138688.0 14598144.0 11121792.3 36220.0 35414.9 3964.0 3758.7   3247  230.570   0      0.000  230.570</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 1769472.0 14598144.0 11121792.3 36220.0 35414.9 3964.0 3758.7   3247  230.570   0      0.000  230.570</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 204800.0 14598144.0 11125318.7 36220.0 35414.9 3964.0 3758.7   3248  230.613   0      0.000  230.613</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 548864.0 14598144.0 11125318.7 36220.0 35414.9 3964.0 3758.7   3248  230.613   0      0.000  230.613</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 884736.0 14598144.0 11125318.7 36220.0 35414.9 3964.0 3758.7   3248  230.613   0      0.000  230.613</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 1228800.0 14598144.0 11125318.7 36220.0 35414.9 3964.0 3758.7   3248  230.613   0      0.000  230.613</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 1597440.0 14598144.0 11125318.7 36220.0 35414.9 3964.0 3758.7   3248  230.613   0      0.000  230.613</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2105344.0 1916928.0 14598144.0 11125318.7 36220.0 35414.9 3964.0 3758.7   3248  230.613   0      0.000  230.613</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2097152.0 262144.0 14606336.0 11127363.3 36220.0 35414.9 3964.0 3758.7   3249  230.658   0      0.000  230.658</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2097152.0 598016.0 14606336.0 11127363.3 36220.0 35414.9 3964.0 3758.7   3249  230.658   0      0.000  230.658</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2097152.0 942080.0 14606336.0 11127363.3 36220.0 35414.9 3964.0 3758.7   3249  230.658   0      0.000  230.658</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2097152.0 1277952.0 14606336.0 11127363.3 36220.0 35414.9 3964.0 3758.7   3249  230.658   0      0.000  230.658</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2097152.0 1630208.0 14606336.0 11127363.3 36220.0 35414.9 3964.0 3758.7   3249  230.658   0      0.000  230.658</span><br><span class="line"> 0.0   73728.0  0.0   73728.0 2097152.0 1990656.0 14606336.0 11127363.3 36220.0 35414.9 3964.0 3758.7   3250  230.658   0      0.000  230.658</span><br><span class="line"> 0.0   90112.0  0.0   90112.0 2064384.0 311296.0 14622720.0 11126943.6 36220.0 35414.9 3964.0 3758.7   3250  230.702   0      0.000  230.702</span><br><span class="line"> 0.0   90112.0  0.0   90112.0 2064384.0 655360.0 14622720.0 11126943.6 36220.0 35414.9 3964.0 3758.7   3250  230.702   0      0.000  230.702</span><br><span class="line"> 0.0   90112.0  0.0   90112.0 2064384.0 999424.0 14622720.0 11126943.6 36220.0 35414.9 3964.0 3758.7   3250  230.702   0      0.000  230.702</span><br><span class="line"> 0.0   90112.0  0.0   90112.0 2064384.0 1351680.0 14622720.0 11126943.6 36220.0 35414.9 3964.0 3758.7   3250  230.702   0      0.000  230.702</span><br><span class="line"> 0.0   90112.0  0.0   90112.0 2064384.0 1720320.0 14622720.0 11126943.6 36220.0 35414.9 3964.0 3758.7   3250  230.702   0      0.000  230.702</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Improving Apache Cassandra Performance</p>
+</blockquote>
+<p>Cassandra’s internal operations can also be a major driver of performance issues. One example is “tombstones”. A major advantage of Cassandra is its dynamic structure, where developers can create and remove columns on the fly. When rows have dynamic columns and the application deletes those columns, Cassandra creates a “tombstone” that exists until the next compaction runs and cleans up any that have expired (ones that have passed gc_grace_seconds). If the client application then performs a slice query to read a few columns, Cassandra will scan all the tombstones while looking for the non- deleted columns requested. For applications with hundreds of tombstones, Cassandra can fill up heap memory in Java reading them all and is likely to trigger a long pause for garbage collection, stalling the node.</p>
+<p>Compaction can also be a problem. Cassandra by default uses a single thread for compaction. During this process, it reads each row, cleans up expired tombstones, then sorts the columns and writes the row to a new SSTable. Compaction only uses memory up to the limit you set (the default is 64 MB). Depending on how the process is throttled, objects can live in the heap too long and get promoted to the old generation causing it to fill up. Once it fills, the JVM will pause to perform a full GC and stall the node.</p>
+<p>Similarly, Cassandra-based applications sometimes make use of wide rows, or those with hundreds of columns. If the application reads hundreds of columns from a single wide row, it will quickly fill the heap’s new generation and can cause promotion failures or concurrent mode failures. Once that happens, the JVM will pause for a full GC and stall the node.</p>
+<p>A separate issue is the creation of short-lived objects for read requests under heavy load. Each read allocates short-lived objects in the heap for results returned to the client/coordinator and for any objects that actually process the request. As the number of read requests grows, the new gen quickly fills up with objects that aren’t yet garbage when the new gen GC runs (but will be soon). Some are moved into the old gen space to free up space in new gen for more objects. When the old gen fills up with these short-lived objects, a major GC is triggered that stops Cassandra for a long time, often several seconds or more.</p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/07/07/Cassandra-GC-G1/">Cassandra G1 GC</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年07月07日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/07/07/Cassandra-GC-G1/" title="Cassandra G1 GC">http://github.com/zqhxuyuan/2016/07/07/Cassandra-GC-G1/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/07/07/Cassandra-GC-G1/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/07/15/Storm-Picture/">
+        Storm Picture
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/07/07/Cassandra-GC-CMS/">
+        Cassandra CMS GC
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#G1_GC"><span class="toc-number">1.</span> <span class="toc-text">G1 GC</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#从CMS迁移到G1"><span class="toc-number">2.</span> <span class="toc-text">从CMS迁移到G1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#比较GC时间"><span class="toc-number">3.</span> <span class="toc-text">比较GC时间</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#使用CMS，FGC问题很严重"><span class="toc-number">3.1.</span> <span class="toc-text">使用CMS，FGC问题很严重</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#使用G1"><span class="toc-number">3.2.</span> <span class="toc-text">使用G1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GC统计历史数据"><span class="toc-number">3.3.</span> <span class="toc-text">GC统计历史数据</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#所有GC统计（当前文件，压缩文件）："><span class="toc-number">3.3.1.</span> <span class="toc-text">所有GC统计（当前文件，压缩文件）：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#超过10s的GC（当前文件，压缩文件）"><span class="toc-number">3.3.2.</span> <span class="toc-text">超过10s的GC（当前文件，压缩文件）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#当前文件统计（所有GC，超过10s）***"><span class="toc-number">3.3.3.</span> <span class="toc-text">当前文件统计（所有GC，超过10s）***</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#压缩文件统计（所有GC，超过10s）"><span class="toc-number">3.3.4.</span> <span class="toc-text">压缩文件统计（所有GC，超过10s）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#压缩文件的CMS，当前文件的G1"><span class="toc-number">3.3.5.</span> <span class="toc-text">压缩文件的CMS，当前文件的G1</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#并不是说不会FGC了"><span class="toc-number">4.</span> <span class="toc-text">并不是说不会FGC了</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#长时间的YGC案例"><span class="toc-number">5.</span> <span class="toc-text">长时间的YGC案例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他调优"><span class="toc-number">6.</span> <span class="toc-text">其他调优</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#后面的一些正常GC日志"><span class="toc-number">7.</span> <span class="toc-text">后面的一些正常GC日志</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/07/07/Cassandra-GC-G1/" data-title="Cassandra G1 GC" data-url="http://github.com/zqhxuyuan/2016/07/07/Cassandra-GC-G1/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/07/15/Storm-Picture/" title="上一篇: Storm Picture">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/07/07/Cassandra-GC-CMS/" title="下一篇: Cassandra CMS GC">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

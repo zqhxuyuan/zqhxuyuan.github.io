@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Redis SortedSet | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="使用Redis的SortedSet+Lua脚本+Spark">
+<meta name="keywords" content="redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis SortedSet">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/01/25/Redis-SortedSet/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="使用Redis的SortedSet+Lua脚本+Spark">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160129102806867">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.381Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redis SortedSet">
+<meta name="twitter:description" content="使用Redis的SortedSet+Lua脚本+Spark">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160129102806867">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Redis-SortedSet" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/01/25/Redis-SortedSet/" class="article-date">
+  	<time datetime="2016-01-24T16:00:00.000Z" itemprop="datePublished">2016-01-25</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Redis SortedSet
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/work/">work</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>使用Redis的SortedSet+Lua脚本+Spark<br><a id="more"></a></p>
+<h2 id="Redis快速入门">Redis快速入门</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">cd redis-3.2.9</span><br><span class="line">make</span><br><span class="line">src/redis-server</span><br><span class="line">src/redis-cli</span><br><span class="line"></span><br><span class="line">➜  redis-3.2.9 src/redis-cli</span><br><span class="line">127.0.0.1:6379&gt; set hello &quot;world&quot;</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; get hello</span><br><span class="line">&quot;world&quot;</span><br></pre></td></tr></table></figure>
+<p><a href="https://github.com/RedisLabs/spark-redis">Spark-Redis</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">val conf: SparkConf = new SparkConf().setAppName(&quot;VelocityIdNumberX_Redis&quot;).setMaster(&quot;local&quot;)</span><br><span class="line">conf.set(&quot;redis.host&quot;, &quot;localhost&quot;).set(&quot;redis.port&quot;, &quot;6379&quot;)</span><br><span class="line">val sc = new SparkContext(conf)</span><br><span class="line"></span><br><span class="line">val wc = sc.parallelize(List(</span><br><span class="line">  (&quot;hello&quot;, &quot;1&quot;),</span><br><span class="line">  (&quot;world&quot;, &quot;2&quot;),</span><br><span class="line">  (&quot;redis&quot;, &quot;2&quot;)</span><br><span class="line">))</span><br><span class="line">sc.toRedisKV(wc)</span><br><span class="line">sc.toRedisZSET(wc, &quot;zkey1&quot;)</span><br><span class="line">sc.toRedisZSET(wc, &quot;zkey2&quot;)</span><br><span class="line">sc.toRedisHASH(wc, &quot;zmap1&quot;)</span><br><span class="line">sc.toRedisHASH(wc, &quot;zmap2&quot;)</span><br><span class="line">sc.toRedisLIST(wc.map(_._1), &quot;zlist1&quot;)</span><br><span class="line">sc.toRedisLIST(wc.map(_._1), &quot;zlist2&quot;)</span><br></pre></td></tr></table></figure>
+<p>查看redis的记录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; get hello</span><br><span class="line">&quot;1&quot;</span><br><span class="line">127.0.0.1:6379&gt; get world</span><br><span class="line">&quot;2&quot;</span><br><span class="line">127.0.0.1:6379&gt; zrange zkey1 0 -1 WITHSCORES</span><br><span class="line">1) &quot;hello&quot;</span><br><span class="line">2) &quot;1&quot;</span><br><span class="line">3) &quot;redis&quot;</span><br><span class="line">4) &quot;2&quot;</span><br><span class="line">5) &quot;world&quot;</span><br><span class="line">6) &quot;2&quot;</span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; HMGET zmap1 hello redis</span><br><span class="line">1) &quot;1&quot;</span><br><span class="line">2) &quot;2&quot;</span><br></pre></td></tr></table></figure>
+<p>读取的代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">val resultSet:RDD[(String, String)] = sc.fromRedisKV(&quot;*o*&quot;)</span><br><span class="line">resultSet.toDF().show</span><br></pre></td></tr></table></figure>
+<p>结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">+-----+-----+</span><br><span class="line">|   _1|   _2|</span><br><span class="line">+-----+-----+</span><br><span class="line">|hello|world|</span><br><span class="line">|world|    2|</span><br><span class="line">+-----+-----+</span><br></pre></td></tr></table></figure>
+<p>pipeline</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">//要写入redis的数据，RDD[Map[String,String]]</span><br><span class="line">    val rdd = sc.parallelize(List(</span><br><span class="line">      (&quot;map1&quot;, &quot;key1&quot;, &quot;111&quot;),</span><br><span class="line">      (&quot;map1&quot;, &quot;key2&quot;, &quot;112&quot;),</span><br><span class="line">      (&quot;map1&quot;, &quot;key3&quot;, &quot;113&quot;),</span><br><span class="line">      (&quot;map2&quot;, &quot;key1&quot;, &quot;114&quot;)</span><br><span class="line">    ))</span><br><span class="line">    //使用pipeline 更高效的批处理</span><br><span class="line">    // HSET map1 key1 value1</span><br><span class="line">    // HSET map1 key2 value2</span><br><span class="line">    rdd.foreachPartition&#123;iter =&gt;</span><br><span class="line">      val redis = new Jedis(&quot;localhost&quot;,6379,400000)</span><br><span class="line">      val ppl = redis.pipelined()</span><br><span class="line">      iter.foreach&#123;row =&gt;</span><br><span class="line">        val mapKey = row._1</span><br><span class="line">        val key = row._2</span><br><span class="line">        val value = row._3</span><br><span class="line">        ppl.hmset(mapKey, Map(key -&gt; value))</span><br><span class="line"></span><br><span class="line">        //zadd key score member</span><br><span class="line">        ppl.zadd(mapKey.replace(&quot;map&quot;,&quot;set&quot;), value.toDouble, key)</span><br><span class="line">      &#125;</span><br><span class="line">      ppl.sync()</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; zrange set1 0 -1</span><br><span class="line">1) &quot;key1&quot;</span><br><span class="line">2) &quot;key2&quot;</span><br><span class="line">3) &quot;key3&quot;</span><br><span class="line">127.0.0.1:6379&gt; zrange set2 0 -1</span><br><span class="line">1) &quot;key1&quot;</span><br><span class="line">127.0.0.1:6379&gt; HMGET map1 key1 key2 key3</span><br><span class="line">1) &quot;111&quot;</span><br><span class="line">2) &quot;112&quot;</span><br><span class="line">3) &quot;113&quot;</span><br></pre></td></tr></table></figure>
+<h2 id="业务需求">业务需求</h2><p>原始数据: (维度1,维度2,维度3,partner_code,timestamp), 转换成:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">RDD(维度,partner_code,timestamp) = &#123;</span><br><span class="line">    (维度1,partner_code,timestamp),</span><br><span class="line">    (维度2,partner_code,timestamp),</span><br><span class="line">    (维度3,partner_code,timestamp)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160129102806867" alt="td_cross_partner"></p>
+<h2 id="Redis_&amp;_Lua">Redis &amp; Lua</h2><p>lua脚本  </p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> link_id = redis.call(<span class="string">"INCR"</span>, KEY[<span class="number">1</span>])</span><br><span class="line">redis.call(<span class="string">"HSET"</span>, KEYS[<span class="number">2</span>], link_id, ARGV[<span class="number">1</span>])</span><br><span class="line"><span class="keyword">return</span> link_id</span><br></pre></td></tr></table></figure>
+<p>redis客户端命令  </p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">redis-cli EVAL <span class="string">"<span class="variable">$(cat incr-and-stor.lua)</span>"</span> 2 links:counter links:urls http://spark.apache.org/</span><br><span class="line">redis-cli EVAL <span class="string">"<span class="variable">$(cat incr-and-stor.lua)</span>"</span> 2 links:counter links:urls http://kafka.apache.org/</span><br></pre></td></tr></table></figure>
+<p>对应的lua脚本  </p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> link_id = redis.call(<span class="string">"INCR"</span>, <span class="string">"links:counter"</span>)</span><br><span class="line">redis.call(<span class="string">"HSET"</span>, <span class="string">"links:urls"</span>, link_id, <span class="string">"http://spark.apche.org"</span>)</span><br><span class="line"><span class="keyword">return</span> link_id</span><br></pre></td></tr></table></figure>
+<p>第一条记录  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">link_id = INCR links:counter</span><br><span class="line">HSET links:urls link_id http://spark.apache.org/</span><br></pre></td></tr></table></figure>
+<p>第二条记录  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">link_id = INCR links:counter</span><br><span class="line">HSET links:urls link_id http://kafka.apache.org/</span><br></pre></td></tr></table></figure>
+<p>links:usrs作为map的名称, link_id作为map的key, 最后的参数url作为key对应的value. java的Map</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Map links:urls = new HashMap()</span><br><span class="line">links:urls.put(1, http://spark.apache.org/)</span><br><span class="line">links:urls.put(2, http://kafka.apache.org/)</span><br></pre></td></tr></table></figure>
+<p>实现<code>LPOPRPUSH</code>的lua脚本:  </p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> redis = <span class="built_in">require</span> <span class="string">'redis'</span></span><br><span class="line"><span class="keyword">local</span> client = redis.connect(<span class="string">'127.0.0.1'</span>, <span class="number">6379</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">lpoprpush</span><span class="params">(source, destination)</span></span></span><br><span class="line">    script = <span class="string">[[</span></span><br><span class="line"><span class="string">        local item = redis.call('lpop', KEYS[1])</span></span><br><span class="line"><span class="string">        if item ~= nil then</span></span><br><span class="line"><span class="string">            redis.call('rpush', KEYS[2], item)</span></span><br><span class="line"><span class="string">            return item</span></span><br><span class="line"><span class="string">        end</span></span><br><span class="line"><span class="string">    ]]</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> client:eval(script, <span class="number">2</span>, source, destination)</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<h2 id="插入数据流程">插入数据流程</h2><p>脚本的key为SortedSet的key, 参数分别是key的score和member.</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> score = redis.call(<span class="string">'zscore'</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">2</span>])</span><br><span class="line"><span class="keyword">if</span> score <span class="keyword">then</span></span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">tonumber</span>(score) &lt; <span class="built_in">tonumber</span>(ARGV[<span class="number">1</span>])) <span class="keyword">then</span></span><br><span class="line">        redis.call(<span class="string">'zadd'</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">1</span>], ARGV[<span class="number">2</span>])</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    redis.call(<span class="string">'zadd'</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">1</span>], ARGV[<span class="number">2</span>])</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>验证数据:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">src/redis-cli EVAL &quot;$(cat insert-attr-partner.lua)&quot; 1 15959086950 1453708983 koudai </span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; ZRANGE 15959086950 0 -1 WITHSCORES</span><br><span class="line">1) &quot;koudai&quot;</span><br><span class="line">2) &quot;1453708983&quot;</span><br><span class="line"></span><br><span class="line">src/redis-cli EVAL &quot;$(cat insert-attr-partner.lua)&quot; 1 15959086950 1453708983 jiedaibao </span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; ZRANGE 15959086950 0 -1 WITHSCORES</span><br><span class="line">1) &quot;jiedaibao&quot;</span><br><span class="line">2) &quot;1453708980&quot;</span><br><span class="line">3) &quot;koudai&quot;</span><br><span class="line">4) &quot;1453708983&quot;</span><br><span class="line"></span><br><span class="line">传入旧的时间,不更新</span><br><span class="line">src/redis-cli EVAL &quot;$(cat insert-attr-partner.lua)&quot; 1 15959086950 1453708900 koudai </span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; ZRANGE 15959086950 0 -1 WITHSCORES</span><br><span class="line">1) &quot;jiedaibao&quot;</span><br><span class="line">2) &quot;1453708980&quot;</span><br><span class="line">3) &quot;koudai&quot;</span><br><span class="line">4) &quot;1453708983&quot;</span><br><span class="line"></span><br><span class="line">传入新的时间,更新</span><br><span class="line">src/redis-cli EVAL &quot;$(cat insert-attr-partner.lua)&quot; 1 15959086950 1453709000 koudai </span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; ZRANGE 15959086950 0 -1 WITHSCORES</span><br><span class="line">1) &quot;jiedaibao&quot;</span><br><span class="line">2) &quot;1453708980&quot;</span><br><span class="line">3) &quot;koudai&quot;</span><br><span class="line">4) &quot;1453709000&quot;</span><br><span class="line"></span><br><span class="line">新的key:15959086951</span><br><span class="line">src/redis-cli EVAL &quot;$(cat insert-attr-partner.lua)&quot; 1 15959086951 1453708980 koudai </span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; ZRANGE 15959086950 0 -1 WITHSCORES</span><br><span class="line">1) &quot;jiedaibao&quot;</span><br><span class="line">2) &quot;1453708980&quot;</span><br><span class="line">3) &quot;koudai&quot;</span><br><span class="line">4) &quot;1453709000&quot;</span><br><span class="line"></span><br><span class="line">127.0.0.1:6379&gt; ZRANGE 15959086951 0 -1 WITHSCORES</span><br><span class="line">1) &quot;koudai&quot;</span><br><span class="line">2) &quot;1453708980&quot;</span><br></pre></td></tr></table></figure>
+<p>带有返回值的lua脚本  </p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> score = redis.call(<span class="string">'zscore'</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">2</span>])</span><br><span class="line"><span class="keyword">if</span> score <span class="keyword">then</span></span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">tonumber</span>(score) &lt; <span class="built_in">tonumber</span>(ARGV[<span class="number">1</span>])) <span class="keyword">then</span></span><br><span class="line">        redis.call(<span class="string">'zadd'</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">1</span>], ARGV[<span class="number">2</span>])</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">return</span> <span class="number">-1</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    redis.call(<span class="string">'zadd'</span>, KEYS[<span class="number">1</span>], ARGV[<span class="number">1</span>], ARGV[<span class="number">2</span>])</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"><span class="keyword">return</span> <span class="number">1</span></span><br></pre></td></tr></table></figure>
+<p>加载脚本,并使用EVALSHA执行  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">src/redis-cli SCRIPT LOAD &quot;$(cat attr-partner.lua)&quot;</span><br><span class="line">9afb46620b42e84770d64b4ca4c102b626bb20fc</span><br><span class="line"></span><br><span class="line">src/redis-cli EVALSHA 9afb46620b42e84770d64b4ca4c102b626bb20fc 1 15959086951 1453708980 koudai</span><br></pre></td></tr></table></figure>
+<p>加载之后, 可以直接使用sha的值调用, 而不需要使用EVAL+脚本的方式.   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">➜  redis-3.0.2  src/redis-cli EVALSHA 9afb46620b42e84770d64b4ca4c102b626bb20fc 1 15959086951 1453708980 koudai</span><br><span class="line">(integer) -1</span><br><span class="line">➜  redis-3.0.2  src/redis-cli EVALSHA 9afb46620b42e84770d64b4ca4c102b626bb20fc 1 15959086951 1453709111 koudai</span><br><span class="line">(integer) 1</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="查询数据流程">查询数据流程</h2><p>get-attr-partner.lua</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">local</span> now = <span class="built_in">os</span>.<span class="built_in">time</span>()</span><br><span class="line"><span class="keyword">local</span> start = now - <span class="built_in">tonumber</span>(ARGV[<span class="number">1</span>]) * <span class="number">3600000</span> * <span class="number">30</span> * <span class="number">365</span> </span><br><span class="line">redis.call(<span class="string">'zrangebyscore'</span>, KEYS[<span class="number">1</span>], start, now)</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<h2 id="RedisClient">RedisClient</h2><p>客户端提供从JedisPool池中返回Jedis实例.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.commons.pool2.impl.<span class="type">GenericObjectPoolConfig</span></span><br><span class="line"><span class="keyword">import</span> redis.clients.jedis.<span class="type">JedisPool</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">RedisClient</span> <span class="keyword">extends</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line">  <span class="keyword">val</span> redisPort = <span class="number">6379</span></span><br><span class="line">  <span class="keyword">val</span> redisTimeout = <span class="number">30000</span></span><br><span class="line">  <span class="keyword">lazy</span> <span class="keyword">val</span> localPool = <span class="keyword">new</span> <span class="type">JedisPool</span>(<span class="keyword">new</span> <span class="type">GenericObjectPoolConfig</span>(), <span class="string">"localhost"</span>, redisPort, redisTimeout)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Spark-Redis">Spark-Redis</h2><p>对每个Partition都需要使用新的Redis实例操作.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">AttributePartner</span>(<span class="params">attribute: <span class="type">String</span>, timestamp: <span class="type">Long</span>, partner: <span class="type">String</span></span>)</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">val</span> <span class="title">testRdd</span> </span>= sc.parallelize(<span class="type">List</span>(</span><br><span class="line">  <span class="type">AttributePartner</span>(<span class="string">"mob_15959086950"</span>,<span class="number">1453708980</span>L,<span class="string">"koudai"</span>),</span><br><span class="line">  <span class="type">AttributePartner</span>(<span class="string">"mob_15959086950"</span>,<span class="number">1453709000</span>L,<span class="string">"koudai"</span>),</span><br><span class="line">  <span class="type">AttributePartner</span>(<span class="string">"mob_15959086950"</span>,<span class="number">1453709000</span>L,<span class="string">"jiedaibao"</span>),</span><br><span class="line">  <span class="type">AttributePartner</span>(<span class="string">"mob_15959086950"</span>,<span class="number">1453700800</span>L,<span class="string">"jiedaibao"</span>)</span><br><span class="line">), <span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> script =</span><br><span class="line">  <span class="string">""</span><span class="string">"</span></span><br><span class="line"><span class="string">    |local score = redis.call('zscore', KEYS[1], ARGV[2])</span></span><br><span class="line"><span class="string">    |if score then</span></span><br><span class="line"><span class="string">    |    if(tonumber(score) &lt; tonumber(ARGV[1])) then</span></span><br><span class="line"><span class="string">    |        redis.call('zadd', KEYS[1], ARGV[1], ARGV[2])</span></span><br><span class="line"><span class="string">    |    else return -1</span></span><br><span class="line"><span class="string">    |    end</span></span><br><span class="line"><span class="string">    |else</span></span><br><span class="line"><span class="string">    |    redis.call('zadd', KEYS[1], ARGV[1], ARGV[2])</span></span><br><span class="line"><span class="string">    |end</span></span><br><span class="line"><span class="string">    |return 1</span></span><br><span class="line"><span class="string">  "</span><span class="string">""</span>.stripMargin</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">testLocalJedis</span></span>(): <span class="type">Unit</span> =&#123;</span><br><span class="line">  testRdd.foreachPartition(partitionOfRecords=&gt;&#123;</span><br><span class="line">    partitionOfRecords.foreach(record=&gt;&#123;</span><br><span class="line">      <span class="keyword">val</span> jedis = <span class="type">RedisClient</span>.localPool.getResource</span><br><span class="line">      jedis.eval(script, <span class="number">1</span>, record.attribute, <span class="string">""</span>+record.timestamp, record.partner)</span><br><span class="line">      <span class="type">RedisClient</span>.localPool.returnResource(jedis)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="数据过滤">数据过滤</h2><p>项目已经上线,但是要过滤某个测试数据member.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">➜  redis-3.0.2  src/redis-cli</span><br><span class="line">127.0.0.1:6379&gt; keys *</span><br><span class="line">1) &quot;15959086951&quot;</span><br><span class="line">2) &quot;15959086950&quot;</span><br><span class="line">3) &quot;mob_15959086950&quot;</span><br><span class="line">4) &quot;mob_15959086951&quot;</span><br><span class="line">5) &quot;mykey&quot;</span><br><span class="line">127.0.0.1:6379&gt; keys mob*</span><br><span class="line">1) &quot;mob_15959086950&quot;</span><br><span class="line">2) &quot;mob_15959086951&quot;</span><br><span class="line">127.0.0.1:6379&gt; zrange mob_15959086950 0 -1</span><br><span class="line">1) &quot;jiedaibao&quot;</span><br><span class="line">2) &quot;koudai&quot;</span><br><span class="line">127.0.0.1:6379&gt; zadd mob_15959086950 1111111 test</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; zrange mob_15959086950 0 -1</span><br><span class="line">1) &quot;test&quot;</span><br><span class="line">2) &quot;jiedaibao&quot;</span><br><span class="line">3) &quot;koudai&quot;</span><br></pre></td></tr></table></figure>
+<p>不能直接删除key, 而是要遍历所有key中包含某个member的数据.下面是删除指定key中的某个member.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; ZREM mob_15959086950 test</span><br><span class="line">(integer) 1</span><br><span class="line">127.0.0.1:6379&gt; zrange mob_15959086950 0 -1</span><br><span class="line">1) &quot;jiedaibao&quot;</span><br><span class="line">2) &quot;koudai&quot;</span><br></pre></td></tr></table></figure>
+<p>遍历所有的key,如果所有的key类型不一致,则使用同一个api删除时会报错:  </p>
+<p><code>WRONGTYPE Operation against a key holding the wrong kind of value</code></p>
+<p>所以更健壮的做法是首先检测key的类型.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; type mob_15959086951</span><br><span class="line">zset</span><br><span class="line">127.0.0.1:6379&gt; type 15959086950</span><br><span class="line">zset</span><br><span class="line">127.0.0.1:6379&gt; type mykey</span><br><span class="line">string</span><br></pre></td></tr></table></figure>
+<p>遍历所有key,如果这个key没有member,也会被查询到,更好的方法是只有member的才删除,不过目前没有这种api.  </p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/01/25/Redis-SortedSet/">Redis SortedSet</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年01月25日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/01/25/Redis-SortedSet/" title="Redis SortedSet">http://github.com/zqhxuyuan/2016/01/25/Redis-SortedSet/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/01/25/Redis-SortedSet/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/01/29/2016-01-29-Kafka-Consumer-offset/">
+        Kafka源码分析 Consumer(3) offset
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/01/20/2016-01-20-Kafka-Consumer-fetcher/">
+        Kafka源码分析 Consumer(2) Fetcher
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis快速入门"><span class="toc-number">1.</span> <span class="toc-text">Redis快速入门</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#业务需求"><span class="toc-number">2.</span> <span class="toc-text">业务需求</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis_&_Lua"><span class="toc-number">3.</span> <span class="toc-text">Redis &amp; Lua</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#插入数据流程"><span class="toc-number">4.</span> <span class="toc-text">插入数据流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查询数据流程"><span class="toc-number">5.</span> <span class="toc-text">查询数据流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#RedisClient"><span class="toc-number">6.</span> <span class="toc-text">RedisClient</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Spark-Redis"><span class="toc-number">7.</span> <span class="toc-text">Spark-Redis</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据过滤"><span class="toc-number">8.</span> <span class="toc-text">数据过滤</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/01/25/Redis-SortedSet/" data-title="Redis SortedSet" data-url="http://github.com/zqhxuyuan/2016/01/25/Redis-SortedSet/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/01/29/2016-01-29-Kafka-Consumer-offset/" title="上一篇: Kafka源码分析 Consumer(3) offset">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/01/20/2016-01-20-Kafka-Consumer-fetcher/" title="下一篇: Kafka源码分析 Consumer(2) Fetcher">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

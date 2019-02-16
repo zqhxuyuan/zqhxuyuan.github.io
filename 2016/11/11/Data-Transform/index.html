@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>ETL Tools | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="ETL Tools（Sqoop…）">
+<meta name="keywords" content="etl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ETL Tools">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/11/11/Data-Transform/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="ETL Tools（Sqoop…）">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.324Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ETL Tools">
+<meta name="twitter:description" content="ETL Tools（Sqoop…）">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Data-Transform" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/11/11/Data-Transform/" class="article-date">
+  	<time datetime="2016-11-10T16:00:00.000Z" itemprop="datePublished">2016-11-11</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      ETL Tools
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/etl/">etl</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/etl/">etl</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>ETL Tools（Sqoop…）<br><a id="more"></a></p>
+<h2 id="Sqoop">Sqoop</h2><h3 id="Sqoop1">Sqoop1</h3><ol>
+<li>单张表、全部表、查询条件、Direct方式</li>
+<li>RDBMS导入到HDFS、从HDFS导出到RDBMS</li>
+<li>增量（增量方式、检查列、上一次的值）</li>
+<li>Job用来支持增量和定时（重复执行）</li>
+<li>Evaluation（DDL/DML），RDBMS的客户端工具而已</li>
+</ol>
+<p>增量查询示例（how to identify new data）：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ sqoop import \</span><br><span class="line">--connect jdbc:mysql://localhost/userdb \</span><br><span class="line">--username root \</span><br><span class="line">--table emp \</span><br><span class="line">--m 1 \</span><br><span class="line">--incremental append \</span><br><span class="line">--check-column id \</span><br><span class="line">-last value 1205</span><br></pre></td></tr></table></figure>
+<p>数据不会被更新：append<br>数据会被更新：lastmodified（check-column是一个时间列，表示记录的更新时间）  </p>
+<p>定期执行增量任务，推荐采用作业（会自动存储上一次的值）。创建作业，执行作业：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">$ sqoop job --create myjob \</span><br><span class="line">--import \</span><br><span class="line">--connect jdbc:mysql://localhost/db \</span><br><span class="line">--username root \</span><br><span class="line">--table employee --m 1</span><br><span class="line"></span><br><span class="line">$ sqoop job --show myjob</span><br><span class="line">Job: myjob </span><br><span class="line"> Tool: import Options:</span><br><span class="line"> ---------------------------- </span><br><span class="line"> direct.import = <span class="literal">true</span></span><br><span class="line"> codegen.input.delimiters.record = 0</span><br><span class="line"> hdfs.append.dir = <span class="literal">false</span> </span><br><span class="line"> db.table = employee</span><br><span class="line"> ...</span><br><span class="line"> incremental.last.value = 1206</span><br><span class="line"> ...</span><br><span class="line"></span><br><span class="line">$ sqoop job --<span class="built_in">exec</span> myjob</span><br></pre></td></tr></table></figure>
+<h3 id="Sqoop2">Sqoop2</h3><h2 id="DataX"><a href="https://github.com/alibaba/DataX/wiki/Quick-Start">DataX</a></h2><p>快速入门示例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0653 datax]$ bin/datax.py job/job.json</span><br><span class="line">DataX (DATAX-OPENSOURCE-3.0), From Alibaba !</span><br><span class="line">Copyright (C) 2010-2016, Alibaba Group. All Rights Reserved.</span><br><span class="line">2016-10-27 14:46:29.162 [main] INFO  Engine -</span><br><span class="line">&#123;</span><br><span class="line">    &quot;content&quot;:[</span><br><span class="line">        &#123;</span><br><span class="line">            &quot;reader&quot;:&#123;</span><br><span class="line">                &quot;name&quot;:&quot;streamreader&quot;,</span><br><span class="line">                &quot;parameter&quot;:&#123;</span><br><span class="line">                    &quot;column&quot;:[</span><br><span class="line">                        &#123;</span><br><span class="line">                            &quot;type&quot;:&quot;string&quot;,</span><br><span class="line">                            &quot;value&quot;:&quot;DataX&quot;</span><br><span class="line">                        &#125;,</span><br><span class="line">                        &#123;</span><br><span class="line">                            &quot;type&quot;:&quot;long&quot;,</span><br><span class="line">                            &quot;value&quot;:19890604</span><br><span class="line">                        &#125;,</span><br><span class="line">                        &#123;</span><br><span class="line">                            &quot;type&quot;:&quot;date&quot;,</span><br><span class="line">                            &quot;value&quot;:&quot;1989-06-04 00:00:00&quot;</span><br><span class="line">                        &#125;,</span><br><span class="line">                        &#123;</span><br><span class="line">                            &quot;type&quot;:&quot;bool&quot;,</span><br><span class="line">                            &quot;value&quot;:true</span><br><span class="line">                        &#125;,</span><br><span class="line">                        &#123;</span><br><span class="line">                            &quot;type&quot;:&quot;bytes&quot;,</span><br><span class="line">                            &quot;value&quot;:&quot;test&quot;</span><br><span class="line">                        &#125;</span><br><span class="line">                    ],</span><br><span class="line">                    &quot;sliceRecordCount&quot;:100000</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;,</span><br><span class="line">            &quot;writer&quot;:&#123;</span><br><span class="line">                &quot;name&quot;:&quot;streamwriter&quot;,</span><br><span class="line">                &quot;parameter&quot;:&#123;</span><br><span class="line">                    &quot;encoding&quot;:&quot;UTF-8&quot;,</span><br><span class="line">                    &quot;print&quot;:false</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    ],</span><br><span class="line">    &quot;setting&quot;:&#123;</span><br><span class="line">        &quot;errorLimit&quot;:&#123;</span><br><span class="line">            &quot;percentage&quot;:0.02,</span><br><span class="line">            &quot;record&quot;:0</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;speed&quot;:&#123;</span><br><span class="line">            &quot;byte&quot;:10485760</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">2016-10-27 14:46:29.194 [main] WARN  Engine - prioriy set to 0, because NumberFormatException, the value is: null</span><br><span class="line">2016-10-27 14:46:29.196 [main] INFO  PerfTrace - PerfTrace traceId=job_-1, isEnable=false, priority=0</span><br><span class="line">2016-10-27 14:46:29.196 [main] INFO  JobContainer - DataX jobContainer starts job.</span><br><span class="line">2016-10-27 14:46:29.198 [main] INFO  JobContainer - Set jobId = 0</span><br><span class="line">2016-10-27 14:46:29.215 [job-0] INFO  JobContainer - jobContainer starts to do prepare ...</span><br><span class="line">2016-10-27 14:46:29.215 [job-0] INFO  JobContainer - DataX Reader.Job [streamreader] do prepare work .</span><br><span class="line">2016-10-27 14:46:29.216 [job-0] INFO  JobContainer - DataX Writer.Job [streamwriter] do prepare work .</span><br><span class="line">2016-10-27 14:46:29.216 [job-0] INFO  JobContainer - jobContainer starts to do split ...</span><br><span class="line">2016-10-27 14:46:29.217 [job-0] INFO  JobContainer - Job set Max-Byte-Speed to 10485760 bytes.</span><br><span class="line">2016-10-27 14:46:29.217 [job-0] INFO  JobContainer - DataX Reader.Job [streamreader] splits to [1] tasks.</span><br><span class="line">2016-10-27 14:46:29.218 [job-0] INFO  JobContainer - DataX Writer.Job [streamwriter] splits to [1] tasks.</span><br><span class="line">2016-10-27 14:46:29.238 [job-0] INFO  JobContainer - jobContainer starts to do schedule ...</span><br><span class="line">2016-10-27 14:46:29.242 [job-0] INFO  JobContainer - Scheduler starts [1] taskGroups.</span><br><span class="line">2016-10-27 14:46:29.244 [job-0] INFO  JobContainer - Running by standalone Mode.</span><br><span class="line">2016-10-27 14:46:29.252 [taskGroup-0] INFO  TaskGroupContainer - taskGroupId=[0] start [1] channels for [1] tasks.</span><br><span class="line">2016-10-27 14:46:29.256 [taskGroup-0] INFO  Channel - Channel set byte_speed_limit to -1, No bps activated.</span><br><span class="line">2016-10-27 14:46:29.256 [taskGroup-0] INFO  Channel - Channel set record_speed_limit to -1, No tps activated.</span><br><span class="line">2016-10-27 14:46:29.267 [taskGroup-0] INFO  TaskGroupContainer - taskGroup[0] taskId[0] attemptCount[1] is started</span><br><span class="line">2016-10-27 14:46:29.568 [taskGroup-0] INFO  TaskGroupContainer - taskGroup[0] taskId[0] is successed, used[302]ms</span><br><span class="line">2016-10-27 14:46:29.569 [taskGroup-0] INFO  TaskGroupContainer - taskGroup[0] completed it&apos;s tasks.</span><br><span class="line">2016-10-27 14:46:39.263 [job-0] INFO  StandAloneJobContainerCommunicator - Total 100000 records, 2600000 bytes | Speed 253.91KB/s, 10000 records/s | Error 0 records, 0 bytes |  All Task WaitWriterTime 0.016s |  All Task WaitReaderTime 0.029s | Percentage 100.00%</span><br><span class="line">2016-10-27 14:46:39.264 [job-0] INFO  AbstractScheduler - Scheduler accomplished all tasks.</span><br><span class="line">2016-10-27 14:46:39.265 [job-0] INFO  JobContainer - DataX Writer.Job [streamwriter] do post work.</span><br><span class="line">2016-10-27 14:46:39.265 [job-0] INFO  JobContainer - DataX Reader.Job [streamreader] do post work.</span><br><span class="line">2016-10-27 14:46:39.265 [job-0] INFO  JobContainer - DataX jobId [0] completed successfully.</span><br><span class="line">2016-10-27 14:46:39.267 [job-0] INFO  HookInvoker - No hook invoked, because base dir not exists or is a file: /home/qihuang.zheng/datax/hook</span><br><span class="line">2016-10-27 14:46:39.270 [job-0] INFO  JobContainer -</span><br><span class="line">2016-10-27 14:46:39.270 [job-0] INFO  JobContainer - PerfTrace not enable!</span><br><span class="line">2016-10-27 14:46:39.271 [job-0] INFO  StandAloneJobContainerCommunicator - Total 100000 records, 2600000 bytes | Speed 253.91KB/s, 10000 records/s | Error 0 records, 0 bytes |  All Task WaitWriterTime 0.016s |  All Task WaitReaderTime 0.029s | Percentage 100.00%</span><br><span class="line">2016-10-27 14:46:39.273 [job-0] INFO  JobContainer -</span><br><span class="line">任务启动时刻                    : 2016-10-27 14:46:29</span><br><span class="line">任务结束时刻                    : 2016-10-27 14:46:39</span><br><span class="line">任务总计耗时                    :                 10s</span><br><span class="line">任务平均流量                    :          253.91KB/s</span><br><span class="line">记录写入速度                    :          10000rec/s</span><br><span class="line">读出记录总数                    :              100000</span><br><span class="line">读写失败总数                    :                   0</span><br></pre></td></tr></table></figure>
+<h3 id="实验：MySQL-&gt;HDFS">实验：MySQL-&gt;HDFS</h3><p>下面的实验中DataX部署在本机，MySQL也是本机，HDFS是测试环境。  </p>
+<ol>
+<li>查看模板：</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">$ bin/datax.py -r mysqlreader -w hdfswriter</span><br><span class="line">Please refer to the mysqlreader document: https://github.com/alibaba/DataX/blob/master/mysqlreader/doc/mysqlreader.md</span><br><span class="line">Please refer to the hdfswriter document: https://github.com/alibaba/DataX/blob/master/hdfswriter/doc/hdfswriter.md</span><br><span class="line">Please save the following configuration as a json file and  use python &#123;DATAX_HOME&#125;/bin/datax.py &#123;JSON_FILE_NAME&#125;.json to run the job.</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    &quot;job&quot;: &#123;</span><br><span class="line">        &quot;content&quot;: [</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;reader&quot;: &#123;</span><br><span class="line">                    &quot;name&quot;: &quot;mysqlreader&quot;,</span><br><span class="line">                    &quot;parameter&quot;: &#123;</span><br><span class="line">                        &quot;column&quot;: [],</span><br><span class="line">                        &quot;connection&quot;: [</span><br><span class="line">                            &#123;</span><br><span class="line">                                &quot;jdbcUrl&quot;: [],</span><br><span class="line">                                &quot;table&quot;: []</span><br><span class="line">                            &#125;</span><br><span class="line">                        ],</span><br><span class="line">                        &quot;password&quot;: &quot;&quot;,</span><br><span class="line">                        &quot;username&quot;: &quot;&quot;,</span><br><span class="line">                        &quot;where&quot;: &quot;&quot;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;,</span><br><span class="line">                &quot;writer&quot;: &#123;</span><br><span class="line">                    &quot;name&quot;: &quot;hdfswriter&quot;,</span><br><span class="line">                    &quot;parameter&quot;: &#123;</span><br><span class="line">                        &quot;column&quot;: [],</span><br><span class="line">                        &quot;compress&quot;: &quot;&quot;,</span><br><span class="line">                        &quot;defaultFS&quot;: &quot;&quot;,</span><br><span class="line">                        &quot;fieldDelimiter&quot;: &quot;&quot;,</span><br><span class="line">                        &quot;fileName&quot;: &quot;&quot;,</span><br><span class="line">                        &quot;fileType&quot;: &quot;&quot;,</span><br><span class="line">                        &quot;path&quot;: &quot;&quot;,</span><br><span class="line">                        &quot;writeMode&quot;: &quot;&quot;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        ],</span><br><span class="line">        &quot;setting&quot;: &#123;</span><br><span class="line">            &quot;speed&quot;: &#123;</span><br><span class="line">                &quot;channel&quot;: &quot;&quot;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>准备MySQL表和Hive表</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">#mysql</span><br><span class="line">CREATE TABLE `task` (</span><br><span class="line">  `id` bigint(20) NOT NULL,</span><br><span class="line">  `name` varchar(50) NOT NULL,</span><br><span class="line">  `done` tinyint(1) DEFAULT NULL,</span><br><span class="line">  PRIMARY KEY (`id`)</span><br><span class="line">);</span><br><span class="line">插入一些MySQL数据</span><br><span class="line">mysql&gt; select * from a;</span><br><span class="line">+------+-------+</span><br><span class="line">| id   | price |</span><br><span class="line">+------+-------+</span><br><span class="line">|    1 |    15 |</span><br><span class="line">|    2 |    25 |</span><br><span class="line">|    3 |    10 |</span><br><span class="line">|    4 |    45 |</span><br><span class="line">|    5 |    10 |</span><br><span class="line">|    6 |    10 |</span><br><span class="line">+------+-------+</span><br><span class="line">6 rows in set (0.00 sec)</span><br><span class="line"></span><br><span class="line">#hive</span><br><span class="line">create EXTERNAL table text_table(</span><br><span class="line">  id INT,</span><br><span class="line">  price INT</span><br><span class="line">)</span><br><span class="line">row format delimited</span><br><span class="line">fields terminated by &quot;\t&quot;</span><br><span class="line">STORED AS TEXTFILE</span><br><span class="line">location &apos;/user/qihuang.zheng/text_table&apos;;</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>测试环境的一些注意点：</li>
+</ol>
+<p>1) 修改权限</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/usr/install/hadoop/bin/hadoop fs -mkdir /user/qihuang.zheng/text_table</span><br><span class="line">/usr/install/hadoop/bin/hadoop fs -chmod 777 /user/qihuang.zheng/</span><br></pre></td></tr></table></figure>
+<p>2) hdfs://tdfs修改为主机端口，因为datax在本机运行，不认识tdfs。</p>
+<p>3) 模板给出的都必须填写，不允许有空字符串，比如MySQL的用户名密码，channel数量等</p>
+<ol start="4">
+<li>job/mysql2hdfs.job</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;job&quot;: &#123;</span><br><span class="line">        &quot;content&quot;: [</span><br><span class="line">            &#123;</span><br><span class="line">                &quot;reader&quot;: &#123;</span><br><span class="line">                    &quot;name&quot;: &quot;mysqlreader&quot;,</span><br><span class="line">                    &quot;parameter&quot;: &#123;</span><br><span class="line">                        &quot;column&quot;: [&quot;id&quot;,&quot;price&quot;],</span><br><span class="line">                        &quot;connection&quot;: [</span><br><span class="line">                            &#123;</span><br><span class="line">                                &quot;jdbcUrl&quot;: [&quot;jdbc:mysql://127.0.0.1:3306/test&quot;],</span><br><span class="line">                                &quot;table&quot;: [&quot;a&quot;]</span><br><span class="line">                            &#125;</span><br><span class="line">                        ],</span><br><span class="line">                        &quot;password&quot;: &quot;root&quot;,</span><br><span class="line">                        &quot;username&quot;: &quot;root&quot;,</span><br><span class="line">                        &quot;where&quot;: &quot;&quot;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;,</span><br><span class="line">                &quot;writer&quot;: &#123;</span><br><span class="line">                    &quot;name&quot;: &quot;hdfswriter&quot;,</span><br><span class="line">                    &quot;parameter&quot;: &#123;</span><br><span class="line">                        &quot;column&quot;: [</span><br><span class="line">                            &#123;</span><br><span class="line">                                &quot;name&quot;: &quot;id&quot;,</span><br><span class="line">                                &quot;type&quot;: &quot;INT&quot;</span><br><span class="line">                            &#125;,</span><br><span class="line">                            &#123;</span><br><span class="line">                                &quot;name&quot;: &quot;price&quot;,</span><br><span class="line">                                &quot;type&quot;: &quot;INT&quot;</span><br><span class="line">                            &#125;</span><br><span class="line">                        ],</span><br><span class="line">                        &quot;compress&quot;: &quot;GZIP&quot;,</span><br><span class="line">                        &quot;defaultFS&quot;: &quot;hdfs://192.168.6.52:9000&quot;,</span><br><span class="line">                        &quot;fieldDelimiter&quot;: &quot;\t&quot;,</span><br><span class="line">                        &quot;fileName&quot;: &quot;text&quot;,</span><br><span class="line">                        &quot;fileType&quot;: &quot;text&quot;,</span><br><span class="line">                        &quot;path&quot;: &quot;/user/qihuang.zheng/text_table&quot;,</span><br><span class="line">                        &quot;writeMode&quot;: &quot;append&quot;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        ],</span><br><span class="line">        &quot;setting&quot;: &#123;</span><br><span class="line">            &quot;speed&quot;: &#123;</span><br><span class="line">                &quot;channel&quot;: &quot;2&quot;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="5">
+<li>执行任务</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">➜  datax bin/datax.py job/mysql2hdfs.json</span><br><span class="line">2016-10-27 16:26:07.454 [main] WARN  Engine - prioriy set to 0, because NumberFormatException, the value is: null</span><br><span class="line">2016-10-27 16:26:07.461 [main] INFO  PerfTrace - PerfTrace traceId=job_-1, isEnable=false, priority=0</span><br><span class="line">2016-10-27 16:26:07.462 [main] INFO  JobContainer - DataX jobContainer starts job.</span><br><span class="line">2016-10-27 16:26:07.465 [main] INFO  JobContainer - Set jobId = 0</span><br><span class="line">2016-10-27 16:26:08.274 [job-0] INFO  OriginalConfPretreatmentUtil - Available jdbcUrl:jdbc:mysql://127.0.0.1:3306/test?yearIsDateType=false&amp;zeroDateTimeBehavior=convertToNull&amp;tinyInt1isBit=false&amp;rewriteBatchedStatements=true.</span><br><span class="line">2016-10-27 16:26:08.312 [job-0] INFO  OriginalConfPretreatmentUtil - table:[a] has columns:[id,price].</span><br><span class="line">十月 27, 2016 4:26:10 下午 org.apache.hadoop.util.NativeCodeLoader &lt;clinit&gt;</span><br><span class="line">2016-10-27 16:26:12.665 [job-0] INFO  JobContainer - jobContainer starts to do prepare ...</span><br><span class="line">2016-10-27 16:26:12.666 [job-0] INFO  JobContainer - DataX Reader.Job [mysqlreader] do prepare work .</span><br><span class="line">2016-10-27 16:26:12.667 [job-0] INFO  JobContainer - DataX Writer.Job [hdfswriter] do prepare work .</span><br><span class="line">2016-10-27 16:26:13.008 [job-0] INFO  HdfsWriter$Job - 由于您配置了writeMode append, 写入前不做清理工作, [/user/qihuang.zheng/text_table] 目录下写入相应文件名前缀  [text] 的文件</span><br><span class="line">2016-10-27 16:26:13.008 [job-0] INFO  JobContainer - jobContainer starts to do split ...</span><br><span class="line">2016-10-27 16:26:13.009 [job-0] INFO  JobContainer - Job set Channel-Number to 2 channels.</span><br><span class="line">2016-10-27 16:26:13.021 [job-0] INFO  JobContainer - DataX Reader.Job [mysqlreader] splits to [1] tasks.</span><br><span class="line">2016-10-27 16:26:13.022 [job-0] INFO  HdfsWriter$Job - begin do split...</span><br><span class="line">2016-10-27 16:26:13.031 [job-0] INFO  HdfsWriter$Job - splited write file name:[hdfs://192.168.6.52:9000/user/qihuang.zheng/text_table__8a0c1ab7_af4b_4228_8ff0_36e138f2aa31/text__ec1afe8c_5286_4372_afb8_91d99223c61d]</span><br><span class="line">2016-10-27 16:26:13.031 [job-0] INFO  HdfsWriter$Job - end do split.</span><br><span class="line">2016-10-27 16:26:13.031 [job-0] INFO  JobContainer - DataX Writer.Job [hdfswriter] splits to [1] tasks.</span><br><span class="line">2016-10-27 16:26:13.070 [job-0] INFO  JobContainer - jobContainer starts to do schedule ...</span><br><span class="line">2016-10-27 16:26:13.081 [job-0] INFO  JobContainer - Scheduler starts [1] taskGroups.</span><br><span class="line">2016-10-27 16:26:13.093 [job-0] INFO  JobContainer - Running by standalone Mode.</span><br><span class="line">2016-10-27 16:26:13.133 [taskGroup-0] INFO  TaskGroupContainer - taskGroupId=[0] start [1] channels for [1] tasks.</span><br><span class="line">2016-10-27 16:26:13.157 [taskGroup-0] INFO  Channel - Channel set byte_speed_limit to -1, No bps activated.</span><br><span class="line">2016-10-27 16:26:13.157 [taskGroup-0] INFO  Channel - Channel set record_speed_limit to -1, No tps activated.</span><br><span class="line">2016-10-27 16:26:13.197 [taskGroup-0] INFO  TaskGroupContainer - taskGroup[0] taskId[0] attemptCount[1] is started</span><br><span class="line">2016-10-27 16:26:13.219 [0-0-0-reader] INFO  CommonRdbmsReader$Task - Begin to read record by Sql: [select id,price from a</span><br><span class="line">] jdbcUrl:[jdbc:mysql://127.0.0.1:3306/test?yearIsDateType=false&amp;zeroDateTimeBehavior=convertToNull&amp;tinyInt1isBit=false&amp;rewriteBatchedStatements=true].</span><br><span class="line">2016-10-27 16:26:13.304 [0-0-0-writer] INFO  HdfsWriter$Task - begin do write...</span><br><span class="line">2016-10-27 16:26:13.305 [0-0-0-writer] INFO  HdfsWriter$Task - write to file : [hdfs://192.168.6.52:9000/user/qihuang.zheng/text_table__8a0c1ab7_af4b_4228_8ff0_36e138f2aa31/text__ec1afe8c_5286_4372_afb8_91d99223c61d]</span><br><span class="line">2016-10-27 16:26:13.314 [0-0-0-reader] INFO  CommonRdbmsReader$Task - Finished read record by Sql: [select id,price from a</span><br><span class="line">] jdbcUrl:[jdbc:mysql://127.0.0.1:3306/test?yearIsDateType=false&amp;zeroDateTimeBehavior=convertToNull&amp;tinyInt1isBit=false&amp;rewriteBatchedStatements=true].</span><br><span class="line">2016-10-27 16:26:13.916 [0-0-0-writer] INFO  HdfsWriter$Task - end do write</span><br><span class="line">2016-10-27 16:26:14.013 [taskGroup-0] INFO  TaskGroupContainer - taskGroup[0] taskId[0] is successed, used[823]ms</span><br><span class="line">2016-10-27 16:26:14.014 [taskGroup-0] INFO  TaskGroupContainer - taskGroup[0] completed it&apos;s tasks.</span><br><span class="line">2016-10-27 16:26:23.185 [job-0] INFO  StandAloneJobContainerCommunicator - Total 6 records, 18 bytes | Speed 1B/s, 0 records/s | Error 0 records, 0 bytes |  All Task WaitWriterTime 0.000s |  All Task WaitReaderTime 0.000s | Percentage 100.00%</span><br><span class="line">2016-10-27 16:26:23.185 [job-0] INFO  AbstractScheduler - Scheduler accomplished all tasks.</span><br><span class="line">2016-10-27 16:26:23.186 [job-0] INFO  JobContainer - DataX Writer.Job [hdfswriter] do post work.</span><br><span class="line">2016-10-27 16:26:23.187 [job-0] INFO  HdfsWriter$Job - start rename file [hdfs://192.168.6.52:9000/user/qihuang.zheng/text_table__8a0c1ab7_af4b_4228_8ff0_36e138f2aa31/text__ec1afe8c_5286_4372_afb8_91d99223c61d.gz] to file [hdfs://192.168.6.52:9000/user/qihuang.zheng/text_table/text__ec1afe8c_5286_4372_afb8_91d99223c61d.gz].</span><br><span class="line">2016-10-27 16:26:23.213 [job-0] INFO  HdfsWriter$Job - finish rename file [hdfs://192.168.6.52:9000/user/qihuang.zheng/text_table__8a0c1ab7_af4b_4228_8ff0_36e138f2aa31/text__ec1afe8c_5286_4372_afb8_91d99223c61d.gz] to file [hdfs://192.168.6.52:9000/user/qihuang.zheng/text_table/text__ec1afe8c_5286_4372_afb8_91d99223c61d.gz].</span><br><span class="line">2016-10-27 16:26:23.214 [job-0] INFO  HdfsWriter$Job - start delete tmp dir [hdfs://192.168.6.52:9000/user/qihuang.zheng/text_table__8a0c1ab7_af4b_4228_8ff0_36e138f2aa31] .</span><br><span class="line">2016-10-27 16:26:23.239 [job-0] INFO  HdfsWriter$Job - finish delete tmp dir [hdfs://192.168.6.52:9000/user/qihuang.zheng/text_table__8a0c1ab7_af4b_4228_8ff0_36e138f2aa31] .</span><br><span class="line">2016-10-27 16:26:23.240 [job-0] INFO  JobContainer - DataX Reader.Job [mysqlreader] do post work.</span><br><span class="line">2016-10-27 16:26:23.241 [job-0] INFO  JobContainer - DataX jobId [0] completed successfully.</span><br><span class="line">2016-10-27 16:26:23.244 [job-0] INFO  HookInvoker - No hook invoked, because base dir not exists or is a file: /Users/zhengqh/Soft/datax/hook</span><br><span class="line">2016-10-27 16:26:23.353 [job-0] INFO  JobContainer -</span><br><span class="line">2016-10-27 16:26:23.353 [job-0] INFO  JobContainer - PerfTrace not enable!</span><br><span class="line">2016-10-27 16:26:23.355 [job-0] INFO  StandAloneJobContainerCommunicator - Total 6 records, 18 bytes | Speed 1B/s, 0 records/s | Error 0 records, 0 bytes |  All Task WaitWriterTime 0.000s |  All Task WaitReaderTime 0.000s | Percentage 100.00%</span><br><span class="line">2016-10-27 16:26:23.357 [job-0] INFO  JobContainer -</span><br><span class="line">任务启动时刻                    : 2016-10-27 16:26:07</span><br><span class="line">任务结束时刻                    : 2016-10-27 16:26:23</span><br><span class="line">任务总计耗时                    :                 15s</span><br><span class="line">任务平均流量                    :                1B/s</span><br><span class="line">记录写入速度                    :              0rec/s</span><br><span class="line">读出记录总数                    :                   6</span><br><span class="line">读写失败总数                    :                   0</span><br></pre></td></tr></table></figure>
+<ol start="6">
+<li>验证数据</li>
+</ol>
+<p>查询HIVE表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">hive&gt; select * from text_table;</span><br><span class="line">OK</span><br><span class="line">1   15</span><br><span class="line">2   25</span><br><span class="line">3   10</span><br><span class="line">4   45</span><br><span class="line">5   10</span><br><span class="line">6   10</span><br><span class="line">Time taken: 0.305 seconds, Fetched: 6 row(s)</span><br></pre></td></tr></table></figure>
+<p>查询HDFS</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0653 ~]$ hadoop fs -ls /user/qihuang.zheng/text_table</span><br><span class="line">Found 1 items</span><br><span class="line">2016-10-27 16:26 /user/qihuang.zheng/text_table/text__ec1afe8c_5286_4372_afb8_91d99223c61d.gz</span><br><span class="line">[qihuang.zheng@dp0653 ~]$ hadoop fs -text /user/qihuang.zheng/text_table/text*</span><br><span class="line">1   15</span><br><span class="line">2   25</span><br><span class="line">3   10</span><br><span class="line">4   45</span><br><span class="line">5   10</span><br><span class="line">6   10</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/11/11/Data-Transform/">ETL Tools</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年11月11日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/11/11/Data-Transform/" title="ETL Tools">http://github.com/zqhxuyuan/2016/11/11/Data-Transform/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/11/11/Data-Transform/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/11/18/Kafka-CQRS-Streams/">
+        译：Kafka事件驱动和流处理
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/11/11/Play-Quickstart/">
+        PlayFramework快速入门
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Sqoop"><span class="toc-number">1.</span> <span class="toc-text">Sqoop</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Sqoop1"><span class="toc-number">1.1.</span> <span class="toc-text">Sqoop1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Sqoop2"><span class="toc-number">1.2.</span> <span class="toc-text">Sqoop2</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DataX"><span class="toc-number">2.</span> <span class="toc-text">DataX</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#实验：MySQL->HDFS"><span class="toc-number">2.1.</span> <span class="toc-text">实验：MySQL-&gt;HDFS</span></a></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/11/11/Data-Transform/" data-title="ETL Tools" data-url="http://github.com/zqhxuyuan/2016/11/11/Data-Transform/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/11/18/Kafka-CQRS-Streams/" title="上一篇: 译：Kafka事件驱动和流处理">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/11/11/Play-Quickstart/" title="下一篇: PlayFramework快速入门">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

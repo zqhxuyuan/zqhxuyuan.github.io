@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Apache Drill入门 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Apache Drill: Schema-free SQL Query Engine for Hadoop, NoSQL and Cloud Storage">
+<meta name="keywords" content="drill">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Apache Drill入门">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/07/09/2015-07-09-Apache-Drill/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Apache Drill: Schema-free SQL Query Engine for Hadoop, NoSQL and Cloud Storage">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150616-2@2x.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150616-17@2x.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150616-9@2x.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150616-15@2x.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150617-5@2x.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150617-6@2x.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150617-7@2x.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150618-1@2x.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150617-4@2x.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150616-16@2x.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150617-1@2x.png">
+<meta property="og:image" content="http://drill.apache.org/docs/img/query-flow-client.png">
+<meta property="og:image" content="http://drill.apache.org/docs/img/leaf-frag.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill-query.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill-ui.png">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.172Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Apache Drill入门">
+<meta name="twitter:description" content="Apache Drill: Schema-free SQL Query Engine for Hadoop, NoSQL and Cloud Storage">
+<meta name="twitter:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150616-2@2x.png">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-07-09-Apache-Drill" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/07/09/2015-07-09-Apache-Drill/" class="article-date">
+  	<time datetime="2015-07-08T16:00:00.000Z" itemprop="datePublished">2015-07-09</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Apache Drill入门
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/bigdata/">bigdata</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/drill/">drill</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Apache Drill: Schema-free SQL Query Engine for Hadoop, NoSQL and Cloud Storage</p>
+<a id="more"></a>
+<h2 id="单机模式">单机模式</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0653 ~]$ cd apache-drill-1.0.0</span><br><span class="line">[qihuang.zheng@dp0653 apache-drill-1.0.0]$ bin/drill-embedded</span><br><span class="line">apache drill 1.0.0</span><br><span class="line">&quot;json ain&apos;t no thang&quot;</span><br><span class="line">0: jdbc:drill:zk&gt; select * from cp.`employee.json` limit 2;</span><br><span class="line">+--------------+------------------+-------------+------------+--------------+---------------------+-----------+----------------+-------------+------------------------+----------+----------------+------------------+-----------------+---------+--------------------+</span><br><span class="line">| employee_id  |    full_name     | first_name  | last_name  | position_id  |   position_title    | store_id  | department_id  | birth_date  |       hire_date        |  salary  | supervisor_id  | education_level  | marital_status  | gender  |  management_role   |</span><br><span class="line">+--------------+------------------+-------------+------------+--------------+---------------------+-----------+----------------+-------------+------------------------+----------+----------------+------------------+-----------------+---------+--------------------+</span><br><span class="line">| 1            | Sheri Nowmer     | Sheri       | Nowmer     | 1            | President           | 0         | 1              | 1961-08-26  | 1994-12-01 00:00:00.0  | 80000.0  | 0              | Graduate Degree  | S               | F       | Senior Management  |</span><br><span class="line">| 2            | Derrick Whelply  | Derrick     | Whelply    | 2            | VP Country Manager  | 0         | 1              | 1915-07-03  | 1994-12-01 00:00:00.0  | 40000.0  | 1              | Graduate Degree  | M               | M       | Senior Management  |</span><br><span class="line">+--------------+------------------+-------------+------------+--------------+---------------------+-----------+----------------+-------------+------------------------+----------+----------------+------------------+-----------------+---------+--------------------+</span><br><span class="line">2 rows selected (1.247 seconds)</span><br></pre></td></tr></table></figure>
+<p>drill使用zookeeper进行集群. 其中local表示使用本机的zk.</p>
+<p>也可以使用sqlline启动:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0653 apache-drill-1.0.0]$ bin/sqlline -u jdbc:drill:zk=local</span><br><span class="line">log4j:WARN No appenders could be found for logger (DataNucleus.General).</span><br><span class="line">log4j:WARN Please initialize the log4j system properly.</span><br><span class="line">log4j:WARN See http://logging.apache.org/log4j/1.2/faq.html#noconfig for more info.</span><br><span class="line">六月 15, 2015 11:11:18 上午 org.glassfish.jersey.server.ApplicationHandler initialize</span><br><span class="line">信息: Initiating Jersey application, version Jersey: 2.8 2014-04-29 01:25:26...</span><br><span class="line">apache drill 1.0.0</span><br><span class="line">&quot;a drill in the hand is better than two in the bush&quot;</span><br><span class="line">0: jdbc:drill:zk=local&gt;</span><br></pre></td></tr></table></figure>
+<p>退出drill的方式:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0: jdbc:drill:zk=local&gt; !quit</span><br><span class="line">Closing: org.apache.drill.jdbc.DrillJdbc41Factory$DrillJdbc41Connection</span><br></pre></td></tr></table></figure>
+<p>使用后台进程的方式启动:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0653 apache-drill-1.0.0]$ bin/drillbit.sh start</span><br><span class="line">starting drillbit, logging to /home/qihuang.zheng/apache-drill-1.0.0/log/drillbit.out</span><br></pre></td></tr></table></figure>
+<p>查看drill进程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0653 apache-drill-1.0.0]$ jps -lm</span><br><span class="line">2788 org.apache.drill.exec.server.Drillbit</span><br><span class="line">3045 sqlline.SqlLine -d org.apache.drill.jdbc.Driver --maxWidth=10000 --color=true -u jdbc:drill:zk=local</span><br></pre></td></tr></table></figure>
+<p>第一个是drillbit的后台进程, 第二个是使用sqlline或者dril-embbed启动的客户端进程</p>
+<h2 id="Storage_Plugin">Storage Plugin</h2><p>cp是classpath storage plugin, drill的web ui: <a href="http://192.168.6.53:8047/storage" target="_blank" rel="noopener">http://192.168.6.53:8047/storage</a><br>Drill支持不同的存储介质, 并且可以从不同的存储介质中使用SQL查询数据.</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150616-2@2x.png" alt="Storage Plugin"></p>
+<p>默认只有cp和dfs是enable的. 在Diabled Storage Plugins中点击某个插件的Enable, 就可以使用这个存储插件了</p>
+<h3 id="添加HDFS插件">添加HDFS插件</h3><p>默认没有hdfs, 可以在New Storage Plugin中输入hdfs, 点击Create, 在Configuration中输入hdfs的存储插件配置信息:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;type&quot;: &quot;file&quot;,</span><br><span class="line">  &quot;enabled&quot;: true,</span><br><span class="line">  &quot;connection&quot;: &quot;hdfs://192.168.6.53:9000/&quot;,</span><br><span class="line">  &quot;workspaces&quot;: &#123;</span><br><span class="line">    &quot;root&quot;: &#123;</span><br><span class="line">      &quot;location&quot;: &quot;/&quot;,</span><br><span class="line">      &quot;writable&quot;: true,</span><br><span class="line">      &quot;defaultInputFormat&quot;: null</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;formats&quot;: &#123;</span><br><span class="line">    &quot;csv&quot;: &#123;</span><br><span class="line">      &quot;type&quot;: &quot;text&quot;,</span><br><span class="line">      &quot;extensions&quot;: [</span><br><span class="line">        &quot;csv&quot;</span><br><span class="line">      ],</span><br><span class="line">      &quot;delimiter&quot;: &quot;,&quot;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;tsv&quot;: &#123;</span><br><span class="line">      &quot;type&quot;: &quot;text&quot;,</span><br><span class="line">      &quot;extensions&quot;: [</span><br><span class="line">        &quot;tsv&quot;</span><br><span class="line">      ],</span><br><span class="line">      &quot;delimiter&quot;: &quot;\t&quot;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;parquet&quot;: &#123;</span><br><span class="line">      &quot;type&quot;: &quot;parquet&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果是HDFS HA的模式, 也可以支持: <code>hdfs://tdhdfs</code>, 还可以添加workspaces</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&quot;tmp&quot;: &#123;</span><br><span class="line">  &quot;location&quot;: &quot;/user/qihuang.zheng&quot;,</span><br><span class="line">  &quot;writable&quot;: true,</span><br><span class="line">  &quot;defaultInputFormat&quot;: null</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="路径(dfs和hdfs)">路径(dfs和hdfs)</h3><p>设置dfs插件的工作目录: 点击dfs插件的Update, 添加work目录, 然后点击Update</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&quot;connection&quot;: &quot;file:///&quot;,</span><br><span class="line">&quot;workspaces&quot;: &#123;</span><br><span class="line">  &quot;root&quot;: &#123;</span><br><span class="line">    &quot;location&quot;: &quot;/&quot;,</span><br><span class="line">    &quot;writable&quot;: false,</span><br><span class="line">    &quot;defaultInputFormat&quot;: null</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;tmp&quot;: &#123;</span><br><span class="line">    &quot;location&quot;: &quot;/tmp&quot;,</span><br><span class="line">    &quot;writable&quot;: true,</span><br><span class="line">    &quot;defaultInputFormat&quot;: null</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;work&quot;: &#123;</span><br><span class="line">    &quot;location&quot;: &quot;/home/qihuang.zheng/apache-drill-1.0.0/&quot;,</span><br><span class="line">    &quot;writable&quot;: true,</span><br><span class="line">    &quot;defaultInputFormat&quot;: null</span><br><span class="line">  &#125;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>对于hdfs也可以自定义一个自己的工作空间比如work=/user/zhengqh. 则定位到/user/zhengqh下,直接使用hfs.work进行查询</p>
+<h3 id="DFS文件">DFS文件</h3><p>下面测试了使用不同的路径查询drill安装目录下sample-data下的parquet文件</p>
+<ul>
+<li>没有使用定义好的work工作目录,导致无法找到文件</li>
+<li>使用了自定义的work目录(注意work的使用方式: dfs.work.<code></code>), 使用相对路径也能找到文件</li>
+<li>绝对路径</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">0: jdbc:drill:zk&gt; select * from dfs.`sample-data/region.parquet` limit 2;</span><br><span class="line">Error: PARSE ERROR: From line 1, column 15 to line 1, column 17: Table &apos;dfs.sample-data/region.parquet&apos; not found</span><br><span class="line">[Error Id: a1e53ed6-cc07-4799-9e9f-a7b112bb4e36 on dp0657:31010] (state=,code=0)</span><br><span class="line"></span><br><span class="line">0: jdbc:drill:zk&gt; select * from dfs.work.`sample-data/region.parquet` limit 2;</span><br><span class="line">+--------------+----------+-----------------------+</span><br><span class="line">| R_REGIONKEY  |  R_NAME  |       R_COMMENT       |</span><br><span class="line">+--------------+----------+-----------------------+</span><br><span class="line">| 0            | AFRICA   | lar deposits. blithe  |</span><br><span class="line">| 1            | AMERICA  | hs use ironic, even   |</span><br><span class="line">+--------------+----------+-----------------------+</span><br><span class="line">2 rows selected (0.338 seconds)</span><br><span class="line"></span><br><span class="line">0: jdbc:drill:zk&gt; select * from dfs.`/home/qihuang.zheng/apache-drill-1.0.0/sample-data/region.parquet` limit 2;</span><br><span class="line">+--------------+----------+-----------------------+</span><br><span class="line">| R_REGIONKEY  |  R_NAME  |       R_COMMENT       |</span><br><span class="line">+--------------+----------+-----------------------+</span><br><span class="line">| 0            | AFRICA   | lar deposits. blithe  |</span><br><span class="line">| 1            | AMERICA  | hs use ironic, even   |</span><br><span class="line">+--------------+----------+-----------------------+</span><br><span class="line">2 rows selected (0.235 seconds)</span><br></pre></td></tr></table></figure>
+<h3 id="HDFS文件">HDFS文件</h3><ul>
+<li>第一个查询直接使用了相对路径, 因为默认的hdfs插件的root指向的是/, 而它的connection配置路径是: hdfs://192.168.6.53:9000/.</li>
+<li>第二个查询使用了绝对路径</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">0: jdbc:drill:zk&gt; select count(*) from hdfs.`user/admin/evidence`;</span><br><span class="line">+----------+</span><br><span class="line">|  EXPR$0  |</span><br><span class="line">+----------+</span><br><span class="line">| 4003278  |</span><br><span class="line">+----------+</span><br><span class="line">1 row selected (0.586 seconds)</span><br><span class="line">0: jdbc:drill:zk&gt; select count(*) from hdfs.`hdfs://tdhdfs/user/admin/evidence`;</span><br><span class="line">+----------+</span><br><span class="line">|  EXPR$0  |</span><br><span class="line">+----------+</span><br><span class="line">| 4003278  |</span><br><span class="line">+----------+</span><br><span class="line">1 row selected (0.278 seconds)</span><br></pre></td></tr></table></figure>
+<p>这里还有一个知识点: 可以直接查询文件夹下的所有文件. 也可以是文件夹下的子文件夹都可以</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0653 ~]$ /usr/install/hadoop/bin/hadoop fs -ls /user/admin/evidence</span><br><span class="line">15/06/17 08:25:37 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable</span><br><span class="line">Found 4 items</span><br><span class="line">-rw-r--r--   3 shuoyi.zhao supergroup   67561800 2015-05-21 10:49 /user/admin/evidence/4b75f114-7f64-40df-9ff6-11a1e75637a7.parquet</span><br><span class="line">-rw-r--r--   3 shuoyi.zhao supergroup   96528887 2015-05-21 10:49 /user/admin/evidence/bdb0bdb4-fa04-402f-af05-b2aea02728ed.parquet</span><br><span class="line">-rw-r--r--   3 shuoyi.zhao supergroup   80968799 2015-05-21 10:49 /user/admin/evidence/da1439fc-0c32-4cd8-90f2-67d24dbaa6cc.parquet</span><br><span class="line">-rw-r--r--   3 shuoyi.zhao supergroup  136852232 2015-05-21 10:50 /user/admin/evidence/f0954a8f-583b-4173-9b89-55ed3107daf1.parquet</span><br></pre></td></tr></table></figure>
+<h3 id="复杂SQL查询">复杂SQL查询</h3><ol>
+<li>两表join查询</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">SELECT nations.name, regions.name FROM (</span><br><span class="line">  SELECT N_REGIONKEY as regionKey, N_NAME as name</span><br><span class="line">  FROM dfs.work.`sample-data/nation.parquet`</span><br><span class="line">) nations join (</span><br><span class="line">  SELECT R_REGIONKEY as regionKey, R_NAME as name</span><br><span class="line">  FROM dfs.work.`sample-data/region.parquet`</span><br><span class="line">) regions</span><br><span class="line">  on nations.regionKey = regions.regionKey</span><br><span class="line">  order by nations.name;</span><br><span class="line"></span><br><span class="line">+-----------------+--------------+</span><br><span class="line">|      name       |    name0     |</span><br><span class="line">+-----------------+--------------+</span><br><span class="line">| ALGERIA         | AFRICA       |</span><br><span class="line">| ARGENTINA       | AMERICA      |</span><br><span class="line">| BRAZIL          | AMERICA      |</span><br><span class="line">| CANADA          | AMERICA      |</span><br><span class="line">| CHINA           | ASIA         |</span><br><span class="line">...</span><br><span class="line">+-----------------+--------------+</span><br><span class="line">25 rows selected (1.038 seconds)</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>子查询in</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">SELECT N_REGIONKEY as regionKey, N_NAME as name  </span><br><span class="line">FROM dfs.work.`sample-data/nation.parquet`</span><br><span class="line">WHERE cast(N_NAME as varchar(10)) IN (&apos;INDIA&apos;, &apos;CHINA&apos;);</span><br><span class="line"></span><br><span class="line">+------------+--------+</span><br><span class="line">| regionKey  |  name  |</span><br><span class="line">+------------+--------+</span><br><span class="line">| 2          | INDIA  |</span><br><span class="line">| 2          | CHINA  |</span><br><span class="line">+------------+--------+</span><br></pre></td></tr></table></figure>
+<h2 id="Drill连接Hive">Drill连接Hive</h2><h3 id="HIVE使用(本机环境:_cdh542)">HIVE使用(本机环境: cdh542)</h3><p>drill中有一个默认的hive配置项:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;type&quot;: &quot;hive&quot;,</span><br><span class="line">  &quot;enabled&quot;: false,</span><br><span class="line">  &quot;configProps&quot;: &#123;</span><br><span class="line">    &quot;hive.metastore.uris&quot;: &quot;&quot;,</span><br><span class="line">    &quot;javax.jdo.option.ConnectionURL&quot;: &quot;jdbc:derby:;databaseName=../sample-data/drill_hive_db;create=true&quot;,</span><br><span class="line">    &quot;hive.metastore.warehouse.dir&quot;: &quot;/tmp/drill_hive_wh&quot;,</span><br><span class="line">    &quot;fs.default.name&quot;: &quot;file:///&quot;,</span><br><span class="line">    &quot;hive.metastore.sasl.enabled&quot;: &quot;false&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们修改成使用hive-site.xml中的配置项:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;type&quot;: &quot;hive&quot;,</span><br><span class="line">  &quot;enabled&quot;: true,</span><br><span class="line">  &quot;configProps&quot;: &#123;</span><br><span class="line">    &quot;hive.metastore.uris&quot;: &quot;thrift://localhost:9083&quot;,</span><br><span class="line">    &quot;hive.metastore.sasl.enabled&quot;: &quot;false&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>启动hadoop: start-all.sh</li>
+<li>启动hive: hive –service metastore和hiveserver2</li>
+<li>启动drill:  bin/drill-embedded</li>
+<li>进入drill的命令行中, 和hive的一些语法类似, 比如下面列出已经存在的数据库show databases, 定位到某个数据库use xxx…</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">0: jdbc:drill:zk=local&gt; show databases;</span><br><span class="line">+---------------------+</span><br><span class="line">|     SCHEMA_NAME     |</span><br><span class="line">+---------------------+</span><br><span class="line">| INFORMATION_SCHEMA  |</span><br><span class="line">| cp.default          |</span><br><span class="line">| dfs.default         |</span><br><span class="line">| dfs.root            |</span><br><span class="line">| dfs.tmp             |</span><br><span class="line">| hive.default        |</span><br><span class="line">| hive.wiki           |</span><br><span class="line">| sys                 |</span><br><span class="line">+---------------------+</span><br><span class="line">8 rows selected (0.627 seconds)</span><br><span class="line">0: jdbc:drill:zk=local&gt; use hive.wiki;</span><br><span class="line">+-------+----------------------------------------+</span><br><span class="line">|  ok   |                summary                 |</span><br><span class="line">+-------+----------------------------------------+</span><br><span class="line">| true  | Default schema changed to [hive.wiki]  |</span><br><span class="line">+-------+----------------------------------------+</span><br><span class="line">1 row selected (0.156 seconds)</span><br><span class="line">0: jdbc:drill:zk=local&gt; show tables;</span><br><span class="line">+---------------+-------------+</span><br><span class="line">| TABLE_SCHEMA  | TABLE_NAME  |</span><br><span class="line">+---------------+-------------+</span><br><span class="line">| hive.wiki     | invites     |</span><br><span class="line">| hive.wiki     | pokes       |</span><br><span class="line">| hive.wiki     | u_data      |</span><br><span class="line">| hive.wiki     | u_data_new  |</span><br><span class="line">+---------------+-------------+</span><br><span class="line">4 rows selected (1.194 seconds)</span><br><span class="line">0: jdbc:drill:zk=local&gt; select count(*) from invites;</span><br><span class="line">+---------+</span><br><span class="line">| EXPR$0  |</span><br><span class="line">+---------+</span><br><span class="line">| 525     |</span><br><span class="line">+---------+</span><br><span class="line">1 row selected (4.204 seconds)</span><br></pre></td></tr></table></figure>
+<h3 id="HIVE测试环境(hive-1-2-0)">HIVE测试环境(hive-1.2.0)</h3><p>修改hive的配置信息:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;type&quot;: &quot;hive&quot;,</span><br><span class="line">  &quot;enabled&quot;: true,</span><br><span class="line">  &quot;configProps&quot;: &#123;</span><br><span class="line">    &quot;hive.metastore.uris&quot;: &quot;thrift://192.168.6.53:9083&quot;,</span><br><span class="line">    &quot;javax.jdo.option.ConnectionURL&quot;: &quot;jdbc:mysql://192.168.6.53:3306/hive?characterEncoding=UTF-8&quot;,</span><br><span class="line">    &quot;hive.metastore.warehouse.dir&quot;: &quot;/user/hive/warehouse&quot;,</span><br><span class="line">    &quot;fs.default.name&quot;: &quot;hdfs://tdhdfs&quot;,</span><br><span class="line">    &quot;hive.metastore.sasl.enabled&quot;: &quot;false&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注: 上面绿色部分除了fs.default.name都不是必须的.</p>
+<p><strong><code>问题: 无法查询hive表数据</code></strong><br>在测试环境遇到一个问题: 死活查不出来hive中的表(但是show databases, show tables, describe xx都是正常)<br>比如select count(*) from employee; 后就一直不动了. 观察web ui显示pending状态</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150616-17@2x.png" alt="pending job"></p>
+<p>用Control+C取消后, 执行其他之前正常的命令都无法执行了, 使用!quit也无法正常退出. 只能通过kill -9 pid杀死sqlline进程!</p>
+<p><strong><code>问题追踪</code></strong><br>将conf下的logback.xml的日志级别改成debug. 这样执行每一条命令都会打印出日志信息<br>前面的语句都没有问题, 当执行查询hive表数据的时候, 报错连的是另外一个地址: tdhdfs/220.250.64.20:8020</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150616-9@2x.png" alt="strange address"></p>
+<p><strong><code>问题思考</code></strong><br>搜了一番hadoop /etc/hosts以及dns;  hdfs ha dns之后无果.<br>然后想到220.250.64.20:8020其中8020端口根本就是默认的.<br>而我们的测试集群使用的是hdfs ha, 并且用的是9000端口.  </p>
+<p>说明drill根本没有找到hadoop的配置! 即使在hive的配置页面指定了hdfs.default.name为hdfs://tdhdfs<br>正因为没有drill没有找到hadoop的配置文件, 那么我们就要手动让drill知道hadoop的配置文件位置!  </p>
+<p><strong><code>其他问题</code></strong><br>启动drill-embedded的时候有一个报错:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">10:43:54.789 [main] DEBUG org.apache.hadoop.util.Shell - Failed to detect a valid hadoop home directory</span><br><span class="line">java.io.IOException: HADOOP_HOME or hadoop.home.dir are not set.</span><br></pre></td></tr></table></figure>
+<p>虽然没有影响drill的启动. 但还是修改下: <code>vi ~/.bashrc</code>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">export HADOOP_HOME=&quot;/usr/install/hadoop&quot;</span><br><span class="line">export HADOOP_MAPRED_HOME=$&#123;HADOOP_HOME&#125;</span><br><span class="line">export HADOOP_COMMON_HOME=$&#123;HADOOP_HOME&#125;</span><br><span class="line">export HADOOP_HDFS_HOME=$&#123;HADOOP_HOME&#125;</span><br><span class="line">export YARN_HOME=$&#123;HADOOP_HOME&#125;</span><br><span class="line">export HADOOP_YARN_HOME=$&#123;HADOOP_HOME&#125;</span><br><span class="line">export HADOOP_CONF_DIR=$&#123;HADOOP_HOME&#125;/etc/hadoop</span><br><span class="line">export HDFS_CONF_DIR=$&#123;HADOOP_HOME&#125;/etc/hadoop</span><br><span class="line">export YARN_CONF_DIR=$&#123;HADOOP_HOME&#125;/etc/hadoop</span><br><span class="line">export PATH=&quot;$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin&quot;</span><br></pre></td></tr></table></figure>
+<p>并在drill-env.sh中添加  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export HADOOP_HOME=&quot;/usr/install/hadoop&quot;</span><br></pre></td></tr></table></figure>
+<p>上面增加的配置虽然启动时不再报错, 但是并不能解决我们之前遇到的问题.</p>
+<p><strong><code>问题解决</code></strong><br>拷贝hadoop安装目录下的core-site.xml, mapred-site.xml, hdfs-site.xml, yarn-site.xml到DRILL/conf下!<br>重启bin/drill-embedded. (发现重启后, 原先的hive和hdfs配置都不见了, 所以要重新update)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0653 conf]$ ll -rt</span><br><span class="line">-rw-r--r--. 1 qihuang.zheng users 3835 5月  16 10:35 drill-override-example.conf</span><br><span class="line">-rwxr-xr-x. 1 qihuang.zheng users 1276 6月  16 10:51 drill-env.sh</span><br><span class="line">-rw-r--r--. 1 qihuang.zheng users 2354 6月  16 15:12 core-site.xml</span><br><span class="line">-rw-r--r--. 1 qihuang.zheng users 3257 6月  16 15:12 hdfs-site.xml</span><br><span class="line">-rw-r--r--. 1 qihuang.zheng users 2111 6月  16 15:12 mapred-site.xml</span><br><span class="line">-rw-r--r--. 1 qihuang.zheng users 8382 6月  16 15:12 yarn-site.xml</span><br><span class="line">-rw-r--r--. 1 qihuang.zheng users 3119 6月  16 15:25 logback.xml</span><br><span class="line">-rw-r--r--. 1 qihuang.zheng users 1237 6月  16 15:35 drill-override.conf</span><br></pre></td></tr></table></figure>
+<h3 id="Hive的数据类型">Hive的数据类型</h3><p>目前Drill并<code>不支持Hive一些复杂的结构类型, 比如LIST, MAP, STRUCT, UNION</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">0: jdbc:drill:zk&gt; describe koudai;</span><br><span class="line">+-------------------+---------------------------------------+--------------+</span><br><span class="line">|    COLUMN_NAME    |               DATA_TYPE               | IS_NULLABLE  |</span><br><span class="line">+-------------------+---------------------------------------+--------------+</span><br><span class="line">| sequence_id       | VARCHAR                               | YES          |</span><br><span class="line">| occur_time        | BIGINT                                | YES          |</span><br><span class="line">| activity_map      | (VARCHAR(65535), VARCHAR(65535)) MAP  | NO           |</span><br><span class="line">| device_map        | (VARCHAR(65535), VARCHAR(65535)) MAP  | NO           |</span><br><span class="line">| event_result_map  | (VARCHAR(65535), VARCHAR(65535)) MAP  | NO           |</span><br><span class="line">| geo_map           | (VARCHAR(65535), VARCHAR(65535)) MAP  | NO           |</span><br><span class="line">| policy_map        | (VARCHAR(65535), VARCHAR(65535)) MAP  | NO           |</span><br><span class="line">| indice            | VARCHAR                               | YES          |</span><br><span class="line">+-------------------+---------------------------------------+--------------+</span><br><span class="line">8 rows selected (0.504 seconds)</span><br><span class="line">0: jdbc:drill:zk&gt; select count(*) from koudai;</span><br><span class="line">Error: SYSTEM ERROR: java.lang.RuntimeException: Unsupported Hive data type MAP.</span><br><span class="line">Following Hive data types are supported in Drill for querying: BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, DATE, TIMESTAMP, BINARY, DECIMAL, STRING, and VARCHAR</span><br><span class="line"></span><br><span class="line">Fragment 1:0</span><br><span class="line"></span><br><span class="line">[Error Id: 7c5dd0d4-1e18-4dbc-b470-1eb6ca6a3b36 on dp0653:31010] (state=,code=0)</span><br><span class="line">0: jdbc:drill:zk&gt; describe int_table;</span><br><span class="line">+--------------+------------+--------------+</span><br><span class="line">| COLUMN_NAME  | DATA_TYPE  | IS_NULLABLE  |</span><br><span class="line">+--------------+------------+--------------+</span><br><span class="line">| id           | INTEGER    | YES          |</span><br><span class="line">+--------------+------------+--------------+</span><br><span class="line">1 row selected (0.334 seconds)</span><br><span class="line">0: jdbc:drill:zk&gt; select count(*) from int_table;</span><br><span class="line">+---------+</span><br><span class="line">| EXPR$0  |</span><br><span class="line">+---------+</span><br><span class="line">| 90      |</span><br><span class="line">+---------+</span><br><span class="line">1 row selected (0.654 seconds)</span><br></pre></td></tr></table></figure>
+<p>So What Can We do when we want to query Hive Table which has map type?</p>
+<p>在drill的mail-list上看到这样的一个回复:<br><a href="http://mail-archives.apache.org/mod_mbox/drill-dev/201504.mbox/browser" target="_blank" rel="noopener">http://mail-archives.apache.org/mod_mbox/drill-dev/201504.mbox/browser</a></p>
+<blockquote>
+<p>We haven’t yet added support for Hive’s Map type.  Can we work together on<br>adding this?  Drill doesn’t distinguish between maps and structs given its<br>support for schemaless data.  If you could post a small example piece of<br>data, maybe we could figure out the best way to work together to add this<br>functionality.  As I said, it is mostly just a metadata mapping exercise<br>since Drill already has complex type support in the execution engine.  You<br>can see how it works by looking at the JSONReader complex Parquet reader.</p>
+</blockquote>
+<p>大致的意思是我们现在不支持hive的map类型. 为什么呢? 因为drill支持无模式的数据, 所以map类型还是结构类型对于drill而言都是一样的.<br>Drill的执行引擎中已经支持了复杂的类型. 你可以看看怎么读JSON或者Parquet格式的文件是怎么做的.</p>
+<p>然后想到hive包含有map类型的表结构虽然drill不支持. 但是drill可以使用hive的数据啊.<br>既然hive的表结构是有一定schema的. 那么它的数据格式也一定是有格式的.<br>所以这里虽然drill可以和hive公用表结构, 如果我们直接用hive的表数据, 相当于还是使用hdfs插件了.  </p>
+<h2 id="Drill分布式模式">Drill分布式模式</h2><ul>
+<li>上面在单机上的配置项, 将drill文件夹复制到集群中. 注意修改drill下conf的drill-override.conf  </li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">drill.exec: &#123;</span><br><span class="line">  cluster-id: &quot;drillbits1&quot;,</span><br><span class="line">  zk.connect: &quot;192.168.6.55:2181,192.168.6.56:2181,192.168.6.57:2181&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>每台节点的cluster-id都是一样的. 保证了所有的节点组成一个集群.<br>这和ElasticSearch集群的安装一样. 它的好处是随时可以扩展节点, 而不需要更改原先的任何配置.</p>
+</blockquote>
+<ul>
+<li>然后在每台机器上都启动bin/drillbit.sh start  </li>
+<li>随便访问任意一台机器的8047端口, 都可以列出集群中的所有drill服务  </li>
+</ul>
+<p><a href="http://192.168.6.52:8047/" target="_blank" rel="noopener">http://192.168.6.52:8047/</a><br><a href="http://192.168.6.53:8047/" target="_blank" rel="noopener">http://192.168.6.53:8047/</a><br><a href="http://192.168.6.54:8047/" target="_blank" rel="noopener">http://192.168.6.54:8047/</a><br><a href="http://192.168.6.56:8047/" target="_blank" rel="noopener">http://192.168.6.56:8047/</a><br><a href="http://192.168.6.57:8047/" target="_blank" rel="noopener">http://192.168.6.57:8047/</a>  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150616-15@2x.png" alt="distribute mode"></p>
+<h2 id="客户端连接">客户端连接</h2><p>Drill提供了一些工具, 包括第三方工具也提供了访问Drill数据的方法.<br>主要是Drill和其他SQL DB一样提供了一个ODBC Driver.  参考: <a href="https://drill.apache.org/docs/interfaces-introduction/" target="_blank" rel="noopener">https://drill.apache.org/docs/interfaces-introduction/</a></p>
+<h3 id="sqlline">sqlline</h3><p><strong>连接本地ZK</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin/sqlline -u jdbc:drill:zk=local</span><br></pre></td></tr></table></figure>
+<p><strong>连接ZK集群</strong>  </p>
+<ul>
+<li>手动指定ZK</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0653 apache-drill-1.0.0]$ bin/sqlline -u jdbc:drill:zk=192.168.6.55,192.168.6.56,192.168.6.57:2181</span><br></pre></td></tr></table></figure>
+<ul>
+<li>如果是集群模式, 也可以不跟上zk地址:   <strong>bin/sqlline -u jdbc:drill:zk</strong> 会自动读取drill-override.conf的配置</li>
+</ul>
+<blockquote>
+<p>注意: 当指定的zk是一个全新的ZK, 之前如果使用zk=local在本次新的zk会话中Storage-Plugin的信息都丢失.<br>因为我们指定的zookeeper集群是全新的. 所以drill还没有往里面写入任何数据.<br>这是因为在web ui上对Storage Plugin进行update或者create的数据都会写入到对应的zookeeper节点上!<br>当我们在界面上update hive, 并且enable后, 通过show databases就可以看到hive里的表了</p>
+</blockquote>
+<h3 id="iodbc">iodbc</h3><p><strong>iodbc data source manager</strong></p>
+<p>选择一个已有的Driver, 修改连接类型, 如果是ZooKeeper,要指定ZK集群和clusterId<br>如果是Direct, 则直接指定要连接的Drill的host和port  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150617-5@2x.png" alt="iodbc"></p>
+<p>测试成功后, 新建一个SQL查询  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150617-6@2x.png" alt="iodbc query"></p>
+<p>点击OK后, 会返回查询结果  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150617-7@2x.png" alt="iodbc result"></p>
+<p><strong>iodbc terminal</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">$ iodbctest</span><br><span class="line">iODBC Demonstration program</span><br><span class="line">This program shows an interactive SQL processor</span><br><span class="line">Driver Manager: 03.52.0607.1008</span><br><span class="line"></span><br><span class="line">Enter ODBC connect string (? shows list): ?</span><br><span class="line">DSN                              | Driver</span><br><span class="line">------------------------------------------------------------------------------</span><br><span class="line">Sample MapR Drill DSN            | MapR Drill ODBC Driver</span><br><span class="line"></span><br><span class="line">Enter ODBC connect string (? shows list): DRIVER=MapR Drill ODBC Driver;AdvancedProperties= &#123;HandshakeTimeout=0;QueryTimeout=0; TimestampTZDisplayTimezone=utc;ExcludedSchemas=sys, INFORMATION_SCHEMA;&#125;;Catalog=DRILL;Schema=; ConnectionType=Direct;Host=192.168.6.53;Port=31010</span><br><span class="line">1: SQLDriverConnect = [iODBC][Driver Manager]dlopen(MapR Drill ODBC Driver, 6): image not found (0) SQLSTATE=00000</span><br><span class="line">2: SQLDriverConnect = [iODBC][Driver Manager]Specified driver could not be loaded (0) SQLSTATE=IM003</span><br><span class="line"></span><br><span class="line">Enter ODBC connect string (? shows list): DSN=Sample MapR Drill DSN;ConnectionType=Direct;Host=192.168.6.53;Port=31010</span><br><span class="line">Driver: 1.0.0.1001 (MapR Drill ODBC Driver)</span><br><span class="line"></span><br><span class="line">SQL&gt;select count(*) from cp.`employee.json`</span><br><span class="line">EXPR$0</span><br><span class="line">--------------------</span><br><span class="line">1155</span><br><span class="line"> result set 1 returned 1 rows.</span><br><span class="line">SQL&gt;</span><br></pre></td></tr></table></figure>
+<p>注意上面输入ODBC的连接字符串, 按照官方文档有些地方写的是:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DRIVER=MapR Drill ODBC Driver;AdvancedProperties= &#123;HandshakeTimeout=0;QueryTimeout=0; TimestampTZDisplayTimezone=utc;ExcludedSchemas=sys, INFORMATION_SCHEMA;&#125;;Catalog=DRILL;Schema=; ConnectionType=Direct;Host=192.168.6.53;Port=31010</span><br></pre></td></tr></table></figure>
+<p>会报错说image not found. 正确的格式应该是:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DSN=Sample MapR Drill DSN;ConnectionType=Direct;Host=192.168.6.53;Port=31010</span><br></pre></td></tr></table></figure>
+<h3 id="Drill_Explorer">Drill Explorer</h3><p>Drill Expoloer连接Drill的字符串格式和上面一样, 在Advance中输入  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150618-1@2x.png" alt="explorer connect"></p>
+<p>在Drill Explorer中可以浏览数据, 并且可以建立一些视图  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150617-4@2x.png" alt="expoloer"></p>
+<h2 id="性能测试">性能测试</h2><h3 id="HDFS的Parquet文件查询(单机和分布式模式对比)">HDFS的Parquet文件查询(单机和分布式模式对比)</h3><p>单机模式:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">0: jdbc:drill:zk=local&gt; select count(*) from hdfs.`/user/admin/evidence`;</span><br><span class="line">+----------+</span><br><span class="line">|  EXPR$0  |</span><br><span class="line">+----------+</span><br><span class="line">| 4003278  |</span><br><span class="line">+----------+</span><br><span class="line">1 row selected (0.854 seconds)</span><br><span class="line"></span><br><span class="line">0: jdbc:drill:zk=local&gt; select fraud_type,count(*) from hdfs.`/user/admin/evidence` group by fraud_type order by count(*) desc;</span><br><span class="line">+--------------------+----------+</span><br><span class="line">|     fraud_type     |  EXPR$1  |</span><br><span class="line">+--------------------+----------+</span><br><span class="line">| fakeMobile         | 1941589  |</span><br><span class="line">...</span><br><span class="line">| clickFraud,        | 18       |</span><br><span class="line">+--------------------+----------+</span><br><span class="line">14 rows selected (4.451 seconds)</span><br></pre></td></tr></table></figure>
+<p>五台机器的分布式模式:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">0: jdbc:drill:zk=192.168.6.55,192.168.6.56,19&gt; select count(*) from hdfs.`/user/admin/evidence`;</span><br><span class="line">+----------+</span><br><span class="line">|  EXPR$0  |</span><br><span class="line">+----------+</span><br><span class="line">| 4003278  |</span><br><span class="line">+----------+</span><br><span class="line">1 row selected (0.394 seconds)</span><br><span class="line"></span><br><span class="line">0: jdbc:drill:zk=192.168.6.55,192.168.6.56,19&gt; select fraud_type,count(*) from hdfs.`/user/admin/evidence` group by fraud_type order by count(*) desc;</span><br><span class="line">+--------------------+----------+</span><br><span class="line">|     fraud_type     |  EXPR$1  |</span><br><span class="line">+--------------------+----------+</span><br><span class="line">| fakeMobile         | 1941589  |</span><br><span class="line">...</span><br><span class="line">| clickFraud,        | 18       |</span><br><span class="line">+--------------------+----------+</span><br><span class="line">14 rows selected (1.744 seconds)</span><br></pre></td></tr></table></figure>
+<p><code>实验现象1: Foreman不固定</code><br>在每台机器的8047端口的Profile中看到并不一定每台机器都回显示Queries.<br>比如在dp0655上运行时, 其他几台机器都没有 只有dp0656上才有.<br>而且即使是在相同的客户端, 不同的会话也会在不同的Foreman上运行.</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150616-16@2x.png" alt="foreman"></p>
+<p>A: Foreman只是类似Facade, 是最终返回查询结果给客户端的节点. 只需要一个即可.<br>Drill分布式计算会由Forman决定如何派发数据给不同的Drillbit节点.</p>
+<p>如何验证: 查看Profiles下某个Query, 通常第一个Major Fragment就是Forman节点.<br>其余的Major Fragment会分发到不同的节点.  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/QQ20150617-1@2x.png" alt="profile"></p>
+<p>其实从Drill的架构图也可以看出Forman只有一个  </p>
+<p><img src="http://drill.apache.org/docs/img/query-flow-client.png" alt="query-flow-client"></p>
+<p><img src="http://drill.apache.org/docs/img/leaf-frag.png" alt="leaf-frag"></p>
+<p><code>实验现象2: 第一次查询慢</code><br>有些查询在第一次执行时较慢. 后面同样的语句会快一倍多.<br>但最后会稳定下来比如上面的group by order by测试结果(400万条,分组后排序)<br>横坐标表示依次在这些机器上执行, 纵坐标表示在这台机器上执行了多次同样的SQL语句.</p>
+<table>
+<thead>
+<tr>
+<th>Round</th>
+<th>dp0653</th>
+<th>dp0652</th>
+<th>dp0655</th>
+<th>dp0657</th>
+<th>dp0656</th>
+<th>dp0653</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Round1</td>
+<td>7.871</td>
+<td>5.079</td>
+<td>4.8299</td>
+<td>1.764</td>
+<td>1.557</td>
+<td>4.305</td>
+</tr>
+<tr>
+<td>Round2</td>
+<td>2.549</td>
+<td>2.103</td>
+<td>2.106</td>
+<td>1.66</td>
+<td>1.418</td>
+<td>1.854</td>
+</tr>
+<tr>
+<td>Round3</td>
+<td>1.888</td>
+<td>1.893</td>
+<td>1.779</td>
+<td>1.534</td>
+<td>1.512</td>
+<td>1.955</td>
+</tr>
+<tr>
+<td>Round4</td>
+<td>1.841</td>
+<td>1.641</td>
+<td>1.703</td>
+</tr>
+<tr>
+<td>Round5</td>
+<td>1.744</td>
+<td>1.714</td>
+<td>1.9</td>
+</tr>
+<tr>
+<td>Round6</td>
+<td>1.763</td>
+<td>1.572</td>
+<td>1.53</td>
+</tr>
+</tbody>
+</table>
+<h2 id="Drill其他知识点">Drill其他知识点</h2><p>1.QueryUI</p>
+<p>在<a href="http://192.168.6.53:8047/query" target="_blank" rel="noopener">http://192.168.6.53:8047/query</a>页面输入查询条件. 注意下面的hdfs.tmp.by_yr<br>其中hdfs.tmp类似于在sqline中先执行了<code>use hdfs.tmp</code>, by_yr是表名  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill-query.png" alt></p>
+<p>点击submit, 可以得出查询结果</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill-ui.png" alt></p>
+<p>2.REST服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">curl  \</span><br><span class="line">  --header &quot;Content-type: application/json&quot; \</span><br><span class="line">  --request POST \</span><br><span class="line">  --data &apos;&#123;</span><br><span class="line">    &quot;queryType&quot; : &quot;SQL&quot;,</span><br><span class="line">    &quot;query&quot; : &quot;select yr,count(*) from hdfs.tmp.by_yr group by yr having count(*) &gt; 30000 order by count(*) desc&quot;</span><br><span class="line">&#125;&apos; \</span><br><span class="line">http://192.168.6.52:8047/query.json</span><br></pre></td></tr></table></figure>
+<p>返回结果:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;columns&quot; : [ &quot;yr&quot;, &quot;EXPR$1&quot; ],</span><br><span class="line">  &quot;rows&quot; : [ &#123;</span><br><span class="line">    &quot;yr&quot; : &quot;2008&quot;,</span><br><span class="line">    &quot;EXPR$1&quot; : &quot;38425&quot;</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    &quot;yr&quot; : &quot;2004&quot;,</span><br><span class="line">    &quot;EXPR$1&quot; : &quot;38252&quot;</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    &quot;yr&quot; : &quot;2007&quot;,</span><br><span class="line">    &quot;EXPR$1&quot; : &quot;38069&quot;</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    &quot;yr&quot; : &quot;2003&quot;,</span><br><span class="line">    &quot;EXPR$1&quot; : &quot;37050&quot;</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">  ...</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    &quot;yr&quot; : &quot;1990&quot;,</span><br><span class="line">    &quot;EXPR$1&quot; : &quot;30368&quot;</span><br><span class="line">  &#125; ]</span><br></pre></td></tr></table></figure>
+<h2 id="Q&amp;A">Q&amp;A</h2><ul>
+<li><p>[ ] Q: 为什么第一次执行会比较慢?</p>
+</li>
+<li><p>[x] Q: 既然是分布式的, 为什么每次执行时, 只派发给一个Foreman?  </p>
+<pre><code><span class="label">A:</span> Forman只是最终返回给客户端的节点, 只需要一个即可.  
+但是具体的查询Foreman会分发给多个几点!
+</code></pre></li>
+</ul>
+<h2 id="TODO">TODO</h2><ul>
+<li>测试环境hive中没什么表, 而且koudai表的类型是map, drill不支持map类型无法查询<br>准备导入一些测试数据集进来测下</li>
+<li>Drill + Tableau  </li>
+</ul>
+<h2 id="参考文档">参考文档</h2><p><a href="http://drill.apache.org/docs/" target="_blank" rel="noopener">Drill官网</a><br><a href="http://www.yankay.com/google-dremel-rationale/" target="_blank" rel="noopener">Google Dremel 原理 - 如何能3秒分析1PB</a></p>
+<p><a href="http://duguyiren3476.iteye.com/blog/2203055" target="_blank" rel="noopener">apache drill 0.8.0 单机/分布式安装测试</a><br><a href="http://xn--jlq582ax31c.xn--fiqs8s/post/31" target="_blank" rel="noopener">部署分布式Drill集群</a><br><a href="http://blog.chinaunix.net/uid-20593827-id-4042244.html" target="_blank" rel="noopener">Apache Drill环境搭建及连接hdfs</a>  </p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/07/09/2015-07-09-Apache-Drill/">Apache Drill入门</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年07月09日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/07/09/2015-07-09-Apache-Drill/" title="Apache Drill入门">http://github.com/zqhxuyuan/2015/07/09/2015-07-09-Apache-Drill/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/07/09/2015-07-09-Apache-Drill/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/07/10/2015-07-10-drill-log/">
+        Apache Drill源码阅读(1) 环境准备和查看日志
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/07/08/2015-07-08-Spark-QA/">
+        Spark QA
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#单机模式"><span class="toc-number">1.</span> <span class="toc-text">单机模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Storage_Plugin"><span class="toc-number">2.</span> <span class="toc-text">Storage Plugin</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#添加HDFS插件"><span class="toc-number">2.1.</span> <span class="toc-text">添加HDFS插件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#路径(dfs和hdfs)"><span class="toc-number">2.2.</span> <span class="toc-text">路径(dfs和hdfs)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DFS文件"><span class="toc-number">2.3.</span> <span class="toc-text">DFS文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HDFS文件"><span class="toc-number">2.4.</span> <span class="toc-text">HDFS文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#复杂SQL查询"><span class="toc-number">2.5.</span> <span class="toc-text">复杂SQL查询</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Drill连接Hive"><span class="toc-number">3.</span> <span class="toc-text">Drill连接Hive</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HIVE使用(本机环境:_cdh542)"><span class="toc-number">3.1.</span> <span class="toc-text">HIVE使用(本机环境: cdh542)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HIVE测试环境(hive-1-2-0)"><span class="toc-number">3.2.</span> <span class="toc-text">HIVE测试环境(hive-1.2.0)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hive的数据类型"><span class="toc-number">3.3.</span> <span class="toc-text">Hive的数据类型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Drill分布式模式"><span class="toc-number">4.</span> <span class="toc-text">Drill分布式模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#客户端连接"><span class="toc-number">5.</span> <span class="toc-text">客户端连接</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#sqlline"><span class="toc-number">5.1.</span> <span class="toc-text">sqlline</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#iodbc"><span class="toc-number">5.2.</span> <span class="toc-text">iodbc</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Drill_Explorer"><span class="toc-number">5.3.</span> <span class="toc-text">Drill Explorer</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#性能测试"><span class="toc-number">6.</span> <span class="toc-text">性能测试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HDFS的Parquet文件查询(单机和分布式模式对比)"><span class="toc-number">6.1.</span> <span class="toc-text">HDFS的Parquet文件查询(单机和分布式模式对比)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Drill其他知识点"><span class="toc-number">7.</span> <span class="toc-text">Drill其他知识点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Q&A"><span class="toc-number">8.</span> <span class="toc-text">Q&amp;A</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TODO"><span class="toc-number">9.</span> <span class="toc-text">TODO</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考文档"><span class="toc-number">10.</span> <span class="toc-text">参考文档</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/07/09/2015-07-09-Apache-Drill/" data-title="Apache Drill入门" data-url="http://github.com/zqhxuyuan/2015/07/09/2015-07-09-Apache-Drill/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/07/10/2015-07-10-drill-log/" title="上一篇: Apache Drill源码阅读(1) 环境准备和查看日志">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/07/08/2015-07-08-Spark-QA/" title="下一篇: Spark QA">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

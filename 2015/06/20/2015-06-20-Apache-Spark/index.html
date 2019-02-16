@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Apache Spark入门 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Apache Spark小白入门教程">
+<meta name="keywords" content="spark">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Apache Spark入门">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/06/20/2015-06-20-Apache-Spark/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Apache Spark小白入门教程">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/spark1.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/spark2.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/spark4.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/spark5.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/spark7.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/spark6.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/spark3.png">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20170713192930380">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/spark8.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/sha1.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/sha2.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/sha3.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/spark-perf.png">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.168Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Apache Spark入门">
+<meta name="twitter:description" content="Apache Spark小白入门教程">
+<meta name="twitter:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/spark1.png">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-06-20-Apache-Spark" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/06/20/2015-06-20-Apache-Spark/" class="article-date">
+  	<time datetime="2015-06-19T16:00:00.000Z" itemprop="datePublished">2015-06-20</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Apache Spark入门
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/bigdata/">bigdata</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Apache Spark小白入门教程</p>
+<a id="more"></a>
+<h2 id="Spark本地模式快速（十秒钟）入门">Spark本地模式快速（十秒钟）入门</h2><blockquote>
+<p>参考：<a href="http://spark.apache.org/docs/latest/quick-start.html" target="_blank" rel="noopener">http://spark.apache.org/docs/latest/quick-start.html</a></p>
+</blockquote>
+<p>解压缩spark包，在本地测试，不需要安装hadoop，直接启动<code>spark-shell</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">➜  spark-1.4.0-bin-hadoop2.6  bin/spark-shell</span><br><span class="line">Using Scala version 2.10.4 (Java HotSpot(TM) 64-Bit Server VM, Java 1.8.0_25)</span><br><span class="line">15/06/28 10:36:07 INFO ui.SparkUI: Started SparkUI at http://127.0.0.1:4040</span><br><span class="line">15/06/28 10:36:07 INFO repl.SparkILoop: Created spark context..</span><br><span class="line">Spark context available as sc.</span><br><span class="line">15/06/28 10:36:08 INFO hive.HiveContext: Initializing execution hive, version 0.13.1</span><br><span class="line">15/06/28 10:36:23 INFO repl.SparkILoop: Created sql context (with Hive support)..</span><br><span class="line">SQL context available as sqlContext.</span><br><span class="line">scala&gt;</span><br></pre></td></tr></table></figure>
+<p>spark-shell默认创建了<code>SparkContext sc</code>和<code>SqlContext sqlContext</code>，下面开始试验一些RDD操作</p>
+<p>第一个例子: 统计一个文本文件的单词数量.调用<code>sc.textFile(fileName)</code>会生成一个<code>MapPartitionsRDD</code>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; val textFile = sc.textFile(&quot;README.md&quot;)</span><br><span class="line">15/06/28 10:36:45 INFO storage.MemoryStore: ensureFreeSpace(63424) called with curMem=0, maxMem=278019440</span><br><span class="line">15/06/28 10:36:45 INFO storage.MemoryStore: Block broadcast_0 stored as values in memory (estimated size 61.9 KB, free 265.1 MB)</span><br><span class="line">15/06/28 10:36:45 INFO storage.MemoryStore: ensureFreeSpace(20061) called with curMem=63424, maxMem=278019440</span><br><span class="line">15/06/28 10:36:45 INFO storage.MemoryStore: Block broadcast_0_piece0 stored as bytes in memory (estimated size 19.6 KB, free 265.1 MB)</span><br><span class="line">15/06/28 10:36:45 INFO storage.BlockManagerInfo: Added broadcast_0_piece0 in memory on localhost:58638 (size: 19.6 KB, free: 265.1 MB)</span><br><span class="line">15/06/28 10:36:45 INFO spark.SparkContext: Created broadcast 0 from textFile at &lt;console&gt;:21</span><br><span class="line">textFile: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[1] at textFile at &lt;console&gt;:21</span><br></pre></td></tr></table></figure>
+<p>调用上面生成的textFile RDD的count()会触发一个Action.  </p>
+<blockquote>
+<p>注意：由于本机已经安装了Hadoop,使用的是伪分布式模式,所以Spark会读取Hadoop的配置信息.<br>我们这里先不启动Hadoop,使用本地模式,要手动添加<code>file:///</code>并使用绝对路径读取文本文件.<br>重新构造读取本地文本文件的textFile RDD，并调用<code>count()</code>方法。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; textFile.count()</span><br><span class="line">java.net.ConnectException: Call From hadoop/127.0.0.1 to localhost:9000 failed on </span><br><span class="line">  connection exception: java.net.ConnectException: 拒绝连接; </span><br><span class="line">  For more details see:  http://wiki.apache.org/hadoop/ConnectionRefused</span><br><span class="line">	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)</span><br><span class="line">    ...</span><br><span class="line">Caused by: java.net.ConnectException: 拒绝连接</span><br><span class="line">	at sun.nio.ch.SocketChannelImpl.checkConnect(Native Method)</span><br><span class="line">	...</span><br><span class="line">scala&gt; textFile</span><br><span class="line">res1: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[1] at textFile at &lt;console&gt;:21</span><br><span class="line"></span><br><span class="line">scala&gt; val textFile = sc.textFile(&quot;file:///home/hadoop/soft/spark-1.4.0-bin-hadoop2.6/README.md&quot;)</span><br><span class="line">textFile: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[3] at textFile at &lt;console&gt;:21</span><br><span class="line"></span><br><span class="line">scala&gt; textFile.count()</span><br><span class="line">15/06/28 10:44:07 INFO scheduler.DAGScheduler: Job 0 finished: count at &lt;console&gt;:24, took 0.275609 s</span><br><span class="line">res2: Long = 98</span><br></pre></td></tr></table></figure>
+<p>又一个Action RDD : 输出文本文件的第一行  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; textFile.first()</span><br><span class="line">15/06/28 10:44:27 INFO scheduler.DAGScheduler: Job 1 finished: first at &lt;console&gt;:24, took 0.017917 s</span><br><span class="line">res3: String = # Apache Spark</span><br></pre></td></tr></table></figure>
+<p>统计包含了Spark这个单词一共有几行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; val linesWithSpark = textFile.filter(line =&gt; line.contains(&quot;Spark&quot;))</span><br><span class="line">linesWithSpark: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[4] at filter at &lt;console&gt;:23</span><br><span class="line">scala&gt; textFile.filter(line =&gt; line.contains(&quot;Spark&quot;)).count()</span><br></pre></td></tr></table></figure>
+<p>文本文件中长度最长的那一行,它一共有多少个单词</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; textFile.map(line =&gt; line.split(&quot; &quot;).size).reduce((a, b) =&gt; if (a &gt; b) a else b)</span><br></pre></td></tr></table></figure>
+<p>单词计数（WordCount）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; val wordCounts = textFile.flatMap(line =&gt; line.split(&quot; &quot;)).map(word =&gt; (word, 1)).reduceByKey((a, b) =&gt; a + b)</span><br><span class="line">wordCounts: org.apache.spark.rdd.RDD[(String, Int)] = ShuffledRDD[9] at reduceByKey at &lt;console&gt;:23</span><br><span class="line"></span><br><span class="line">scala&gt;  wordCounts.collect()</span><br><span class="line">res6: Array[(String, Int)] = Array((package,1), (this,1), (Version&quot;](http://spark.apache.org/docs/latest/building-spark.html#specifying-the-hadoop-version),1), (Because,1), (Python,2), (cluster.,1), (its,1), ([run,1), (general,2), (have,1), (pre-built,1), (locally.,1), (locally,2), (changed,1), (sc.parallelize(1,1), (only,1), (several,1), (This,2), (basic,1), (Configuration,1), (learning,,1), (documentation,3), (YARN,,1), (graph,1), (Hive,2), (first,1), ([&quot;Specifying,1), (&quot;yarn-client&quot;,1), (page](http://spark.apache.org/documentation.html),1), ([params]`.,1), (application,1), ([project,2), (prefer,1), (SparkPi,2), (&lt;http://spark.apache.org/&gt;,1), (engine,1), (version,1), (file,1), (documentation,,1), (MASTER,1), (example,3), (distribution.,1), (are,1), (params,1), (scala&gt;,1), (systems.,1...</span><br></pre></td></tr></table></figure>
+<p>RDD缓存（Cache），第一次计算花了0.05s，第二次计算的时间只有0.01s。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; linesWithSpark.cache()</span><br><span class="line">res7: linesWithSpark.type = MapPartitionsRDD[4] at filter at &lt;console&gt;:23</span><br><span class="line"></span><br><span class="line">scala&gt; linesWithSpark.count()</span><br><span class="line">15/06/28 10:47:11 INFO scheduler.DAGScheduler: Job 5 finished: count at &lt;console&gt;:26, took 0.054036 s</span><br><span class="line">res8: Long = 19</span><br><span class="line"></span><br><span class="line">scala&gt; linesWithSpark.count()</span><br><span class="line">15/06/28 10:47:14 INFO scheduler.DAGScheduler: Job 6 finished: count at &lt;console&gt;:26, took 0.016638 s</span><br><span class="line">res9: Long = 19</span><br></pre></td></tr></table></figure>
+<p>用表格的形式列举出来RDD转换操作的几个实验步骤。注意：上面只有Action操作才有编号，没有Action没有编号，比如cache()就不是Action</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>val textFile = sc.textFile(“file:///home/hadoop/soft/spark-1.4.0-bin-hadoop2.6/README.md”) <br> <strong>textFile.count()</strong></td>
+</tr>
+<tr>
+<td>1</td>
+<td>textFile.first()</td>
+</tr>
+<tr>
+<td>2</td>
+<td>val linesWithSpark = textFile.filter(line =&gt; line.contains(“Spark”)) <br> <strong>linesWithSpark.count()</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td>textFile.map(line =&gt; line.split(“ “).size).reduce((a, b) =&gt; if (a &gt; b) a else b) <br> <strong>val wordCounts = textFile.flatMap(line =&gt; line.split(“ “)).map(word =&gt; (word, 1)).reduceByKey((a, b) =&gt; a + b)</strong></td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>wordCounts.collect()</strong></td>
+</tr>
+<tr>
+<td>5</td>
+<td>linesWithSpark.cache();<br> <strong>linesWithSpark.count()</strong></td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>linesWithSpark.count()</strong></td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>linesWithSpark.count()</strong></td>
+</tr>
+</tbody>
+</table>
+<p>spark-shell启动时会打印：<code>INFO ui.SparkUI: Started SparkUI at http://127.0.0.1:4040</code>。<br>打开<a href="http://127.0.0.1:4040" target="_blank" rel="noopener">http://127.0.0.1:4040</a>，这个页面是Spark的WebUI页面。最主要的有三个Tab：Jobs, Stages, Storage。</p>
+<h3 id="Jobs_&amp;_Stages">Jobs &amp; Stages</h3><p><strong>Jobs:</strong> 上面每个Action RDD编号对应了下图中的Job Id.  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/spark1.png" alt></p>
+<p><strong>Stages:</strong> 上面有8个Job, 但是Stages多了一个(一共有9个Stages). 其实是④的<code>collect()</code>有两个stage  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/spark2.png" alt></p>
+<p>在Jobs中点击Job Id=4的collect RDD(输出WordCount的结果). 在下方的列表中可以看到有2个Stages<br>仔细观察列表的最后面两列, 分别是Shuffle Read和Shuffle Write.<br>其中map会进行Shuffle Write, collect会进行Shuffle Read</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/spark4.png" alt></p>
+<p>点击Stage Id=4的map. 它的DAG可视化图和上面的概览图的左侧是一样的</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/spark5.png" alt></p>
+<p>Spark的WebUI还提供了一个EventTime,可以很清楚地看到每个阶段消耗的时间</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/spark7.png" alt></p>
+<p>回退,点击Stage Id=5的collect</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/spark6.png" alt></p>
+<p><strong>Storage:</strong> 只有在<code>cache()</code>之后，执行完一次Action才有。</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/spark3.png" alt></p>
+<hr>
+<h2 id="Spark_Standalone集群安装（30分钟~1小时）">Spark Standalone集群安装（30分钟~1小时）</h2><p>Standalone译为单机、独立式的，但是并不是说Standalone只有一台机器，它也可以有分布式/集群模式，主要有两个组件：</p>
+<ul>
+<li>Master</li>
+<li>Worker</li>
+</ul>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20170713192930380" alt="s"></p>
+<p>1.准备工作:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">安装hadoop分布式集群，启动hdfs和yarn</span><br><span class="line">master无密码ssh到slaves(将master的pub追加到所有slaves的authorized_keys)</span><br><span class="line">关闭所有节点的防火墙(chkconfig iptables off)</span><br><span class="line">安装scala-2.10,并设置~/.bashrc</span><br></pre></td></tr></table></figure>
+<p>2.修改spark-env.sh的配置文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">$ vi $SPARK_HOME/conf/spark-env.sh</span><br><span class="line">#环境变量</span><br><span class="line">export JAVA_HOME=/usr/java/jdk1.7.0_51</span><br><span class="line">export SCALA_HOME=/usr/install/scala-2.10.5</span><br><span class="line"></span><br><span class="line">#最简配置</span><br><span class="line">export HADOOP_HOME=/usr/install/hadoop</span><br><span class="line">export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop</span><br><span class="line">export SPARK_MASTER_IP=dp0652</span><br><span class="line">export MASTER=spark://dp0652:7077</span><br><span class="line">#export SPARK_LOCAL_IP=dp0652</span><br><span class="line">export SPARK_LOCAL_DIRS=/usr/install/spark-1.4.0-bin-hadoop2.6</span><br><span class="line"></span><br><span class="line">#其他配置</span><br><span class="line">export SPARK_MASTER_WEBUI_PORT=8082</span><br><span class="line">export SPARK_MASTER_PORT=7077</span><br><span class="line">export SPARK_WORKER_CORES=1</span><br><span class="line">export SPARK_WORKER_INSTANCES=1</span><br><span class="line">export SPARK_WORKER_MEMORY=8g</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>在新版本中，SPARK_HOME设置为Spark的安装目录，SPARK_LOCAL_DIRS为临时文件夹，存放spark的运行时作业信息。  </p>
+</blockquote>
+<p>有几个端口信息：</p>
+<ul>
+<li>8082：master web ui</li>
+<li>7077：master port</li>
+<li>上一节的4040是应用程序的端口，不同应用程序的端口从4040不断增加</li>
+</ul>
+<p>3.添加slaves文件，指定所有的Worker</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">vi conf/slaves</span><br><span class="line">dp0652</span><br><span class="line">dp0653</span><br><span class="line">dp0655</span><br><span class="line">dp0656</span><br><span class="line">dp0657</span><br></pre></td></tr></table></figure>
+<p>4.将spark目录分发到集群的其他节点</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cd ..</span><br><span class="line">scp -r $SPARK_HOME dp0653:/usr/install</span><br><span class="line">scp -r $SPARK_HOME dp0655:/usr/install</span><br><span class="line">scp -r $SPARK_HOME dp0656:/usr/install</span><br><span class="line">scp -r $SPARK_HOME dp0657:/usr/install</span><br></pre></td></tr></table></figure>
+<p>由于集群中dp0652和dp0653的内存比较大, 我们修改了这两个节点的spark-env.sh,并且启动了两个Worker示例。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export SPARK_WORKER_INSTANCES=2</span><br><span class="line">export SPARK_WORKER_MEMORY=20g</span><br></pre></td></tr></table></figure>
+<p>5.启动集群, 在master上执行<code>start-all.sh</code>就可以启动Spark Master和所有的Worker.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 spark-1.4.0-bin-hadoop2.6]$ sbin/start-all.sh</span><br><span class="line">starting org.apache.spark.deploy.master.Master, logging to /usr/install/spark-1.4.0-bin-hadoop2.6/sbin/../logs/spark-qihuang.zheng-org.apache.spark.deploy.master.Master-1-dp0652.out</span><br><span class="line">dp0656: starting org.apache.spark.deploy.worker.Worker, logging to /usr/install/spark-1.4.0-bin-hadoop2.6/sbin/../logs/spark-qihuang.zheng-org.apache.spark.deploy.worker.Worker-1-dp0656.out</span><br><span class="line">dp0655: starting org.apache.spark.deploy.worker.Worker, logging to /usr/install/spark-1.4.0-bin-hadoop2.6/sbin/../logs/spark-qihuang.zheng-org.apache.spark.deploy.worker.Worker-1-dp0655.out</span><br><span class="line">dp0657: starting org.apache.spark.deploy.worker.Worker, logging to /usr/install/spark-1.4.0-bin-hadoop2.6/sbin/../logs/spark-qihuang.zheng-org.apache.spark.deploy.worker.Worker-1-dp0657.out</span><br><span class="line">dp0652: starting org.apache.spark.deploy.worker.Worker, logging to /usr/install/spark-1.4.0-bin-hadoop2.6/sbin/../logs/spark-qihuang.zheng-org.apache.spark.deploy.worker.Worker-1-dp0652.out</span><br><span class="line">dp0653: starting org.apache.spark.deploy.worker.Worker, logging to /usr/install/spark-1.4.0-bin-hadoop2.6/sbin/../logs/spark-qihuang.zheng-org.apache.spark.deploy.worker.Worker-1-dp0653.out</span><br><span class="line">dp0652: starting org.apache.spark.deploy.worker.Worker, logging to /usr/install/spark-1.4.0-bin-hadoop2.6/sbin/../logs/spark-qihuang.zheng-org.apache.spark.deploy.worker.Worker-2-dp0652.out</span><br><span class="line">dp0653: starting org.apache.spark.deploy.worker.Worker, logging to /usr/install/spark-1.4.0-bin-hadoop2.6/sbin/../logs/spark-qihuang.zheng-org.apache.spark.deploy.worker.Worker-2-dp0653.out</span><br></pre></td></tr></table></figure>
+<p>6.在master（0652）和slaves（0653,0655）上查看Spark进程。<br>可以看到master 0652上有一个Spark Master、两个Spark Worker。<br>0653上有两个Spark Worker，0655上有一个Spark Worker。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 ~]$ jps -lm</span><br><span class="line">40708 org.apache.spark.deploy.master.Master --ip dp0652 --port 7077 --webui-port 8082</span><br><span class="line">41095 org.apache.spark.deploy.worker.Worker --webui-port 8082 spark://dp0652:7077</span><br><span class="line">40926 org.apache.spark.deploy.worker.Worker --webui-port 8081 spark://dp0652:7077</span><br><span class="line"></span><br><span class="line">[qihuang.zheng@dp0653 ~]$ jps -lm</span><br><span class="line">27153 org.apache.spark.deploy.worker.Worker --webui-port 8082 spark://dp0652:7077</span><br><span class="line">27029 org.apache.spark.deploy.worker.Worker --webui-port 8081 spark://dp0652:7077</span><br><span class="line"></span><br><span class="line">[qihuang.zheng@dp0655 ~]$ jps -lm</span><br><span class="line">8766 org.apache.spark.deploy.worker.Worker --webui-port 8081 spark://dp0652:7077</span><br></pre></td></tr></table></figure>
+<p>7.查看web ui: <a href="http://dp0652:8082/" target="_blank" rel="noopener">http://dp0652:8082/</a></p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/spark8.png" alt></p>
+<p>8.<code>spark-shell</code>可以交互式地执行Spark代码，<code>spark-submit</code>则用于提交jar包。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">bin/spark-shell --master spark://dp0652:7077 --executor-memory 4g</span><br><span class="line"></span><br><span class="line">bin/spark-submit --master spark://dp0652:7077 \</span><br><span class="line">  --class org.apache.spark.examples.SparkPi \</span><br><span class="line">  --executor-memory 4g --total-executor-cores 2 \</span><br><span class="line">  lib/spark-examples-1.4.0-hadoop2.6.0.jar 1000</span><br></pre></td></tr></table></figure>
+<h3 id="问题">问题</h3><p><strong>1.如果配置了SPARK_LOCAL_IP, 但是并没有在slaves上修改为自己的IP,则会报错:</strong>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">15/07/02 09:04:08 ERROR netty.NettyTransport: failed to bind to /192.168.6.52:0, shutting down Netty transport</span><br><span class="line">Exception in thread &quot;main&quot; java.net.BindException: Failed to bind to: /192.168.6.52:0: Service &apos;sparkWorker&apos; failed after 16 retries!</span><br><span class="line">        at org.jboss.netty.bootstrap.ServerBootstrap.bind(ServerBootstrap.java:272)</span><br><span class="line">        at akka.remote.transport.netty.NettyTransport$$anonfun$listen$1.apply(NettyTransport.scala:393)</span><br><span class="line">        at akka.remote.transport.netty.NettyTransport$$anonfun$listen$1.apply(NettyTransport.scala:389)</span><br><span class="line">        at scala.util.Success$$anonfun$map$1.apply(Try.scala:206)</span><br><span class="line">        at scala.util.Try$.apply(Try.scala:161)</span><br><span class="line">        at scala.util.Success.map(Try.scala:206)</span><br><span class="line">        at scala.concurrent.Future$$anonfun$map$1.apply(Future.scala:235)</span><br><span class="line">        at scala.concurrent.Future$$anonfun$map$1.apply(Future.scala:235)</span><br><span class="line">        at scala.concurrent.impl.CallbackRunnable.run(Promise.scala:32)</span><br><span class="line">        at akka.dispatch.BatchingExecutor$Batch$$anonfun$run$1.processBatch$1(BatchingExecutor.scala:67)</span><br><span class="line">        at akka.dispatch.BatchingExecutor$Batch$$anonfun$run$1.apply$mcV$sp(BatchingExecutor.scala:82)</span><br><span class="line">        at akka.dispatch.BatchingExecutor$Batch$$anonfun$run$1.apply(BatchingExecutor.scala:59)</span><br><span class="line">        at akka.dispatch.BatchingExecutor$Batch$$anonfun$run$1.apply(BatchingExecutor.scala:59)</span><br><span class="line">        at scala.concurrent.BlockContext$.withBlockContext(BlockContext.scala:72)</span><br><span class="line">        at akka.dispatch.BatchingExecutor$Batch.run(BatchingExecutor.scala:58)</span><br><span class="line">        at akka.dispatch.TaskInvocation.run(AbstractDispatcher.scala:41)</span><br><span class="line">        at akka.dispatch.ForkJoinExecutorConfigurator$AkkaForkJoinTask.exec(AbstractDispatcher.scala:393)</span><br><span class="line">        at scala.concurrent.forkjoin.ForkJoinTask.doExec(ForkJoinTask.java:260)</span><br><span class="line">        at scala.concurrent.forkjoin.ForkJoinPool$WorkQueue.runTask(ForkJoinPool.java:1339)</span><br><span class="line">        at scala.concurrent.forkjoin.ForkJoinPool.runWorker(ForkJoinPool.java:1979)</span><br><span class="line">        at scala.concurrent.forkjoin.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:107)</span><br><span class="line">15/07/02 09:04:09 INFO remote.RemoteActorRefProvider$RemotingTerminator: Shutting down remote daemon.</span><br><span class="line">15/07/02 09:04:09 INFO remote.RemoteActorRefProvider$RemotingTerminator: Remote daemon shut down; proceeding with flushing remote transports.</span><br><span class="line">15/07/02 09:04:09 INFO util.Utils: Shutdown hook called</span><br></pre></td></tr></table></figure>
+<p>原因分析: SPARK_LOCAL_IP指的是本机IP地址,因此分发到集群的不同节点上,都要到各自的节点修改为自己的IP地址.<br>如果集群节点比较多,则比较麻烦, 可以用SPARK_LOCAL_DIRS代替.</p>
+<p><strong>2.如果没有配置export MASTER, 在worker上会报错:</strong>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">5/07/02 08:40:51 INFO worker.Worker: Retrying connection to master (attempt # 12)</span><br><span class="line">15/07/02 08:40:51 INFO worker.Worker: Connecting to master akka.tcp://sparkMaster@dp0652:7077/user/Master...</span><br><span class="line">15/07/02 08:40:51 WARN Remoting: Tried to associate with unreachable remote address [akka.tcp://sparkMaster@dp0652:7077].</span><br><span class="line">Address is now gated for 5000 ms, all messages to this address will be delivered to dead letters.</span><br><span class="line">Reason: 拒绝连接: dp0652/192.168.6.52:7077</span><br><span class="line">15/07/02 08:41:23 ERROR worker.Worker: RECEIVED SIGNAL 15: SIGTERM</span><br><span class="line">15/07/02 08:41:23 INFO util.Utils: Shutdown hook called</span><br></pre></td></tr></table></figure>
+<p>导致的后果是虽然slaves上都启动了Worker进程(使用jps查看),但是在Master上并没有看到workers. 这时候应该查看Master上的日志.<br>master上启动成功显示的日志是spark@dp0652:7077. 而上面却显示的是sparkMaster@dp0652:7077. 所以应该手动export MASTER  </p>
+<p><strong>3.最后成功启动集群, 在Master上的日志:</strong>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">Spark Command: /usr/java/jdk1.7.0_51/bin/java -cp /usr/install/spark-1.4.0-bin-hadoop2.6/sbin/../conf/:/usr/install/spark-1.4.0-bin-hadoop2.6/lib/spark-assembly-1.4.0-hadoop2.6.0.jar:/usr/install/spark-1.4.0-bin-hadoop2.6/lib/datanucleus-rdbms-3.2.9.jar:/usr/install/spark-1.4.0-bin-hadoop2.6/lib/datanucleus-core-3.2.10.jar:/usr/install/spark-1.4.0-bin-hadoop2.6/lib/datanucleus-api-jdo-3.2.6.jar:/usr/install/hadoop/etc/hadoop/:/usr/install/hadoop/etc/hadoop/ -Xms512m -Xmx512m -XX:MaxPermSize=128m org.apache.spark.deploy.master.Master --ip dp0652 --port 7077 --webui-port 8082</span><br><span class="line">========================================</span><br><span class="line">15/07/02 09:27:49 INFO master.Master: Registered signal handlers for [TERM, HUP, INT]</span><br><span class="line">15/07/02 09:27:50 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable</span><br><span class="line">15/07/02 09:27:50 INFO spark.SecurityManager: Changing view acls to: qihuang.zheng</span><br><span class="line">15/07/02 09:27:50 INFO spark.SecurityManager: Changing modify acls to: qihuang.zheng</span><br><span class="line">15/07/02 09:27:50 INFO spark.SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: Set(qihuang.zheng); users with modify permissions: Set(qihuang.zheng)</span><br><span class="line">15/07/02 09:27:51 INFO slf4j.Slf4jLogger: Slf4jLogger started</span><br><span class="line">15/07/02 09:27:51 INFO Remoting: Starting remoting</span><br><span class="line">15/07/02 09:27:51 INFO Remoting: Remoting started; listening on addresses :[akka.tcp://sparkMaster@dp0652:7077]</span><br><span class="line">15/07/02 09:27:51 INFO util.Utils: Successfully started service &apos;sparkMaster&apos; on port 7077.</span><br><span class="line">15/07/02 09:27:51 INFO server.Server: jetty-8.y.z-SNAPSHOT</span><br><span class="line">15/07/02 09:27:51 INFO server.AbstractConnector: Started SelectChannelConnector@dp0652:6066</span><br><span class="line">15/07/02 09:27:51 INFO util.Utils: Successfully started service on port 6066.</span><br><span class="line">15/07/02 09:27:51 INFO rest.StandaloneRestServer: Started REST server for submitting applications on port 6066</span><br><span class="line">15/07/02 09:27:51 INFO master.Master: Starting Spark master at spark://dp0652:7077</span><br><span class="line">15/07/02 09:27:51 INFO master.Master: Running Spark version 1.4.0</span><br><span class="line">15/07/02 09:27:51 INFO server.Server: jetty-8.y.z-SNAPSHOT</span><br><span class="line">15/07/02 09:27:51 INFO server.AbstractConnector: Started SelectChannelConnector@0.0.0.0:8082</span><br><span class="line">15/07/02 09:27:51 INFO util.Utils: Successfully started service &apos;MasterUI&apos; on port 8082.</span><br><span class="line">15/07/02 09:27:51 INFO ui.MasterWebUI: Started MasterWebUI at http://192.168.6.52:8082</span><br><span class="line">15/07/02 09:27:52 INFO master.Master: I have been elected leader! New state: ALIVE</span><br><span class="line">15/07/02 09:27:54 INFO master.Master: Registering worker 192.168.6.52:35398 with 1 cores, 20.0 GB RAM</span><br><span class="line">15/07/02 09:27:54 INFO master.Master: Registering worker 192.168.6.56:60106 with 1 cores, 8.0 GB RAM</span><br><span class="line">15/07/02 09:27:54 INFO master.Master: Registering worker 192.168.6.55:50995 with 1 cores, 8.0 GB RAM</span><br><span class="line">15/07/02 09:27:54 INFO master.Master: Registering worker 192.168.6.53:55994 with 1 cores, 20.0 GB RAM</span><br><span class="line">15/07/02 09:27:54 INFO master.Master: Registering worker 192.168.6.57:34020 with 1 cores, 8.0 GB RAM</span><br><span class="line">15/07/02 09:27:56 INFO master.Master: Registering worker 192.168.6.52:55912 with 1 cores, 20.0 GB RAM</span><br><span class="line">15/07/02 09:27:56 INFO master.Master: Registering worker 192.168.6.53:35846 with 1 cores, 20.0 GB RAM</span><br></pre></td></tr></table></figure>
+<p><strong>在53的其中一个Worker上的日志:</strong>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">Spark Command: /usr/java/jdk1.7.0_51/bin/java -cp /usr/install/spark-1.4.0-bin-hadoop2.6/sbin/../conf/:/usr/install/spark-1.4.0-bin-hadoop2.6/lib/spark-assembly-1.4.0-hadoop2.6.0.jar:/usr/install/spark-1.4.0-bin-hadoop2.6/lib/datanucleus-api-jdo-3.2.6.jar:/usr/install/spark-1.4.0-bin-hadoop2.6/lib/datanucleus-core-3.2.10.jar:/usr/install/spark-1.4.0-bin-hadoop2.6/lib/datanucleus-rdbms-3.2.9.jar:/usr/install/hadoop/etc/hadoop/:/usr/install/hadoop/etc/hadoop/ -Xms512m -Xmx512m -XX:MaxPermSize=128m org.apache.spark.deploy.worker.Worker --webui-port 8081 spark://dp0652:7077</span><br><span class="line">========================================</span><br><span class="line">15/07/02 09:27:52 INFO worker.Worker: Registered signal handlers for [TERM, HUP, INT]</span><br><span class="line">15/07/02 09:27:52 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable</span><br><span class="line">15/07/02 09:27:52 INFO spark.SecurityManager: Changing view acls to: qihuang.zheng</span><br><span class="line">15/07/02 09:27:52 INFO spark.SecurityManager: Changing modify acls to: qihuang.zheng</span><br><span class="line">15/07/02 09:27:52 INFO spark.SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users with view permissions: Set(qihuang.zheng); users with modify permissions: Set(qihuang.zheng)</span><br><span class="line">15/07/02 09:27:53 INFO slf4j.Slf4jLogger: Slf4jLogger started</span><br><span class="line">15/07/02 09:27:53 INFO Remoting: Starting remoting</span><br><span class="line">15/07/02 09:27:54 INFO Remoting: Remoting started; listening on addresses :[akka.tcp://sparkWorker@192.168.6.53:55994]</span><br><span class="line">15/07/02 09:27:54 INFO util.Utils: Successfully started service &apos;sparkWorker&apos; on port 55994.</span><br><span class="line">15/07/02 09:27:54 INFO worker.Worker: Starting Spark worker 192.168.6.53:55994 with 1 cores, 20.0 GB RAM</span><br><span class="line">15/07/02 09:27:54 INFO worker.Worker: Running Spark version 1.4.0</span><br><span class="line">15/07/02 09:27:54 INFO worker.Worker: Spark home: /usr/install/spark-1.4.0-bin-hadoop2.6</span><br><span class="line">15/07/02 09:27:54 INFO server.Server: jetty-8.y.z-SNAPSHOT</span><br><span class="line">15/07/02 09:27:54 INFO server.AbstractConnector: Started SelectChannelConnector@0.0.0.0:8081</span><br><span class="line">15/07/02 09:27:54 INFO util.Utils: Successfully started service &apos;WorkerUI&apos; on port 8081.</span><br><span class="line">15/07/02 09:27:54 INFO ui.WorkerWebUI: Started WorkerWebUI at http://192.168.6.53:8081</span><br><span class="line">15/07/02 09:27:54 INFO worker.Worker: Connecting to master akka.tcp://sparkMaster@dp0652:7077/user/Master...</span><br><span class="line">15/07/02 09:27:54 INFO worker.Worker: Successfully registered with master spark://dp0652:7077</span><br></pre></td></tr></table></figure>
+<h2 id="Spark_Standalone_HA（30分钟）">Spark Standalone HA（30分钟）</h2><p>参考文档：</p>
+<ul>
+<li><a href="http://taoistwar.gitbooks.io/spark-operationand-maintenance-management/content/spark_install/spark_standalone_with_zookeeper_ha.html" target="_blank" rel="noopener">Spark Standalone基于ZooKeeper的HA</a></li>
+<li><a href="http://www.cnblogs.com/byrhuangqiang/p/3937654.html" target="_blank" rel="noopener">Spark:Master High Availability（HA）高可用配置的2种实现</a></li>
+</ul>
+<p>简单问答：</p>
+<ul>
+<li>为什么需要HA？因为Master只有一个节点，会出现单点故障。如果Master挂掉了，Spark集群就不可用。</li>
+<li>怎么实现HA？使用ZooKeeper，启动两个Master，只有一个Master会起作用，另一个是Standby。</li>
+</ul>
+<p>以前面的五台机器为例，实现HA的部署结构：</p>
+<table>
+<thead>
+<tr>
+<th>node</th>
+<th>host</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>masters</td>
+<td>dp0652,dp0653</td>
+</tr>
+<tr>
+<td>slaves</td>
+<td>dp0655,dp0656,dp0657</td>
+</tr>
+</tbody>
+</table>
+<p>1.修改配置文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ vi spark-env.sh</span><br><span class="line">export SPARK_MASTER_IP=dp0652</span><br><span class="line">export SPARK_DAEMON_JAVA_OPTS=&quot;-Dspark.deploy.recoveryMode=ZOOKEEPER -Dspark.deploy.zookeeper.url=dp0655:2181,dp0656:2181,dp0657:2181 -Dspark.deploy.zookeeper.dir=/spark&quot;</span><br></pre></td></tr></table></figure>
+<p>2.修改slaves</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ vi slaves</span><br><span class="line">dp0655</span><br><span class="line">dp0656</span><br><span class="line">dp0657</span><br></pre></td></tr></table></figure>
+<p>3.将配置文件分发到集群所有节点</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">scp spark-env.sh dp0653:/usr/install/spark-1.4.0-bin-hadoop2.6/conf</span><br><span class="line">scp spark-env.sh dp0655:/usr/install/spark-1.4.0-bin-hadoop2.6/conf</span><br><span class="line">scp spark-env.sh dp0656:/usr/install/spark-1.4.0-bin-hadoop2.6/conf</span><br><span class="line">scp spark-env.sh dp0657:/usr/install/spark-1.4.0-bin-hadoop2.6/conf</span><br><span class="line">scp slaves dp0653:/usr/install/spark-1.4.0-bin-hadoop2.6/conf</span><br><span class="line">scp slaves dp0655:/usr/install/spark-1.4.0-bin-hadoop2.6/conf</span><br><span class="line">scp slaves dp0656:/usr/install/spark-1.4.0-bin-hadoop2.6/conf</span><br><span class="line">scp slaves dp0657:/usr/install/spark-1.4.0-bin-hadoop2.6/conf</span><br></pre></td></tr></table></figure>
+<p>4.在dp0653上修改spark-env.sh</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export SPARK_MASTER_IP=dp0653</span><br></pre></td></tr></table></figure>
+<p>5.在dp0652上启动集群: <code>sbin/start-all.sh</code></p>
+<p>6.在dp0653上启动Master: <code>sbin/start-master.sh</code></p>
+<p>7.可以看到dp0652是active, dp0653是standby</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/sha1.png" alt></p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/sha2.png" alt></p>
+<p>8.关闭dp0652的master: <code>sbin/stop-master.sh</code></p>
+<p>9.观察dp0653是否成为master:</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/sha3.png" alt></p>
+<p>10.执行应用程序. 注意–master现在有多个</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">bin/spark-submit --master spark://dp0652:7077,dp0653:7077 \</span><br><span class="line">  --class org.apache.spark.examples.SparkPi \</span><br><span class="line">  --executor-memory 4g --total-executor-cores 2 \</span><br><span class="line">  lib/spark-examples-1.4.0-hadoop2.6.0.jar 10</span><br></pre></td></tr></table></figure>
+<p>10.观察dp0652的master日志:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">15/07/07 14:41:50 INFO Master: Registering worker 192.168.6.55:58543 with 1 cores, 8.0 GB RAM</span><br><span class="line">15/07/07 14:41:50 INFO Master: Registering worker 192.168.6.56:37859 with 1 cores, 8.0 GB RAM</span><br><span class="line">15/07/07 14:41:50 INFO Master: Registering worker 192.168.6.57:34379 with 1 cores, 8.0 GB RAM</span><br><span class="line"></span><br><span class="line">15/07/07 14:45:01 ERROR Master: RECEIVED SIGNAL 15: SIGTERM</span><br><span class="line">15/07/07 14:45:01 INFO Utils: Shutdown hook called</span><br></pre></td></tr></table></figure>
+<p>11.观察dp0653的master日志:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">15/07/07 14:42:03 INFO ConnectionStateManager: State change: CONNECTED</span><br><span class="line"></span><br><span class="line">15/07/07 14:45:35 INFO ZooKeeperLeaderElectionAgent: We have gained leadership</span><br><span class="line">15/07/07 14:45:36 INFO Master: I have been elected leader! New state: RECOVERING</span><br><span class="line">15/07/07 14:45:36 INFO Master: Trying to recover worker: worker-20150707144149-192.168.6.56-37859</span><br><span class="line">15/07/07 14:45:36 INFO Master: Trying to recover worker: worker-20150707144149-192.168.6.55-58543</span><br><span class="line">15/07/07 14:45:36 INFO Master: Trying to recover worker: worker-20150707144149-192.168.6.57-34379</span><br><span class="line">15/07/07 14:45:36 INFO Master: Worker has been re-registered: worker-20150707144149-192.168.6.55-58543</span><br><span class="line">15/07/07 14:45:36 INFO Master: Worker has been re-registered: worker-20150707144149-192.168.6.56-37859</span><br><span class="line">15/07/07 14:45:36 INFO Master: Worker has been re-registered: worker-20150707144149-192.168.6.57-34379</span><br><span class="line">15/07/07 14:45:36 INFO Master: Recovery complete - resuming operations!</span><br></pre></td></tr></table></figure>
+<h2 id="Spark_SQL">Spark SQL</h2><h3 id="Hive_on_Spark">Hive on Spark</h3><p>编译支持hive的spark</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mvn -Pyarn -Dyarn.version=2.6.0 -Phadoop-2.6 -Dhadoop.version=2.6.0 \</span><br><span class="line">-Phive -Phive-0.13.1 -Phive-thriftserver \</span><br><span class="line">-DskipTests clean package</span><br></pre></td></tr></table></figure>
+<p>如果没有编译hive on spark,而是直接把hive-site.xml分发到spark集群的conf目录下,直接启动spark-sql会报错:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 spark-1.4.0-bin-hadoop2.6]$ bin/spark-sql</span><br><span class="line">Exception in thread &quot;main&quot; java.lang.RuntimeException: java.io.IOException: 权限不够</span><br><span class="line">    at org.apache.hadoop.hive.ql.session.SessionState.start(SessionState.java:330)</span><br><span class="line">    at org.apache.spark.sql.hive.thriftserver.SparkSQLCLIDriver$.main(SparkSQLCLIDriver.scala:109)</span><br><span class="line">    at org.apache.spark.sql.hive.thriftserver.SparkSQLCLIDriver.main(SparkSQLCLIDriver.scala)</span><br><span class="line">    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)</span><br><span class="line">    at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)</span><br><span class="line">    at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)</span><br><span class="line">    at java.lang.reflect.Method.invoke(Method.java:606)</span><br><span class="line">    at org.apache.spark.deploy.SparkSubmit$.org$apache$spark$deploy$SparkSubmit$$runMain(SparkSubmit.scala:664)</span><br><span class="line">    at org.apache.spark.deploy.SparkSubmit$.doRunMain$1(SparkSubmit.scala:169)</span><br><span class="line">    at org.apache.spark.deploy.SparkSubmit$.submit(SparkSubmit.scala:192)</span><br><span class="line">    at org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:111)</span><br><span class="line">    at org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala)</span><br><span class="line">Caused by: java.io.IOException: 权限不够</span><br><span class="line">    at java.io.UnixFileSystem.createFileExclusively(Native Method)</span><br><span class="line">    at java.io.File.createNewFile(File.java:1006)</span><br><span class="line">    at java.io.File.createTempFile(File.java:1989)</span><br><span class="line">    at org.apache.hadoop.hive.ql.session.SessionState.createTempFile(SessionState.java:432)</span><br><span class="line">    at org.apache.hadoop.hive.ql.session.SessionState.start(SessionState.java:328)</span><br><span class="line">    ... 11 more</span><br><span class="line">15/07/03 08:42:33 INFO util.Utils: Shutdown hook called</span><br><span class="line">15/07/03 08:42:33 INFO util.Utils: Deleting directory /tmp/spark-831ff199-cf80-4d49-a22f-824736065289</span><br></pre></td></tr></table></figure>
+<p>这是因为Spark集群的每个Worker都需要Hive的支持,而Worker节点并没有都安装了hive. 而且spark需要编译支持hive的包.<br>但是重新编译hive on spark要花很多时间,可不可以直接使用集群中已经安装好的hive呢?  YES!!<br><a href="http://lxw1234.com/archives/2015/06/294.htm" target="_blank" rel="noopener">http://lxw1234.com/archives/2015/06/294.htm</a><br><a href="http://shiyanjun.cn/archives/1113.html" target="_blank" rel="noopener">http://shiyanjun.cn/archives/1113.html</a><br><a href="http://www.cnblogs.com/hseagle/p/3758922.html" target="_blank" rel="noopener">http://www.cnblogs.com/hseagle/p/3758922.html</a>  </p>
+<p>1.在spark-env.sh中添加</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export HIVE_HOME=/usr/install/apache-hive-0.13.1-bin</span><br><span class="line">export SPARK_CLASSPATH=$HIVE_HOME/lib/mysql-connector-java-5.1.34.jar:$SPARK_CLASSPATH</span><br></pre></td></tr></table></figure>
+<p>2.将<code>apache-hive-0.13.1-bin</code>分发到集群中的每个节点(SparkWorker所在的节点)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd install</span><br><span class="line">scp -r apache-hive-0.13.1-bin dp0653:/usr/install/</span><br></pre></td></tr></table></figure>
+<p>3.拷贝apache-hive-0.13.1-bin/conf/hive-site.xml到$SPARK_HOME/conf下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scp apache-hive-0.13.1-bin/conf/hive-site.xml dp0653:/usr/install/spark-1.4.0-bin-hadoop2.6/conf</span><br></pre></td></tr></table></figure>
+<p>4.重启spark集群(standalone模式)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sbin/stop-all.sh</span><br><span class="line">sbin/start-all.sh</span><br></pre></td></tr></table></figure>
+<p>5.测试spark-sql</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">15/07/03 10:00:56 WARN spark.SparkConf: Setting &apos;spark.executor.extraClassPath&apos; to &apos;/usr/install/apache-hive-0.13.1-bin/lib/mysql-connector-java-5.1.34.jar:&apos; as a work-around.</span><br><span class="line">15/07/03 10:00:56 WARN spark.SparkConf: Setting &apos;spark.driver.extraClassPath&apos; to &apos;/usr/install/apache-hive-0.13.1-bin/lib/mysql-connector-java-5.1.34.jar:&apos; as a work-around.</span><br><span class="line"></span><br><span class="line">15/07/03 10:01:00 INFO hive.metastore: Trying to connect to metastore with URI thrift://192.168.6.53:9083</span><br><span class="line">15/07/03 10:01:00 INFO hive.metastore: Connected to metastore.</span><br><span class="line">15/07/03 10:01:00 INFO session.SessionState: No Tez session required at this point. hive.execution.engine=mr.</span><br><span class="line">SET spark.sql.hive.version=0.13.1</span><br><span class="line">SET spark.sql.hive.version=0.13.1</span><br><span class="line"></span><br><span class="line">spark-sql&gt; show databases;</span><br><span class="line">default</span><br><span class="line">test</span><br><span class="line">spark-sql&gt; use test;</span><br><span class="line">spark-sql&gt; show tables;</span><br><span class="line">koudai  false</span><br><span class="line"></span><br><span class="line">spark-sql&gt; select count(*) from koudai;</span><br><span class="line">311839</span><br></pre></td></tr></table></figure>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/spark-perf.png" alt></p>
+<h3 id="SparkSQL_&amp;_thrift">SparkSQL &amp; thrift</h3><p>直接用bin/spark-sql启动:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0653 ~]$ jps -lm</span><br><span class="line">35146 org.apache.spark.deploy.SparkSubmit --master spark://192.168.6.52:7078 --class org.apache.spark.sql.hive.thriftserver.SparkSQLCLIDriver spark-internal</span><br><span class="line">35668 sun.tools.jps.Jps -lm</span><br><span class="line">[qihuang.zheng@dp0653 ~]$ ps -ef | grep SparkSQL</span><br><span class="line">506      35146 35011 26 09:16 pts/15   00:00:19 /usr/java/jdk1.7.0_51/bin/java ... org.apache.spark.deploy.SparkSubmit --master spark://192.168.6.52:7078 --class org.apache.spark.sql.hive.thriftserver.SparkSQLCLIDriver spark-internal</span><br></pre></td></tr></table></figure>
+<p>hive在53上, 查看thrift服务:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0653 ~]$ ps -ef | grep thrift</span><br><span class="line">admin    28541     1  0 Aug19 ?        00:02:47 /usr/java/jdk1.7.0_51/bin/java ... org.apache.hadoop.util.RunJar /usr/install/apache-hive-1.2.0-bin/lib/hive-service-1.2.0.jar org.apache.hive.service.server.HiveServer2 --hiveconf hive.metastore.uris=thrift://192.168.6.53:9083 --hiveconf hive.metastore.local=false --hiveconf hive.server2.thrift.bind.host=192.168.6.53 --hiveconf hive.server2.thrift.port=10001</span><br></pre></td></tr></table></figure>
+<p>启动spark的thrift server:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo sbin/start-thriftserver.sh --master spark://192.168.6.52:7078</span><br><span class="line">starting org.apache.spark.sql.hive.thriftserver.HiveThriftServer2, logging to /usr/install/spark-1.4.1-bin-hadoop2.6/sbin/../logs/spark-qihuang.zheng-org.apache.spark.sql.hive.thriftserver.HiveThriftServer2-1-dp0652.out</span><br></pre></td></tr></table></figure>
+<p>在启动thrift-server的时候, 指定master, 会在master的web ui上看到app. 但是启动完成后, app就结束了.<br>根据日志信息, 由于没有正确指定端口,导致无法连接   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">15/08/21 09:48:39 INFO hive.metastore: Trying to connect to metastore with URI thrift://192.168.6.53:9083</span><br><span class="line">15/08/21 09:48:39 INFO hive.metastore: Connected to metastore.</span><br><span class="line">15/08/21 09:48:39 INFO service.AbstractService: Service:ThriftBinaryCLIService is started.</span><br><span class="line">15/08/21 09:48:39 INFO service.AbstractService: Service:HiveServer2 is started.</span><br><span class="line">15/08/21 09:48:39 INFO thriftserver.HiveThriftServer2: HiveThriftServer2 started</span><br><span class="line">15/08/21 09:48:39 WARN conf.HiveConf: DEPRECATED: hive.metastore.ds.retry.* no longer has any effect.  Use hive.hmshandler.retry.* instead</span><br><span class="line">15/08/21 09:48:39 ERROR thrift.ThriftCLIService: Error:</span><br><span class="line">org.apache.thrift.transport.TTransportException: Could not create ServerSocket on address /192.168.47.213:10000.</span><br><span class="line">        at org.apache.thrift.transport.TServerSocket.&lt;init&gt;(TServerSocket.java:93)</span><br><span class="line">        at org.apache.thrift.transport.TServerSocket.&lt;init&gt;(TServerSocket.java:79)</span><br><span class="line">        at org.apache.hive.service.auth.HiveAuthFactory.getServerSocket(HiveAuthFactory.java:236)</span><br><span class="line">        at org.apache.hive.service.cli.thrift.ThriftBinaryCLIService.run(ThriftBinaryCLIService.java:69)</span><br><span class="line">        at java.lang.Thread.run(Thread.java:744)</span><br></pre></td></tr></table></figure>
+<p>指定hive的端口:   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo sbin/start-thriftserver.sh \</span><br><span class="line">  --hiveconf hive.server2.thrift.port=10001 \</span><br><span class="line">  --hiveconf hive.server2.thrift.bind.host=192.168.6.53 \</span><br><span class="line">  --master spark://192.168.6.52:7078</span><br></pre></td></tr></table></figure>
+<p>查看thrift进程:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 spark-1.4.1-bin-hadoop2.6]$ ps -ef | grep thrift</span><br><span class="line">root     24997     1 99 09:55 pts/0    00:00:12 /usr/java/jdk1.7.0_51/bin/java .. org.apache.spark.deploy.SparkSubmit --master spark://192.168.6.52:7078 --class org.apache.spark.sql.hive.thriftserver.HiveThriftServer2 spark-internal --hiveconf hive.server2.thrift.port=10001 --hiveconf hive.server2.thrift.bind.host=192.168.6.53</span><br></pre></td></tr></table></figure>
+<p>但是日志还是报错:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">15/08/21 09:55:42 ERROR thrift.ThriftCLIService: Error:</span><br><span class="line">org.apache.thrift.transport.TTransportException: Could not create ServerSocket on address /192.168.6.53:10001.</span><br></pre></td></tr></table></figure>
+<p>过了几秒,再次查看thrift进程, 找不到HiveThriftServer2了!</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">qihuang.zheng@dp0652 spark-1.4.1-bin-hadoop2.6]$ bin/beeline -u jdbc:hive2://192.168.6.53:10001</span><br><span class="line">scan complete in 3ms</span><br><span class="line">Connecting to jdbc:hive2://192.168.6.53:10001</span><br><span class="line">Connected to: Apache Hive (version 1.2.0)</span><br><span class="line">Driver: Spark Project Core (version 1.4.1)</span><br><span class="line">Transaction isolation: TRANSACTION_REPEATABLE_READ</span><br><span class="line">Beeline version 1.4.1 by Apache Hive</span><br><span class="line">0: jdbc:hive2://192.168.6.53:10001&gt; show tables;</span><br></pre></td></tr></table></figure>
+<p><a href="http://lxw1234.com/archives/2015/12/593.htm" target="_blank" rel="noopener">http://lxw1234.com/archives/2015/12/593.htm</a></p>
+<h3 id="Spark-SQL配置参数">Spark-SQL配置参数</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">/usr/install/spark-1.4.1-bin-hadoop2.4/bin/spark-shell --conf spark.driver.maxResultSize=2g --conf spark.executor.memory=512m                              </span><br><span class="line"></span><br><span class="line">/usr/install/spark-1.4.1-bin-hadoop2.4/bin/spark-shell --driver-java-options -Dspark.driver.maxResultSize=2g</span><br><span class="line">scala&gt; sc.getConf.get(&quot;spark.driver.maxResultSize&quot;)</span><br><span class="line">res1: String = 2g</span><br><span class="line"></span><br><span class="line">/usr/install/spark-1.4.1-bin-hadoop2.4/bin/spark-sql --driver-java-options -Dspark.driver.maxResultSize=2g</span><br><span class="line">/usr/install/spark-1.4.1-bin-hadoop2.4/bin/spark-sql --conf spark.driver.maxResultSize=2g</span><br><span class="line"></span><br><span class="line">/usr/install/spark-1.4.1-bin-hadoop2.4/bin/spark-sql -h</span><br><span class="line">Usage: ./bin/spark-sql [options] [cli option]</span><br><span class="line">  --driver-java-options       Extra Java options to pass to the driver.</span><br><span class="line">  --conf PROP=VALUE           Arbitrary Spark configuration property.</span><br><span class="line">  --properties-file FILE      Path to a file from which to load extra properties. If not</span><br><span class="line">                              specified, this will look for conf/spark-defaults.conf.</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/06/20/2015-06-20-Apache-Spark/">Apache Spark入门</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年06月20日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/06/20/2015-06-20-Apache-Spark/" title="Apache Spark入门">http://github.com/zqhxuyuan/2015/06/20/2015-06-20-Apache-Spark/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/06/20/2015-06-20-Apache-Spark/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/07/06/2015-07-06-Spark-Streamming/">
+        Spark Stramming入门
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/05/01/hello-world/">
+        Hello World
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Spark本地模式快速（十秒钟）入门"><span class="toc-number">1.</span> <span class="toc-text">Spark本地模式快速（十秒钟）入门</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Jobs_&_Stages"><span class="toc-number">1.1.</span> <span class="toc-text">Jobs &amp; Stages</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Spark_Standalone集群安装（30分钟~1小时）"><span class="toc-number">2.</span> <span class="toc-text">Spark Standalone集群安装（30分钟~1小时）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#问题"><span class="toc-number">2.1.</span> <span class="toc-text">问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Spark_Standalone_HA（30分钟）"><span class="toc-number">3.</span> <span class="toc-text">Spark Standalone HA（30分钟）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Spark_SQL"><span class="toc-number">4.</span> <span class="toc-text">Spark SQL</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Hive_on_Spark"><span class="toc-number">4.1.</span> <span class="toc-text">Hive on Spark</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SparkSQL_&_thrift"><span class="toc-number">4.2.</span> <span class="toc-text">SparkSQL &amp; thrift</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Spark-SQL配置参数"><span class="toc-number">4.3.</span> <span class="toc-text">Spark-SQL配置参数</span></a></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/06/20/2015-06-20-Apache-Spark/" data-title="Apache Spark入门" data-url="http://github.com/zqhxuyuan/2015/06/20/2015-06-20-Apache-Spark/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/07/06/2015-07-06-Spark-Streamming/" title="上一篇: Spark Stramming入门">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/05/01/hello-world/" title="下一篇: Hello World">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

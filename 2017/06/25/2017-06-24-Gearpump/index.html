@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Deep into Apache Gearpump | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Deep into Apache Gearpump">
+<meta name="keywords" content="流处理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Deep into Apache Gearpump">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2017/06/25/2017-06-24-Gearpump/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Deep into Apache Gearpump">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://gearpump.apache.org/releases/latest/img/actor_hierarchy.png">
+<meta property="og:image" content="http://gearpump.apache.org/releases/latest/img/submit.png">
+<meta property="og:image" content="http://gearpump.apache.org/releases/latest/img/submit2.png">
+<meta property="og:image" content="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2012/08/yarnflow.png">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20170624165428321">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20170624205039225">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20170624212741793">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20170624220921664">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20170624224944769">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.257Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Deep into Apache Gearpump">
+<meta name="twitter:description" content="Deep into Apache Gearpump">
+<meta name="twitter:image" content="http://gearpump.apache.org/releases/latest/img/actor_hierarchy.png">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2017-06-24-Gearpump" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2017/06/25/2017-06-24-Gearpump/" class="article-date">
+  	<time datetime="2017-06-24T16:00:00.000Z" itemprop="datePublished">2017-06-25</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Deep into Apache Gearpump
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/bigdata/">bigdata</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/流处理/">流处理</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Deep into Apache Gearpump<br><a id="more"></a></p>
+<p><strong>Prefix</strong>: I’ve heard Gearpump nearly one or two years ago, but never take a deep look inside. Until recently I’m almost done writing my chinese book about kafka internal implimentation, and decide to add some kafka relation opensouce system to my book’s appendix, such as spark streaming,storm,flink, and gearpump! So I finaly have a chance to deep into Gearpump.</p>
+<h2 id="Introduce">Introduce</h2><p>According to offical documentation: “Gearpump is a 100% Akka based platform. We model big data streaming within the Akka actor hierarchy”. Below It’s Gearpump Actor Hierarchy architecture. PS: If you don’t know Actor right now, It’s fine, just think that’s another RPC layer or message transformer.</p>
+<p><img src="http://gearpump.apache.org/releases/latest/img/actor_hierarchy.png" alt="geararch"></p>
+<p>Everything in the diagram is an actor; they fall into two categories, Cluster Actors and Application Actors.</p>
+<p><strong>Cluster Actors</strong></p>
+<p><em>Worker</em>: Maps to a physical worker machine. It is responsible for <span style="border-bottom:1px dashed red;">managing resources</span> and report metrics on that machine.</p>
+<p><em>Master</em>: Heart of the cluster, which <span style="border-bottom:1px dashed red;">manages workers, resources, and applications</span>. The main function is delegated to three child actors, App Manager, Worker Manager, and Resource Scheduler.</p>
+<p><strong>Application Actors</strong></p>
+<p><em>AppMaster</em>: Responsible to <span style="border-bottom:1px dashed red;">schedule the tasks to workers</span> and manage the state of the application. Different applications have different AppMaster instances and are isolated.</p>
+<p><em>Executor</em>: Child of AppMaster, represents a JVM process. Its job is to <span style="border-bottom:1px dashed red;">manage the life cycle of tasks</span> and recover the tasks in case of failure.</p>
+<p><em>Task</em>: Child of Executor, does the real job. Every task actor has a global unique address. One task actor can send data to any other task actors. This gives us great flexibility of how the computation DAG is distributed.</p>
+<blockquote>
+<p>All actors in the graph are weaved together with actor supervision, and actor watching and every error is handled properly via supervisors. In a master, a risky job is isolated and delegated to child actors, so it’s more robust. In the application, an extra intermediate layer “Executor” is created so that we can do fine-grained and fast recovery in case of task failure. A master watches the lifecycle of AppMaster and worker to handle the failures, but the life cycle of Worker and AppMaster are not bound to a Master Actor by supervision, so that Master node can fail independently. Several Master Actors form an Akka cluster, the Master state is exchanged using the Gossip protocol in a conflict-free consistent way so that there is no single point of failure. With this hierarchy design, we are able to achieve high availability.</p>
+</blockquote>
+<p>Next It’s a good entrance to knowing some <a href="http://gearpump.apache.org/releases/latest/introduction/basic-concepts/index.html" target="_blank" rel="noopener">basic concepts</a>. It’s very necessary, you should first take a detail/serious look at if you want to know how gearpump works.</p>
+<p><strong>Master &amp; Worker</strong></p>
+<blockquote>
+<p>Gearpump follow <strong>master slave architecture</strong>. Every cluster contains one or more Master node, and several worker nodes. Worker node is responsible to manage local resources on single machine, and Master node is responsible to manage global resources of the whole cluster.</p>
+</blockquote>
+<p>If you have already know hadoop/spark such bigdata system, you should familiar those terminology. Here is the first comparison about gearpump and other system.</p>
+<table>
+<thead>
+<tr>
+<th>bigdata system</th>
+<th>Master</th>
+<th>Slave</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hadoop HDFS</td>
+<td>NameNode</td>
+<td>DataNode</td>
+</tr>
+<tr>
+<td>Hadoop YARN</td>
+<td>ReourceManager</td>
+<td>NodeManager</td>
+</tr>
+<tr>
+<td>Spark</td>
+<td>ClusterManagement</td>
+<td>Worker</td>
+</tr>
+<tr>
+<td>Storm</td>
+<td>Nimbus</td>
+<td>Supervisor</td>
+</tr>
+<tr>
+<td>Gearpump</td>
+<td>Master</td>
+<td>Worker</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Application &amp; AppMaster &amp; Executor</strong></p>
+<blockquote>
+<p><strong>Application</strong> is what we want to parallel and run on the cluster. There are different application types, for example MapReduce application and streaming application are different application types. Gearpump natively supports Streaming Application types, it also contains several templates to help user to create custom application types, like distributedShell.</p>
+</blockquote>
+<blockquote>
+<p>In runtime, every application instance is represented by a single <strong>AppMaster</strong> and a list of <strong>Executors</strong>. AppMaster represents the command and controls center of the Application instance. It communicates with user, master, worker, and executor to get the job done. Each executor is a parallel unit for distributed application. Typically AppMaster and Executor will be started as JVM processes on worker nodes.</p>
+</blockquote>
+<p>Now we have talking all important components in gearpump. Notice here we did’t mentioned Task as appeared in previous actor hierarchy. Also notice that Application is not an actor but an Java main class. Next take a look at Application Submission Flow in gearpump.</p>
+<blockquote>
+<p>When user submits an application to Master, Master will first find an available worker to start the AppMaster. After AppMaster is started, AppMaster will request Master for more resources (worker) to start executors. The Executor now is only an empty container. After the executors are started, the AppMaster will then distribute real computation tasks to the executor and run them in parallel way.</p>
+</blockquote>
+<blockquote>
+<p>To submit an application, a Gearpump client specifies a computation defined within a DAG and submits this to an active master. The SubmitApplication message is sent to the Master who then forwards this to an AppManager. </p>
+</blockquote>
+<p><img src="http://gearpump.apache.org/releases/latest/img/submit.png" alt="submit app"> </p>
+<blockquote>
+<p>The AppManager locates an available worker and launches an AppMaster in a sub-process JVM of the worker. The AppMaster will then negotiate with the Master for Resource allocation in order to distribute the DAG as defined within the Application. The allocated workers will then launch Executors (new JVMs).</p>
+</blockquote>
+<p><img src="http://gearpump.apache.org/releases/latest/img/submit2.png" alt="launch"></p>
+<p>Here I summary basic steps of submit application. notice the step number below are’t corresponding to the official pictures above.</p>
+<ol>
+<li>User(client) submits an streaming application to gearpump Master;</li>
+<li>Master forward <code>SubmitApplication</code> request to AppManager;</li>
+<li>Master will first find an available worker to start the AppMaster;</li>
+<li>AppMaster started(as Executor) on one of worker which master specified, until now, AppManager on Master can send  <code>SubmitApplicationResult</code> to client;</li>
+<li>AppMaster send <code>RequestResource</code> to master, the purpose of this step is ask resources to run/launch Tasks which doing real job. After all, AppMaster is not responsible to running job, but instead let Tasks doing the job. Notice the lifecycle of both AppMaster and Tasks all resides in Executors. So If you want to start AppMaster or Task, you first must start Executor, then let Executor start AppMaster and Task;</li>
+<li>Once AppMaster receive <code>ResouceAllocated</code> response, it’ll send <code>LaunchExecutor</code> to workers which Master pointing out where to go. For ex, the ResouceAllocated response says by Master to AppMaster: you can run executors on workers #1 and #2. Then AppMaster will send LaunchExecutor request to this two workers;</li>
+<li>The Workers receive LaunchExecutor request from AppMaster, it then spawn an Executor as a java process. The reason why spawn a new process here is that the Executor and Worker thread should separate, which means the working process of Executor and Worker shouldn’t affect each other;</li>
+<li>Just like Worker register to Master for reporting resources, the Executor also register to AppMaster by sending <code>RegisterExecutor</code> request. If someone regist to other-one, that means someone wants to be managed/controlled by other-one. for example, students regist to school, company regist to Mainland China, employee regist to company and so on;</li>
+<li>The AppMaster receive <code>RegisterExecutor</code> request from Executor on Worker, it then ask Executor to start Task;</li>
+<li>As AppMaster may getting more than one resouce at step6, and each Executor all register to AppMaster, so AppMaster can start multi task on this registerd Executor;</li>
+<li>Each Task reside in Executor has DAG information defined within Application, so every Task can doing real job.</li>
+</ol>
+<p>The workflow above was extraordinary like yarn application below. I take the picture and description from <a href="https://hortonworks.com/blog/apache-hadoop-yarn-concepts-and-applications/" target="_blank" rel="noopener">this excellent hortonworks blog</a>.</p>
+<ol>
+<li>A client program <em>submits</em> the application, including the necessary specifications to launch the application-specific <strong>ApplicationMaster</strong> itself.</li>
+<li>The <strong>ResourceManager</strong> assumes the responsibility to negotiate a specified container in which to <em>start</em> the ApplicationMaster and then <em>launches</em> the ApplicationMaster.</li>
+<li>The ApplicationMaster, on boot-up, <em>registers</em> with the ResourceManager – the registration allows the client program to query the ResourceManager for details, which allow it to  directly communicate with its own ApplicationMaster.</li>
+<li>During normal operation the ApplicationMaster negotiates appropriate resource containers via the <em>resource-request </em>protocol.</li>
+<li>On successful <em>container allocations</em>, the ApplicationMaster <em>launches</em> the container by providing the container launch specification to the NodeManager. The launch specification, typically, includes the necessary information to allow the container to communicate with the ApplicationMaster itself.</li>
+<li>The application code executing within the container then provides necessary information (progress, status etc.) to its ApplicationMaster via an application-specific protocol.</li>
+<li>During the application execution, the client that submitted the program communicates directly with the ApplicationMaster to get status, progress updates etc. via an application-specific protocol.</li>
+<li>Once the application is complete, and all necessary work has been finished, the ApplicationMaster deregisters with the ResourceManager and shuts down, allowing its own container to be repurposed.</li>
+</ol>
+<p><img src="https://2xbbhjxc6wk3v21p62t8n4d4-wpengine.netdna-ssl.com/wp-content/uploads/2012/08/yarnflow.png" alt="yarn"></p>
+<p>The picture above start two client application to yarn cluster, the ApplicationMaster reside on node2 of red one start three containers on node1 and node3, the ApplicationMaster reside on node1 of blue one only start one container. </p>
+<p>In yarn, ResouceManager take responsible to launch ApplicationManager on one of container, and launching Tasks on containers is the responsibility of ApplicationManager. But as you know, the ApplicationManager did’t know cluster resources, so he ask ResouceManager to give him the information of where to start tasks. Now we summary some conclusions:</p>
+<ol>
+<li>ResouceManager launch ApplicationManager on one of NodeManager.</li>
+<li>ApplicationManager launch Tasks on multi NodeManagers.</li>
+<li>NodeManagers report resouce to ResouceManager.</li>
+<li>Containers report task execution progress to ApplicationManager.  </li>
+<li>ResouceManager manager ApplicationManager, and ApplicationManager manager tasks. If all tasks monitored by ApplicationManager was finished, then Application registered to ReousceManager was completed.</li>
+</ol>
+<p>Step into gearpump, there are similiarity idea inspired from yarn. We could take yarn’s container as gearpump’s Executor, and yarn’s NodeManager as gearpump’s Worker. Because Containers reside in NodeManager at yarn world, and Executors reside in Worker at gearpump world.</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20170624165428321" alt="yarn-gp"></p>
+<p>We could also consider yarn’s ResouceManager as gearpump’s AppManager. Note that AppManager is different from AppMaster, which the former is at Master side, and the latter is at Worker side.</p>
+<p>The Master in Gearpump have three main components: AppManager,Scheduler,Worker Manager. In reality, there are non WorkerManager class around gearpump source code,but Master indeed has a map which mapping Worker ActorRef to WorkerId. </p>
+<p>After oveview gearpump architecture, Let’s begin explore gearpump inside now.</p>
+<h2 id="Part-1:_Application">Part-1: Application</h2><p>First given a WordCount example, We sumbit an StreamApplication through ClientContext. Inside the application() method, we create three <code>Processor</code> and connect by <code>~</code> to construct a DAG graph.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">WordCount</span> <span class="keyword">extends</span> <span class="title">AkkaApp</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">application</span></span>(config: <span class="type">ParseResult</span>, system: <span class="type">ActorSystem</span>): </span><br><span class="line">      <span class="type">StreamApplication</span> = &#123;</span><br><span class="line">    <span class="keyword">implicit</span> <span class="keyword">val</span> actorSystem = system</span><br><span class="line">    <span class="keyword">val</span> split = <span class="keyword">new</span> <span class="type">Split</span></span><br><span class="line">    <span class="keyword">val</span> sourceProcessor = <span class="type">DataSourceProcessor</span>(split, <span class="number">2</span>, <span class="string">"Split"</span>)</span><br><span class="line">    <span class="keyword">val</span> sum = <span class="type">Processor</span>[<span class="type">Sum</span>](<span class="number">2</span>)</span><br><span class="line">    <span class="keyword">val</span> computation = sourceProcessor ~ <span class="type">HashPartitioner</span> ~&gt; sum</span><br><span class="line">    <span class="keyword">val</span> app = <span class="type">StreamApplication</span>(<span class="string">"wordCount"</span>, <span class="type">Graph</span>(computation))</span><br><span class="line">    app</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">main</span></span>(akkaConf: <span class="type">Config</span>, args: <span class="type">Array</span>[<span class="type">String</span>]): <span class="type">Unit</span> = &#123;</span><br><span class="line">    <span class="keyword">val</span> context: <span class="type">ClientContext</span> = <span class="type">ClientContext</span>(akkaConf)</span><br><span class="line">    <span class="keyword">val</span> app = application(config, context.system)</span><br><span class="line">    context.submit(app)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>StreamApplication is one of gearpump supported application type, there’re other applications such as MapReduce could run in gearpump. Each Application type has special appMaster class, StreamApplication’s appMaster is AppMaster. There’re some other ApplicationMaster actor implementation embeded: DistShellAppMaster,DistServiceAppMaster,and AppMaster.</p>
+<p>Note Application is a scala App, but ApplicationMaster is an Actor. So what’s different between an App and and Actor? Well, App normaly has a main method doing what you want, but actor doing much more complicate thing.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Application</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">name</span></span>: <span class="type">String</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">userConfig</span></span>(<span class="keyword">implicit</span> system: <span class="type">ActorSystem</span>): <span class="type">UserConfig</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">appMaster</span></span>: <span class="type">Class</span>[_ &lt;: <span class="type">ApplicationMaster</span>]</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">ApplicationMaster</span> <span class="keyword">extends</span> <span class="title">Actor</span></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">class</span> <span class="title">StreamApplication</span>(<span class="params"></span>) <span class="keyword">extends</span> <span class="title">Application</span> </span>&#123;</span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">appMaster</span></span>: <span class="type">Class</span>[_ &lt;: <span class="type">ApplicationMaster</span>] = classOf[<span class="type">AppMaster</span>] </span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AppMaster</span>(<span class="params">appContext: <span class="type">AppMasterContext</span>, app: <span class="type">AppDescription</span></span>) </span></span><br><span class="line"><span class="class">  <span class="keyword">extends</span> <span class="title">ApplicationMaster</span> </span>&#123;...&#125;</span><br></pre></td></tr></table></figure>
+<p>ClientContext is a user facing util to submit/manage an application. The AppDescription describe application metadata such as appMaster name(here is AppMaster).</p>
+<p>In the Akka world, Actor is the king. Client send SubmitApplication request to Master Actor, and expect get SubmitApplicationResult response from Master. Messages are sent to an Actor through one of the following methods.</p>
+<ul>
+<li><code>!</code> means “fire-and-forget”, e.g. send a message asynchronously and return immediately. Also known as tell.</li>
+<li><code>?</code> sends a message asynchronously and returns a Future representing a possible reply. Also known as ask. That’s the way client submit application doing here.</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ClientContext</span>(<span class="params">config: <span class="type">Config</span>, sys: <span class="type">ActorSystem</span>, _master: <span class="type">ActorRef</span></span>) </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">submit</span></span>(app: <span class="type">Application</span>, jar: <span class="type">String</span>, executorNum: <span class="type">Int</span>)= &#123;</span><br><span class="line">    <span class="keyword">val</span> appName = ...</span><br><span class="line">    <span class="keyword">val</span> submissionConfig = ...</span><br><span class="line">    <span class="keyword">val</span> appDescription = <span class="type">AppDescription</span>(appName,app.appMaster.getName,...)</span><br><span class="line">    <span class="keyword">val</span> appJar = <span class="type">Option</span>(jar).map(loadFile)</span><br><span class="line">    submitApplication(<span class="type">SubmitApplication</span>(appDescription, appJar))</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">submitApplication</span></span>(submitApplication: <span class="type">SubmitApplication</span>)=&#123;</span><br><span class="line">    <span class="keyword">val</span> result = <span class="type">ActorUtil</span>.askActor[<span class="type">SubmitApplicationResult</span>](</span><br><span class="line">        master, submitApplication, masterClientTimeout)</span><br><span class="line">    <span class="keyword">val</span> application = result.appId <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="type">Success</span>(appId) =&gt;</span><br><span class="line">        <span class="type">Console</span>.println(<span class="string">s"Submit app succeed. The app id is <span class="subst">$appId</span>"</span>)</span><br><span class="line">        <span class="keyword">new</span> <span class="type">RunningApplication</span>(appId, master, masterClientTimeout)</span><br><span class="line">      <span class="keyword">case</span> <span class="type">Failure</span>(ex) =&gt; <span class="keyword">throw</span> ex</span><br><span class="line">    &#125;</span><br><span class="line">    application</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Now Let’s see how Master deal with SubmitApplication. Before this, you should know that client only submit application when Master has started. Also note that when start Master, we also start some Workers to form a gearpump cluster. Only then the cluster is stabled, client then can submit application. We can see that when startup Master, in preStart() method, Master created an AppManager and Scheduler by invoking <code>context.actorOf(...)</code>. That means before client submit application, AppManager and Scheduler already exists in Master, and they both preparing to work.</p>
+<p>We’re also seeing a <code>receiveHandler()</code> method return Receive object, and was invoked by <code>waitForNextWorkerId()</code> method. What <code>context.become()</code> and <code>orElse</code> meaning? well, normaly you define one receive method, but here you have seen there’re multi receive method, so become() method of ActorContext is used for switchover between different receive method.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[cluster] <span class="class"><span class="keyword">class</span> <span class="title">Master</span> <span class="keyword">extends</span> <span class="title">Actor</span> <span class="keyword">with</span> <span class="title">Stash</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> kvService = context.actorOf(<span class="type">Props</span>(<span class="keyword">new</span> <span class="type">InMemoryKVService</span>()))</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> appManager: <span class="type">ActorRef</span> = <span class="literal">null</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> scheduler: <span class="type">ActorRef</span> = <span class="literal">null</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> workers = <span class="keyword">new</span> immutable.<span class="type">HashMap</span>[<span class="type">ActorRef</span>, <span class="type">WorkerId</span>]</span><br><span class="line"></span><br><span class="line">  <span class="comment">// when start up Master, send GetKV to kvService immediatery</span></span><br><span class="line">  kvService ! <span class="type">GetKV</span>(<span class="type">MASTER_GROUP</span>, <span class="type">WORKER_ID</span>) </span><br><span class="line">  context.become(waitForNextWorkerId) <span class="comment">// wait for getting result </span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">waitForNextWorkerId</span></span>: <span class="type">Receive</span> = &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">GetKVSuccess</span>(_, result) =&gt; <span class="comment">// receive GetKV response</span></span><br><span class="line">      context.become(receiveHandler) <span class="comment">// switchover to receiveHandler</span></span><br><span class="line">      unstashAll()</span><br><span class="line">    <span class="keyword">case</span> msg =&gt; stash() <span class="comment">// why do we stash here?</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">receiveHandler</span></span>: <span class="type">Receive</span> = workerMsgHandler orElse</span><br><span class="line">    appMasterMsgHandler orElse <span class="comment">// AppMaster to Master</span></span><br><span class="line">    onMasterListChange orElse <span class="comment">// Master change</span></span><br><span class="line">    clientMsgHandler orElse <span class="comment">// Client to Master. you'll see submit app here</span></span><br><span class="line">    kvServiceMsgHandler orElse <span class="type">ActorUtil</span>.defaultMsgHandler(self)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">preStart</span></span>(): <span class="type">Unit</span> = &#123;</span><br><span class="line">    appManager = context.actorOf(</span><br><span class="line">        <span class="type">Props</span>(<span class="keyword">new</span> <span class="type">AppManager</span>(kvService, <span class="type">AppMasterLauncher</span>)),</span><br><span class="line">        classOf[<span class="type">AppManager</span>].getSimpleName)</span><br><span class="line">    scheduler = context.actorOf(<span class="type">Props</span>(schedulerClass))</span><br><span class="line">    context.system.eventStream.subscribe(self,classOf[<span class="type">DisassociatedEvent</span>])</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Now you have overview the main function in Master, lets see how clientMsgHandler receive method response to client’s submit application request. I have omit other unimportance request only left submit and restart application. The Master delegate/forward reqeust to AppManager.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">def clientMsgHandler: Receive = &#123;</span><br><span class="line">  case app: SubmitApplication =&gt; appManager.forward(app)</span><br><span class="line">  case app: RestartApplication =&gt; appManager.forward(app)</span><br><span class="line">  case register: RegisterAppResultListener =&gt; appManager forward register</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>AppManager is dedicated child of Master to manager all applications. The AppManager behaviour similar as Master.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[cluster] <span class="class"><span class="keyword">class</span> <span class="title">AppManager</span>(<span class="params"></span></span></span><br><span class="line"><span class="class"><span class="params">    kvService: <span class="type">ActorRef</span>, launcher: <span class="type">AppMasterLauncherFactory</span></span>) </span></span><br><span class="line"><span class="class">    <span class="keyword">extends</span> <span class="title">Actor</span> <span class="keyword">with</span> <span class="title">Stash</span> <span class="keyword">with</span> <span class="title">TimeOutScheduler</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  kvService ! <span class="type">GetKV</span>(<span class="type">MASTER_GROUP</span>, <span class="type">MASTER_STATE</span>)</span><br><span class="line">  context.become(waitForMasterState)</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">waitForMasterState</span></span>: <span class="type">Receive</span> = &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">GetKVSuccess</span>(_, result) =&gt;</span><br><span class="line">      context.become(receiveHandler)</span><br><span class="line">      unstashAll()</span><br><span class="line">    <span class="keyword">case</span> msg =&gt; stash()</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">receiveHandler</span></span>: <span class="type">Receive</span> = &#123;</span><br><span class="line">    clientMsgHandler orElse <span class="comment">// Client to AppManager</span></span><br><span class="line">      appMasterMessage orElse <span class="comment">// AppMaster to AppManager</span></span><br><span class="line">      selfMsgHandler orElse</span><br><span class="line">      workerMessage orElse <span class="comment">// Worker to AppManager</span></span><br><span class="line">      appDataStoreService orElse terminationWatch</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">clientMsgHandler</span></span>: <span class="type">Receive</span> = &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">SubmitApplication</span>(app, jar, username) =&gt;</span><br><span class="line">      <span class="keyword">val</span> client = sender()</span><br><span class="line">      context.actorOf(launcher.props(</span><br><span class="line">        nextAppId, <span class="number">-1</span>, app, jar, username, context.parent, client))</span><br><span class="line">      <span class="comment">// ommit something like save application metadata to kv store</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Master create AppManager by invoke <code>context.actorOf(Props(...))</code>, here AppManager create AppMasterLauncher Actor by <code>context.actorOf(launcher.props(..))</code>. <strong><code>AppMasterLauncher</code> is a child Actor of <code>AppManager</code>, it is responsible to launch the <code>AppMaster</code> on the cluster.</strong> </p>
+<p>When AppManager receive SubmitApplication from client, it create AppMasterLauncher, and send RequestResource to master then wait for ResourceAllocation. </p>
+<p>When AppMasterLauncher receive ResourceAllocated response from master, it will Try to launch a executor for AppMaster on worker specified by ResourceAllocated response.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AppMasterLauncher</span>(<span class="params">...,master: <span class="type">ActorRef</span>, client: <span class="type">ActorRef</span></span>) <span class="keyword">extends</span> <span class="title">Actor</span> </span>&#123;</span><br><span class="line">  <span class="type">LOG</span>.info(<span class="string">s"Ask Master resource to start AppMaster <span class="subst">$appId</span>..."</span>)</span><br><span class="line">  master ! <span class="type">RequestResource</span>(appId, <span class="type">ResourceRequest</span>(<span class="type">Resource</span>(<span class="number">1</span>))</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">receive</span></span>: <span class="type">Receive</span> = waitForResourceAllocation</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">waitForResourceAllocation</span></span>: <span class="type">Receive</span> = &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">ResourceAllocated</span>(allocations) =&gt;</span><br><span class="line">      <span class="keyword">val</span> <span class="type">ResourceAllocation</span>(resource, worker, workerId) = allocations(<span class="number">0</span>)</span><br><span class="line">      <span class="keyword">val</span> workerInfo = <span class="type">WorkerInfo</span>(workerId, worker)</span><br><span class="line">      <span class="keyword">val</span> appMasterContext = <span class="type">AppMasterContext</span>(...)</span><br><span class="line">      <span class="comment">// Try to launch a executor for AppMaster on worker for app</span></span><br><span class="line">      <span class="keyword">val</span> name = <span class="type">ActorUtil</span>.actorNameForExecutor(appId, executorId)</span><br><span class="line">      <span class="keyword">val</span> selfPath = <span class="type">ActorUtil</span>.getFullPath(context.system, self.path)</span><br><span class="line"></span><br><span class="line">      <span class="keyword">val</span> executorJVM = <span class="type">ExecutorJVMConfig</span>(</span><br><span class="line">        classOf[<span class="type">ActorSystemBooter</span>].getName, <span class="type">Array</span>(name, selfPath), jar,</span><br><span class="line">        username, appMasterAkkaConfig)</span><br><span class="line"></span><br><span class="line">      worker ! <span class="type">LaunchExecutor</span>(appId, executorId, resource, executorJVM)</span><br><span class="line">      context.become(waitForActorSystemToStart(worker, appMasterContext, resource))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Let’s see how Worker deal with LaunchExecutor reqeust from AppMasterLauncher.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[cluster] <span class="class"><span class="keyword">class</span> <span class="title">Worker</span>(<span class="params">masterProxy: <span class="type">ActorRef</span></span>) <span class="keyword">extends</span> <span class="title">Actor</span></span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">service</span></span>: <span class="type">Receive</span> = appMasterMsgHandler orElse clientMessageHandler </span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">appMasterMsgHandler</span></span>: <span class="type">Receive</span> = &#123;</span><br><span class="line">    <span class="keyword">case</span> launch: <span class="type">LaunchExecutor</span> =&gt;</span><br><span class="line">      <span class="keyword">val</span> executor = context.actorOf(<span class="type">Props</span>(classOf[<span class="type">ExecutorWatcher</span>], </span><br><span class="line">        launch, masterInfo, ioPool, jarStoreClient, executorProcLauncher))</span><br><span class="line">      context.watch(executor)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>The ExecutorWatcher create a java process and the main class <code>ActorSystemBooter</code> is coming from ExecutorJVMConfig which defined in AppMasterLauncher.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExecutorWatcher</span>(<span class="params">launch: <span class="type">LaunchExecutor</span>, </span></span></span><br><span class="line"><span class="class"><span class="params">    procLauncher: <span class="type">ExecutorProcessLauncher</span></span>) <span class="keyword">extends</span> <span class="title">Actor</span> </span>&#123;</span><br><span class="line">  <span class="keyword">val</span> ctx = launch.executorJvmConfig</span><br><span class="line">  procLauncher.createProcess(ctx.mainClass, ctx.arguments)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ExecutorWatcher is an Actor, ActorSystemBooter is an pure scala app. But inside ActorSystemBooter’s main method, it create another actor: Daemon.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ActorSystemBooter</span>(<span class="params">config: <span class="type">Config</span></span>) </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">boot</span></span>(name: <span class="type">String</span>, reportBackActor: <span class="type">String</span>): <span class="type">ActorSystem</span> = &#123;</span><br><span class="line">    system.actorOf(<span class="type">Props</span>(classOf[<span class="type">Daemon</span>], name, reportBackActor), <span class="string">"daemon"</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">ActorSystemBooter</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">apply</span></span>(config: <span class="type">Config</span>): <span class="type">ActorSystemBooter</span> = <span class="keyword">new</span> <span class="type">ActorSystemBooter</span>(config)</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">main</span></span>(args: <span class="type">Array</span>[<span class="type">String</span>]) &#123;</span><br><span class="line">    <span class="keyword">val</span> name = args(<span class="number">0</span>) <span class="comment">// The parameter was passed when construnct </span></span><br><span class="line">    <span class="keyword">val</span> reportBack = args(<span class="number">1</span>) <span class="comment">// ExecutorJVMConfig at AppMasterLauncher</span></span><br><span class="line">    apply(config).boot(name, reportBack)</span><br><span class="line">  &#125; </span><br><span class="line">  <span class="class"><span class="keyword">class</span> <span class="title">Daemon</span>(<span class="params">val name: <span class="type">String</span>, reportBack: <span class="type">String</span></span>) <span class="keyword">extends</span> <span class="title">Actor</span> </span>&#123;</span><br><span class="line">    <span class="keyword">val</span> reportBackActor = context.actorSelection(reportBack)</span><br><span class="line">    reportBackActor ! <span class="type">RegisterActorSystem</span>(</span><br><span class="line">        <span class="type">ActorUtil</span>.getSystemAddress(context.system).toString)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Those many Actor headache me, and the invoke chain nest and nest again. So I draw a picture to help me understand what happend all the way around. To make my picture looks vividly, I use gear to indicate an Actor, you can see except ActorSystemBooter, all others are Actor. The underline character means request. Let me outlines some import steps.</p>
+<ol>
+<li>AppManager create AppMasterLauncher which then send RequestResource to Master</li>
+<li>After AppMasterLauncher receive ResourceAllocated, it send LauncherExecutor request to Worker</li>
+<li>Worker create an ExecutorWatcher and create a java Daemon process which send RegisterActorSystem request back to Master</li>
+</ol>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20170624205039225" alt="9"></p>
+<p>Now the AppMasterLauncher is going to deal with RegisterActorSystem request. If you backward to check AppMasterLauncher, you can find that: after AppMasterLauncher send LaunchExecutor, it is waiting for ActorSystem to start.</p>
+<p>After Daemon actor in Worker send <code>RegisterActorSystem</code> request to <code>AppMasterLauncher</code>, the AppMasterLauncher finally have chance to receive RegisterActorSystem event, first it send <code>ActorSystemRegistered</code> request to Daemon, and then send another request <code>CreateActor</code> to Daemon again.</p>
+<ol>
+<li>Daemon on Worker send RegisterActorSystem request to AppMasterLauncher</li>
+<li>AppMasterLauncher on Master send ActorSystemRegistered to Daemon on Worker</li>
+<li>AppMasterLauncher on Master send CreateActor to Daemon on Worker</li>
+</ol>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AppMasterLauncher</span>(<span class="params">...,master: <span class="type">ActorRef</span>, client: <span class="type">ActorRef</span></span>) <span class="keyword">extends</span> <span class="title">Actor</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">waitForResourceAllocation</span></span>: <span class="type">Receive</span> = &#123;</span><br><span class="line">    worker ! <span class="type">LaunchExecutor</span>(appId, executorId, resource, executorJVM)</span><br><span class="line">    context.become(</span><br><span class="line">        waitForActorSystemToStart(worker, appMasterContext, resource))</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">waitForActorSystemToStart</span></span>(worker: <span class="type">ActorRef</span>, appContext: <span class="type">AppMasterContext</span>,</span><br><span class="line">      resource: <span class="type">Resource</span>): <span class="type">Receive</span> = &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">RegisterActorSystem</span>(systemPath) =&gt;</span><br><span class="line">      sender ! <span class="type">ActorSystemRegistered</span>(worker)</span><br><span class="line">      <span class="comment">// There're many masters construct Master HA in case of fault</span></span><br><span class="line">      <span class="keyword">val</span> masterAddress = systemConfig.getStringList(<span class="type">GEARPUMP_CLUSTER_MASTERS</span>)</span><br><span class="line">        .asScala.map(<span class="type">HostPort</span>(_)).map(<span class="type">ActorUtil</span>.getMasterActorPath)</span><br><span class="line"></span><br><span class="line">      sender ! <span class="type">CreateActor</span>(</span><br><span class="line">        <span class="type">AppMasterRuntimeEnvironment</span>.props(masterAddress, app, appContext))</span><br><span class="line">      context.become(waitForAppMasterToStart(worker, appMasterTimeout))</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">waitForAppMasterToStart</span></span>(worker: <span class="type">ActorRef</span>, cancel: <span class="type">Cancellable</span>)= &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">ActorCreated</span>(appMaster, _) =&gt;</span><br><span class="line">      cancel.cancel()</span><br><span class="line">      sender ! <span class="type">BindLifeCycle</span>(appMaster)</span><br><span class="line">      <span class="type">LOG</span>.info(<span class="string">s"AppMaster is created, mission complete..."</span>)</span><br><span class="line">      replyToClient(<span class="type">SubmitApplicationResult</span>(<span class="type">Success</span>(appId)))</span><br><span class="line">      context.stop(self)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Seems AppMasterLauncher and Daemon are playing ping-pong, and they both back and forth many times. Finally after Daemon create another Actor which we’ll talk about later, it then send ActorCreated back to AppMasterLauncher. </p>
+<ol>
+<li>Daemon on Worker send ActorCreated reqeust to AppMasterLauncher on Master</li>
+<li>AppMasterLauncher send BindLifeCycle request back to Daemon on Worker</li>
+<li>and then send SubmitApplicationResult back to Client</li>
+<li>Daemon on Worker receive BindLifeCycle request from AppMasterLauncher and watch the actor. this actor being watched by Daemon is AppMaster.</li>
+</ol>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Daemon</span>(<span class="params">val name: <span class="type">String</span>, reportBack: <span class="type">String</span></span>) <span class="keyword">extends</span> <span class="title">Actor</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">waitForRegisterResult</span></span>: <span class="type">Receive</span> = &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">ActorSystemRegistered</span>(parent) =&gt;</span><br><span class="line">      timeout.cancel()</span><br><span class="line">      context.watch(parent)</span><br><span class="line">      context.become(waitCommand)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">waitCommand</span></span>: <span class="type">Receive</span> = &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">BindLifeCycle</span>(actor) =&gt;</span><br><span class="line">      <span class="type">LOG</span>.info(<span class="string">s"ActorSystem <span class="subst">$name</span> Binding life cycle with actor: <span class="subst">$actor</span>"</span>)</span><br><span class="line">      context.watch(actor)</span><br><span class="line">    <span class="keyword">case</span> create<span class="meta">@CreateActor</span>(props: <span class="type">Props</span>, name: <span class="type">String</span>) =&gt;</span><br><span class="line">      <span class="keyword">val</span> actor = <span class="type">Try</span>(context.actorOf(props, name)) <span class="comment">// create another actor</span></span><br><span class="line">      actor <span class="keyword">match</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="type">Success</span>(actor) =&gt; sender ! <span class="type">ActorCreated</span>(actor, name)</span><br><span class="line">        <span class="keyword">case</span> <span class="type">Failure</span>(e) =&gt; sender ! <span class="type">CreateActorFailed</span>(props.clazz.getName, e)</span><br><span class="line">      &#125;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">PoisonPill</span> =&gt;</span><br><span class="line">      context.stop(self)</span><br><span class="line">    <span class="keyword">case</span> <span class="type">Terminated</span>(actor) =&gt;</span><br><span class="line">      <span class="type">LOG</span>.info(<span class="string">s"System <span class="subst">$name</span> Watched actor is terminated <span class="subst">$actor</span>"</span>)</span><br><span class="line">      context.stop(self)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20170624212741793" alt="9"></p>
+<p>Daemon create an Actor which defined in RegisterActorSystem on AppMasterLauncher. This Actor is <code>AppMasterRuntimeEnvironment</code>, it’ll create AppMaster. </p>
+<p>We know that create Actor can use <code>context.actorOf(props)</code> method, here the props is passed from AppMasterLauncher to Daemon, but not created on Daemon side. Why do we doing this way? Because only AppMasterLauncher know how to create an AppMaster. Passing the props inside CreateActor is just like passing other request. Now the mainpoint focus transfer to AppMasterRuntimeEnvironment.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">AppMasterRuntimeEnvironment</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">props</span></span>(masters: <span class="type">Iterable</span>[<span class="type">ActorPath</span>], </span><br><span class="line">      app: <span class="type">AppDescription</span>, appContextInput: <span class="type">AppMasterContext</span></span><br><span class="line">      ): <span class="type">Props</span> = &#123;</span><br><span class="line">    <span class="keyword">val</span> master = (appId: <span class="type">AppId</span>, masterProxy: <span class="type">MasterActorRef</span>) =&gt;</span><br><span class="line">      <span class="type">MasterWithExecutorSystemProvider</span>.props(appId, masterProxy)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> appMaster = (appContext: <span class="type">AppMasterContext</span>, app: <span class="type">AppDescription</span>) =&gt;</span><br><span class="line">      <span class="type">LazyStartAppMaster</span>.props(appContext, app)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> masterConnectionKeeper = (master: <span class="type">MasterActorRef</span>, registerAppMaster:</span><br><span class="line">      <span class="type">RegisterAppMaster</span>, listener: <span class="type">ListenerActorRef</span>) =&gt; <span class="type">Props</span>(<span class="keyword">new</span> <span class="type">MasterConnectionKeeper</span>(</span><br><span class="line">        registerAppMaster, master, masterStatusListener = listener))</span><br><span class="line"></span><br><span class="line">    <span class="type">Props</span>(<span class="keyword">new</span> <span class="type">AppMasterRuntimeEnvironment</span>(appContextInput, app, masters,</span><br><span class="line">      master, appMaster, masterConnectionKeeper))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>AppMasterRuntimeEnvironment will create three Actor once it’s created. It serves as runtime environment for AppMaster. When starting an AppMaster, we need to setup the connection to master(an MasterProxy which substitute to Master), and prepare other environments.</p>
+<p>The MasterProxy also extend the function of Master, by providing a scheduler service for Executor System. AppMaster can ask Master for executor system directly. details like requesting resource, contacting worker to start a process, and then starting an executor system is hidden from AppMaster.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[appmaster] <span class="class"><span class="keyword">class</span> <span class="title">AppMasterRuntimeEnvironment</span>(<span class="params"></span></span></span><br><span class="line"><span class="class"><span class="params">    appContextInput: <span class="type">AppMasterContext</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    app: <span class="type">AppDescription</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    masters: <span class="type">Iterable</span>[<span class="type">ActorPath</span>],</span></span></span><br><span class="line"><span class="class"><span class="params">    masterFactory: (<span class="type">AppId</span>, <span class="type">MasterActorRef</span></span>) <span class="title">=&gt;</span> <span class="title">Props</span>,</span></span><br><span class="line"><span class="class">    <span class="title">appMasterFactory</span></span>: (<span class="type">AppMasterContext</span>, <span class="type">AppDescription</span>) =&gt; <span class="type">Props</span>,</span><br><span class="line">    masterConnectionKeeperFactory: (<span class="type">MasterActorRef</span>, <span class="type">RegisterAppMaster</span>, <span class="type">ListenerActorRef</span>) =&gt; <span class="type">Props</span>) <span class="keyword">extends</span> <span class="type">Actor</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> master = context.actorOf(</span><br><span class="line">    masterFactory(appId, context.actorOf(<span class="type">Props</span>(<span class="keyword">new</span> <span class="type">MasterProxy</span>(masters, <span class="number">30.</span>seconds)))))</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> appContext = appContextInput.copy(masterProxy = master)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Create appMaster proxy to receive command and forward to appmaster</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> appMaster = context.actorOf(appMasterFactory(appContext, app))</span><br><span class="line">  context.watch(appMaster)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> registerAppMaster = <span class="type">RegisterAppMaster</span>(</span><br><span class="line">    appId, appMaster, appContext.workerInfo)</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> masterConnectionKeeper = context.actorOf(</span><br><span class="line">    masterConnectionKeeperFactory(master, registerAppMaster, self))</span><br><span class="line">  context.watch(masterConnectionKeeper)</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">receive</span></span>: <span class="type">Receive</span> = &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">MasterConnected</span> =&gt;</span><br><span class="line">      <span class="type">LOG</span>.info(<span class="string">s"Master is connected, start AppMaster <span class="subst">$appId</span>..."</span>)</span><br><span class="line">      appMaster ! <span class="type">StartAppMaster</span></span><br><span class="line">    <span class="keyword">case</span> <span class="type">MasterStopped</span> =&gt;</span><br><span class="line">      <span class="type">LOG</span>.error(<span class="string">s"Master is stopped, stop AppMaster <span class="subst">$appId</span>..."</span>)</span><br><span class="line">      context.stop(self)</span><br><span class="line">    <span class="keyword">case</span> <span class="type">Terminated</span>(actor) =&gt; actor <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> `appMaster` =&gt;</span><br><span class="line">        <span class="type">LOG</span>.error(<span class="string">s"AppMaster <span class="subst">$appId</span> is stopped, shutdown myself"</span>)</span><br><span class="line">        context.stop(self)</span><br><span class="line">      <span class="keyword">case</span> `masterConnectionKeeper` =&gt;</span><br><span class="line">        <span class="type">LOG</span>.error(<span class="string">s"Master connection keeper is stopped, appId: <span class="subst">$appId</span>, shutdown myself"</span>)</span><br><span class="line">        context.stop(self)</span><br><span class="line">      <span class="keyword">case</span> _ =&gt; <span class="comment">// Skip</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>The workflow from creating <code>AppMasterRuntimeEnvironment</code> to create <code>AppMaster</code> is trigged through <code>MasterConnectionKeeper</code> by sending <code>RegisterAppMaster</code> request to <code>AppMasterLauncher</code>. Finally when <code>AppMasterRuntimeEnvironment</code> receive <code>MasterConnected</code> from <code>MasterConnectionKeeper</code>, it send <code>StartAppMaster</code> to <code>AppMaster</code>. happy now! Take long long way bring up to AppMaster.</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20170624220921664" alt="9"></p>
+<p>Note AppMasterRuntimeEnvironment did not send StartAppMaster directory to AppMaster but to LazyStartAppMaster. and Every message send to LazyStartAppMaster will forward to AppMaster. Why do we need a Lazy AppMaster? If you take look at LazyStartAppMaster, you’ll notice that LazyStartAppMaster is not really an AppMaster but it’s responsible to create AppMaster only when it receive StartAppMaster request from AppMasterRuntimeEnvironment. So you wont’t find StartAppMaster on AppMaster.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LazyStartAppMaster</span>(<span class="params">appId: <span class="type">Int</span>, appMasterProps: <span class="type">Props</span></span>) </span></span><br><span class="line"><span class="class">    <span class="keyword">extends</span> <span class="title">Actor</span> <span class="keyword">with</span> <span class="title">Stash</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">receive</span></span>: <span class="type">Receive</span> = <span class="literal">null</span></span><br><span class="line">  context.become(startAppMaster)</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">startAppMaster</span></span>: <span class="type">Receive</span> = &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">StartAppMaster</span> =&gt;</span><br><span class="line">      <span class="keyword">val</span> appMaster = context.actorOf(appMasterProps, <span class="string">"appmaster"</span>)</span><br><span class="line">      context.watch(appMaster)</span><br><span class="line">      context.become(terminationWatch(appMaster) orElse </span><br><span class="line">        appMasterService(appMaster))</span><br><span class="line">      unstashAll()</span><br><span class="line">    <span class="keyword">case</span> _ =&gt; stash()</span><br><span class="line"> &#125;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">appMasterService</span></span>(appMaster: <span class="type">ActorRef</span>): <span class="type">Receive</span> = &#123;</span><br><span class="line">    <span class="keyword">case</span> msg =&gt; appMaster forward msg</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span>[appmaster] <span class="class"><span class="keyword">object</span> <span class="title">LazyStartAppMaster</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">props</span></span>(appContext: <span class="type">AppMasterContext</span>, app: <span class="type">AppDescription</span>): <span class="type">Props</span> = &#123;</span><br><span class="line">    <span class="comment">// the class name of app.appMaster is AppMaster </span></span><br><span class="line">    <span class="comment">// which will create when receive StartAppMaster</span></span><br><span class="line">    <span class="keyword">val</span> appMasterProps = <span class="type">Props</span>(<span class="type">Class</span>.forName(app.appMaster), appContext, app)</span><br><span class="line">    <span class="type">Props</span>(<span class="keyword">new</span> <span class="type">LazyStartAppMaster</span>(appContext.appId, appMasterProps))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>The AppMaster is the head of a streaming application. It contains:</p>
+<ol>
+<li>ExecutorManager to manage all executors.</li>
+<li>TaskManager to manage all tasks,</li>
+<li>ClockService to track the global clock for this streaming application.</li>
+<li>Scheduler to decide which a task should be scheduled to.</li>
+</ol>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AppMaster</span>(<span class="params">appContext: <span class="type">AppMasterContext</span>, app: <span class="type">AppDescription</span></span>) </span></span><br><span class="line"><span class="class">    <span class="keyword">extends</span> <span class="title">ApplicationMaster</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> dagManager = context.actorOf(<span class="type">Props</span>(</span><br><span class="line">    <span class="keyword">new</span> <span class="type">DagManager</span>(appContext.appId, userConfig, store,</span><br><span class="line">    <span class="type">Some</span>(getUpdatedDAG))))</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> taskManager: <span class="type">Option</span>[<span class="type">ActorRef</span>] = <span class="type">None</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> clockService: <span class="type">Option</span>[<span class="type">ActorRef</span>] = <span class="type">None</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> executorManager: <span class="type">ActorRef</span> =</span><br><span class="line">    context.actorOf(<span class="type">ExecutorManager</span>.props(userConfig, appContext, app.clusterConfig, app.name),</span><br><span class="line">      <span class="type">ActorPathUtil</span>.executorManagerActorName)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (dag &lt;- getDAG) &#123;</span><br><span class="line">    clockService = <span class="type">Some</span>(context.actorOf(<span class="type">Props</span>(<span class="keyword">new</span> <span class="type">ClockService</span>(dag, self, store))))</span><br><span class="line">    <span class="keyword">val</span> jarScheduler = <span class="keyword">new</span> <span class="type">JarScheduler</span>(appId, app.name, systemConfig, context)</span><br><span class="line">    taskManager = <span class="type">Some</span>(context.actorOf(<span class="type">Props</span>(<span class="keyword">new</span> <span class="type">TaskManager</span>(appContext.appId, dagManager,</span><br><span class="line">      jarScheduler, executorManager, clockService.get, self, app.name))))</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">receive</span></span>: <span class="type">Receive</span> = &#123;</span><br><span class="line">    taskMessageHandler orElse</span><br><span class="line">      executorMessageHandler orElse</span><br><span class="line">      ready orElse</span><br><span class="line">      recover orElse</span><br><span class="line">      appMasterService orElse</span><br><span class="line">      <span class="type">ActorUtil</span>.defaultMsgHandler(self)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>At now I lost my line of argument, as there’re no request send trigger inside AppMaster, so what’s the entry of AppMaster?</p>
+<p>Keep in mind, once create AppMaster, it will create <code>ExecutorManager</code> and <code>TaskManager</code>. Althrough we did’t see request send directory from AppMaster, we could find if there’re something inside ExecutorManager or TaskManager.</p>
+<p>Suddenly comeup so many Managers make me unprepared. But unlike <code>AppManager</code> reside in Master, <code>ExecutorManager</code> and <code>TaskManager</code> both reside in Worker! </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20170624224944769" alt="9"></p>
+<h2 id="Processor,_OP,_Task">Processor, OP, Task</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Planner</span> </span>&#123;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Converts Dag of Op to Dag of TaskDescription. TaskDescription is part of the low level Graph API.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">plan</span></span>(dag: <span class="type">Graph</span>[<span class="type">Op</span>, <span class="type">OpEdge</span>])</span><br><span class="line">    (<span class="keyword">implicit</span> system: <span class="type">ActorSystem</span>): <span class="type">Graph</span>[<span class="type">Processor</span>[_ &lt;: <span class="type">Task</span>], _ &lt;: <span class="type">Partitioner</span>] = &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> graph = optimize(dag)</span><br><span class="line">    graph.mapEdge &#123; (node1, edge, node2) =&gt;</span><br><span class="line">      edge <span class="keyword">match</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="type">Shuffle</span> =&gt;</span><br><span class="line">          node2 <span class="keyword">match</span> &#123;</span><br><span class="line">            <span class="keyword">case</span> op: <span class="type">GroupByOp</span>[_, _] =&gt;</span><br><span class="line">              <span class="keyword">new</span> <span class="type">GroupByPartitioner</span>(op.groupBy.groupByFn)</span><br><span class="line">            <span class="keyword">case</span> _ =&gt; <span class="keyword">new</span> <span class="type">HashPartitioner</span></span><br><span class="line">          &#125;</span><br><span class="line">        <span class="keyword">case</span> <span class="type">Direct</span> =&gt;</span><br><span class="line">          <span class="keyword">new</span> <span class="type">CoLocationPartitioner</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;.mapVertex(_.getProcessor)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">optimize</span></span>(dag: <span class="type">Graph</span>[<span class="type">Op</span>, <span class="type">OpEdge</span>])</span><br><span class="line">    (<span class="keyword">implicit</span> system: <span class="type">ActorSystem</span>): <span class="type">Graph</span>[<span class="type">Op</span>, <span class="type">OpEdge</span>] = &#123;</span><br><span class="line">    <span class="keyword">val</span> graph = dag.copy</span><br><span class="line">    <span class="keyword">val</span> nodes = graph.topologicalOrderWithCirclesIterator.toList.reverse</span><br><span class="line">    <span class="keyword">for</span> (node &lt;- nodes) &#123;</span><br><span class="line">      <span class="keyword">val</span> outGoingEdges = graph.outgoingEdgesOf(node)</span><br><span class="line">      <span class="keyword">for</span> (edge &lt;- outGoingEdges) &#123;</span><br><span class="line">        merge(graph, edge._1, edge._3)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    graph</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">merge</span></span>(graph: <span class="type">Graph</span>[<span class="type">Op</span>, <span class="type">OpEdge</span>], node1: <span class="type">Op</span>, node2: <span class="type">Op</span>)</span><br><span class="line">    (<span class="keyword">implicit</span> system: <span class="type">ActorSystem</span>): <span class="type">Unit</span> = &#123;</span><br><span class="line">    <span class="keyword">if</span> (graph.outDegreeOf(node1) == <span class="number">1</span> &amp;&amp;</span><br><span class="line">      graph.inDegreeOf(node2) == <span class="number">1</span> &amp;&amp;</span><br><span class="line">      <span class="comment">// For processor node, we don't allow it to merge with downstream operators</span></span><br><span class="line">      !node1.isInstanceOf[<span class="type">ProcessorOp</span>[_ &lt;: <span class="type">Task</span>]] &amp;&amp;</span><br><span class="line">      !node2.isInstanceOf[<span class="type">ProcessorOp</span>[_ &lt;: <span class="type">Task</span>]]) &#123;</span><br><span class="line">      <span class="keyword">val</span> (_, edge, _) = graph.outgoingEdgesOf(node1).head</span><br><span class="line">      <span class="keyword">if</span> (edge == <span class="type">Direct</span>) &#123;</span><br><span class="line">        <span class="keyword">val</span> chainedOp = node1.chain(node2)</span><br><span class="line">        graph.addVertex(chainedOp)</span><br><span class="line">        <span class="keyword">for</span> (incomingEdge &lt;- graph.incomingEdgesOf(node1)) &#123;</span><br><span class="line">          graph.addEdge(incomingEdge._1, incomingEdge._2, chainedOp)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (outgoingEdge &lt;- graph.outgoingEdgesOf(node2)) &#123;</span><br><span class="line">          graph.addEdge(chainedOp, outgoingEdge._2, outgoingEdge._3)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Remove the old vertex</span></span><br><span class="line">        graph.removeVertex(node1)</span><br><span class="line">        graph.removeVertex(node2)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">case class DataSourceOp(</span><br><span class="line">    dataSource: DataSource,</span><br><span class="line">    parallelism: Int = 1,</span><br><span class="line">    userConfig: UserConfig = UserConfig.empty,</span><br><span class="line">    description: String = &quot;source&quot;)</span><br><span class="line">  extends Op &#123;</span><br><span class="line"></span><br><span class="line">  override def chain(other: Op)(implicit system: ActorSystem): Op = &#123;</span><br><span class="line">    DataSourceOp(dataSource, parallelism,</span><br><span class="line">      userConfig.withValue(Constants.GEARPUMP_STREAMING_OPERATOR, other.fn),</span><br><span class="line">      description)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  override def getProcessor(implicit system: ActorSystem): Processor[_ &lt;: Task] = &#123;</span><br><span class="line">    Processor[DataSourceTask[Any, Any]](parallelism, description,</span><br><span class="line">      userConfig.withValue(GEARPUMP_STREAMING_SOURCE, dataSource))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">class TaskWrapper(</span><br><span class="line">    val taskId: TaskId, val taskClass: Class[_ &lt;: Task], context: TaskContextData,</span><br><span class="line">    userConf: UserConfig) extends TaskContext with TaskInterface &#123;</span><br><span class="line"></span><br><span class="line">  private var task: Option[Task] = None</span><br><span class="line"></span><br><span class="line">  override def onStart(startTime: Instant): Unit = &#123;</span><br><span class="line">    val constructor = taskClass.getConstructor(</span><br><span class="line">        classOf[TaskContext], classOf[UserConfig])</span><br><span class="line">    task = Some(constructor.newInstance(this, userConf))</span><br><span class="line">    task.foreach(_.onStart(startTime))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Utility that helps user to create a DAG starting with [[DataSourceTask]] user should pass in a [[DataSource]]</p>
+<p>Here is an example to build a DAG that reads from Kafka source followed by word count</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> source = <span class="keyword">new</span> <span class="type">KafkaSource</span>()</span><br><span class="line"><span class="keyword">val</span> sourceProcessor =  <span class="type">DataSourceProcessor</span>(source, <span class="number">1</span>)</span><br><span class="line"><span class="keyword">val</span> split = <span class="type">Processor</span>[<span class="type">Split</span>](<span class="number">1</span>)</span><br><span class="line"><span class="keyword">val</span> sum = <span class="type">Processor</span>[<span class="type">Sum</span>](<span class="number">1</span>)</span><br><span class="line"><span class="keyword">val</span> dag = sourceProcessor ~&gt; split ~&gt; sum</span><br></pre></td></tr></table></figure>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">DataSourceProcessor</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">apply</span></span>(</span><br><span class="line">      dataSource: <span class="type">DataSource</span>,</span><br><span class="line">      parallelism: <span class="type">Int</span> = <span class="number">1</span>,</span><br><span class="line">      description: <span class="type">String</span> = <span class="string">""</span>,</span><br><span class="line">      taskConf: <span class="type">UserConfig</span> = <span class="type">UserConfig</span>.empty)(<span class="keyword">implicit</span> system: <span class="type">ActorSystem</span>)</span><br><span class="line">    : <span class="type">Processor</span>[<span class="type">DataSourceTask</span>[<span class="type">Any</span>, <span class="type">Any</span>]] = &#123;</span><br><span class="line">    <span class="type">Processor</span>[<span class="type">DataSourceTask</span>[<span class="type">Any</span>, <span class="type">Any</span>]](parallelism, description,</span><br><span class="line">      taskConf.withValue[<span class="type">DataSource</span>](<span class="type">Constants</span>.<span class="type">GEARPUMP_STREAMING_SOURCE</span>, dataSource))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Default Task container for [[org.apache.gearpump.streaming.source.DataSource]] that reads from DataSource in batch</p>
+<p>DataSourceTask calls:</p>
+<ul>
+<li><code>DataSource.open()</code> in <code>onStart</code> and pass in [[org.apache.gearpump.streaming.task.TaskContext]]</li>
+</ul>
+<p>and application start time</p>
+<ul>
+<li><code>DataSource.read()</code> in each <code>onNext</code>, which reads a batch of messages</li>
+<li><code>DataSource.close()</code> in <code>onStop</code></li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DataSourceTask</span>[<span class="type">IN</span>, <span class="type">OUT</span>] <span class="title">private</span>[source](<span class="params"></span></span></span><br><span class="line"><span class="class"><span class="params">    context: <span class="type">TaskContext</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    conf: <span class="type">UserConfig</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    source: <span class="type">DataSource</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">    transform: <span class="type">Transform</span>[<span class="type">IN</span>, <span class="type">OUT</span>]</span>)</span></span><br><span class="line"><span class="class">  <span class="keyword">extends</span> <span class="title">Task</span>(<span class="params">context, conf</span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">this</span></span>(context: <span class="type">TaskContext</span>, conf: <span class="type">UserConfig</span>) = &#123;</span><br><span class="line">    <span class="keyword">this</span>(context, conf,</span><br><span class="line">      conf.getValue[<span class="type">DataSource</span>](<span class="type">GEARPUMP_STREAMING_SOURCE</span>)(context.system).get,</span><br><span class="line">      <span class="keyword">new</span> <span class="type">Transform</span>[<span class="type">IN</span>, <span class="type">OUT</span>](context,</span><br><span class="line">        conf.getValue[<span class="type">FunctionRunner</span>[<span class="type">IN</span>, <span class="type">OUT</span>]](<span class="type">GEARPUMP_STREAMING_OPERATOR</span>)(context.system))</span><br><span class="line">    )</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2017/06/25/2017-06-24-Gearpump/">Deep into Apache Gearpump</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2017年06月25日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2017/06/25/2017-06-24-Gearpump/" title="Deep into Apache Gearpump">http://github.com/zqhxuyuan/2017/06/25/2017-06-24-Gearpump/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2017/06/25/2017-06-24-Gearpump/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2017/07/13/CarbonData-In-Action/">
+        CarbonData
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2017/06/20/JIRA_KAFKA/">
+        Apache Kafka JIRA
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Introduce"><span class="toc-number">1.</span> <span class="toc-text">Introduce</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Part-1:_Application"><span class="toc-number">2.</span> <span class="toc-text">Part-1: Application</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Processor,_OP,_Task"><span class="toc-number">3.</span> <span class="toc-text">Processor, OP, Task</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2017/06/25/2017-06-24-Gearpump/" data-title="Deep into Apache Gearpump" data-url="http://github.com/zqhxuyuan/2017/06/25/2017-06-24-Gearpump/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2017/07/13/CarbonData-In-Action/" title="上一篇: CarbonData">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2017/06/20/JIRA_KAFKA/" title="下一篇: Apache Kafka JIRA">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Cassandra源码分析 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="开坑：Cassandra-2.1源码分析">
+<meta name="keywords" content="cassandra">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cassandra源码分析">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/06/07/Cassandra-Code/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="开坑：Cassandra-2.1源码分析">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160607140510444">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160607140528569">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.279Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cassandra源码分析">
+<meta name="twitter:description" content="开坑：Cassandra-2.1源码分析">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160607140510444">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Cassandra-Code" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/06/07/Cassandra-Code/" class="article-date">
+  	<time datetime="2016-06-06T16:00:00.000Z" itemprop="datePublished">2016-06-07</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Cassandra源码分析
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/cassandra/">cassandra</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cassandra/">cassandra</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>开坑：Cassandra-2.1源码分析<br><a id="more"></a></p>
+<h2 id="IDEA中运行Cassandra-2-1">IDEA中运行Cassandra-2.1</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">➜  cassandra git:(cassandra-2.1) ✗ pwd</span><br><span class="line">/Users/zhengqh/Github/_cassandra/cassandra</span><br><span class="line">➜  cassandra git:(cassandra-2.1) ✗ ant generate-idea-files</span><br></pre></td></tr></table></figure>
+<p>打开IDEA，导入项目：File&gt;New选择cassandra文件夹，Ant编译</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160607140510444" alt="cass1"></p>
+<p>在IDEA中运行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">-Dcassandra-foreground=yes </span><br><span class="line">-Dcassandra.config=file:///Users/zhengqh/Github/_cassandra/cassandra/conf/cassandra.yaml </span><br><span class="line">-Dcassandra.storagedir=/Users/zhengqh/Github/_cassandra/cassandra/data </span><br><span class="line">-Dlogback.configurationFile=file:///Users/zhengqh/Github/_cassandra/cassandra/conf/logback.xml </span><br><span class="line">-Dcassandra.logdir=/Users/zhengqh/Github/_cassandra/cassandra/data/logs </span><br><span class="line">-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=7199 </span><br><span class="line">-Dcom.sun.management.jmxremote.local.only=false </span><br><span class="line">-Dcom.sun.management.jmxremote.authenticate=false </span><br><span class="line">-Dcom.sun.management.jmxremote.ssl=false </span><br><span class="line">-ea -Xmx1G</span><br></pre></td></tr></table></figure>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160607140528569" alt="cass2"></p>
+<h2 id="CQL示例">CQL示例</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">➜  cassandra git:(cassandra-2.1) ✗ bin/cqlsh</span><br><span class="line">Connected to Test Cluster at 127.0.0.1:9042.</span><br><span class="line">[cqlsh 5.0.1 | Cassandra 2.1.12-SNAPSHOT | CQL spec 3.2.1 | Native protocol v3]</span><br><span class="line">Use HELP for help.</span><br><span class="line">cqlsh&gt; desc keyspaces;</span><br><span class="line"></span><br><span class="line">CREATE KEYSPACE mykeyspace  </span><br><span class="line">WITH REPLICATION = &#123; &apos;class&apos; : &apos;SimpleStrategy&apos;, &apos;replication_factor&apos; : 1 &#125;;</span><br><span class="line">USE mykeyspace;  </span><br><span class="line"></span><br><span class="line">CREATE TABLE users (</span><br><span class="line">  user_id int PRIMARY KEY,</span><br><span class="line">  fname text,</span><br><span class="line">  lname text</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">INSERT INTO users (user_id,  fname, lname) VALUES (1745, &apos;john&apos;, &apos;smith&apos;);  </span><br><span class="line">INSERT INTO users (user_id,  fname, lname) VALUES (1744, &apos;john&apos;, &apos;doe&apos;);  </span><br><span class="line">INSERT INTO users (user_id,  fname, lname) VALUES (1746, &apos;john&apos;, &apos;smith&apos;);</span><br><span class="line"></span><br><span class="line">CREATE INDEX ON users (lname);  </span><br><span class="line">SELECT * FROM users WHERE lname = &apos;smith&apos;;</span><br></pre></td></tr></table></figure>
+<p>在IDEA的控制台打印出日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">INFO  02:06:06 Create new Keyspace: KSMetaData&#123;name=mykeyspace, strategyClass=SimpleStrategy, strategyOptions=&#123;replication_factor=1&#125;, cfMetaData=&#123;&#125;, durableWrites=true, userTypes=org.apache.cassandra.config.UTMetaData@306fc698&#125;</span><br><span class="line">INFO  02:06:06 Enqueuing flush of schema_keyspaces: 484 (0%) on-heap, 0 (0%) off-heap</span><br><span class="line">INFO  02:06:06 Writing Memtable-schema_keyspaces@1131334912(0.143KiB serialized bytes, 3 ops, 0%/0% of on/off-heap limit)</span><br><span class="line">INFO  02:06:06 Completed flushing /Users/zhengqh/Github/_cassandra/cassandra/data/data/system/schema_keyspaces-b0f2235744583cdb9631c43e59ce3676/system-schema_keyspaces-tmp-ka-2-Data.db (0.000KiB) for commitlog position ReplayPosition(segmentId=1465264873661, position=253619)</span><br><span class="line"></span><br><span class="line">INFO  02:06:25 Create new ColumnFamily: org.apache.cassandra.config.CFMetaData@5e22ce80[cfId=709b74d0-2c54-11e6-a6b3-09b80d24c2a2,ksName=mykeyspace,cfName=users,cfType=Standard,comparator=org.apache.cassandra.db.marshal.CompositeType(org.apache.cassandra.db.marshal.UTF8Type),comment=,readRepairChance=0.0,dcLocalReadRepairChance=0.1,gcGraceSeconds=864000,defaultValidator=org.apache.cassandra.db.marshal.BytesType,keyValidator=org.apache.cassandra.db.marshal.Int32Type,minCompactionThreshold=4,maxCompactionThreshold=32,columnMetadata=[ColumnDefinition&#123;name=lname, type=org.apache.cassandra.db.marshal.UTF8Type, kind=REGULAR, componentIndex=0, indexName=null, indexType=null&#125;, ColumnDefinition&#123;name=user_id, type=org.apache.cassandra.db.marshal.Int32Type, kind=PARTITION_KEY, componentIndex=null, indexName=null, indexType=null&#125;, ColumnDefinition&#123;name=fname, type=org.apache.cassandra.db.marshal.UTF8Type, kind=REGULAR, componentIndex=0, indexName=null, indexType=null&#125;],compactionStrategyClass=class org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy,compactionStrategyOptions=&#123;&#125;,compressionParameters=&#123;sstable_compression=org.apache.cassandra.io.compress.LZ4Compressor&#125;,bloomFilterFpChance=0.01,memtableFlushPeriod=0,caching=&#123;&quot;keys&quot;:&quot;ALL&quot;, &quot;rows_per_partition&quot;:&quot;NONE&quot;&#125;,defaultTimeToLive=0,minIndexInterval=128,maxIndexInterval=2048,speculativeRetry=99.0PERCENTILE,droppedColumns=&#123;&#125;,triggers=[],isDense=false]</span><br><span class="line">INFO  02:06:25 Enqueuing flush of schema_keyspaces: 484 (0%) on-heap, 0 (0%) off-heap</span><br><span class="line">INFO  02:06:25 Writing Memtable-schema_keyspaces@1743874812(0.143KiB serialized bytes, 3 ops, 0%/0% of on/off-heap limit)</span><br><span class="line">INFO  02:06:25 Completed flushing /Users/zhengqh/Github/_cassandra/cassandra/data/data/system/schema_keyspaces-b0f2235744583cdb9631c43e59ce3676/system-schema_keyspaces-tmp-ka-3-Data.db (0.000KiB) for commitlog position ReplayPosition(segmentId=1465264873661, position=256744)</span><br><span class="line">INFO  02:06:25 Enqueuing flush of schema_columnfamilies: 5834 (0%) on-heap, 0 (0%) off-heap</span><br><span class="line">INFO  02:06:25 Writing Memtable-schema_columnfamilies@1568127712(1.214KiB serialized bytes, 27 ops, 0%/0% of on/off-heap limit)</span><br><span class="line">INFO  02:06:25 Completed flushing /Users/zhengqh/Github/_cassandra/cassandra/data/data/system/schema_columnfamilies-45f5b36024bc3f83a3631034ea4fa697/system-schema_columnfamilies-tmp-ka-2-Data.db (0.000KiB) for commitlog position ReplayPosition(segmentId=1465264873661, position=256744)</span><br><span class="line">INFO  02:06:26 Enqueuing flush of schema_columns: 5538 (0%) on-heap, 0 (0%) off-heap</span><br><span class="line">INFO  02:06:26 Writing Memtable-schema_columns@278821915(0.761KiB serialized bytes, 21 ops, 0%/0% of on/off-heap limit)</span><br><span class="line">INFO  02:06:26 Completed flushing /Users/zhengqh/Github/_cassandra/cassandra/data/data/system/schema_columns-296e9c049bec3085827dc17d3df2122a/system-schema_columns-tmp-ka-2-Data.db (0.000KiB) for commitlog position ReplayPosition(segmentId=1465264873661, position=256744)</span><br><span class="line">INFO  02:06:26 Loading org.apache.cassandra.config.CFMetaData@80bbefc[cfId=709b74d0-2c54-11e6-a6b3-09b80d24c2a2,ksName=mykeyspace,cfName=users,cfType=Standard,comparator=org.apache.cassandra.db.marshal.CompositeType(org.apache.cassandra.db.marshal.UTF8Type),comment=,readRepairChance=0.0,dcLocalReadRepairChance=0.1,gcGraceSeconds=864000,defaultValidator=org.apache.cassandra.db.marshal.BytesType,keyValidator=org.apache.cassandra.db.marshal.Int32Type,minCompactionThreshold=4,maxCompactionThreshold=32,columnMetadata=[ColumnDefinition&#123;name=lname, type=org.apache.cassandra.db.marshal.UTF8Type, kind=REGULAR, componentIndex=0, indexName=null, indexType=null&#125;, ColumnDefinition&#123;name=user_id, type=org.apache.cassandra.db.marshal.Int32Type, kind=PARTITION_KEY, componentIndex=null, indexName=null, indexType=null&#125;, ColumnDefinition&#123;name=fname, type=org.apache.cassandra.db.marshal.UTF8Type, kind=REGULAR, componentIndex=0, indexName=null, indexType=null&#125;],compactionStrategyClass=class org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy,compactionStrategyOptions=&#123;&#125;,compressionParameters=&#123;sstable_compression=org.apache.cassandra.io.compress.LZ4Compressor&#125;,bloomFilterFpChance=0.01,memtableFlushPeriod=0,caching=&#123;&quot;keys&quot;:&quot;ALL&quot;, &quot;rows_per_partition&quot;:&quot;NONE&quot;&#125;,defaultTimeToLive=0,minIndexInterval=128,maxIndexInterval=2048,speculativeRetry=99.0PERCENTILE,droppedColumns=&#123;&#125;,triggers=[],isDense=false]</span><br><span class="line">INFO  02:06:26 Initializing mykeyspace.users</span><br><span class="line">WARN  02:06:32 Trigger directory doesn&apos;t exist, please create it and try again.</span><br><span class="line"></span><br><span class="line">INFO  02:07:01 Update ColumnFamily &apos;mykeyspace/users&apos; From org.apache.cassandra.config.CFMetaData@80bbefc[cfId=709b74d0-2c54-11e6-a6b3-09b80d24c2a2,ksName=mykeyspace,cfName=users,cfType=Standard,comparator=org.apache.cassandra.db.marshal.CompositeType(org.apache.cassandra.db.marshal.UTF8Type),comment=,readRepairChance=0.0,dcLocalReadRepairChance=0.1,gcGraceSeconds=864000,defaultValidator=org.apache.cassandra.db.marshal.BytesType,keyValidator=org.apache.cassandra.db.marshal.Int32Type,minCompactionThreshold=4,maxCompactionThreshold=32,columnMetadata=[ColumnDefinition&#123;name=lname, type=org.apache.cassandra.db.marshal.UTF8Type, kind=REGULAR, componentIndex=0, indexName=null, indexType=null&#125;, ColumnDefinition&#123;name=user_id, type=org.apache.cassandra.db.marshal.Int32Type, kind=PARTITION_KEY, componentIndex=null, indexName=null, indexType=null&#125;, ColumnDefinition&#123;name=fname, type=org.apache.cassandra.db.marshal.UTF8Type, kind=REGULAR, componentIndex=0, indexName=null, indexType=null&#125;],compactionStrategyClass=class org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy,compactionStrategyOptions=&#123;&#125;,compressionParameters=&#123;sstable_compression=org.apache.cassandra.io.compress.LZ4Compressor&#125;,bloomFilterFpChance=0.01,memtableFlushPeriod=0,caching=&#123;&quot;keys&quot;:&quot;ALL&quot;, &quot;rows_per_partition&quot;:&quot;NONE&quot;&#125;,defaultTimeToLive=0,minIndexInterval=128,maxIndexInterval=2048,speculativeRetry=99.0PERCENTILE,droppedColumns=&#123;&#125;,triggers=[],isDense=false] To org.apache.cassandra.config.CFMetaData@1d7a7976[cfId=709b74d0-2c54-11e6-a6b3-09b80d24c2a2,ksName=mykeyspace,cfName=users,cfType=Standard,comparator=org.apache.cassandra.db.marshal.CompositeType(org.apache.cassandra.db.marshal.UTF8Type),comment=,readRepairChance=0.0,dcLocalReadRepairChance=0.1,gcGraceSeconds=864000,defaultValidator=org.apache.cassandra.db.marshal.BytesType,keyValidator=org.apache.cassandra.db.marshal.Int32Type,minCompactionThreshold=4,maxCompactionThreshold=32,columnMetadata=[ColumnDefinition&#123;name=lname, type=org.apache.cassandra.db.marshal.UTF8Type, kind=REGULAR, componentIndex=0, indexName=users_lname_idx, indexType=COMPOSITES&#125;, ColumnDefinition&#123;name=user_id, type=org.apache.cassandra.db.marshal.Int32Type, kind=PARTITION_KEY, componentIndex=null, indexName=null, indexType=null&#125;, ColumnDefinition&#123;name=fname, type=org.apache.cassandra.db.marshal.UTF8Type, kind=REGULAR, componentIndex=0, indexName=null, indexType=null&#125;],compactionStrategyClass=class org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy,compactionStrategyOptions=&#123;&#125;,compressionParameters=&#123;sstable_compression=org.apache.cassandra.io.compress.LZ4Compressor&#125;,bloomFilterFpChance=0.01,memtableFlushPeriod=0,caching=&#123;&quot;keys&quot;:&quot;ALL&quot;, &quot;rows_per_partition&quot;:&quot;NONE&quot;&#125;,defaultTimeToLive=0,minIndexInterval=128,maxIndexInterval=2048,speculativeRetry=99.0PERCENTILE,droppedColumns=&#123;&#125;,triggers=[],isDense=false]</span><br><span class="line">INFO  02:07:01 Enqueuing flush of schema_keyspaces: 484 (0%) on-heap, 0 (0%) off-heap</span><br><span class="line">INFO  02:07:01 Writing Memtable-schema_keyspaces@1069875044(0.143KiB serialized bytes, 3 ops, 0%/0% of on/off-heap limit)</span><br><span class="line">INFO  02:07:01 Completed flushing /Users/zhengqh/Github/_cassandra/cassandra/data/data/system/schema_keyspaces-b0f2235744583cdb9631c43e59ce3676/system-schema_keyspaces-tmp-ka-4-Data.db (0.000KiB) for commitlog position ReplayPosition(segmentId=1465264873661, position=465004)</span><br><span class="line">INFO  02:07:01 Compacting [SSTableReader(path=&apos;/Users/zhengqh/Github/_cassandra/cassandra/data/data/system/schema_keyspaces-b0f2235744583cdb9631c43e59ce3676/system-schema_keyspaces-ka-4-Data.db&apos;), SSTableReader(path=&apos;/Users/zhengqh/Github/_cassandra/cassandra/data/data/system/schema_keyspaces-b0f2235744583cdb9631c43e59ce3676/system-schema_keyspaces-ka-1-Data.db&apos;), SSTableReader(path=&apos;/Users/zhengqh/Github/_cassandra/cassandra/data/data/system/schema_keyspaces-b0f2235744583cdb9631c43e59ce3676/system-schema_keyspaces-ka-3-Data.db&apos;), SSTableReader(path=&apos;/Users/zhengqh/Github/_cassandra/cassandra/data/data/system/schema_keyspaces-b0f2235744583cdb9631c43e59ce3676/system-schema_keyspaces-ka-2-Data.db&apos;)]</span><br><span class="line">INFO  02:07:01 Enqueuing flush of schema_columnfamilies: 5834 (0%) on-heap, 0 (0%) off-heap</span><br><span class="line">INFO  02:07:01 Writing Memtable-schema_columnfamilies@312616385(1.214KiB serialized bytes, 27 ops, 0%/0% of on/off-heap limit)</span><br><span class="line">INFO  02:07:01 Completed flushing /Users/zhengqh/Github/_cassandra/cassandra/data/data/system/schema_columnfamilies-45f5b36024bc3f83a3631034ea4fa697/system-schema_columnfamilies-tmp-ka-3-Data.db (0.000KiB) for commitlog position ReplayPosition(segmentId=1465264873661, position=465004)</span><br><span class="line">INFO  02:07:01 Enqueuing flush of schema_columns: 1962 (0%) on-heap, 0 (0%) off-heap</span><br><span class="line">INFO  02:07:01 Writing Memtable-schema_columns@310066052(0.267KiB serialized bytes, 7 ops, 0%/0% of on/off-heap limit)</span><br><span class="line">INFO  02:07:01 Completed flushing /Users/zhengqh/Github/_cassandra/cassandra/data/data/system/schema_columns-296e9c049bec3085827dc17d3df2122a/system-schema_columns-tmp-ka-3-Data.db (0.000KiB) for commitlog position ReplayPosition(segmentId=1465264873661, position=465004)</span><br><span class="line">INFO  02:07:01 Compacted 4 sstables to [/Users/zhengqh/Github/_cassandra/cassandra/data/data/system/schema_keyspaces-b0f2235744583cdb9631c43e59ce3676/system-schema_keyspaces-ka-5,].  704 bytes to 258 (~36% of original) in 39ms = 0.006309MB/s.  5 total partitions merged to 3.  Partition merge counts were &#123;1:2, 3:1, &#125;</span><br><span class="line">INFO  02:07:01 Initializing mykeyspace.users.users_lname_idx</span><br><span class="line">INFO  02:07:01 Enqueuing flush of users: 1681 (0%) on-heap, 0 (0%) off-heap</span><br><span class="line">INFO  02:07:01 Enqueuing flush of users: 0 (0%) on-heap, 0 (0%) off-heap</span><br><span class="line">INFO  02:07:01 Writing Memtable-users@1154357944(0.147KiB serialized bytes, 9 ops, 0%/0% of on/off-heap limit)</span><br><span class="line">INFO  02:07:01 Completed flushing /Users/zhengqh/Github/_cassandra/cassandra/data/data/mykeyspace/users-709b74d02c5411e6a6b309b80d24c2a2/mykeyspace-users-tmp-ka-1-Data.db (0.000KiB) for commitlog position ReplayPosition(segmentId=1465264873661, position=465844)</span><br><span class="line">INFO  02:07:01 Submitting index build of users.users_lname_idx for data in SSTableReader(path=&apos;/Users/zhengqh/Github/_cassandra/cassandra/data/data/mykeyspace/users-709b74d02c5411e6a6b309b80d24c2a2/mykeyspace-users-ka-1-Data.db&apos;)</span><br><span class="line">INFO  02:07:01 Enqueuing flush of users.users_lname_idx: 1004 (0%) on-heap, 0 (0%) off-heap</span><br><span class="line">INFO  02:07:01 Writing Memtable-users.users_lname_idx@1367019359(0.051KiB serialized bytes, 3 ops, 0%/0% of on/off-heap limit)</span><br><span class="line">INFO  02:07:01 Completed flushing /Users/zhengqh/Github/_cassandra/cassandra/data/data/mykeyspace/users-709b74d02c5411e6a6b309b80d24c2a2/mykeyspace-users.users_lname_idx-tmp-ka-1-Data.db (0.000KiB) for commitlog position ReplayPosition(segmentId=1465264873661, position=465970)</span><br><span class="line">INFO  02:07:01 Enqueuing flush of IndexInfo: 331 (0%) on-heap, 0 (0%) off-heap</span><br><span class="line">INFO  02:07:01 Writing Memtable-IndexInfo@1621801131(0.036KiB serialized bytes, 1 ops, 0%/0% of on/off-heap limit)</span><br><span class="line">INFO  02:07:01 Completed flushing /Users/zhengqh/Github/_cassandra/cassandra/data/data/system/IndexInfo-9f5c6374d48532299a0a5094af9ad1e3/system-IndexInfo-tmp-ka-1-Data.db (0.000KiB) for commitlog position ReplayPosition(segmentId=1465264873661, position=466071)</span><br><span class="line">INFO  02:07:01 Index build of users.users_lname_idx complete</span><br></pre></td></tr></table></figure>
+<p>修改<em>logback.xml</em>的root级别为<code>DEBUG</code>，重启Cassandra，并且启动测试用例<code>CassandraReadTest</code>查询服务：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">DEBUG 03:21:03 Received: STARTUP &#123;CQL_VERSION=3.2.1&#125;, v=3</span><br><span class="line">DEBUG 03:21:03 Received: REGISTER [TOPOLOGY_CHANGE, STATUS_CHANGE, SCHEMA_CHANGE], v=3</span><br><span class="line"></span><br><span class="line">DEBUG 03:21:03 Received: QUERY SELECT peer, data_center, rack, tokens, rpc_address, schema_version FROM system.peers, v=3</span><br><span class="line">DEBUG 03:21:03 Received: QUERY SELECT cluster_name, data_center, rack, tokens, partitioner, schema_version FROM system.local WHERE key=&apos;local&apos;, v=3</span><br><span class="line"></span><br><span class="line">DEBUG 03:21:03 Received: QUERY SELECT * FROM system.schema_keyspaces, v=3</span><br><span class="line">DEBUG 03:21:03 Received: QUERY SELECT * FROM system.schema_columnfamilies, v=3</span><br><span class="line">DEBUG 03:21:03 Received: QUERY SELECT * FROM system.schema_columns, v=3</span><br><span class="line">DEBUG 03:21:03 Received: QUERY SELECT * FROM system.schema_usertypes, v=3</span><br><span class="line">DEBUG 03:21:03 Received: QUERY SELECT * FROM system.schema_functions, v=3</span><br><span class="line">DEBUG 03:21:03 Received: QUERY SELECT * FROM system.schema_aggregates, v=3</span><br><span class="line">DEBUG 03:21:03 Received: QUERY SELECT * FROM system.schema_triggers, v=3</span><br><span class="line"></span><br><span class="line">DEBUG 03:21:05 Received: QUERY SELECT * FROM forseti.mytab where id=&apos;a1&apos;, v=3</span><br></pre></td></tr></table></figure>
+<p>测试类：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CassandraReadTest</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Builder builder = Cluster.builder();</span><br><span class="line">        builder.addContactPoint(<span class="string">"127.0.0.1"</span>);</span><br><span class="line">        SocketOptions socketOptions = <span class="keyword">new</span> SocketOptions().setKeepAlive(<span class="keyword">true</span>).setConnectTimeoutMillis(<span class="number">5</span> * <span class="number">10000</span>).setReadTimeoutMillis(<span class="number">100000</span>);</span><br><span class="line">        builder.withSocketOptions(socketOptions);</span><br><span class="line">        Cluster cluster = builder.build();</span><br><span class="line">        Metadata metadata = cluster.getMetadata();</span><br><span class="line">        System.out.printf(<span class="string">"Connected to cluster: %s\n"</span>, metadata.getClusterName());</span><br><span class="line">        <span class="keyword">for</span> (Host host : metadata.getAllHosts()) &#123;</span><br><span class="line">            System.out.printf(<span class="string">"Datatacenter: %s; Host: %s; Rack: %s\n"</span>, host.getDatacenter(), host.getAddress(), host.getRack());</span><br><span class="line">        &#125;</span><br><span class="line">        Session session = cluster.connect();</span><br><span class="line">        ResultSet results = session.execute(<span class="string">"SELECT * FROM forseti.mytab where id='a1'"</span>);</span><br><span class="line">        <span class="keyword">for</span> (Row row : results) &#123;</span><br><span class="line">            System.out.println(String.format(<span class="string">"%-10s\t%-10s\t%-20s"</span>, row.getString(<span class="string">"id"</span>), row.getInt(<span class="string">"age"</span>), row.getList(<span class="string">"names"</span>, String.class)));</span><br><span class="line">        &#125;</span><br><span class="line">        cluster.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>准备表和数据：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">CREATE KEYSPACE forseti WITH REPLICATION = &#123; &apos;class&apos; : &apos;SimpleStrategy&apos;, &apos;replication_factor&apos; : 1 &#125;;</span><br><span class="line">USE forseti;</span><br><span class="line">CREATE TABLE forseti.mytab (</span><br><span class="line">    id text PRIMARY KEY,</span><br><span class="line">    age int,</span><br><span class="line">    names list&lt;text&gt;</span><br><span class="line">)</span><br><span class="line">insert into mytab(id,age,names)values(&apos;a1&apos;,30,[&apos;01&apos;, &apos;02&apos;]);</span><br><span class="line">insert into mytab(id,age,names)values(&apos;a2&apos;,20,[&apos;john&apos;, &apos;smith&apos;]);</span><br></pre></td></tr></table></figure>
+<p>2.2.7版本后，版本为4：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">##创建表</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:16:44,623 Message.java:506 - Received: QUERY CREATE TABLE forseti.mytab (</span><br><span class="line">   id text PRIMARY KEY,</span><br><span class="line">   age int,</span><br><span class="line">   names list&lt;text&gt;</span><br><span class="line"> )</span><br><span class="line">;, v=4</span><br><span class="line"></span><br><span class="line">##插入记录</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:17:01,909 Message.java:506 - Received: QUERY insert into mytab(id,age,names)values(&apos;a1&apos;,30,[&apos;01&apos;, &apos;02&apos;]);, v=4</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:17:01,920 QueryProcessor.java:221 - Process org.apache.cassandra.cql3.statements.UpdateStatement@308a8ddb @CL.ONE</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:17:01,933 AbstractReplicationStrategy.java:87 - clearing cached endpoints</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:17:01,950 SlabAllocator.java:143 - 1 regions now allocated in org.apache.cassandra.utils.memory.SlabAllocator@1e9fbb57</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:17:01,951 Tracing.java:156 - request complete</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:17:01,951 Message.java:525 - Responding: EMPTY RESULT, v=4</span><br><span class="line"></span><br><span class="line">##查询记录</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:17:28,958 Message.java:506 - Received: QUERY SELECT * FROM forseti.mytab where id=&apos;a1&apos;, v=4</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:17:28,959 QueryProcessor.java:221 - Process org.apache.cassandra.cql3.statements.SelectStatement@6e0dee8 @CL.LOCAL_ONE</span><br><span class="line">DEBUG [SharedPool-Worker-1] 2016-12-28 10:17:28,960 SliceQueryPager.java:92 - Querying next page of slice query; new filter: SliceQueryFilter [reversed=false, slices=[[, ]], count=5000, toGroup = 0]</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:17:28,967 ReadCallback.java:76 - Blockfor is 1; setting up requests to localhost/127.0.0.1</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:17:28,967 AbstractReadExecutor.java:118 - reading data locally</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:17:28,992 SliceQueryFilter.java:269 - collecting 0 of 5000: :false:0@1482891421908524</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:17:28,992 SliceQueryFilter.java:269 - collecting 1 of 5000: age:false:4@1482891421908524</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:17:28,992 SliceQueryFilter.java:269 - collecting 1 of 5000: names:b7f21510cca311e691854f28b42978f8:false:2@1482891421908524</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:17:28,992 SliceQueryFilter.java:269 - collecting 1 of 5000: names:b7f21511cca311e691854f28b42978f8:false:2@1482891421908524</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:17:28,993 StorageProxy.java:1444 - Read: 26 ms.</span><br><span class="line">DEBUG [SharedPool-Worker-1] 2016-12-28 10:17:28,994 AbstractQueryPager.java:95 - Fetched 1 live rows</span><br><span class="line">DEBUG [SharedPool-Worker-1] 2016-12-28 10:17:28,994 AbstractQueryPager.java:112 - Got result (1) smaller than page size (5000), considering pager exhausted</span><br><span class="line">DEBUG [SharedPool-Worker-1] 2016-12-28 10:17:28,994 AbstractQueryPager.java:133 - Remaining rows to page: 2147483646</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:17:28,994 Tracing.java:156 - request complete</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:17:28,995 Message.java:525 - Responding: ROWS [id(forseti, mytab), org.apache.cassandra.db.marshal.UTF8Type][age(forseti, mytab), org.apache.cassandra.db.marshal.Int32Type][names(forseti, mytab), org.apache.cassandra.db.marshal.ListType(org.apache.cassandra.db.marshal.UTF8Type)]</span><br><span class="line"> | a1 | 30 | 00000002000000023031000000023032  《= 查询结果（最后一列是List类型）</span><br><span class="line">---, v=4</span><br></pre></td></tr></table></figure>
+<p>IDEA中CassandraReadTest的运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">INFO  02:17:26 Using native clock to generate timestamps.</span><br><span class="line">WARN  02:17:26 Found Netty&apos;s native epoll transport, but not running on linux-based operating system. Using NIO instead.</span><br><span class="line">INFO  02:17:28 Using data-center name &apos;datacenter1&apos; for DCAwareRoundRobinPolicy (if this is incorrect, please provide the correct datacenter name with DCAwareRoundRobinPolicy constructor)</span><br><span class="line">INFO  02:17:28 New Cassandra host /127.0.0.1:9042 added</span><br><span class="line">Connected to cluster: Test Cluster</span><br><span class="line">Datatacenter: datacenter1; Host: /127.0.0.1; Rack: rack1</span><br><span class="line">a1          30          [01, 02]</span><br></pre></td></tr></table></figure>
+<h2 id="CQL复杂示例">CQL复杂示例</h2><p>CQL查询结果</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">cqlsh:forseti&gt; select * from velocity_app where attribute=&apos;192.168.0.2&apos; and type=&apos;ipAddress&apos; and partner_code=&apos;tongdun&apos; and app_name=&apos;tongdun_app&apos; limit 10;</span><br><span class="line"></span><br><span class="line"> attribute   | partner_code | app_name    | type      | sequence_id         | event                                          | timestamp</span><br><span class="line">-------------+--------------+-------------+-----------+---------------------+------------------------------------------------+-----------------</span><br><span class="line"> 192.168.0.2 |      tongdun | tongdun_app | ipAddress | 1473427497000-00099 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700099</span><br><span class="line"> 192.168.0.2 |      tongdun | tongdun_app | ipAddress | 1473427497000-00098 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700098</span><br><span class="line"> 192.168.0.2 |      tongdun | tongdun_app | ipAddress | 1473427497000-00097 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700097</span><br><span class="line"> 192.168.0.2 |      tongdun | tongdun_app | ipAddress | 1473427497000-00096 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700096</span><br><span class="line"> 192.168.0.2 |      tongdun | tongdun_app | ipAddress | 1473427497000-00095 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700095</span><br><span class="line"> 192.168.0.2 |      tongdun | tongdun_app | ipAddress | 1473427497000-00094 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700094</span><br><span class="line"> 192.168.0.2 |      tongdun | tongdun_app | ipAddress | 1473427497000-00093 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700093</span><br><span class="line"> 192.168.0.2 |      tongdun | tongdun_app | ipAddress | 1473427497000-00092 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700092</span><br><span class="line"> 192.168.0.2 |      tongdun | tongdun_app | ipAddress | 1473427497000-00091 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700091</span><br><span class="line"> 192.168.0.2 |      tongdun | tongdun_app | ipAddress | 1473427497000-00090 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700090</span><br></pre></td></tr></table></figure>
+<p>后台debug日志</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:47:52,234 Message.java:506 - Received: QUERY select * from velocity_app where attribute=&apos;192.168.0.2&apos; and type=&apos;ipAddress&apos; and partner_code=&apos;tongdun&apos; and app_name=&apos;tongdun_app&apos; limit 10;, v=4</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:47:52,236 QueryProcessor.java:221 - Process org.apache.cassandra.cql3.statements.SelectStatement@6fcf961f @CL.ONE</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:47:52,236 ReadCallback.java:76 - Blockfor is 1; setting up requests to localhost/127.0.0.1</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:47:52,237 AbstractReadExecutor.java:118 - reading data locally</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,237 SliceQueryFilter.java:269 - collecting 0 of 10: 1473427497000-00099::false:0@1482235780348270</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,238 SliceQueryFilter.java:269 - collecting 1 of 10: 1473427497000-00099:event:false:46@1482235780348270</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,238 SliceQueryFilter.java:269 - collecting 1 of 10: 1473427497000-00099:timestamp:false:8@1482235780348270</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,238 SliceQueryFilter.java:269 - collecting 1 of 10: 1473427497000-00098::false:0@1482235779514638</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,238 SliceQueryFilter.java:269 - collecting 2 of 10: 1473427497000-00098:event:false:46@1482235779514638</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,238 SliceQueryFilter.java:269 - collecting 2 of 10: 1473427497000-00098:timestamp:false:8@1482235779514638</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,238 SliceQueryFilter.java:269 - collecting 2 of 10: 1473427497000-00097::false:0@1482235778858980</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,238 SliceQueryFilter.java:269 - collecting 3 of 10: 1473427497000-00097:event:false:46@1482235778858980</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,238 SliceQueryFilter.java:269 - collecting 3 of 10: 1473427497000-00097:timestamp:false:8@1482235778858980</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,238 SliceQueryFilter.java:269 - collecting 3 of 10: 1473427497000-00096::false:0@1482235778181296</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,238 SliceQueryFilter.java:269 - collecting 4 of 10: 1473427497000-00096:event:false:46@1482235778181296</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,239 SliceQueryFilter.java:269 - collecting 4 of 10: 1473427497000-00096:timestamp:false:8@1482235778181296</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,239 SliceQueryFilter.java:269 - collecting 4 of 10: 1473427497000-00095::false:0@1482235777402787</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,239 SliceQueryFilter.java:269 - collecting 5 of 10: 1473427497000-00095:event:false:46@1482235777402787</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,239 SliceQueryFilter.java:269 - collecting 5 of 10: 1473427497000-00095:timestamp:false:8@1482235777402787</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,239 SliceQueryFilter.java:269 - collecting 5 of 10: 1473427497000-00094::false:0@1482235776625955</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,239 SliceQueryFilter.java:269 - collecting 6 of 10: 1473427497000-00094:event:false:46@1482235776625955</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,239 SliceQueryFilter.java:269 - collecting 6 of 10: 1473427497000-00094:timestamp:false:8@1482235776625955</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,239 SliceQueryFilter.java:269 - collecting 6 of 10: 1473427497000-00093::false:0@1482235775697987</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,239 SliceQueryFilter.java:269 - collecting 7 of 10: 1473427497000-00093:event:false:46@1482235775697987</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,239 SliceQueryFilter.java:269 - collecting 7 of 10: 1473427497000-00093:timestamp:false:8@1482235775697987</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,239 SliceQueryFilter.java:269 - collecting 7 of 10: 1473427497000-00092::false:0@1482235774778831</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,239 SliceQueryFilter.java:269 - collecting 8 of 10: 1473427497000-00092:event:false:46@1482235774778831</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,240 SliceQueryFilter.java:269 - collecting 8 of 10: 1473427497000-00092:timestamp:false:8@1482235774778831</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,240 SliceQueryFilter.java:269 - collecting 8 of 10: 1473427497000-00091::false:0@1482235773836259</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,240 SliceQueryFilter.java:269 - collecting 9 of 10: 1473427497000-00091:event:false:46@1482235773836259</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,240 SliceQueryFilter.java:269 - collecting 9 of 10: 1473427497000-00091:timestamp:false:8@1482235773836259</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,240 SliceQueryFilter.java:269 - collecting 9 of 10: 1473427497000-00090::false:0@1482235773033108</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,240 SliceQueryFilter.java:269 - collecting 10 of 10: 1473427497000-00090:event:false:46@1482235773033108</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,240 SliceQueryFilter.java:269 - collecting 10 of 10: 1473427497000-00090:timestamp:false:8@1482235773033108</span><br><span class="line">**TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,240 SliceQueryFilter.java:269 - collecting 10 of 10: 1473427497000-0009::false:0@1482235712286454**</span><br><span class="line">TRACE [SharedPool-Worker-2] 2016-12-28 10:47:52,240 FileCacheService.java:151 - Estimated memory usage is 65536 compared to actual usage 0</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:47:52,242 StorageProxy.java:1444 - Read: 5 ms.</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:47:52,242 Tracing.java:156 - request complete</span><br><span class="line">TRACE [SharedPool-Worker-1] 2016-12-28 10:47:52,242 Message.java:525 - Responding: ROWS [attribute(forseti, velocity_app), org.apache.cassandra.db.marshal.UTF8Type][partner_code(forseti, velocity_app), org.apache.cassandra.db.marshal.UTF8Type][app_name(forseti, velocity_app), org.apache.cassandra.db.marshal.UTF8Type][type(forseti, velocity_app), org.apache.cassandra.db.marshal.UTF8Type][sequence_id(forseti, velocity_app), org.apache.cassandra.db.marshal.ReversedType(org.apache.cassandra.db.marshal.UTF8Type)][event(forseti, velocity_app), org.apache.cassandra.db.marshal.UTF8Type][timestamp(forseti, velocity_app), org.apache.cassandra.db.marshal.LongType]</span><br><span class="line"> | 192.168.0.2 | tongdun | tongdun_app | ipAddress | 1473427497000-00099 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700099</span><br><span class="line"> | 192.168.0.2 | tongdun | tongdun_app | ipAddress | 1473427497000-00098 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700098</span><br><span class="line"> | 192.168.0.2 | tongdun | tongdun_app | ipAddress | 1473427497000-00097 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700097</span><br><span class="line"> | 192.168.0.2 | tongdun | tongdun_app | ipAddress | 1473427497000-00096 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700096</span><br><span class="line"> | 192.168.0.2 | tongdun | tongdun_app | ipAddress | 1473427497000-00095 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700095</span><br><span class="line"> | 192.168.0.2 | tongdun | tongdun_app | ipAddress | 1473427497000-00094 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700094</span><br><span class="line"> | 192.168.0.2 | tongdun | tongdun_app | ipAddress | 1473427497000-00093 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700093</span><br><span class="line"> | 192.168.0.2 | tongdun | tongdun_app | ipAddress | 1473427497000-00092 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700092</span><br><span class="line"> | 192.168.0.2 | tongdun | tongdun_app | ipAddress | 1473427497000-00091 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700091</span><br><span class="line"> | 192.168.0.2 | tongdun | tongdun_app | ipAddress | 1473427497000-00090 | &#123;accountLogin:zqhxuyuan,ipAddress:192.168.0.2&#125; | 147342749700090</span><br><span class="line">---, v=4</span><br></pre></td></tr></table></figure>
+<p>SliceQueryFilter会查询指定key的列，velocity_app表的一行记录有三个列（一个主键，两个普通列：），</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">collecting 0 of 10: 1473427497000-00099::false:0@1482235780348270</span><br><span class="line">collecting 1 of 10: 1473427497000-00099:event:false:46@1482235780348270</span><br><span class="line">collecting 1 of 10: 1473427497000-00099:timestamp:false:8@1482235780348270</span><br></pre></td></tr></table></figure>
+<p>实际的存储结构如下：</p>
+<table>
+<thead>
+<tr>
+<th>partition key</th>
+<th>column#1</th>
+<th>column#2</th>
+<th>column#3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>192.168.0.2:tongdun:tongdun_app:ipAddress</td>
+<td>1473427497000-00099:</td>
+<td>1473427497000-00099:event</td>
+<td>1473427497000-00099:timestamp</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>{accountLogin:zqhxuyuan,ipAddress:192.168.0.2}</td>
+<td>147342749700099</td>
+</tr>
+</tbody>
+</table>
+<p>虽然最后也查询了1473427497000-0009，但是最后的结果并没有这个sequence_id</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">collecting 10 of 10: 1473427497000-0009::false:0@1482235712286454</span><br></pre></td></tr></table></figure>
+<h2 id="关于build失败的问题">关于build失败的问题</h2><p>更新了版本后，重新编译失败：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[javac] /Users/zhengqh/Github/_cassandra/cassandra/src/gen-java/org/apache/cassandra/cql/CqlParser.java:13: 错误: 找不到符号</span><br><span class="line">[javac]     import static org.apache.cassandra.cql.AlterTableStatement.OperationType;</span><br><span class="line">[javac]                                           ^</span><br><span class="line">[javac]   符号:   类 AlterTableStatement</span><br><span class="line">[javac]   位置: 程序包 org.apache.cassandra.cql</span><br><span class="line">[javac] /Users/zhengqh/Github/_cassandra/cassandra/src/gen-java/org/apache/cassandra/cql/CqlParser.java:13: 错误: 仅从类和接口静态导入</span><br><span class="line">[javac]     import static org.apache.cassandra.cql.AlterTableStatement.OperationType;</span><br><span class="line">[javac]     ^</span><br><span class="line">[javac] /Users/zhengqh/Github/_cassandra/cassandra/src/gen-java/org/apache/cassandra/cql/CqlParser.java:186: 错误: 找不到符号</span><br><span class="line">[javac]         public void validateMinusSupplied(Object op, final Term value, IntStream stream) throws MissingTokenException</span><br><span class="line">[javac]                                                            ^</span><br><span class="line">[javac]   符号:   类 Term</span><br><span class="line">[javac]   位置: 类 CqlParser</span><br></pre></td></tr></table></figure>
+<p>解决办法，先realclean，然后重新编译。注意realclean不仅会删除build文件夹，也会删除gen-java!<br><a href="http://stackoverflow.com/questions/31518640/unable-to-build-cassandra-source" target="_blank" rel="noopener">http://stackoverflow.com/questions/31518640/unable-to-build-cassandra-source</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br></pre></td><td class="code"><pre><span class="line">➜  cassandra git:(cassandra-2.2) ant realclean</span><br><span class="line">Buildfile: /Users/zhengqh/Github/_cassandra/cassandra/build.xml</span><br><span class="line"></span><br><span class="line">clean:</span><br><span class="line">   [delete] Deleting directory /Users/zhengqh/Github/_cassandra/cassandra/build/test</span><br><span class="line">   [delete] Deleting directory /Users/zhengqh/Github/_cassandra/cassandra/build/classes</span><br><span class="line">   [delete] Deleting directory /Users/zhengqh/Github/_cassandra/cassandra/src/gen-java</span><br><span class="line">   [delete] Deleting directory /Users/zhengqh/Github/_cassandra/cassandra/src/resources/org/apache/cassandra/config</span><br><span class="line">   [delete] Deleting directory /Users/zhengqh/Github/_cassandra/cassandra/build/jacoco</span><br><span class="line"></span><br><span class="line">realclean:</span><br><span class="line">   [delete] Deleting directory /Users/zhengqh/Github/_cassandra/cassandra/build</span><br><span class="line"></span><br><span class="line">BUILD SUCCESSFUL</span><br><span class="line">Total time: 1 second</span><br><span class="line">➜  cassandra git:(cassandra-2.2) ant generate-idea-files</span><br><span class="line">Buildfile: /Users/zhengqh/Github/_cassandra/cassandra/build.xml</span><br><span class="line"></span><br><span class="line">init:</span><br><span class="line">    [mkdir] Created dir: /Users/zhengqh/Github/_cassandra/cassandra/build/classes/main</span><br><span class="line">    [mkdir] Created dir: /Users/zhengqh/Github/_cassandra/cassandra/build/classes/thrift</span><br><span class="line">    [mkdir] Created dir: /Users/zhengqh/Github/_cassandra/cassandra/build/test/lib</span><br><span class="line">    [mkdir] Created dir: /Users/zhengqh/Github/_cassandra/cassandra/build/test/classes</span><br><span class="line">    [mkdir] Created dir: /Users/zhengqh/Github/_cassandra/cassandra/src/gen-java</span><br><span class="line">    [mkdir] Created dir: /Users/zhengqh/Github/_cassandra/cassandra/build/lib</span><br><span class="line">    [mkdir] Created dir: /Users/zhengqh/Github/_cassandra/cassandra/build/jacoco</span><br><span class="line">    [mkdir] Created dir: /Users/zhengqh/Github/_cassandra/cassandra/build/jacoco/partials</span><br><span class="line"></span><br><span class="line">maven-ant-tasks-localrepo:</span><br><span class="line">     [copy] Copying 1 file to /Users/zhengqh/Github/_cassandra/cassandra/build</span><br><span class="line"></span><br><span class="line">maven-ant-tasks-download:</span><br><span class="line"></span><br><span class="line">maven-ant-tasks-init:</span><br><span class="line"></span><br><span class="line">maven-declare-dependencies:</span><br><span class="line"></span><br><span class="line">maven-ant-tasks-retrieve-build:</span><br><span class="line">[artifact:dependencies] Building ant file: /Users/zhengqh/Github/_cassandra/cassandra/build/build-dependencies.xml</span><br><span class="line">[artifact:dependencies] Building ant file: /Users/zhengqh/Github/_cassandra/cassandra/build/build-dependencies-sources.xml</span><br><span class="line">     [copy] Copying 65 files to /Users/zhengqh/Github/_cassandra/cassandra/build/lib/jars</span><br><span class="line">     [copy] Copying 41 files to /Users/zhengqh/Github/_cassandra/cassandra/build/lib/sources</span><br><span class="line">     [copy] Copying 25 files to /Users/zhengqh/Github/_cassandra/cassandra/build/lib/jars</span><br><span class="line">    [unzip] Expanding: /Users/zhengqh/Github/_cassandra/cassandra/build/lib/jars/org.jacoco.agent-0.7.5.201505241946.jar into /Users/zhengqh/Github/_cassandra/cassandra/build/lib/jars</span><br><span class="line"></span><br><span class="line">check-gen-cql3-grammar:</span><br><span class="line"></span><br><span class="line">gen-cql3-grammar:</span><br><span class="line">     [echo] Building Grammar /Users/zhengqh/Github/_cassandra/cassandra/src/java/org/apache/cassandra/cql3/Cql.g  ...</span><br><span class="line"></span><br><span class="line">generate-cql-html:</span><br><span class="line"></span><br><span class="line">build-project:</span><br><span class="line">     [echo] apache-cassandra: /Users/zhengqh/Github/_cassandra/cassandra/build.xml</span><br><span class="line">    [javac] Compiling 45 source files to /Users/zhengqh/Github/_cassandra/cassandra/build/classes/thrift</span><br><span class="line">    [javac] 警告: 来自注释处理程序 &apos;org.openjdk.jmh.generators.BenchmarkProcessor&apos; 的受支持 source 版本 &apos;RELEASE_6&apos; 低于 -source &apos;1.7&apos;</span><br><span class="line">    [javac] 注: /Users/zhengqh/Github/_cassandra/cassandra/interface/thrift/gen-java/org/apache/cassandra/thrift/Cassandra.java使用或覆盖了已过时的 API。</span><br><span class="line">    [javac] 注: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。</span><br><span class="line">    [javac] 注: 某些输入文件使用了未经检查或不安全的操作。</span><br><span class="line">    [javac] 注: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。</span><br><span class="line">    [javac] 1 个警告</span><br><span class="line">    [javac] Compiling 1165 source files to /Users/zhengqh/Github/_cassandra/cassandra/build/classes/main</span><br><span class="line">    [javac] 注: Processing compiler hints annotations</span><br><span class="line">    [javac] 警告: 来自注释处理程序 &apos;org.openjdk.jmh.generators.BenchmarkProcessor&apos; 的受支持 source 版本 &apos;RELEASE_6&apos; 低于 -source &apos;1.7&apos;</span><br><span class="line">    [javac] 注: Processing compiler hints annotations</span><br><span class="line">    [javac] 注: Writing compiler command file at META-INF/hotspot_compiler</span><br><span class="line">    [javac] 注: Done processing compiler hints annotations</span><br><span class="line">    [javac] 注: 某些输入文件使用或覆盖了已过时的 API。</span><br><span class="line">    [javac] 注: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。</span><br><span class="line">    [javac] 注: 某些输入文件使用了未经检查或不安全的操作。</span><br><span class="line">    [javac] 注: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。</span><br><span class="line">    [javac] 1 个警告</span><br><span class="line"></span><br><span class="line">createVersionPropFile:</span><br><span class="line">    [mkdir] Created dir: /Users/zhengqh/Github/_cassandra/cassandra/src/resources/org/apache/cassandra/config</span><br><span class="line">[propertyfile] Creating new property file: /Users/zhengqh/Github/_cassandra/cassandra/src/resources/org/apache/cassandra/config/version.properties</span><br><span class="line">     [copy] Copying 2 files to /Users/zhengqh/Github/_cassandra/cassandra/build/classes/main</span><br><span class="line">     [copy] Copying 1 file to /Users/zhengqh/Github/_cassandra/cassandra/conf</span><br><span class="line"></span><br><span class="line">build:</span><br><span class="line"></span><br><span class="line">build-test:</span><br><span class="line">    [javac] Compiling 338 source files to /Users/zhengqh/Github/_cassandra/cassandra/build/test/classes</span><br><span class="line">    [javac] 警告: 来自注释处理程序 &apos;org.openjdk.jmh.generators.BenchmarkProcessor&apos; 的受支持 source 版本 &apos;RELEASE_6&apos; 低于 -source &apos;1.7&apos;</span><br><span class="line">    [javac] 注: 某些输入文件使用或覆盖了已过时的 API。</span><br><span class="line">    [javac] 注: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。</span><br><span class="line">    [javac] 注: 某些输入文件使用了未经检查或不安全的操作。</span><br><span class="line">    [javac] 注: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。</span><br><span class="line">    [javac] 1 个警告</span><br><span class="line">     [copy] Copying 12 files to /Users/zhengqh/Github/_cassandra/cassandra/build/test/classes</span><br><span class="line"></span><br><span class="line">generate-idea-files:</span><br><span class="line">     [copy] Copying 1 file to /Users/zhengqh/Github/_cassandra/cassandra/.idea</span><br><span class="line">     [copy] Copying 1 file to /Users/zhengqh/Github/_cassandra/cassandra</span><br><span class="line"></span><br><span class="line">BUILD SUCCESSFUL</span><br><span class="line">Total time: 1 minute 5 seconds</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/06/07/Cassandra-Code/">Cassandra源码分析</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年06月07日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/06/07/Cassandra-Code/" title="Cassandra源码分析">http://github.com/zqhxuyuan/2016/06/07/Cassandra-Code/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/06/07/Cassandra-Code/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/06/30/Hello-Storm/">
+        用实例理解Storm的Stream概念
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/05/26/2016-05-13-Kafka-Book-Sample/">
+        Kafka技术内幕样章（初稿，非正式版）
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#IDEA中运行Cassandra-2-1"><span class="toc-number">1.</span> <span class="toc-text">IDEA中运行Cassandra-2.1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CQL示例"><span class="toc-number">2.</span> <span class="toc-text">CQL示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CQL复杂示例"><span class="toc-number">3.</span> <span class="toc-text">CQL复杂示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#关于build失败的问题"><span class="toc-number">4.</span> <span class="toc-text">关于build失败的问题</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/06/07/Cassandra-Code/" data-title="Cassandra源码分析" data-url="http://github.com/zqhxuyuan/2016/06/07/Cassandra-Code/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/06/30/Hello-Storm/" title="上一篇: 用实例理解Storm的Stream概念">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/05/26/2016-05-13-Kafka-Book-Sample/" title="下一篇: Kafka技术内幕样章（初稿，非正式版）">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

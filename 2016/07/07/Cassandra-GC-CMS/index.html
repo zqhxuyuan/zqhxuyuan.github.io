@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Cassandra CMS GC | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="http://aryanet.com/blog/cassandra-garbage-collector-tuninghttp://tech.shift.com/post/74311817513/cassandra-tuning-the-jvm-for-read-heavy-workloadshttp://docs.datastax.com/en/cassandra/2.0/cassandra/op">
+<meta name="keywords" content="cassandra">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cassandra CMS GC">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/07/07/Cassandra-GC-CMS/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="http://aryanet.com/blog/cassandra-garbage-collector-tuninghttp://tech.shift.com/post/74311817513/cassandra-tuning-the-jvm-for-read-heavy-workloadshttp://docs.datastax.com/en/cassandra/2.0/cassandra/op">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151022134521140">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151022101159811">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151022101214392">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151023185937620">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151025102209440">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151104104302323">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151104104319137">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151104104335018">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151104113357712">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.290Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cassandra CMS GC">
+<meta name="twitter:description" content="http://aryanet.com/blog/cassandra-garbage-collector-tuninghttp://tech.shift.com/post/74311817513/cassandra-tuning-the-jvm-for-read-heavy-workloadshttp://docs.datastax.com/en/cassandra/2.0/cassandra/op">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151022134521140">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Cassandra-GC-CMS" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/07/07/Cassandra-GC-CMS/" class="article-date">
+  	<time datetime="2016-07-06T16:00:00.000Z" itemprop="datePublished">2016-07-07</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Cassandra CMS GC
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/cassandra/">cassandra</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cassandra/">cassandra</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p><a href="http://aryanet.com/blog/cassandra-garbage-collector-tuning" target="_blank" rel="noopener">http://aryanet.com/blog/cassandra-garbage-collector-tuning</a><br><a href="http://tech.shift.com/post/74311817513/cassandra-tuning-the-jvm-for-read-heavy-workloads" target="_blank" rel="noopener">http://tech.shift.com/post/74311817513/cassandra-tuning-the-jvm-for-read-heavy-workloads</a><br><a href="http://docs.datastax.com/en/cassandra/2.0/cassandra/operations/ops_tune_jvm_c.html" target="_blank" rel="noopener">http://docs.datastax.com/en/cassandra/2.0/cassandra/operations/ops_tune_jvm_c.html</a></p>
+<a id="more"></a>
+<h3 id="GC_Background">GC Background</h3><blockquote>
+<p>When tuning your garbage collection configuration, the main things you need to worry about are pause time and throughput. 关注停顿时间和吞吐量<br>Pause time is the length of time the collector stops the application while it frees up memory. 停顿是垃圾收集器释放内存,停止响应应用的时间.<br>Throughput is determined by how often the garbage collection runs, and pauses the application. 吞吐量由垃圾收集器多长时间运行一次并停止应用程序决定的.<br>The more often the collector runs, the lower the throughput. 垃圾收集器运行的越频繁, 就会降低吞吐量.  </p>
+</blockquote>
+<blockquote>
+<p>the new gen is collected by the Parallel New (ParNew) collector, 新生代的对象由ParNew垃圾收集器收集<br>and the old gen is collected by the Concurrent Mark and Sweep (CMS) collector. 老年代的对象由CMS垃圾收集器收集.  </p>
+</blockquote>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151022134521140" alt="gc_memory"></p>
+<blockquote>
+<p>When eden fills up with new objects, a minor gc is triggered. A minor gc stops execution, iterates over the objects in eden, 当伊甸区填满新生对象,YGC被触发:它会停止应用程序的执行<br>copies any objects that are not (yet) garbage to the active survivor space, and clears eden. 迭代伊甸区的对象,拷贝所有没有被垃圾回收的对象到一个存活区中,并清理伊甸区.</p>
+</blockquote>
+<blockquote>
+<p>为什么YGC发生的时候会StopTheWorld! 因为新创建new出来的对象会首先放到Eden中,现在Eden满了,新创建的对象就没有地方放了.<br>得等到Eden中的全部对象都转移到Survivor,并清空Eden, 新创建的对象才可以继续往Eden中存放.这时才从StopTheWorld中恢复过来.  </p>
+</blockquote>
+<blockquote>
+<p>If an object has survived a certain number of survivor space collections, (cassandra defaults to 1), 如果一个对象在多次存活区的垃圾回收中仍存活<br>it is promoted to the old generation. Once this is done, the application resumes execution. 它就会被提升到老年代,当这个(YGC)完成时,应用程序才恢复执行.</p>
+</blockquote>
+<blockquote>
+<p>If you have long ParNew pauses, it means that a lot of the objects in eden are not (yet) garbage, 如果有长时间的ParNew收集,说明很多的对象<br>and they’re being copied around to the survivor space, or into the old gen. 在伊甸区还没有被垃圾回收,就被拷贝到存活区或者老年代.  </p>
+</blockquote>
+<blockquote>
+<p>什么是垃圾收集,一个很简单的理解方式是: 垃圾被收集. 这样原来被垃圾占满的空间, 被收集之后, <code>空间</code>就被释放了.<br>在收集垃圾的时候, 你是没办法做其他事情的, 因此如果收集垃圾的这个过程很长, 应用程序就会被阻塞住了,就会出现<code>超时</code>的现象.  </p>
+</blockquote>
+<h3 id="Cassandra_&amp;_GCInspector">Cassandra &amp; GCInspector</h3><blockquote>
+<p>ParNew是YGC, 会<code>Stop The World</code>. 所以通常GC for ParNew不会超过一秒. Cassandra会打印出超过200ms的ParNew.<br>Cassandra’s GCInspector class logs information about garbage collection whenever a garbage collection takes longer than 200ms. 超过200ms的GC会被记录<br>Garbage collections that occur frequently and take a moderate length of time to complete (such as ConcurrentMarkSweep taking a few seconds), 垃圾收集频繁且缓慢<br>indicate that there is a lot of garbage collection pressure on the JVM. 说明很多的垃圾回收操作导致JVM有压力.</p>
+</blockquote>
+<h2 id="Problem_1:_进程假死,_很长时间的GC_for_CMS,_最终OOM_[202@2015-10-21_16:19,_21:10]">Problem 1: 进程假死, 很长时间的GC for CMS, 最终OOM [202@2015-10-21 16:19, 21:10]</h2><p>线上遇到一个问题: Cassandra进程虽然存在,但是使用status查询状态为DN. 这时查看system.log发现这段时间(进程假死)CMS的时间很长.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cat /var/log/cassandra/system.log | grep &apos;GC for .*: [0-9][0-9][0-9][0-9][0-9]&apos; | grep &apos;2015-10-21&apos; </span><br><span class="line">cat /var/log/cassandra/system.log | grep &quot;GC for ParNew: [0-9][0-9][0-9][0-9]&quot; | grep &quot;2015-10-21&quot;</span><br><span class="line">cat /var/log/cassandra/system.log | grep &quot;GC for ConcurrentMarkSweep: [0-9][0-9][0-9][0-9]&quot; | grep &quot;2015-10-21&quot;</span><br></pre></td></tr></table></figure>
+<p>超过1s/10s中的YGC(ParNew):<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047202 cassandra]$ cat system.log | grep &quot;GC for ParNew: [0-9][0-9][0-9][0-9]&quot; | grep &quot;2015-10-21&quot; | wc -l</span><br><span class="line">138</span><br><span class="line">[qihuang.zheng@cass047202 cassandra]$ cat system.log | grep &quot;GC for ParNew: [0-9][0-9][0-9][0-9][0-9]&quot; | grep &quot;2015-10-21&quot;</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 16:19:08,479 GCInspector.java (line 116) GC for ParNew: 11158 ms for 2 collections, 14193894536 used; max is 16750411776</span><br></pre></td></tr></table></figure></p>
+<p>超过10s的CMS(ConcurrentMarkSweep)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047202 cassandra]$ cat system.log | grep &quot;GC for ConcurrentMarkSweep: [0-9][0-9][0-9][0-9][0-9]&quot; | grep &quot;2015-10-21&quot; | wc -l</span><br><span class="line">40</span><br><span class="line">[qihuang.zheng@cass047202 cassandra]$ cat system.log | grep &quot;GC for ConcurrentMarkSweep: [0-9][0-9][0-9][0-9][0-9]&quot; | grep &quot;2015-10-21&quot;</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 16:19:08,577 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 35447 ms for 1 collections, 1486,5198320 used; max is 1675,0411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 16:20:31,955 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 57793 ms for 1 collections, 1638,9516152 used; max is 1675,0411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 16:21:56,322 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 53039 ms for 1 collections, 1668,0865152 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 16:23:21,821 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 58749 ms for 1 collections, 1674,1060824 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 17:02:46,410 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 1325054 ms for 31 collections, 1650,1107888 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:10:56,385 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 41123 ms for 1 collections, 1129,1487752 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:11:52,609 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 34233 ms for 1 collections, 1363,4908632 used; max is 16750411776</span><br><span class="line"> ...(total 17 counts)</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:39:14,721 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 177348 ms for 3 collections, 1671,3835416 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 22:43:08,348 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 2243741 ms for 51 collections, 1647,0811144 used; max is 16750411776</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>注意: 这里我们只是先简单地查看下GC的情况, 具体是什么引起GC, 要结合system.log中具体的日志查看的! 同时我们统计的是比较耗时的(比如超过1s或10秒)  </p>
+</blockquote>
+<blockquote>
+<p>GC for CMS是老年代的GC. 如果这种情况出现很多, 并且时间超过10s, 就会造成Cassandra进程假死的状态: 进程没有停掉, 但是状态为DN.<br>简单地分析其中的一条日志:<br>GC for ConcurrentMarkSweep: 35447 ms for 1 collections, 1486,5198320 used; max is 1675,0411776<br>收集了一次, 花费了35s, 这时候堆内存为14G, 最大值为16G. 越往后几条数据的堆内存越接近16G(从而导致OOM).   </p>
+</blockquote>
+<p>查看其他节点这时候的日志, 因为Gossip协议会连接到这台假死的202节点, 就会报告202节点是DOWN的:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047205 cassandra]$ cat  system.log | grep &quot;202 is now DOWN&quot;</span><br><span class="line"></span><br><span class="line"> INFO [GossipTasks:1] 2015-10-21 16:18:22,861 Gossiper.java (line 962) InetAddress /192.168.47.202 is now DOWN</span><br><span class="line"> INFO [GossipStage:1] 2015-10-21 17:02:45,239 Gossiper.java (line 962) InetAddress /192.168.47.202 is now DOWN</span><br><span class="line"> INFO [GossipTasks:1] 2015-10-21 21:10:13,752 Gossiper.java (line 962) InetAddress /192.168.47.202 is now DOWN</span><br><span class="line"> INFO [GossipTasks:1] 2015-10-21 21:12:18,980 Gossiper.java (line 962) InetAddress /192.168.47.202 is now DOWN</span><br><span class="line"> ...</span><br><span class="line"> INFO [GossipTasks:1] 2015-10-21 21:38:04,605 Gossiper.java (line 962) InetAddress /192.168.47.202 is now DOWN</span><br><span class="line"> INFO [GossipStage:1] 2015-10-21 22:43:08,139 Gossiper.java (line 962) InetAddress /192.168.47.202 is now DOWN</span><br><span class="line"> INFO [GossipTasks:1] 2015-10-21 22:43:26,225 Gossiper.java (line 962) InetAddress /192.168.47.202 is now DOWN</span><br></pre></td></tr></table></figure></p>
+<p>在这台假死的202节点上可以看到最终因为OOM,Cassandra进程被杀死:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">ERROR [RMI TCP Connection(idle)] 2015-10-21 17:02:44,484 CassandraDaemon.java (line 258) Exception in thread Thread[RMI TCP Connection(idle),5,RMI Runtime]</span><br><span class="line">java.lang.OutOfMemoryError: Java heap space</span><br><span class="line">        at java.io.ObjectStreamClass.lookup(ObjectStreamClass.java:322)</span><br><span class="line"></span><br><span class="line">ERROR [RMI TCP Connection(idle)] 2015-10-21 22:39:03,802 CassandraDaemon.java (line 258) Exception in thread Thread[RMI TCP Connection(idle),5,RMI Runtime]</span><br><span class="line">java.lang.OutOfMemoryError: Java heap space</span><br><span class="line">        at java.util.Arrays.copyOfRange(Arrays.java:2694)</span><br><span class="line"></span><br><span class="line">ERROR [ReadStage:41] 2015-10-21 22:43:07,512 CassandraDaemon.java (line 258) Exception in thread Thread[ReadStage:41,5,main]</span><br><span class="line">java.lang.OutOfMemoryError: Java heap space</span><br><span class="line">        at java.nio.ByteBuffer.allocate(ByteBuffer.java:331)</span><br><span class="line">        at org.apache.cassandra.io.util.MappedFileDataInput.readBytes(MappedFileDataInput.java:146)</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>旧生代(Old Gen)空间只有在<code>新生代对象转入</code>及<code>创建大对象</code>(大对象不会在新生代中,会直接转到旧生代)才会出现不足的现象，<br>当执行<code>Full GC后老年代空间仍然不足</code>，则抛出如下错误：java.lang.OutOfMemoryError: Java heap space  </p>
+<p>新生代对象要转入到老年代中, 但是老年代的空间不足以存放新生代的对象, 因此需要首先对老年代进行一次FGC(还是CMS GC?)<br>当FGC完成后, 就可以把新生代对象转入了. 但是但是如果FGC后, 老年代的空间还是不够新生代的转入,就报堆内存不足OOM了!  </p>
+</blockquote>
+<p>分析问题的入口点是: 什么引起很长时间的GC, 因为GC, 最终导致OOM.  </p>
+<h3 id="Zabbix监控">Zabbix监控</h3><p>上面的日志显示在16:19 - 17:02这段时间发生了频繁的FGC,并且时间都很长. 同样的情况发生在21:10 - 22:43.<br>下图分别是堆内存的使用情况以及CMS老年代占用的大小. 可以看到这两个时间段都没有数据显示出来.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151022101159811" alt="c_heap">  </p>
+<blockquote>
+<p>从Heap的趋势可以看到一旦到达12G,就有个下降的趋势,然后继续上升. 回想垃圾收集的原理:垃圾被收集后,空间被释放!<br>这是因为最大Heap内存为16G,在达到0.75*16G=12G时发生CMS GC(下图), GC完成后, 堆内存就被释放.<br><code>-Xms16G -Xmx16G</code> -Xmn4G -XX:MaxDirectMemorySize=6G -XX:+HeapDumpOnOutOfMemoryError -Xss256k<br>-XX:StringTableSize=1000003 -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled<br>-XX:SurvivorRatio=8 -XX:MaxTenuringThreshold=1 -XX:CMSInitiatingOccupancyFraction=<code>75</code><br>-XX:+UseCMSInitiatingOccupancyOnly -XX:+UseTLAB -XX:+UseCondCardMark<br>最大堆内存=16G, 新生代内存=4G, 新生代中Edeng占比80%=3276MB.   </p>
+</blockquote>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151022101214392" alt="c_cms"></p>
+<blockquote>
+<p>当达到老年代的75%, CMS收集器就开始运行. 老年代大小=12G, *0.75=9G. 所以上图在9G时有个下降的趋势.<br>When a pre-determined percentage of the old generation is full (75% by default in cassandra), the CMS collector is run.  </p>
+</blockquote>
+<p>Heap堆内存的使用和Old Gen的大小是同向的. 因为老年代内存增加,会占用更多的堆内存. 老年代收集器运行完成后, 释放老年代空间, 就减少了堆内存.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151023185937620" alt="202-jvm"></p>
+<blockquote>
+<p>上图是更完整的GC信息. 淡绿色的是CMS Perm Gen. 这个区域是永久区,不会有很大的变化, 所以可以看到最大值和平均值都只是在27MB.<br>蓝色的Par Eden区是新创建的对象, 最小值32M, 最大值3.2G. 这是因为Eden为空时,刚创建的对象没几个,所以很小. 当Eden填满时, 达到最大值.<br>那么Eden的容量是多大, 可以通过jstat -gc pid查看.  Eden和Survivor的比例是8:1, 所以Survivor的大小是400M. ParNew的总大小=3.2+800M=4G.<br>淡蓝色的Par Survivor的最大值是409Mb. 可见上面我们的推论也是正确的. 因为Survivor和Eden一样都有一个清空的过程, 所以最小值都是很小的.<br>最后一个橘黄色的是CMS老年代. 最大值为10.4G(和上面我们说的9G有差别啊,不过这只是个别情况).  老年代的10G+新生代的4G接近堆内存最大值的16G.  </p>
+</blockquote>
+<blockquote>
+<p>上图基本上是很多个山峰的形状. 说明了:<br>1.随着对象的不断创建, 对象会先后在Eden, Survivor, Old中存活.<br>2.对象创建,就会消耗一定的内存(堆内存会不断增加), 对象首先在新生代中存活.<br>3.在Survivor中存活的对象被提升到老年代(因此老年代的内存增加也会导致堆内存不断增加).<br>4.老年代垃圾收集完成后, 堆内存会被释放(堆内存减少的比较明显,因为老年代的大小比较大,收集之后释放的空间也比较多).   </p>
+</blockquote>
+<h3 id="system-log_&amp;_gc-log_关于GC的吻合">system.log &amp; gc.log 关于GC的吻合</h3><p>在21号202节点一共当过(其实都是假死)三次,并重启. 在<code>重启之前(并不是进程当掉的时候)</code>会产生一个新的gc日志文件用于<code>下一个时间段</code>.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047202 cassandra]$ ll -h</span><br><span class="line">-rw-r--r--. 1 admin admin 2.5G 10月 21 10:57 gc-1442762094.log   在10:57分重启下, 这里包含了21好之前的所有gc日志,所以日志文件很大</span><br><span class="line">-rw-r--r--. 1 admin admin  22M 10月 21 17:02 gc-1445396282.log   16:19开始FGC,这时C进程还在,直到17:02分进程当掉,开始重启.这里日志表示10:57到17:02之间的gc日志</span><br><span class="line">-rw-r--r--. 1 admin admin  33M 10月 21 22:43 gc-1445418381.log   21:10开始FGC,在22:43才重启. 这里日志表示17:02到22:43之间的gc日志</span><br><span class="line">-rw-r--r--. 1 admin admin  28M 10月 22 10:24 gc-1445439377.log   这里表示22:43一直到现在的gc日志.</span><br></pre></td></tr></table></figure></p>
+<p>分别查看不同的gc日志文件. GC时间超过10s的和system.log中超过10s的FGC的时间段是对应的(total time的秒数有点区别).<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047202 cassandra]$ cat gc-1445396282.log | grep &quot;2015-10-2&quot; | grep &quot;Total time for which application threads were stopped: [^0][0-9].*$&quot;</span><br><span class="line">2015-10-21T16:18:56.346+0800: 19252.706: Total time for which application threads were stopped: 52.9533050 seconds</span><br><span class="line">2015-10-21T16:19:08.005+0800: 19264.365: Total time for which application threads were stopped: 11.1686950 seconds</span><br><span class="line">....</span><br><span class="line">2015-10-21T17:02:41.868+0800: 21878.228: Total time for which application threads were stopped: 81.2595120 seconds</span><br><span class="line"></span><br><span class="line">[qihuang.zheng@cass047202 cassandra]$ cat gc-1445418381.log | grep &quot;2015-10-2&quot; | grep &quot;Total time for which application threads were stopped: [^0][0-9].*$&quot;</span><br><span class="line">2015-10-21T21:10:56.372+0800: 14674.292: Total time for which application threads were stopped: 61.2555790 seconds</span><br><span class="line">2015-10-21T21:11:52.177+0800: 14730.097: Total time for which application threads were stopped: 55.4579170 seconds</span><br><span class="line">....</span><br><span class="line">2015-10-21T22:39:03.800+0800: 19961.719: Total time for which application threads were stopped: 82.8747310 seconds</span><br><span class="line">2015-10-21T22:43:04.221+0800: 20202.140: Total time for which application threads were stopped: 240.4117940 seconds</span><br></pre></td></tr></table></figure></p>
+<p>观察正常的203节点发生GC for CMS情况: 会存在10几秒的, 但是不会夸张到一分钟多的.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047203 cassandra]$ cat system.log | grep &quot;GC for ConcurrentMarkSweep: [0-9][0-9][0-9][0-9][0-9]&quot; | grep &quot;2015-10-2&quot;</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-20 04:54:07,318 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 13873 ms for 2 collections, 2258327168 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 05:10:31,167 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 15803 ms for 2 collections, 3578782544 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-22 04:58:11,610 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 13137 ms for 2 collections, 2438639584 used; max is 16750411776</span><br></pre></td></tr></table></figure></p>
+<p>对应的GC日志(大于10s的):  可以看到时间都能对应上.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047203 cassandra]$ cat gc-1441001670.log | grep &quot;2015-10-2&quot; | grep &quot;Total time for which application threads were stopped: [^0][0-9].*$&quot;</span><br><span class="line">2015-10-20T04:54:07.168+0800: 4286376.327: Total time for which application threads were stopped: 27.1404730 seconds</span><br><span class="line">2015-10-21T05:10:30.907+0800: 4373760.065: Total time for which application threads were stopped: 30.5866390 seconds</span><br><span class="line">2015-10-22T04:58:11.372+0800: 4459420.530: Total time for which application threads were stopped: 23.8347940 seconds</span><br></pre></td></tr></table></figure></p>
+<h3 id="GC_Log分析">GC Log分析</h3><h3 id="YGC">YGC</h3><p><strong>1.一次比较短暂的GC(YGC)示例</strong>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">2015-10-21T21:05:22.465+0800: 14340.384: [GCBefore GC:</span><br><span class="line">2015-10-21T21:05:22.467+0800: 14340.386: [ParNew: 3363,261K-&gt;11,273K(3774,912K), 0.0429780 secs] 6720,828K-&gt;3371,977K(16357824K)After GC:</span><br><span class="line">, 0.0464130 secs] [Times: user=0.28 sys=0.00, real=0.04 secs]</span><br><span class="line">2015-10-21T21:05:22.512+0800: 14340.431: Total time for which application threads were stopped: 0.0502940 seconds</span><br></pre></td></tr></table></figure>
+<p>Total time stopped=0.05的计算方式是 当前打印的时间.512 - BeforeGC=.465 = 0.047<br>可以看到在After GC之前, ParNew由3.2G减少到11M(新生代总的容量为3.7G). 并且GC时间很短, 只有0.04s. 因为是ParNew,说明这是一次YGC!  </p>
+<blockquote>
+<p>像这种在gc.log中的ParNew收集, 对应在system.log中就会出现GC for ParNew的日志.<br>当然gc.log对于所有的ParNew都会打印, 而system.log中只有超过200ms的才打印.<br>比如上面gc.log的时间为0.05秒=50ms, 就不会在system.log中出现.  </p>
+</blockquote>
+<p><strong>2.统计GC for ParNew和for CMS</strong>  </p>
+<p>我们可以选择system.log中出现GC的记录, 再来找gc.log中对应的记录, 对比着分析. 这是system.log中21点所有的GC日志:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047202 cassandra]$ cat system.log | grep &quot;GC&quot; | grep &quot;2015-10-21 21&quot;</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:02:31,882 GCInspector.java (line 116) GC for ParNew: 672 ms for 2 collections, 9135816744 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:02:39,945 GCInspector.java (line 116) GC for ParNew: 372 ms for 1 collections, 9325350800 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:02:42,106 GCInspector.java (line 116) GC for ParNew: 247 ms for 1 collections, 9448812016 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:03:19,142 GCInspector.java (line 116) GC for ParNew: 267 ms for 1 collections, 9969463696 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:03:56,802 GCInspector.java (line 116) GC for ParNew: 1549 ms for 1 collections, 10679738240 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:03:57,783 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 750 ms for 1 collections, 11082238408 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:03:59,784 GCInspector.java (line 116) GC for ParNew: 351 ms for 1 collections, 11876803840 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:09:42,724 GCInspector.java (line 116) GC for ParNew: 1420 ms for 1 collections, 5274947408 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:09:45,891 GCInspector.java (line 116) GC for ParNew: 2342 ms for 1 collections, 7007901632 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:09:49,573 GCInspector.java (line 116) GC for ParNew: 3161 ms for 1 collections, 9012309600 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:09:53,443 GCInspector.java (line 116) GC for ParNew: 3277 ms for 1 collections, 11212220496 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:09:54,790 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 1142 ms for 1 collections, 12623059520 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:10:56,385 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 41123 ms for 1 collections, 11291487752 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:11:52,609 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 34233 ms for 1 collections, 13634908632 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:13:14,546 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 50091 ms for 1 collections, 16324832400 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:14:39,080 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 53386 ms for 1 collections, 16329236976 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:16:02,382 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 51146 ms for 1 collections, 16327015232 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:17:26,713 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 50636 ms for 1 collections, 16331153704 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:18:55,963 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 54231 ms for 1 collections, 16330768976 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:20:20,116 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 50762 ms for 1 collections, 16393698912 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:21:49,551 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 56023 ms for 1 collections, 16542754632 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:23:16,369 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 56855 ms for 1 collections, 16668440992 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:29:02,054 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 232369 ms for 4 collections, 16133717848 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:30:31,795 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 53874 ms for 1 collections, 16326381000 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:31:56,763 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 52632 ms for 1 collections, 16438384848 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:33:25,591 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 55474 ms for 1 collections, 16543840528 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:34:51,572 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 54773 ms for 1 collections, 16613439072 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-21 21:39:14,721 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 177348 ms for 3 collections, 16713835416 used; max is 16750411776</span><br></pre></td></tr></table></figure></p>
+<p>观察下面几个时间点的used. 在03:57的CMS和03:59的ParNew时, used是增加的, 但是接下来的09:42,则一下子降到了5G. 具体原因是CMS收集释放了老年代内存.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">21:03:57,783 GC for ConcurrentMarkSweep: 750 ms for 1 collections, 11082238408 used; max is 16750411776</span><br><span class="line">21:03:59,784 GC for ParNew: 351 ms for 1 collections, 11876803840 used; max is 16750411776</span><br><span class="line">... 这中间虽然没有GC for ..., 但是有CMS的日志. 我们上面这么过滤只查询GC,所以没有CMS的日志出来.  </span><br><span class="line">21:09:42,724 GC for ParNew: 1420 ms for 1 collections, 5274947408 used; max is 16750411776</span><br></pre></td></tr></table></figure></p>
+<p><strong>3.对比gc.log</strong>   </p>
+<blockquote>
+<p>通常来说gc.log中打印的Total time stopped会比GC for 的时间要长. 这是因为stopped的时间不仅仅包括GC. GC for ParNew跟[ParNew: ** secs]比较接近.   </p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">2015-10-21T21:02:31.202+0800: 14169.122: [GCBefore GC:</span><br><span class="line">2015-10-21T21:02:31.203+0800: 14169.122: [ParNew: 3365,222K-&gt;12,415K(3774,912K), 0.4782790 secs] 12265,316K-&gt;8916,561K(16357824K)After GC:</span><br><span class="line">2015-10-21T21:02:31.682+0800: 14169.601: Total time for which application threads were stopped: 0.4870030 seconds</span><br><span class="line"></span><br><span class="line">2015-10-21T21:02:39.570+0800: 14177.489: [GCBefore GC:</span><br><span class="line">2015-10-21T21:02:39.571+0800: 14177.490: [ParNew: 3368051K-&gt;178376K(3774912K), 0.3727510 secs] 12288868K-&gt;9106223K(16357824K)After GC:</span><br><span class="line">2015-10-21T21:02:39.944+0800: 14177.863: Total time for which application threads were stopped: 0.3774920 seconds</span><br><span class="line"></span><br><span class="line">2015-10-21T21:02:41.857+0800: 14179.776: [GCBefore GC:</span><br><span class="line">2015-10-21T21:02:41.857+0800: 14179.777: [ParNew: 3533896K-&gt;126378K(3774912K), 0.2469170 secs] 12461743K-&gt;9226735K(16357824K)After GC:</span><br><span class="line">2015-10-21T21:02:42.105+0800: 14180.024: Total time for which application threads were stopped: 0.2506860 seconds</span><br><span class="line"></span><br><span class="line">2015-10-21T21:03:55.249+0800: 14253.168: [GCBefore GC:</span><br><span class="line">2015-10-21T21:03:55.249+0800: 14253.169: [ParNew: 3416062K-&gt;419392K(3774912K), 1.5487250 secs] 12664844K-&gt;10423713K(16357824K)After GC:</span><br><span class="line">2015-10-21T21:03:56.799+0800: 14254.718: Total time for which application threads were stopped: 1.5529860 seconds</span><br></pre></td></tr></table></figure>
+<p><strong>4.jstat -gc查看YGC引起的堆内存变化</strong>  </p>
+<p><a href="http://www.importnew.com/1993.html" target="_blank" rel="noopener">http://www.importnew.com/1993.html</a><br><code>新生代（Young generation）</code>: 绝大多数最新被创建的对象会被分配到这里，由于大部分对象在创建后会很快变得不可到达，<br>所以很多对象被创建在新生代，然后消失。对象从这个区域消失的过程我们称之为”minor GC“。</p>
+<p><code>老年代（Old generation）</code>: 对象没有变得不可达，并且从新生代中存活下来，会被拷贝到这里。其所占用的空间要比新生代多。<br>也正由于其相对较大的空间，发生在老年代上的GC要比新生代少得多。对象从老年代中消失的过程，我们称之为”major GC”或full GC  </p>
+<p>新生代其中一个存活区一直是空的(<code>下图第一次YGC前,S1=0</code>)，是eden区和另一个存活区(<code>S0,不为0</code>)在<code>下一次copy collection后活着的对象</code>的目的地.<br>对象<code>在存活区被复制(从from survivor复制到to survivor)</code>直到转移到老年代, 晋升的依据是对象的年龄计数器, 达到计数器阈值, 即可晋升到老年代.  </p>
+<p>Minor GC(YGC)会把Eden中的所有活的对象都移到Survivor区中，如果Survivor区中放不下，那么剩下的活的对象就被移到Old Gen中.  </p>
+<blockquote>
+<p>在垃圾回收时，eden空间中的存活对象会被复制到未使用的survivor空间中(假设是to)，<br>正在使用的survivor空间(假设是from)中的年轻对象(年龄计数器小于阈值)也会被复制到to空间中.<br>大对象，或者老年对象(年龄计数器超过阈值)会直接进入老年代，<code>如果to空间已满，则对象也会直接进入老年代</code>。<br>此时，eden空间和from空间中的剩余对象就是垃圾对象，可以直接清空，to空间则存放此次回收后的存活对象。</p>
+</blockquote>
+<p>如果对象在Eden出生并经过第一次Minor GC后仍然存活，并且能被Survivor容纳的话，将被移动到Survivor空间中，并将对象年龄设为1.<br>对象在Survivor区中每熬过一次Minor GC，年龄就增加1岁，当它的年龄增加到一定程度（默认为15岁）时，就会被晋升到老年代中.  </p>
+<blockquote>
+<p>当新生代空间不足时发生minor gc(YGC),根据复制算法, jvm会<br>1）将eden和from survivor(<code>下图中是S0</code>)中存活的对象拷贝到to survior(<code>S1</code>)中，<br>2）释放eden和from中的所有需要回收对象(<code>S0U和EU都被清空=0</code>)，<br>3）调换from/to survior，jvm将eden和新的from survior(<code>现在from是S1了,下一次拷贝E和S1到to survivor:S0</code>)作为新生代  </p>
+</blockquote>
+<p>查看新生代内存以及老年代内存之间的变化, 可以使用下面的命令每隔100毫秒打印一次GC信息:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">sudo -u admin jstat -gc `sudo -u admin jps | grep CassandraDaemon |awk &apos;&#123;print $1&#125;&apos;` 100</span><br><span class="line"></span><br><span class="line"> S0C     S1C      S0U      S1U   EC        EU        OC         OU         PC      PU      YGC    YGCT      FGC    FGCT   GCT</span><br><span class="line">419392.0 419392.0 16805.3  0.0   3355520.0 2174554.4 12582912.0 7490006.5  46492.0 27829.5 138874 5399.166  310    91.654 5490.820</span><br><span class="line">419392.0 419392.0 16805.3  0.0   3355520.0 2457122.2 12582912.0 7490006.5  46492.0 27829.5 138874 5399.166  310    91.654 5490.820</span><br><span class="line">419392.0 419392.0 16805.3  0.0   3355520.0 2794739.1 12582912.0 7490006.5  46492.0 27829.5 138874 5399.166  310    91.654 5490.820</span><br><span class="line">419392.0 419392.0 16805.3  0.0   3355520.0 3066774.6 12582912.0 7490006.5  46492.0 27829.5 138874 5399.166  310    91.654 5490.820</span><br><span class="line">419392.0 419392.0 16805.3  0.0   3355520.0 3207202.1 12582912.0 7490006.5  46492.0 27829.5 138874 5399.166  310    91.654 5490.820  ①</span><br><span class="line"></span><br><span class="line">419392.0 419392.0  0.0   7578.0 3355520.0   0.0    12582912.0 7494329.9  46492.0 27829.5 138875 5399.197  310    91.654 5490.851  ②</span><br><span class="line">419392.0 419392.0  0.0   7578.0 3355520.0 141496.6 12582912.0 7494329.9  46492.0 27829.5 138875 5399.197  310    91.654 5490.851</span><br><span class="line">419392.0 419392.0  0.0   7578.0 3355520.0 492729.4 12582912.0 7494329.9  46492.0 27829.5 138875 5399.197  310    91.654 5490.851</span><br><span class="line">...</span><br><span class="line">419392.0 419392.0  0.0   7578.0 3355520.0 2993116.6 12582912.0 7494329.9  46492.0 27829.5 138875 5399.197  310    91.654 5490.851</span><br><span class="line">419392.0 419392.0  0.0   7578.0 3355520.0 3215684.2 12582912.0 7494329.9  46492.0 27829.5 138875 5399.197  310    91.654 5490.851</span><br><span class="line"></span><br><span class="line">419392.0 419392.0 16224.9  0.0   3355520.0   0.0    12582912.0 7498158.7  46492.0 27829.5 138876 5399.248  310    91.654 5490.902</span><br></pre></td></tr></table></figure></p>
+<p>① 第一次YGC之前, EU不断增大(伊甸区不断创建新对象), 因为还没有发生YGC, 所以OU,S0U都没有变化. S0U是上一次YGC的to survivor.<br>② 发生YGC时, <code>Eden中存活的对象转入S1, S0中存活的对象转入Old</code>. 因为Cassandra的对象年龄计数器=1, 只要在Survivor中存活过一次,就<code>有机会</code>晋升到老年代.  </p>
+<p>Cassandra的对象年龄计数器默认是1: <code>-XX:MaxTenuringThreshold=1</code>. 即对象在第一次YGC时,进入到Survivor,这时计数器=1.<br><strong>1) 当下一次YGC时,对象如果还存活,则计数器=2,超过MaxTenuringThreshold=1的阈值, 于是被晋升到了老年代中.</strong><br><strong>2) 还是说: 当第一次YGC时, 因为年龄计数器=1, 满足MaxTenuringThreshold=1的阈值条件了, 就马上被转移到老年代?</strong>  </p>
+<p>结论: <strong>XX:MaxTenuringThreshold=1 指的是<code>GC的次数</code>, 对象存活的年龄计数器<code>&gt;</code>GC次数时,才会被转移到老年代, 等于时并没有转移.</strong>  </p>
+<blockquote>
+<p>对象年龄计数器引起从Survivor到Old:<br>1) 第二次YGC时转移:<br>以第一次YGC为例, ①在YGC之前中S0U的对象计数器=1, ②当发生YGC时,S0U中存活的对象会被拷贝到S1U中,并且这些对象的年龄计数器=2.<br>同时S1U中还包括了从Eden中存活的对象,这些对象的年龄计数器=1. 即S1包括了从Eden和经过一次YGC后在S0中仍存活的对象.<br>而S0中存活的对象年龄计数器=2超过阈值=1, 因此会被转移到老年代中. 所以S1中剩下的只是从Eden中存活的对象(计数器=1).<br>因此在阈值为1的情况, 可以认为: <code>在YGC时, S0中可存活的对象直接转移到Old, Eden中可存活的对象转移到S1</code>.<br>实际上不能说S0直接转移到了Old, S0中的对象需要经过YGC之后, 才能判断是否存活, 并拷贝到S1.<br>如果存活,对象计数器才增加, 这时再判断是否超过GC的阈值, 如果超过阈值,才将S1中存活的对象再转移到老年代.   </p>
+<p>在这次YGC时, 老年代内存增加了: 7494329.9-7490006.5=4323.4. 说明有4M的对象被晋升到老年代.<br>按照上面的结论, 这4M的数据都是从S0的16M中过来的, 说明S0中有12M的对象被垃圾回收了. 同时S1的7M对象则全部来自于Eden中存活的对象.<br>在第二次的YGC时, 老年代内存增加了7498158-7494329=3828K=3M, 这些增加的对象是来源于上一次YGC的S1:7528.<br>说明第二次的YGC, 有7528-3828=3700被垃圾回收了. 同时S0的16M对象也是全部来自于第二次的Eden中存活的对象.<br>那么我们还能得出一个结论: <code>每次YGC后Old增加的内存总是来自于上一次的Survivor中存活的对象,它不会超过这个Survivor的大小</code>.  </p>
+</blockquote>
+<p>2) 第一次YGC时就转移:<br>因为MaxTenuringThreshold=1, 所以在第一次YGC时, 从Eden中存活的对象能够到Survivor, 这些对象的年龄计数器=1, 满足条件, 就立马被转移到老年代了.<br>那么相当于Eden中的存活对象,首先被复制到Survivor, 然后因为达到年龄计数器阈值, Survivor中的这些对象又被转移到Old.<br>也就是说Survivor最终不会保留从Eden过来的存活对象. 但是从上面的gc日志查看Survivor是有空间的. 所以这种说法是错误的.   </p>
+<blockquote>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047202 ~]$ sudo -u admin jstat -gc `sudo -u admin jps | grep CassandraDaemon |awk &apos;&#123;print $1&#125;&apos;` 300 | awk &apos;&#123;printf(&quot;%10s\t%10s\t%10s\t%10s\t%10s\t\n&quot;,$3,$4,$6,$8,$11)&#125;&apos;</span><br><span class="line">       S0U         S1U          EU          OU         YGC    Old Increment</span><br><span class="line">       0.0      7596.6         0.0   8280664.8      210091    </span><br><span class="line">       0.0      7596.6   3330543.3   8280664.8      210092</span><br><span class="line">   13250.2         0.0    735411.8   8283003.0      210092    3000&lt;7596</span><br><span class="line">   13250.2         0.0   2846976.6   8283003.0      210092</span><br><span class="line">       0.0      6458.5    162674.7   8288867.9      210093    5800&lt;13250    </span><br><span class="line">       0.0      6458.5   3162963.9   8288867.9      210093</span><br><span class="line">    6035.6         0.0    446169.8   8291703.2      210094    2836&lt;6458</span><br><span class="line">    6035.6         0.0   3171635.2   8291703.2      210094   </span><br><span class="line">       0.0      9745.3    595891.9   8294672.9      210095    3000&lt;6035</span><br></pre></td></tr></table></figure>
+<p><strong>是否需要修改MaxTenuringThreshold的值</strong><br><a href="http://stackoverflow.com/questions/21992943/persistant-gc-issues-with-cassandra-long-app-pauses" target="_blank" rel="noopener">http://stackoverflow.com/questions/21992943/persistant-gc-issues-with-cassandra-long-app-pauses</a>  </p>
+<blockquote>
+<p>For read/write heavy loads chances are the default tenuring threshold flag in GC setting is very low causing premature promotions.<br>Try increasing the tenuringthreshold to a large value like 32 to prevent premature promotions so that ParNew collects most garbage in young generation.</p>
+</blockquote>
+<p>You can observer this tenuring problem and promotion failures by running jstat command and see how the survivor spaces in heap are utilized.<br>I bet you they are not utilized much and objects go straight from eden to old generation.</p>
+<p><strong>5.分析gc.log中的ParNew</strong>  </p>
+<p>分析ParNew的内存变化: <code>[ParNew: 3365,222K-&gt;12,415K(3774,912K), 0.4782790 secs] 12265,316K-&gt;8916,561K(16357,824K)</code><br>括号内的分别是ParNew的总内存3774912KB(约3.6G),这个值在多次ParNew中都没有变化, 最后一个括号是堆的总内存约16G,同样多次ParNew也没有变化. 主要分析-&gt;的变化.   </p>
+<blockquote>
+<p>注意: 新生代的内存3774,912K的计算方式是Eden的Capacity+一个Survivor的Capacity:419392. 即3355520+419392=3774912.<br>本来以为新生代内存是Eden+2*SurvivorCapacity, 发现加起来并不等于3774912K. 所以在说新生代时,指的是<code>Eden和其中一个非空的Survivor</code>.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047202 ~]$ sudo -u admin jstat -gc `sudo -u admin jps | grep CassandraDaemon |awk &apos;&#123;print $1&#125;&apos;` 100 1 | awk &apos;&#123;printf(&quot;%10s\t%10s\t%10s\t%10s\t\n&quot;,$1,$2,$5,$7)&#125;&apos;</span><br><span class="line">       S0C         S1C          EC          OC</span><br><span class="line">  419392.0    419392.0   3355520.0  12582912.0</span><br></pre></td></tr></table></figure></p>
+</blockquote>
+<p>年轻代内存减少了3365222-12415=3352807K, 总的内存减少=12265316-8916561=3348755K. 即有3352807-3348755=4052K=4M对象晋升到老年代.<br>(这些对象有部分可能是已经到了晋升的年龄，然而由于Minor GC后Survivor几乎满了，因而基本可以确定有部分对象并没有到达晋升年龄而直接晋升了)  </p>
+<p>假设内存的变化是: [ParNew: A-&gt;B] C-&gt;D. 则新生代晋升到老年代的大小=D-B-(C-A) = D-C-(B-A)=A-B-(C-D)<br><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151025102209440" alt="gc-changes"></p>
+<p>YGC回收后的老年代内存=回收后的堆内存-回收后的新生代内存, 因为回收后新生代只有S0=B, 所以回收后老年代内存=D-B. </p>
+<table>
+<thead>
+<tr>
+<th>Time</th>
+<th>GC for ParNew</th>
+<th>gc.log: ParNew</th>
+<th>Total stopped</th>
+<th>After YGC Old Gen Size</th>
+<th>New 2 Old</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>21:02:31</td>
+<td>672ms[2]</td>
+<td>0.4782s</td>
+<td>0.4870s</td>
+<td>8904146</td>
+<td>4052</td>
+</tr>
+<tr>
+<td>21:02:39</td>
+<td>372ms</td>
+<td>0.3727s</td>
+<td>0.3774s</td>
+<td>8927847</td>
+<td>7030</td>
+</tr>
+<tr>
+<td>21:02:42</td>
+<td>247ms</td>
+<td>0.2469s</td>
+<td>0.2506s</td>
+<td>9100357</td>
+<td>172510</td>
+</tr>
+<tr>
+<td>21:03:56</td>
+<td>1549ms</td>
+<td>1.5487s</td>
+<td>1.5529s</td>
+<td>10004321</td>
+<td>755539</td>
+</tr>
+</tbody>
+</table>
+<p>YGC之后,老年代内存不断增加,因为不断会有Survivor区的对象被晋升到老年代中.<br>当然堆内存也是一直增加的,比较直观地观察老年代内存增加是使用gcutil其中O的占比不断增加<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047202 cassandra]$ sudo -u admin jstat -gcutil `sudo -u admin jps | grep CassandraDaemon |awk &apos;&#123;print $1&#125;&apos;` 1000 10</span><br><span class="line">  S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT</span><br><span class="line">  1.60   0.00   0.00  62.97  59.86 152418 5924.029   338   96.775 6020.804</span><br><span class="line">  1.60   0.00  81.17  62.97  59.86 152418 5924.029   338   96.775 6020.804</span><br><span class="line">  0.00   2.24  63.60  62.99  59.86 152419 5924.061   338   96.775 6020.836</span><br><span class="line">  1.10   0.00  49.40  63.02  59.86 152420 5924.093   338   96.775 6020.868</span><br><span class="line">  0.00   1.56  32.86  63.04  59.86 152421 5924.126   338   96.775 6020.901</span><br><span class="line">  0.00   0.68  12.10  63.11  59.86 152423 5924.189   338   96.775 6020.964</span><br><span class="line">  0.00   0.68  95.35  63.11  59.86 152423 5924.189   338   96.775 6020.964</span><br><span class="line">  1.25   0.00  78.39  63.11  59.86 152424 5924.218   338   96.775 6020.993</span><br><span class="line">  0.00   1.75  62.09  63.13  59.86 152425 5924.250   338   96.775 6021.025</span><br></pre></td></tr></table></figure></p>
+<p><strong>6.查看gc时system.log发生了什么</strong>  </p>
+<p>1).选取21:02:31发生的<code>GC for ParNew: 672 ms</code>: 在GC for ParNew之前, 执行了两个SliceQueryFilter, 并且都是带有tombstone的查询.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">INFO [CompactionExecutor:529] 2015-10-21 21:02:03,193 CompactionTask.java (line 299) Compacted 5 sstables to [/home/admin/cassandra/data/system/compactions_in_progress/system-compactions_in_progress-jb-1129535,].  751 bytes to 351 (~46% of original) in 33ms = 0.010144MB/s.  7 total partitions merged to 4.  Partition merge counts were &#123;1:5, 2:1, &#125;</span><br><span class="line">WARN [ReadStage:60] 2015-10-21 21:02:18,412 SliceQueryFilter.java (line 231) Read 991 live and 2109 tombstone cells in forseti.velocity (see tombstone_warn_threshold). 1000 columns was requested, slices=[dafycredit:dafycredit:accountLogin:!-dafycredit:dafycredit:accountLogin]</span><br><span class="line">WARN [ReadStage:58] 2015-10-21 21:02:18,421 SliceQueryFilter.java (line 231) Read 991 live and 2109 tombstone cells in forseti.velocity (see tombstone_warn_threshold). 1000 columns was requested, slices=[dafycredit:dafycredit:accountLogin:!-dafycredit:dafycredit:accountLogin]</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:02:31,882 GCInspector.java (line 116) GC for ParNew: 672 ms for 2 collections, 9135816744 used; max is 16750411776</span><br><span class="line">INFO [CompactionExecutor:530] 2015-10-21 21:02:36,113 ColumnFamilyStore.java (line 795) Enqueuing flush of Memtable-compactions_in_progress@410924923(1/10 serialized/live bytes, 1 ops)</span><br></pre></td></tr></table></figure></p>
+<p>2).选取21:03:56发生的<code>GC for ParNew: 1549 ms</code>: 在GC前发生了一次Compaction操作, 并在之后打印了StatusLogger.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">INFO [CompactionExecutor:506] 2015-10-21 21:02:45,116 CompactionTask.java (line 299) Compacted 1 sstables to [/home/admin/cassandra/data/forseti/velocity/forseti-velocity-jb-297051,].  </span><br><span class="line"> 163,330,070 bytes to 161,872,089 (~99% of original) in 42,087ms = 3.667956MB/s.  132,045 total partitions merged to 130,604.  Partition merge counts were &#123;1:132045, &#125;</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:03:19,142 GCInspector.java (line 116) GC for ParNew: 267 ms for 1 collections, 9969463696 used; max is 16750411776</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:03:56,802 GCInspector.java (line 116) GC for ParNew: 1549 ms for 1 collections, 10679738240 used; max is 16750411776</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:03:56,803 StatusLogger.java (line 55) Pool Name                    Active   Pending      Completed   Blocked  All Time Blocked</span><br><span class="line">...</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:03:57,783 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 750 ms for 1 collections, 11082238408 used; max is 16750411776</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>上面两个比较耗时的GC for ParNew, 我们能得出的结论是跟查询带有tombstone以及Compaction操作有关. 但是具体是不是他们一起的, 还需要进一步收集更多的信息.<br>但其实system.log中发生Compaction以及查询tombstone的操作是很频繁的. 不能根据这个就认为是他们引起的GC.  </p>
+</blockquote>
+<p>3).紧接着在21:03:57和21:03:59执行了一次750ms的<code>GC for ConcurrentMarkSweep</code>和351ms的<code>GC for ParNew</code>:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:03:57,783 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 750 ms for 1 collections, 11082,238408 used; max is 16750,411776</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:03:59,784 GCInspector.java (line 116) GC for ParNew: 351 ms for 1 collections, 11876803840 used; max is 16750411776</span><br></pre></td></tr></table></figure></p>
+<p>看看gc.log中对应的这次CMS, 很快就完成了: 初始标记花了0.749s, 总共花了0.842s. 这次CMS并没有引起FGC. 接下来是另外一次的YGC.<br>CMS和Full GC不是一个概念! 所以下面的日志第一段中你看到了CMS…, 但是并没有Full GC.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">2015-10-21T21:03:56.997+0800: 14254.917: [GC [1 CMS-initial-mark: 10004321K(12582912K)] 10725707K(16357824K), 0.7497450 secs] [Times: user=0.74 sys=0.00, real=0.75 secs]</span><br><span class="line">2015-10-21T21:03:57.747+0800: 14255.667: Total time for which application threads were stopped: 0.8420690 seconds</span><br><span class="line">2015-10-21T21:03:57.748+0800: 14255.667: [CMS-concurrent-mark-start]</span><br><span class="line"></span><br><span class="line">2015-10-21T21:03:58.943+0800: 14256.862: [GCBefore GC:</span><br><span class="line">2015-10-21T21:03:58.943+0800: 14256.862: [ParNew: 3774,912K-&gt;310,526K(3774912K), 0.3513860 secs] 13779233K-&gt;10596099K(16357824K)After GC:</span><br><span class="line">2015-10-21T21:03:59.295+0800: 14257.214: Total time for which application threads were stopped: 0.3553810 seconds</span><br></pre></td></tr></table></figure></p>
+<p>将CMS出现的上下几条关于ParNew进行对比, 会看到21:09:41总的堆总内存由上一次的10596099K减少到5092663K.<br>可见21:03:56的CMS肯定是发挥了作用: 因为CMS垃圾收集会释放老年代的空间, 从而减少堆内存的占用.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">2015-10-21T21:03:56.997+0800: 14254.917: [GC [1 CMS-initial-mark: 10004,321K(12582912K)] 10725707K(16357824K), 0.7497450 secs] [Times: user=0.74 sys=0.00, real=0.75 secs]</span><br><span class="line">2015-10-21T21:03:58.943+0800: 14256.862: [ParNew: 3774,912K-&gt;310,526K(3774912K), 0.3513860 secs] 13779233K-&gt;10596099K(16357824K)After GC:</span><br><span class="line">... 这中间是有CMS日志的, 见下文 </span><br><span class="line">2015-10-21T21:09:41.291+0800: 14599.210: [ParNew: 3374,088K-&gt;419,392K(3774912K), 1.4201840 secs] 7553474K-&gt;5092663K(16357824K)After GC:</span><br></pre></td></tr></table></figure></p>
+<p>4).CMS GC, not trigger FGC</p>
+<p>理解CMS GC日志: <a href="https://blogs.oracle.com/poonam/entry/understanding_cms_gc_logs" target="_blank" rel="noopener">https://blogs.oracle.com/poonam/entry/understanding_cms_gc_logs</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">2015-10-21T21:03:56.997+0800: 14254.917: [GC [1 👉CMS-initial-mark: 10004321K(12582912K)] 10725707K(16357824K), 0.7497450 secs] [Times: user=0.74 sys=0.00, real=0.75 secs]</span><br><span class="line">2015-10-21T21:03:57.747+0800: 14255.667: Total time for which application threads were stopped: 0.8420690 seconds</span><br><span class="line">2015-10-21T21:03:57.748+0800: 14255.667: [CMS-concurrent-mark-start]</span><br><span class="line"></span><br><span class="line">2015-10-21T21:04:01.922+0800: 14259.842: [👉CMS-concurrent-mark: 3.774/4.175 secs] [Times: user=21.69 sys=1.42, real=4.18 secs]</span><br><span class="line">2015-10-21T21:04:01.923+0800: 14259.842: [CMS-concurrent-preclean-start]</span><br><span class="line">2015-10-21T21:04:02.472+0800: 14260.391: [CMS-concurrent-preclean: 0.534/0.549 secs] [Times: user=1.89 sys=0.20, real=0.54 secs]</span><br><span class="line">2015-10-21T21:04:02.472+0800: 14260.391: [CMS-concurrent-abortable-preclean-start]</span><br><span class="line">2015-10-21T21:04:02.855+0800: 14260.774: [👉ParNew: 3436653K-&gt;21828K(3774912K), 0.0333360 secs] 13732995K-&gt;10322861K(16357824K)After GC:</span><br><span class="line">2015-10-21T21:04:04.134+0800: 14262.054: [CMS-concurrent-abortable-preclean: 1.619/1.663 secs] [Times: user=5.98 sys=0.57, real=1.67 secs]</span><br><span class="line">2015-10-21T21:04:04.138+0800: 14262.057: [GC[👉YG occupancy: 1747139 K (3774912 K)]</span><br><span class="line">  2015-10-21T21:04:04.138+0800: 14262.057: [Rescan (parallel) , 0.2811700 secs]</span><br><span class="line">  2015-10-21T21:04:04.420+0800: 14262.339: [weak refs processing, 0.0024920 secs]</span><br><span class="line">  2015-10-21T21:04:04.422+0800: 14262.341: [class unloading, 0.0154740 secs]</span><br><span class="line">  2015-10-21T21:04:04.438+0800: 14262.357: [scrub symbol table, 0.0037670 secs]</span><br><span class="line">  2015-10-21T21:04:04.441+0800: 14262.361: [scrub string table, 0.0047420 secs] </span><br><span class="line">  [1 👉CMS-remark: 10301033K(12582912K)] 12048173K(16357824K), 0.3147390 secs] [Times: user=2.15 sys=0.00, real=0.32 secs]</span><br><span class="line">2015-10-21T21:04:04.453+0800: 14262.372: Total time for which application threads were stopped: 0.3184590 seconds</span><br><span class="line">2015-10-21T21:04:04.453+0800: 14262.373: [CMS-concurrent-sweep-start]</span><br><span class="line">CMS: Large Block: 0x00000007c1173180; Proximity: 0x00000007ae04a648 -&gt; 0x00000007b9fd0a80</span><br><span class="line"></span><br><span class="line">CMS: Large block 0x00000007c1173180</span><br><span class="line">CMS: Large Block: 0x00000007fc840000; Proximity: 0x00000007fc7fccb0 -&gt; 0x00000007fc7fccb0</span><br><span class="line">CMS: Large block 0x00000007fc840000</span><br><span class="line">2015-10-21T21:04:14.119+0800: 14272.038: [👉CMS-concurrent-sweep: 9.423/9.665 secs] [Times: user=36.55 sys=4.19, real=9.66 secs]</span><br><span class="line">2015-10-21T21:04:14.119+0800: 14272.038: [CMS-concurrent-reset-start]</span><br><span class="line">2015-10-21T21:04:14.163+0800: 14272.083: [👉CMS-concurrent-reset: 0.045/0.045 secs] [Times: user=0.17 sys=0.02, real=0.04 secs]</span><br></pre></td></tr></table></figure></p>
+<p>注意: 在CMS-concurrent-abortable-preclean-start后有一次ParNew的新生代垃圾收集.   </p>
+<blockquote>
+<p>after a preclean, ‘abortable preclean’ starts. After the young generation collection,<br>the young gen occupancy drops down from 3436653K to 21828K.<br>When young gen occupancy reaches 1747139 which is 50% of the total capacity(3774912),<br>precleaning is aborted and ‘remark’ phase is started.</p>
+</blockquote>
+<p>5).观察system.log统计的GC信息, 发现在这之后的<code>21:09:42</code>开始<code>GC for ParNew</code>时间越来越长, 并且出现了多次的<code>GC for CMS</code>.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">INFO [CompactionExecutor:546] 2015-10-21 21:09:10,664 CompactionTask.java (line 120) Compacting [SSTableReader(path=&apos;/home/admin/cassandra/data/forseti/velocity/forseti-velocity-jb-297018-Data.db&apos;), SSTableReader(path=&apos;/home/admin/cassandra/data/forseti/velocity/forseti-velocity-jb-297014-Data.db&apos;), SSTableReader(path=&apos;/home/admin/cassandra/data/forseti/velocity/forseti-velocity-jb-297007-Data.db&apos;), SSTableReader(path=&apos;/home/admin/cassandra/data/forseti/velocity/forseti-velocity-jb-297012-Data.db&apos;), SSTableReader(path=&apos;/home/admin/cassandra/data/forseti/velocity/forseti-velocity-jb-297006-Data.db&apos;), SSTableReader(path=&apos;/home/admin/cassandra/data/forseti/velocity/forseti-velocity-jb-297008-Data.db&apos;), SSTableReader(path=&apos;/home/admin/cassandra/data/forseti/velocity/forseti-velocity-jb-297057-Data.db&apos;), SSTableReader(path=&apos;/home/admin/cassandra/data/forseti/velocity/forseti-velocity-jb-297009-Data.db&apos;), SSTableReader(path=&apos;/home/admin/cassandra/data/forseti/velocity/forseti-velocity-jb-297013-Data.db&apos;), SSTableReader(path=&apos;/home/admin/cassandra/data/forseti/velocity/forseti-velocity-jb-297017-Data.db&apos;), SSTableReader(path=&apos;/home/admin/cassandra/data/forseti/velocity/forseti-velocity-jb-297056-Data.db&apos;), SSTableReader(path=&apos;/home/admin/cassandra/data/forseti/velocity/forseti-velocity-jb-297011-Data.db&apos;)]</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:09:42,724 GCInspector.java (line 116) GC for ParNew: 1420 ms for 1 collections, 5274947408 used; max is 16750411776</span><br><span class="line"></span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:09:45,891 GCInspector.java (line 116) GC for ParNew: 2342 ms for 1 collections, 7007901632 used; max is 16750411776</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:09:45,892 StatusLogger.java (line 55) Pool Name                    Active   Pending      Completed   Blocked  All Time Blocked</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:09:45,892 StatusLogger.java (line 70) ReadStage                        23       129         645249         0                 0</span><br><span class="line"></span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:09:49,573 GCInspector.java (line 116) GC for ParNew: 3161 ms for 1 collections, 9012309600 used; max is 16750411776</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:09:49,574 StatusLogger.java (line 55) Pool Name                    Active   Pending      Completed   Blocked  All Time Blocked</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:09:49,575 StatusLogger.java (line 70) ReadStage                        32        94         645515         0                 0</span><br><span class="line"></span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:09:53,443 GCInspector.java (line 116) GC for ParNew: 3277 ms for 1 collections, 11212220496 used; max is 16750411776</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:09:53,443 StatusLogger.java (line 55) Pool Name                    Active   Pending      Completed   Blocked  All Time Blocked</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:09:53,444 StatusLogger.java (line 70) ReadStage                        32       254         645647         0                 0</span><br><span class="line"></span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:09:54,790 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 1142 ms for 1 collections, 12623059520 used; max is 16750411776</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:09:54,790 StatusLogger.java (line 55) Pool Name                    Active   Pending      Completed   Blocked  All Time Blocked</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:09:54,791 StatusLogger.java (line 70) ReadStage                        32       475         645647         0                 0</span><br><span class="line"></span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:09:55,022 MessagingService.java (line 876) 52 READ messages dropped in last 5000ms</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:09:55,025 StatusLogger.java (line 55) Pool Name                    Active   Pending      Completed   Blocked  All Time Blocked</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:09:55,026 StatusLogger.java (line 70) ReadStage                        32       512         645647         0                 0</span><br><span class="line"></span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:10:56,385 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 41123 ms for 1 collections, 11291487752 used; max is 16750411776</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:10:56,385 StatusLogger.java (line 55) Pool Name                    Active   Pending      Completed   Blocked  All Time Blocked</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-21 21:10:56,386 StatusLogger.java (line 70) ReadStage                        32       515         645647         0                 0</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>system.log中在这几次比较长的GC for ParNew以及GC for CMS都没有什么异常信息, 不过打印了很多SatusLogger的信息.  </p>
+<blockquote>
+<p>StatusLogger会在GCInspector计算<code>GC duration超过1s</code>时打印. 具体可以查看GCInspector.java中的StatsLogger的输出条件.   </p>
+</blockquote>
+<p>看看gc.log对应这段时间的日志, 也都只是简单地打印了before, after gc的, 并没有打印heap中对象的信息.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">2015-10-21T21:09:41.291+0800: 14599.210: [ParNew: 3374088K-&gt;419392K(3774912K), 1.4201840 secs] 7553474K-&gt;5092663K(16357824K)After GC: ①</span><br><span class="line">2015-10-21T21:09:42.712+0800: 14600.632: Total time for which application threads were stopped: 1.4269430 seconds</span><br><span class="line"></span><br><span class="line">2015-10-21T21:09:43.530+0800: 14601.449: [ParNew: 3774641K-&gt;419392K(3774912K), 2.3420270 secs] 8447913K-&gt;6726642K(16357824K)After GC: ②</span><br><span class="line">2015-10-21T21:09:45.873+0800: 14603.792: Total time for which application threads were stopped: 2.3507670 seconds</span><br><span class="line"></span><br><span class="line">2015-10-21T21:09:46.400+0800: 14604.320: [ParNew: 3774912K-&gt;419392K(3774912K), 3.1607140 secs] 10082162K-&gt;8787059K(16357824K)After GC: ③</span><br><span class="line">2015-10-21T21:09:49.562+0800: 14607.481: Total time for which application threads were stopped: 3.1836570 seconds</span><br><span class="line"></span><br><span class="line">2015-10-21T21:09:50.160+0800: 14608.079: [ParNew: 3774912K-&gt;419392K(3774912K), 3.2769040 secs] 12142579K-&gt;10947142K(16357824K)After GC:</span><br><span class="line">2015-10-21T21:09:53.437+0800: 14611.356: Total time for which application threads were stopped: 3.2819760 seconds</span><br></pre></td></tr></table></figure></p>
+<p>但是等等, 仔细看下ParNew中回收后的新生代内存大小, 有没有发现什么??  </p>
+<p>7.<strong>问题初/出现: ParNew后Survivor满了</strong>  </p>
+<p>和之前我们分析的ParNew不同的是这里回收之前新生代的内存就和总内存一样都是3774912K(前面两个只差一点, 后面两个完全一样).<br>回收后新生代内存都是419392K. 这种一模一样的数据说明了什么问题? 一般而言, 随机的数据是没有问题的, 固定的数据就是有问题了.   </p>
+<p><strong>可以看到ParNew之前的新生代内存已经达到了新生代内存的容量3774912K了(前面使用-gc命令,EC+一个SurvivorCapacity的值=3774912K).</strong><br><strong>说明在回收前, Eden和一个Survivor都完全填满对象了. 那么在YGC时, 这个满了的Survivor因为对象计数器&gt;1晋升到老年代,</strong><br><strong>而我们看到回收后的新生代内存仍然是满了的SurvivorCapacity:419392K. 说明Eden中经过这次YGC仍然存活的对象不止400M,</strong><br><strong>由于Eden存活的对象不能够放入Survivor,所以剩余的这些对象会直接进入老年代.  观察老年代的内存②比①增加了1.6G多:</strong><br><strong>包括了Survivor晋升过来的最多400M,以及因为Survivor满了无法存放而直接转移的Eden中存活的对象有近至少1.2G!</strong><br><strong>Eden中存活的对象因为Survivor满了而直接转移到老年代, 这种情况发生的时候是很不妙的. 因为对象没有经过Survivor.</strong><br><strong>不过这个问题的根源应该是: 为什么Eden的存活对象之前是只有最多4M, 突然一下子增大到有1.2G的存活对象?</strong>   </p>
+<blockquote>
+<p><code>YGC会把Eden中的所有活的对象都移到Survivor区中，如果Survivor区中放不下，那么剩下的活的对象就被移到Old Gen中.</code><br>因为YGC会把Eden中存活的对象以及from survivor拷贝到to survivor, 但是由于现在from survivor已经满了,所以Eden中存活的对象会直接拷贝到老年代.  </p>
+</blockquote>
+<h4 id="很长的FGC">很长的FGC</h4><p>1.<strong>CMS GC</strong>  </p>
+<p>聊聊JVM（四）深入理解Major GC, Full GC, CMS: <a href="http://blog.csdn.net/iter_zc/article/details/41825395" target="_blank" rel="noopener">http://blog.csdn.net/iter_zc/article/details/41825395</a><br>[HotSpot VM] JVM调优的”标准参数”的各种陷阱: <a href="http://hllvm.group.iteye.com/group/topic/27945" target="_blank" rel="noopener">http://hllvm.group.iteye.com/group/topic/27945</a>  </p>
+<blockquote>
+<p>CMS垃圾收集器包括了四个阶段: 初始标记<code>initial-mark</code>, 并发标记<code>concurrent-mark</code>, 重新标记<code>remark</code>, 并发整理<code>concurrent sweep</code>.<br>其中initital mark和remark两个没有带concurrent的会StopTheWorld.  </p>
+<p>CMS至少会给Full GC的次数 + 2，因为Full GC的次数是按照老年代GC时stop the world的次数而定的.<br>Full GC的Time的定义，可以理解它指的是老年代GC时stop the world的时间  </p>
+<p>CMS 不等于Full GC，我们可以看到CMS分为多个阶段，只有stop the world的阶段被计算到了Full GC的次数和时间，而和业务线程并发的GC的次数和时间则不被认为是Full GC</p>
+<p>正常的CMS的stop the world的时间很短，都是在几十到几百ms的级别，对Full GC的时间影响很小</p>
+</blockquote>
+<p>2.<strong>Class Histogram FGC</strong>  </p>
+<p>我们分析21:10分左右开始到22:43分之间Cassandra进程假死这个过程到底发生了什么: <code>33M 10月 21 22:43 gc-1445418381.log</code>. 找到21:10分之前最近的GC日志信息:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line">2015-10-21T21:09:53.577+0800: 14611.496: [GC [1 CMS-initial-mark: 👉10,527,750K(12,582,912K)👈] 11877,789K(16357,824K), 1.1421340 secs] [Times: user=1.15 sys=0.00, real=1.14 secs]</span><br><span class="line">2015-10-21T21:09:54.719+0800: 14612.639: Total time for which application threads were stopped: 1.1519090 seconds  ①</span><br><span class="line">2015-10-21T21:09:54.720+0800: 14612.639: [CMS-concurrent-mark-start]</span><br><span class="line">2015-10-21T21:09:54.946+0800: 14612.865: Total time for which application threads were stopped: 0.0044060 seconds</span><br><span class="line">2015-10-21T21:09:54.949+0800: 14612.868: Total time for which application threads were stopped: 0.0028860 seconds</span><br><span class="line">2015-10-21T21:09:55.120+0800: 14613.039: [GCBefore GC:</span><br><span class="line">Statistics for BinaryTreeDictionary:</span><br><span class="line">------------------------------------</span><br><span class="line">Total Free Space: 132,062,670  剩余容量为132M. </span><br><span class="line">Max   Chunk Size: 108,169,992  最大Chunk的容量为108M.</span><br><span class="line">Number of Blocks: 198          块的数量(多少Chunks)</span><br><span class="line">Av.  Block  Size: 666,983.     NumOfBlocks*AvgBlockSize=TotalFreeSpace</span><br><span class="line">Tree      Height: 11</span><br><span class="line">Before GC:</span><br><span class="line">Statistics for BinaryTreeDictionary:   这里为什么有两段信息?</span><br><span class="line">------------------------------------</span><br><span class="line">Total Free Space: 2,285,361</span><br><span class="line">Max   Chunk Size: 2,281,472</span><br><span class="line">Number of Blocks: 10</span><br><span class="line">Av.  Block  Size: 228,536</span><br><span class="line">Tree      Height: 6</span><br><span class="line">2015-10-21T21:09:55.120+0800: 14613.039: [👉ParNew: 3774,912K-&gt;3774,912K👈(3774912K), 0.0000490 secs]2015-10-21T21:09:55.120+0800: 14613.039: [Class Histogram (before full gc):</span><br><span class="line"> num     #instances         #bytes  class name</span><br><span class="line">----------------------------------------------</span><br><span class="line">   1:      80698905     6645469872  [B</span><br><span class="line">   2:      88784779     4261669392  java.nio.HeapByteBuffer</span><br><span class="line">   3:      39890367     1595614680  org.apache.cassandra.io.sstable.IndexHelper$IndexInfo</span><br><span class="line">   4:      15687882     1004024448  java.nio.DirectByteBufferR</span><br><span class="line">   5:        104774      385911192  [Ljava.lang.Object;</span><br><span class="line">   6:       3206670      153920160  edu.stanford.ppl.concurrent.SnapTreeMap$Node</span><br><span class="line">   7:       2783478      111339120  org.apache.cassandra.db.ExpiringColumn</span><br><span class="line">   8:        531668       51040128  edu.stanford.ppl.concurrent.CopyOnWriteManager$COWEpoch</span><br><span class="line">   9:        536228       25738944  edu.stanford.ppl.concurrent.SnapTreeMap$RootHolder</span><br><span class="line">  10:        823822       19771728  java.util.concurrent.ConcurrentSkipListMap$Node</span><br><span class="line">  11:        531668       17013376  edu.stanford.ppl.concurrent.CopyOnWriteManager$Latch</span><br><span class="line">  ...</span><br><span class="line">Total     239496755    14467348864  👉6G+4G+1G+500M=12.6G, 再加上其他,一共有近14G.👈 </span><br><span class="line">, 11.1813410 secs]</span><br><span class="line">2015-10-21T21:10:06.302+0800: 14624.221: [CMS2015-10-21T21:10:18.420+0800: 14636.339: [CMS-concurrent-mark: 12.488/23.700 secs] [Times: user=37.26 sys=0.72, real=23.70 secs]</span><br><span class="line">✨(concurrent mode failure)✨CMS: Large block 0x0000000796a01988 ④</span><br><span class="line">: 10527750K-&gt;10940294K(12582912K), 41.1230770 secs]  </span><br><span class="line">2015-10-21T21:10:47.425+0800: 14665.344: [Class Histogram (after full gc):</span><br><span class="line"> num     #instances         #bytes  class name</span><br><span class="line">----------------------------------------------</span><br><span class="line">   1:      72165660     5523991976  [B</span><br><span class="line">   2:      75437882     3621018336  java.nio.HeapByteBuffer</span><br><span class="line">   3:      36048357     1441934280  org.apache.cassandra.io.sstable.IndexHelper$IndexInfo</span><br><span class="line">   4:         25412      365368784  [Ljava.lang.Object;</span><br><span class="line">   5:       1368526       65689248  edu.stanford.ppl.concurrent.SnapTreeMap$Node</span><br><span class="line">   6:       1365018       54600720  org.apache.cassandra.db.ExpiringColumn  ⑤</span><br><span class="line">   7:        150348       14433408  edu.stanford.ppl.concurrent.CopyOnWriteManager$COWEpoch</span><br><span class="line">   8:         15940       12236136  [J</span><br><span class="line">   9:        222563        8902520  java.util.TreeMap$Entry</span><br><span class="line">  10:        357980        8591520  java.lang.Long</span><br><span class="line">  11:         62812        8470512  [C</span><br><span class="line">  12:        304483        7307592  java.lang.Double</span><br><span class="line">  13:        150424        7220352  edu.stanford.ppl.concurrent.SnapTreeMap$RootHolder  </span><br><span class="line"> Total     190044152    11225332704</span><br><span class="line">, 8.9471970 secs]</span><br><span class="line"> 14302662K-&gt;10940294K(16357824K), [CMS Perm : 26777K-&gt;26774K(44704K)]After GC:   ②</span><br><span class="line">Statistics for BinaryTreeDictionary:</span><br><span class="line">------------------------------------</span><br><span class="line">Total Free Space: 210,238,671.   原先剩余132M,现在是210M.</span><br><span class="line">Max   Chunk Size: 210,238,671    只有一个块了</span><br><span class="line">Number of Blocks: 1</span><br><span class="line">Av.  Block  Size: 210238671      所以最大值=平均值=Total  </span><br><span class="line">Tree      Height: 1</span><br><span class="line">After GC:</span><br><span class="line">Statistics for BinaryTreeDictionary:</span><br><span class="line">------------------------------------</span><br><span class="line">Total Free Space: 0</span><br><span class="line">Max   Chunk Size: 0</span><br><span class="line">Number of Blocks: 0</span><br><span class="line">Tree      Height: 0</span><br><span class="line">, 61.2523050 secs] [Times: user=72.60 sys=0.62, real=61.24 secs]</span><br><span class="line">2015-10-21T21:10:56.372+0800: 14674.292: Total time for which application threads were stopped: 61.2555790 seconds  ③</span><br></pre></td></tr></table></figure></p>
+<p>① initial-mark时间很短,只有1.14秒. 虽然只有1.14秒, 但日志接着打印出Total time … stopped:1.15s. 因为初始标记会STW.   </p>
+<blockquote>
+<p>Beginning of tenured generation collection with CMS collector. This is initial Marking phase of CMS where<br>all the objects directly reachable from roots are marked and this is done with all the mutator threads stopped.<br>老年代的容量OC为12G,当它被使用(occupancy)了10G时, CMS收集器被触发(trigger).  </p>
+</blockquote>
+<p>② 回收前的13.96G减少到10.68G. Perm永久代在垃圾收集过程中没有什么变化.<br>③ GC的时间从<code>21:09:55</code>-<code>21:10:56</code>刚好是<code>61s</code>. FGC的这段时间就是应用程序线程被中断Stopped的总时间.<br>④ 有个23.7s的<code>concurrent mark</code>, 并且<code>(concurrent mode failure)CMS: Large block</code>.    </p>
+<blockquote>
+<p>CMS GC时出现promotion failed和concurrent mode failure:<br>promotion failed是在进行Minor GC时，survivor space放不下、对象只能放入旧生代，而此时旧生代也放不下造成的；<br>concurrent mode failure是在执行CMS GC的过程中同时有对象要放入旧生代，而此时旧生代空间不足造成的。<br>应对措施为：增大survivor space、旧生代空间或调低触发并发GC的比率  </p>
+</blockquote>
+<p>⑤ ExpiringColumn在GC后被回收, 这些对象来自于查询时把tombstone都加载到内存,而没有及时回收. 不过只有50M左右.  </p>
+<p>除了表面的这些日志信息外, 我们还能挖掘出什么信息:<br>1) 观察上面一次FGC的过程, DirectByteBufferR对象在GC后没有存在(将近1G), 其他对象的instances和bytes都有所减少.   </p>
+<p>2) SSTable的IndexInfo是数据的索引信息. 占了约1.5G.  </p>
+<p>3) BinaryTreeDictionary是Perm的statics吗</p>
+<p>3.<strong>concurrent mode failure</strong>  </p>
+<p><a href="https://blogs.oracle.com/poonam/entry/troubleshooting_long_gc_pauses" target="_blank" rel="noopener">https://blogs.oracle.com/poonam/entry/troubleshooting_long_gc_pauses</a>  </p>
+<blockquote>
+<p>Fragmentation in the Java Heap can cause GCs to occur more frequently and also sometimes causing long pauses in the GCs.<br>This is more probable in the case of Concurrent Mark Sweep collector, also known as CMS, 在CMS阶段由于碎片更容易引起GC.<br>where the tenured generation space is not compacted with the concurrent collections. 因为老年代的空间在并发收集时并没有做压缩操作.    </p>
+</blockquote>
+<p>In case of the CMS, due to fragmentation in the tenured generation space, the young generation collections can face 新生代的收集会面临晋升失败<br>promotion failures and thus triggering ‘Concurrent Mode Failure’ collections that are stop-the-world Full GCs, 从而触发<code>并发模式失败</code>引起FGC<br>and Full GCs take a long time to finish as compared to the concurrent collection pauses. FGC会花费更多的时间  </p>
+<blockquote>
+</blockquote>
+<p>Due to the fragmentation, the direct allocations in the tenured generation may fail 因为碎片存在,即使老年代有足够的空间. 但是因为这些碎片不是连续的<br>even when there is lot of free space available and thus causing Full GCs. 如果新生代要求一个连续的空间,老年代没有这样的,就会导致FGC.<br>Fragmentation can also cause frequent allocation failures and thus triggering frequent Full GCs that increase the overall time the application is paused for.</p>
+<h4 id="最终OOM时">最终OOM时</h4><p>最后导致Cassandra进程挂掉时打印的堆信息: </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">2015-10-21T22:37:40.928+0800: 19878.847: [Class Histogram (before full gc):</span><br><span class="line"> num     #instances         #bytes  class name</span><br><span class="line">----------------------------------------------</span><br><span class="line">   1:     109883385     8494073440  [B  ②</span><br><span class="line">   2:     113572533     5451481584  java.nio.HeapByteBuffer</span><br><span class="line">   3:      54818129     2192725160  org.apache.cassandra.io.sstable.IndexHelper$IndexInfo</span><br><span class="line">   4:         38540      329177992  [Ljava.lang.Object;</span><br><span class="line">   5:       1558136       74790528  edu.stanford.ppl.concurrent.SnapTreeMap$Node</span><br><span class="line">   6:       1661366       66454640  org.apache.cassandra.db.ExpiringColumn</span><br><span class="line">   7:        175824       16879104  edu.stanford.ppl.concurrent.CopyOnWriteManager$COWEpoch</span><br><span class="line"></span><br><span class="line">2015-10-21T22:37:53.867+0800: 19891.786: [CMS2015-10-21T22:38:10.333+0800: 19908.252: [CMS-concurrent-mark: 16.465/29.409 secs] [Times: user=45.59 sys=0.10, real=29.41 secs]</span><br><span class="line"> (concurrent mode failure)CMS: Large block 0x0000000000000000</span><br><span class="line">: 12582912K-&gt;12582911K(12582912K), 57.4368210 secs]</span><br><span class="line">2015-10-21T22:38:51.304+0800: 19949.223: [Class Histogram (after full gc):</span><br><span class="line"> num     #instances         #bytes  class name</span><br><span class="line">----------------------------------------------</span><br><span class="line">   1:     107032770     8287003856  [B</span><br><span class="line">   2:     110721923     5314652304  java.nio.HeapByteBuffer</span><br><span class="line">   3:      53392823     2135712920  org.apache.cassandra.io.sstable.IndexHelper$IndexInfo</span><br><span class="line">   4:         38529      318767288  [Ljava.lang.Object;</span><br><span class="line">   5:       1558136       74790528  edu.stanford.ppl.concurrent.SnapTreeMap$Node</span><br><span class="line">   6:       1661366       66454640  org.apache.cassandra.db.ExpiringColumn</span><br><span class="line">   7:        175824       16879104  edu.stanford.ppl.concurrent.CopyOnWriteManager$COWEpoch</span><br><span class="line">   8:         19299       12399344  [J</span><br><span class="line">   9:        374876        8997024  java.lang.Long</span><br><span class="line"></span><br><span class="line">① 16,357,823K-&gt;15,956,145K(16357824K), [CMS Perm : 26698K-&gt;26684K(44704K)]After GC:</span><br><span class="line">Statistics for BinaryTreeDictionary:</span><br><span class="line">------------------------------------</span><br><span class="line">Total Free Space: 0</span><br><span class="line">Max   Chunk Size: 0</span><br><span class="line">Number of Blocks: 0</span><br><span class="line">Tree      Height: 0</span><br><span class="line">After GC:</span><br><span class="line">Statistics for BinaryTreeDictionary:</span><br><span class="line">------------------------------------</span><br><span class="line">Total Free Space: 0</span><br><span class="line">Max   Chunk Size: 0</span><br><span class="line">Number of Blocks: 0</span><br><span class="line">Tree      Height: 0</span><br><span class="line"></span><br><span class="line">2015-10-21T22:43:09.606+0800: 20207.525: Total time for which application threads were stopped: 0.0032060 seconds</span><br><span class="line">Heap  ③</span><br><span class="line"> par new generation   total 3,774,912K, used 3,677,021K [0x00000003fae00000, 0x00000004fae00000, 0x00000004fae00000)</span><br><span class="line">  eden space 3,355,520K, 100% used [0x00000003fae00000, 0x00000004c7ae0000, 0x00000004c7ae0000)</span><br><span class="line">  from space 419,392K,  76% used [0x00000004c7ae0000, 0x00000004db4d79d0, 0x00000004e1470000)</span><br><span class="line">  to   space 419,392K,   0% used [0x00000004e1470000, 0x00000004e1470000, 0x00000004fae00000)</span><br><span class="line"> concurrent mark-sweep generation total 12,582,912K, used 12,582,911K [0x00000004fae00000, 0x00000007fae00000, 0x00000007fae00000)</span><br><span class="line"> concurrent-mark-sweep perm gen total 44,704K, used 26,855K [0x00000007fae00000, 0x00000007fd9a8000, 0x0000000800000000)</span><br></pre></td></tr></table></figure>
+<p>① GC前和GC后几乎没有回收多少内存<br>② 查看各个对象占用的大小: 8+5+2=15已经接近堆内存的最大值16G了<br>③ 从最后OOM时打印的Heap信息查看堆内存中各个部分的大小如下:  </p>
+<p>新生代:3.7G, 其中Eden:3.3G, Survivor0:400MB.<br>老年代:12G, 使用了100%. 永久代44M.<br>所以新生代+老年代=12+3.7, 接近最大内存16G, OOM就是因为堆内存被使用光了引起的.<br>通常来说: 老年代(CMS)的对象没有及时被回收释放, 就会造成OOM!<br>也就是说老年代的对象太多了, 造成了<code>内存泄露</code>!  </p>
+<p>最后OOM, 因此Cassandra进程最终终于挂掉了(当然OOM异常信息是打印在了system.log中, 这里只是打印出发生OOM时的Heap信息)!<br>因为我们指定了<code>-XX:+HeapDumpOnOutOfMemoryError</code>: 在OOM错误时dump heap.  </p>
+<h3 id="GC问题再现:_[203@2015-10-28_19:55]">GC问题再现: [203@2015-10-28 19:55]</h3><p>本来正在下线226节点. 用nodetool status查看时发现203状态为DN, 查看后台很长的GC for CMS.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">cat  /var/log/cassandra/system.log  | grep &quot;GC&quot; | grep &quot;2015-10-28&quot;</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-28 19:54:38,278 GCInspector.java (line 116) GC for ParNew: 235 ms for 1 collections, 2419573000 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-28 19:55:25,997 GCInspector.java (line 116) GC for ParNew: 1504 ms for 1 collections, 3733428056 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-28 19:55:28,946 GCInspector.java (line 116) GC for ParNew: 2330 ms for 1 collections, 5676292056 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-28 19:55:32,165 GCInspector.java (line 116) GC for ParNew: 2739 ms for 1 collections, 7921578528 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-28 19:55:35,572 GCInspector.java (line 116) GC for ParNew: 2952 ms for 1 collections, 10161987488 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-28 20:10:53,290 GCInspector.java (line 116) GC for ParNew: 866487 ms for 1 collections, 11508739304 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-28 20:10:53,376 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 31607 ms for 2 collections, 12110583384 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-28 20:12:06,522 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 51422 ms for 1 collections, 16334886216 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-28 20:13:24,020 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 51095 ms for 1 collections, 14423806424 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-28 20:14:43,251 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 49143 ms for 1 collections, 16170444160 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-28 20:16:03,026 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 49301 ms for 1 collections, 16327286728 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-28 20:17:27,808 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 56111 ms for 1 collections, 16416467232 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-28 20:18:48,870 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 53220 ms for 1 collections, 16494725704 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-28 20:20:10,354 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 53595 ms for 1 collections, 16644566464 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-28 20:24:10,303 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 163458 ms for 3 collections, 16649751064 used; max is 16750411776</span><br></pre></td></tr></table></figure></p>
+<p>于是用jstat查看了gc, 发现新生代, 老年代空间都满了!<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"> S0C     S1C       S0U   S1U      EC        EU        OC         OU       PC        PU      YGC     YGCT       FGC   FGCT     GCT</span><br><span class="line">419392.0 419392.0  0.0   419392.0 3355520.0 3355520.0 12582912.0 12582912.0 48904.0 29197.6 4066626 147156.174 10140 6473.549 153629.722</span><br><span class="line">419392.0 419392.0  0.0   419392.0 3355520.0 3355520.0 12582912.0 12582912.0 48904.0 29195.8 4066626 147156.174 10140 6473.549 153629.722</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">-rw-r--r--. 1 admin admin 4.5G 10月 28 20:26 gc-1441001670.log   停掉C进程    </span><br><span class="line">-rw-r--r--. 1 admin admin 124K 10月 28 20:34 gc-1446035196.log   第一次启动, 启动失败</span><br><span class="line">-rw-r--r--. 1 admin admin 2.8M 10月 28 21:14 gc-1446035781.log   第二次启动</span><br></pre></td></tr></table></figure>
+<h2 id="Problem_2:_GC引起的读超时?_[229@2015-10-22_17:06-08]">Problem 2: GC引起的读超时? [229@2015-10-22 17:06-08]</h2><blockquote>
+<p>GC的告白: 不要把一切原因都归结是我的问题啊! 可是总要找个借口吧: 不知道什么引起的读超时,先把GC你当做挡箭牌吧. </p>
+</blockquote>
+<p>线上报警2015-10-22 17:06-08分超时很严重. 查看202几个forseti节点的system.log,都提示fp的229节点DOWN.<br>但是实际上229并没有当掉, 只是这个节点在执行比较长的GC而已.  </p>
+<p>下面是截取的部分日志, 因为GC超过1m,它自己连接别的节点状态都是Down. 还进行了一个26s的CMS FullGC.<br>FullGC一旦完成, Gossiper就提示连接其他节点的状态为Up了. 不过这时候丢弃了一些MUTATION消息.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">INFO [ScheduledTasks:1] 2015-10-22 17:08:01,469 GCInspector.java (line 116) GC for ParNew: 1653 ms for 1 collections, 3675,714864 used; max is 16750,411776</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-22 17:08:01,470 StatusLogger.java (line 55) Pool Name                    Active   Pending      Completed   Blocked  All Time Blocked</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-22 17:08:01,471 StatusLogger.java (line 70) ReadStage                         0        69       80126766         0                 0</span><br><span class="line">INFO [GossipTasks:1] 2015-10-22 17:08:01,484 Gossiper.java (line 962) InetAddress /192.168.47.226 is now DOWN</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-22 17:08:01,502 StatusLogger.java (line 70) MutationStage                    64      3144     7568222241         0                 0</span><br><span class="line">...</span><br><span class="line">INFO [HANDSHAKE-/192.168.47.205] 2015-10-22 17:08:01,508 OutboundTcpConnection.java (line 389) Handshaking version with /192.168.47.205</span><br><span class="line">INFO [RequestResponseStage:17] 2015-10-22 17:08:01,621 Gossiper.java (line 948) InetAddress /192.168.47.206 is now UP</span><br><span class="line">...</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-22 17:08:02,180 GCInspector.java (line 116) GC for ConcurrentMarkSweep: 26194 ms for 2 collections, 504,0721624 used; max is 16750,411776</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-22 17:08:02,295 StatusLogger.java (line 70) ReadStage                         4         4       80127252         0                 0</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-22 17:08:02,305 StatusLogger.java (line 70) MutationStage                    64     16652     7568222241         0                 0</span><br><span class="line">...</span><br><span class="line">INFO [ScheduledTasks:1] 2015-10-22 17:08:07,358 MessagingService.java (line 876) 1503 MUTATION messages dropped in last 5000ms</span><br></pre></td></tr></table></figure>
+<p>1) 这里的GC for ParNew或者for CMS使用的堆内存只有3G,5G. 和上一个Problem接近堆的最大内存16G不可同日而语的. 不过CMS的时间仍然很长:26s.<br>2) Gossiper在17:08:01,502为DOWN, 在17:08:01,621又恢复为UP, 说明当前节点并不是真正的挂掉的.  </p>
+<p>看看这个时候的gc日志:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">grep -C 10 &quot;2015-10-22T17:07&quot; gc-1442722105.log</span><br><span class="line">grep -C 20 &quot;2015-10-22T17:07.*Class Histogram (before full gc)&quot; gc-1442722105.log</span><br></pre></td></tr></table></figure></p>
+<p>ParNew收集器提升失败, 可以看到ParNew后面的反而比之前要大. (是这个原因吗, 不是吧)<br>为什么提升失败: 因为总的才有3374, 提升前是3364, 提升后是3378, 显然不能成功提升. 这里提升的含义是?</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">2015-10-22T17:07:25.975+0800: 2782739.528: [ParNew (promotion failed): 3364,001K-&gt;3378,480K(3774,912K), 1.6523860 secs]</span><br><span class="line"></span><br><span class="line">2015-10-22T17:07:33.314+0800: 2782746.867: [CMSCMS: Large block 0x00000007c440e128</span><br><span class="line">CMS: Large Block: 0x00000007fdb07000; Proximity: 0x00000007fda93b90 -&gt; 0x00000007fda93b90</span><br><span class="line">CMS: Large block 0x00000007fdb07000</span><br><span class="line">2015-10-22T17:07:35.001+0800: 2782748.554: [CMS-concurrent-sweep: 5.884/13.956 secs] [Times: user=86.82 sys=2.11, real=13.96 secs]</span><br><span class="line"> (concurrent mode failure)CMS: Large block 0x00000005d4d31cb8</span><br></pre></td></tr></table></figure>
+<p>分析GC信息:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@192-168-47-229 ~]$ sudo -u admin jstat -gc `sudo -u admin jps | grep CassandraDaemon |awk &apos;&#123;print $1&#125;&apos;` 1000</span><br><span class="line"> S0C    S1C    S0U    S1U      EC       EU        OC         OU       PC     PU    YGC     YGCT    FGC    FGCT     GCT</span><br><span class="line">419392.0 419392.0  0.0   15686.1 3355520.0 3293381.8 12582912.0 2988456.0  46492.0 27854.7 3412928 97557.349 11677 2883.959 100441.307</span><br><span class="line">419392.0 419392.0  0.0   24851.0 3355520.0 1439211.8 12582912.0 3006161.3  46492.0 27854.7 3412930 97557.397 11677 2883.959 100441.355</span><br><span class="line">419392.0 419392.0  0.0   1109.9 3355520.0 1949350.9 12582912.0 3027253.7  46492.0 27854.7 3412932 97557.452 11677 2883.959 100441.410</span><br><span class="line">419392.0 419392.0  0.0   17355.3 3355520.0 705937.7 12582912.0 3039274.0  46492.0 27854.7 3412934 97557.493 11677 2883.959 100441.452</span><br><span class="line">419392.0 419392.0  0.0   594.5  3355520.0 2404209.8 12582912.0 3059189.1  46492.0 27854.7 3412936 97557.547 11677 2883.959 100441.505</span><br><span class="line">419392.0 419392.0  0.0   14354.7 3355520.0 669799.8 12582912.0 3070693.1  46492.0 27854.7 3412938 97557.600 11677 2883.959 100441.559</span><br><span class="line">419392.0 419392.0 24026.0  0.0   3355520.0 2792573.7 12582912.0 3078149.1  46492.0 27854.7 3412939 97557.626 11677 2883.959 100441.585</span><br><span class="line">419392.0 419392.0 12748.3  0.0   3355520.0 1614777.9 12582912.0 3097754.2  46492.0 27854.7 3412941 97557.677 11677 2883.959 100441.636</span><br><span class="line">419392.0 419392.0 15593.8  0.0   3355520.0 171442.8 12582912.0 3116802.0  46492.0 27854.7 3412943 97557.727 11677 2883.959 100441.686</span><br><span class="line">419392.0 419392.0  0.0   12975.7 3355520.0 2096091.2 12582912.0 3125678.7  46492.0 27854.7 3412944 97557.753 11677 2883.959 100441.712</span><br></pre></td></tr></table></figure></p>
+<p>看到一秒钟就发生了2次YGC. 使用-gccause查看:输出-gcutil提供的信息以及最后一次(Last)执行GC的发生原因和当前(Current)所执行的GC的发生原因<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047202 ~]$ sudo -u admin jstat -gccause `sudo -u admin jps | grep CassandraDaemon |awk &apos;&#123;print $1&#125;&apos;`</span><br><span class="line">  S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT    LGCC                 GCC</span><br><span class="line">  5.69   0.00  21.40  74.47  59.86 147180 5728.515   328   95.091 5823.606 Allocation Failure   No GC</span><br><span class="line"></span><br><span class="line">[qihuang.zheng@192-168-47-229 ~]$ sudo -u admin jstat -gccause `sudo -u admin jps | grep CassandraDaemon |awk &apos;&#123;print $1&#125;&apos;`</span><br><span class="line">  S0     S1     E      O      P     YGC     YGCT    FGC    FGCT     GCT    LGCC                 GCC</span><br><span class="line">  4.14   0.00  41.68  40.57  59.91 3410825 97506.253 11671 2882.208 100388.461 Allocation Failure   No GC</span><br></pre></td></tr></table></figure></p>
+<p>虽然229节点的YGC和FGC次数很多, 但是总体来说每次的GC时间并不是很长.  </p>
+<table>
+<thead>
+<tr>
+<th>Node</th>
+<th>GC Type</th>
+<th>Count</th>
+<th>Time</th>
+<th>Avg=Time/Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>202</td>
+<td>YGC</td>
+<td>147180</td>
+<td>5728.515</td>
+<td>0.0389s(38ms)</td>
+</tr>
+<tr>
+<td>202</td>
+<td>FGC</td>
+<td>328</td>
+<td>95.091</td>
+<td>0.289s(289ms)</td>
+</tr>
+<tr>
+<td>229</td>
+<td>YGC</td>
+<td>3410825</td>
+<td>97506.253</td>
+<td>0.028s(28ms)</td>
+</tr>
+<tr>
+<td>229</td>
+<td>FGC</td>
+<td>11671</td>
+<td>2882.208</td>
+<td>0.246s(246ms)</td>
+</tr>
+</tbody>
+</table>
+<p>上面GC失败的原因提示<code>Allocation Failure</code>,通常是Eden空间不够.<br><a href="http://stackoverflow.com/questions/28342736/java-gc-allocation-failure" target="_blank" rel="noopener">http://stackoverflow.com/questions/28342736/java-gc-allocation-failure</a>  </p>
+<p>由于229节点有64G内存, 而设置的<code>-Xms16G -Xmx16G -Xmn4G</code>, 可以考虑增加这三个值的大小.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/usr/install/cassandra/conf/cassandra-env.sh</span><br><span class="line">JVM_OPTS=&quot;$JVM_OPTS -Xms16G&quot;</span><br><span class="line">JVM_OPTS=&quot;$JVM_OPTS -Xmx16G&quot;</span><br><span class="line">JVM_OPTS=&quot;$JVM_OPTS -Xmn4G&quot;</span><br><span class="line">JVM_OPTS=&quot;$JVM_OPTS -XX:MaxDirectMemorySize=6G&quot;</span><br></pre></td></tr></table></figure></p>
+<h2 id="GC_Question">GC Question</h2><h3 id="Tombstone">Tombstone</h3><p>查询超过1000个tombstone的记录:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047202 cassandra]$ cat system.log | grep &quot;live and [0-9][0-9][0-9][0-9] tombstone cells in forseti.velocity&quot; | grep &quot;2015-10-26&quot; | wc -l</span><br><span class="line">576</span><br><span class="line">[qihuang.zheng@cass047202 cassandra]$ cat system.log | grep &quot;live and [0-9][0-9][0-9][0-9] tombstone cells in forseti.velocity&quot; | grep &quot;2015-10-26&quot; | head</span><br><span class="line"> WARN [ReadStage:751] 2015-10-26 00:13:14,986 SliceQueryFilter.java (line 231) Read 654 live and 5751 tombstone cells in forseti.velocity (see tombstone_warn_threshold). 1000 columns was requested, slices=[koudai:weidian:payeeIdNumber:!-koudai:weidian:payeeIdNumber]</span><br><span class="line"> WARN [ReadStage:752] 2015-10-26 00:13:19,420 SliceQueryFilter.java (line 231) Read 0 live and 5079 tombstone cells in forseti.velocity (see tombstone_warn_threshold). 1000 columns was requested, slices=[fyzhibo:fyzhibo_web:accountLogin:!-fyzhibo:fyzhibo_web:accountLogin]</span><br></pre></td></tr></table></figure></p>
+<p>Read 0 live and 5079 tombstone是的记录表示要查询的记录都已经过期了. 但是还剩把tombstone都返回到客户端.  </p>
+<h3 id="CMS_and_Heap_Memory_Relation">CMS and Heap Memory Relation</h3><p>如果直接查看system.log的GC日志, 会发现used增长到一定程序比如10G左右, 就会下降, 那么这个下降之前的一定发生了CMS.<br>虽然在system.log中我们并没有看到GC for CMS的日志. 但是在gc.log中一定是发生了CMS, 否则堆内存是不会减少的.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047202 ~]$ cat /var/log/cassandra/system.log | grep &quot;GC&quot; | grep &quot;2015-10-26&quot;</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-26 15:55:08,627 GCInspector.java (line 116) GC for ParNew: 224 ms for 1 collections, 7815460192 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-26 16:08:52,236 GCInspector.java (line 116) GC for ParNew: 230 ms for 1 collections, 9134796832 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-26 16:10:58,390 GCInspector.java (line 116) GC for ParNew: 371 ms for 1 collections, 9907968408 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-26 16:11:01,391 GCInspector.java (line 116) GC for ParNew: 475 ms for 1 collections, 10142946312 used; max is 16750411776</span><br><span class="line"></span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-26 16:12:08,499 GCInspector.java (line 116) GC for ParNew: 225 ms for 1 collections, 3120763368 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-26 16:13:27,580 GCInspector.java (line 116) GC for ParNew: 214 ms for 1 collections, 3887484088 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-26 16:13:49,744 GCInspector.java (line 116) GC for ParNew: 308 ms for 1 collections, 3189094392 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-26 16:13:51,883 GCInspector.java (line 116) GC for ParNew: 556 ms for 1 collections, 3412395496 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-26 16:13:54,884 GCInspector.java (line 116) GC for ParNew: 231 ms for 1 collections, 3724150752 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-26 16:35:13,382 GCInspector.java (line 116) GC for ParNew: 402 ms for 2 collections, 7429717728 used; max is 16750411776</span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-26 16:45:07,388 GCInspector.java (line 116) GC for ParNew: 228 ms for 1 collections, 10338198528 used; max is 16750411776</span><br><span class="line"></span><br><span class="line"> INFO [ScheduledTasks:1] 2015-10-26 16:52:28,976 GCInspector.java (line 116) GC for ParNew: 303 ms for 1 collections, 3099641168 used; max is 16750411776</span><br></pre></td></tr></table></figure></p>
+<p>选取16:45这个点之后的16:52, 堆内存的used从10338198528下降到3099641168, 下面是对应的system.log对应这个时间段的日志, 发生了一次CMS:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">2015-10-26T16:45:06.703+0800: 323508.048: [👉ParNew: 3535452K-&gt;126895K(3774912K), 0.2282630 secs] 12898898K-&gt;9656082K(16357824K)After GC:</span><br><span class="line">2015-10-26T16:45:06.937+0800: 323508.282: [GC [1 CMS-initial-mark: 9529186K(12582912K)] 9656178K(16357824K), 0.0232120 secs] [Times: user=0.02 sys=0.00, real=0.02 secs]</span><br><span class="line">2015-10-26T16:45:06.960+0800: 323508.305: Total time for which application threads were stopped: 0.0271990 seconds</span><br><span class="line">2015-10-26T16:45:06.961+0800: 323508.305: [CMS-concurrent-mark-start]</span><br><span class="line">2015-10-26T16:45:08.299+0800: 323509.643: Total time for which application threads were stopped: 0.0034360 seconds</span><br><span class="line">2015-10-26T16:45:08.660+0800: 323510.004: [CMS-concurrent-mark: 1.695/1.699 secs] [Times: user=7.69 sys=0.52, real=1.70 secs]</span><br><span class="line">2015-10-26T16:45:08.660+0800: 323510.004: [CMS-concurrent-preclean-start]</span><br><span class="line">2015-10-26T16:45:08.711+0800: 323510.055: [CMS-concurrent-preclean: 0.049/0.051 secs] [Times: user=0.17 sys=0.03, real=0.05 secs]</span><br><span class="line">2015-10-26T16:45:08.711+0800: 323510.055: [CMS-concurrent-abortable-preclean-start]</span><br><span class="line">2015-10-26T16:45:09.696+0800: 323511.040: [👉ParNew: 3482415K-&gt;33672K(3774912K), 0.0383290 secs] 13011602K-&gt;9568814K(16357824K)After GC:</span><br><span class="line">2015-10-26T16:45:11.023+0800: 323512.367: [CMS-concurrent-abortable-preclean: 2.256/2.312 secs] [Times: user=8.44 sys=0.82, real=2.31 secs]</span><br><span class="line">2015-10-26T16:45:11.026+0800: 323512.371: [GC[YG occupancy: 1833528 K (3774912 K)]2015-10-26T16:45:11.027+0800: 323512.371: [Rescan (parallel) , 0.3862770 secs]2015-10-26T16:45:11.413+0800: 323512.758: [weak refs processing, 0.0027200 secs]2015-10-26T16:45:11.416+0800: 323512.760: [class unloading, 0.0165040 secs]2015-10-26T16:45:11.432+0800: 323512.777: [scrub symbol table, 0.0027290 secs]2015-10-26T16:45:11.435+0800: 323512.780: [scrub string table, 0.0044760 secs] [1 CMS-remark: 9535141K(12582912K)] 11368669K(16357824K), 0.4202100 secs] [Times: user=2.83 sys=0.00, real=0.42 secs]</span><br><span class="line">2015-10-26T16:45:11.447+0800: 323512.792: Total time for which application threads were stopped: 0.4239320 seconds</span><br><span class="line">2015-10-26T16:45:11.447+0800: 323512.792: [CMS-concurrent-sweep-start]</span><br><span class="line">CMS: Large Block: 0x00000007d0aedfc0; Proximity: 0x00000007c96cce08 -&gt; 0x00000007c96cce08</span><br><span class="line">2015-10-26T16:45:11.571+0800: 323512.915: Total time for which application threads were stopped: 0.0038340 seconds</span><br><span class="line">2015-10-26T16:45:12.641+0800: 323513.986: [👉ParNew: 3389192K-&gt;24343K(3774912K), 0.0435410 secs] 12284258K-&gt;8924627K(16357824K)After GC:</span><br></pre></td></tr></table></figure></p>
+<p>可以看到这几次的ParNew夹杂着CMS, 总体的对内存变化是: 9656082K -&gt; 9568814K -&gt; 8924627K  </p>
+<h3 id="ParNew_promotion_failed">ParNew promotion failed</h3><p>在查询是否有较多的ExpiringColumn时, 发现了一个新生代晋升的异常:<br>虽然在失败的前一个ParNew回收后, 堆内存是7700182K, 还剩有3个G左右. 但是因为碎片数太多:9599. 导致这次ParNew失败.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047202 cassandra]$ grep &quot;org.apache.cassandra.db.ExpiringColumn&quot; -C 50 gc-1445525597.log &gt; ~/ttl2.log</span><br><span class="line">2015-10-24T00:55:39.333+0800: 93740.677: [ParNew: 3369116K-&gt;9027K(3774912K), 0.0332100 secs] 11053952K-&gt;7700182K(16357824K)After GC:</span><br><span class="line">2015-10-24T00:55:40.976+0800: 93742.320: [GCBefore GC:</span><br><span class="line">Statistics for BinaryTreeDictionary:</span><br><span class="line">------------------------------------</span><br><span class="line">Total Free Space: 28243524</span><br><span class="line">Max   Chunk Size: 100283        最大的连续块只有100KB! </span><br><span class="line">Number of Blocks: 9599</span><br><span class="line">Av.  Block  Size: 2942</span><br><span class="line">Tree      Height: 110</span><br><span class="line">Before GC:</span><br><span class="line">Statistics for BinaryTreeDictionary:</span><br><span class="line">------------------------------------</span><br><span class="line">Total Free Space: 2371623</span><br><span class="line">Max   Chunk Size: 2362880</span><br><span class="line">Number of Blocks: 15</span><br><span class="line">Av.  Block  Size: 158108</span><br><span class="line">Tree      Height: 5</span><br><span class="line">2015-10-24T00:55:40.977+0800: 93742.321: [ParNew (promotion failed): 3364547K-&gt;3364509K(3774912K), 1.0112290 secs]2015-10-24T00:55:41.988+0800: 93743.332: [Class Histogram (before full gc):</span><br><span class="line"> num     #instances         #bytes  class name</span><br><span class="line">----------------------------------------------</span><br><span class="line">   1:      94519264     4536924672  java.nio.HeapByteBuffer</span><br><span class="line">   2:      16569138     4369282384  [B</span><br><span class="line">   3:      10057767      482772816  edu.stanford.ppl.concurrent.SnapTreeMap$Node</span><br><span class="line">   4:       8381272      335250880  org.apache.cassandra.db.ExpiringColumn</span><br><span class="line">   5:       5873894      234955760  org.apache.cassandra.io.sstable.IndexHelper$IndexInfo</span><br><span class="line">   6:       1515892      145525632  edu.stanford.ppl.concurrent.CopyOnWriteManager$COWEpoch</span><br><span class="line"></span><br><span class="line">2015-10-24T00:55:50.569+0800: 93751.914: [CMSCMS: Large block 0x00000005ae76daa8</span><br><span class="line">: 7693343K-&gt;2942262K(12582912K), 15.9221830 secs]2015-10-24T00:56:06.491+0800: 93767.836: [Class Histogram (after full gc):</span><br><span class="line"> num     #instances         #bytes  class name</span><br><span class="line">----------------------------------------------</span><br><span class="line">   1:      12886333     1316594672  [B</span><br><span class="line">   2:      15611806      749366688  java.nio.HeapByteBuffer</span><br><span class="line">   3:       5714973      228598920  org.apache.cassandra.io.sstable.IndexHelper$IndexInfo</span><br><span class="line">   4:       1853317       88959216  edu.stanford.ppl.concurrent.SnapTreeMap$Node</span><br><span class="line">   5:       2448358       78347456  java.util.concurrent.ConcurrentHashMap$HashEntry</span><br><span class="line">   6:       2427734       77687488  com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap$Node</span><br><span class="line">   7:       1850344       74013760  org.apache.cassandra.db.ExpiringColumn</span><br><span class="line">   8:       2433031       58392744  org.apache.cassandra.db.RowIndexEntry</span><br><span class="line">   9:       2427734       58265616  com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap$WeightedValue</span><br><span class="line">  10:       2427651       58263624  org.apache.cassandra.cache.KeyCacheKey</span><br><span class="line">  11:           886       47000280  [Ljava.util.concurrent.ConcurrentHashMap$HashEntry;</span><br><span class="line">  12:         47596       29251952  [Ljava.lang.Object;</span><br></pre></td></tr></table></figure></p>
+<p><a href="http://stackoverflow.com/questions/21992943/persistant-gc-issues-with-cassandra-long-app-pauses" target="_blank" rel="noopener">http://stackoverflow.com/questions/21992943/persistant-gc-issues-with-cassandra-long-app-pauses</a>  </p>
+<p>在20:49的时候有三个节点几乎同时在做CMS,只持续了20s.并且在21:55分又开始同时CMS,但这个时候每个节点都做了多次的CMS.<br>这次的CMS都差不多在22:10分结束, 但是最后204在22:44分又做了一次41次collection,花费了1600s=30分钟! 报警发生在10:55.<br><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151104104302323" alt="c_gc3"></p>
+<p>观察202, 在21:55分开始CMS后的一端时间貌似监控数据丢失了. 直到CMS在22:11完成后, 监控数据才有.<br><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151104104319137" alt="c_202"></p>
+<p>在225上, 可以看到21:55分确实做了CMS(圆圈圈起来的):<br><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151104104335018" alt="c_225"></p>
+<p>当GC发生时, read请求不会路由到这些发生GC的节点, 如果有请求过来, 因为JVM正在做GC, 响应会很慢, 所以可以看到第四张图read request latency变长.<br>即使请求路由到这些节点,也会超时,所以C*的Driver会选择其他节点, 所以请求到这些节点的数量也会减少, 所以看到第三张图read requests数量减少.<br>同样因为GC的原因, 节点响应很慢, 即使有数据写到这些节点, 成功完成一次写请求需要的时间变长, 即第三张图write request latency变长.<br>正如 <strong>读请求数变少, 读延迟变长, 当写延迟变长, 写请求数也同样减少</strong>(即第一张图) 图中粉色的是202, 黄色的是225.<br>或者 <strong>GC的时候, 响应变慢, 导致读写延迟都增加, 路由到节点的读写请求数也变少</strong>.<br><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151104113357712" alt="gc_read_slow"></p>
+<p>注意第三图虽然202,225读请求数减少, 但是这时却有其他节点的读请求数增加. 这也解释了从这些节点读数据被转移到了从其他有副本的节点读取.  </p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/07/07/Cassandra-GC-CMS/">Cassandra CMS GC</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年07月07日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/07/07/Cassandra-GC-CMS/" title="Cassandra CMS GC">http://github.com/zqhxuyuan/2016/07/07/Cassandra-GC-CMS/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/07/07/Cassandra-GC-CMS/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/07/07/Cassandra-GC-G1/">
+        Cassandra G1 GC
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/06/30/Hello-Storm/">
+        用实例理解Storm的Stream概念
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#GC_Background"><span class="toc-number">1.</span> <span class="toc-text">GC Background</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Cassandra_&_GCInspector"><span class="toc-number">2.</span> <span class="toc-text">Cassandra &amp; GCInspector</span></a></li></ol><li class="toc-item toc-level-2"><a class="toc-link" href="#Problem_1:_进程假死,_很长时间的GC_for_CMS,_最终OOM_[202@2015-10-21_16:19,_21:10]"><span class="toc-number"></span> <span class="toc-text">Problem 1: 进程假死, 很长时间的GC for CMS, 最终OOM [202@2015-10-21 16:19, 21:10]</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Zabbix监控"><span class="toc-number">1.</span> <span class="toc-text">Zabbix监控</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#system-log_&_gc-log_关于GC的吻合"><span class="toc-number">2.</span> <span class="toc-text">system.log &amp; gc.log 关于GC的吻合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GC_Log分析"><span class="toc-number">3.</span> <span class="toc-text">GC Log分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#YGC"><span class="toc-number">4.</span> <span class="toc-text">YGC</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#很长的FGC"><span class="toc-number">4.1.</span> <span class="toc-text">很长的FGC</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#最终OOM时"><span class="toc-number">4.2.</span> <span class="toc-text">最终OOM时</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GC问题再现:_[203@2015-10-28_19:55]"><span class="toc-number">5.</span> <span class="toc-text">GC问题再现: [203@2015-10-28 19:55]</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Problem_2:_GC引起的读超时?_[229@2015-10-22_17:06-08]"><span class="toc-number"></span> <span class="toc-text">Problem 2: GC引起的读超时? [229@2015-10-22 17:06-08]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GC_Question"><span class="toc-number"></span> <span class="toc-text">GC Question</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Tombstone"><span class="toc-number">1.</span> <span class="toc-text">Tombstone</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CMS_and_Heap_Memory_Relation"><span class="toc-number">2.</span> <span class="toc-text">CMS and Heap Memory Relation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ParNew_promotion_failed"><span class="toc-number">3.</span> <span class="toc-text">ParNew promotion failed</span></a></li></ol>
+</li></div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/07/07/Cassandra-GC-CMS/" data-title="Cassandra CMS GC" data-url="http://github.com/zqhxuyuan/2016/07/07/Cassandra-GC-CMS/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/07/07/Cassandra-GC-G1/" title="上一篇: Cassandra G1 GC">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/06/30/Hello-Storm/" title="下一篇: 用实例理解Storm的Stream概念">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

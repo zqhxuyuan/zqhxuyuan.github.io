@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>StreamCQL源码阅读(3) 拆分组合算子 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="StreamCQL的算子组成了Application">
+<meta name="keywords" content="storm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="StreamCQL源码阅读(3) 拆分组合算子">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/11/27/2015-11-27-StreamCQL-operator/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="StreamCQL的算子组成了Application">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151126173430754">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151129160212682">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.195Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="StreamCQL源码阅读(3) 拆分组合算子">
+<meta name="twitter:description" content="StreamCQL的算子组成了Application">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151126173430754">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-11-27-StreamCQL-operator" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/11/27/2015-11-27-StreamCQL-operator/" class="article-date">
+  	<time datetime="2015-11-26T16:00:00.000Z" itemprop="datePublished">2015-11-27</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      StreamCQL源码阅读(3) 拆分组合算子
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Source/">Source</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/storm/">storm</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>StreamCQL的算子组成了Application</p>
+<a id="more"></a>
+<h2 id="前戏:_buildApplication">前戏: buildApplication</h2><p>上篇在解析Schema的时候分析了CQL中一些常用的Statement syntax和对应的语法/语义解析器结果,<br>现在继续ApplicationBuilder.buildApplication中parseSchemas的下一步splitOperators.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">buildApplication</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    app = <span class="keyword">new</span> Application(applicationName);</span><br><span class="line">    parseSchemas();</span><br><span class="line">    List&lt;SplitContext&gt; splitContexts = splitOperators();            <span class="comment">//拆分算子  ⬅️</span></span><br><span class="line">    SplitContext splitContext = combineOperators(splitContexts);    <span class="comment">//组合算子, 将拆分算子列表转换为只有一个SplitContext  ⬅️</span></span><br><span class="line">    changeUnionOperators(splitContext);</span><br><span class="line">    changeSchemaAfterAggregate(splitContext);</span><br><span class="line">    app.setOperators(splitContext.getOperators());                  <span class="comment">//拆分结果包含了operatots和transitions</span></span><br><span class="line">    app.setOpTransition(splitContext.getTransitions());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>combineOperators会创建OperatorCombiner, 并调用combine方法将splitContexts合并起来,终于打印了日志中看到的:<code>combine all split contexts</code>(解析submit之后).<br>构建Application的主要工作就是Split和Combine,最后将SplitContext的operators和transitions设置到Application对象中,完成应用程序的构建,在这基础上再进行物理优化.    </p>
+<p>为什么要先拆分, 后面又要再组合?😖 以下面的CQL为例:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">insert into stream s1           INSERT  </span><br><span class="line">select type,count(id) count     AGGREGATE  </span><br><span class="line">from s0 (id&gt;10)[ROWS 10]        FROM: FilterBeforeWindow  </span><br><span class="line">having count(id)&gt;10             HAVING: Expression  </span><br><span class="line">group by type                   GROUPBY</span><br></pre></td></tr></table></figure>
+<p>首先需要通过之前分析的AnalyzeContext解析出系统中所有的算子.<br>① INSERT INTO SELECT, 即INSERT语句中包含了SELECT子句. 对于INSERT而言只要确定输出流名称<br>② SELECT语句则包含比较多的算子, FilterBeforeWindow,Having,GroupBy,COUNT聚合  </p>
+<blockquote>
+<p>只要将CQL中的算子都拆分出来, 才能进一步进行整理. 所以拆分算子的工作类似于为每个关键词进行归类.<br>试想一下: 要整理很多杂乱的东西, 首先对每件物品进行归类, 最后再进行总的汇总😊.  </p>
+</blockquote>
+<h2 id="正文:_Split_and_Combine_Operators">正文: Split and Combine Operators</h2><p>第一步SplitOperators拆分算子: 创建对应的Splitter,调用其split方法.   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> List&lt;SplitContext&gt; <span class="title">splitOperators</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    List&lt;SplitContext&gt; splitContexts = Lists.newArrayList();</span><br><span class="line">    <span class="keyword">for</span> (AnalyzeContext pContext : parseContexts) &#123;         <span class="comment">//parseContexts是语义解析器结果列表</span></span><br><span class="line">        parseAutoCreatePipeStream(splitContexts, pContext); <span class="comment">//由于schema推断的存在,中间的流schema没有通过create input语句定义,所以显示的创建一个create input的解析内容</span></span><br><span class="line">        parseSubQueryOperators(splitContexts, pContext);    <span class="comment">//解析子查询</span></span><br><span class="line">        SplitContext context = OperatorSplitter.split(buildUtils, pContext);    <span class="comment">//算子拆分 ⬅️ </span></span><br><span class="line">        splitContexts.add(context);                         <span class="comment">//每个AnalyzeContext拆分后都对应一个SplitContext</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> splitContexts;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>AnalyzeContext是CQL语句的语义解析结果, CQL的上下文信息都封装在语义解析结果里面.  由于语义解析是个比较大的切面,<br>需要把语义解析结果分成更细粒度, 即算子. 可以认为AnalyzeContext -&gt; SplitContext的转换是将任务更加具体化.  </p>
+</blockquote>
+<p>OperatorSplitter的splitters采用static块提前添加了系统中也有的算子拆分类. 结合上面的splitOperators就是一个双层循环了:<br>针对Application的每一个AnalyzeContext, 判断哪个Splitter可以解析这个AnalyzeContext(每个AnalyzeContext只会对应一个Splitter).   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> SplitContext <span class="title">split</span><span class="params">(BuilderUtils buildUtils, AnalyzeContext parseContext)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (Splitter splitter : splitters) &#123;</span><br><span class="line">        <span class="keyword">if</span> (splitter.validate(parseContext)) &#123;</span><br><span class="line">            <span class="keyword">return</span> createSplitter(splitter.getClass(), buildUtils).split(parseContext);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>每个具体的Splitter都实现了validate方法根据传入的AnalyzeContext实现类(pContext)用来验证能否进行解析  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Splitter                                AnalyzeContext</span><br><span class="line">    |-- SelectSplitter                      |-- SelectAnalyzeContext     </span><br><span class="line">            |-- DataSourceSplitter          |</span><br><span class="line">            |-- AggregateSplitter           |</span><br><span class="line">            |-- JoinSplitter                |</span><br><span class="line">    |-- InsertSplitter                      |-- InsertAnalyzeContext &gt;&gt; InsertOnlyAnalyzeContext</span><br><span class="line">    |-- SourceOperatorSplitter              |-- CreateStreamAnalyzeContext</span><br><span class="line">    |-- MultiInsertSplitter                 |-- MultiInsertStatementAnalyzeContext</span><br><span class="line">    |-- UserOperatorSplitter                |-- InsertUserOperatorStatementAnalyzeContext</span><br></pre></td></tr></table></figure>
+<p>比如AggregateSplitter的validate方法会验证是不是SelectAnalyzeContext.     </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">validate</span><span class="params">(AnalyzeContext parseContext)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!(parseContext <span class="keyword">instanceof</span> SelectAnalyzeContext))    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    SelectAnalyzeContext selectAnalyzeContext = (SelectAnalyzeContext)parseContext;</span><br><span class="line">    FromClauseAnalyzeContext clauseContext = selectAnalyzeContext.getFromClauseContext();</span><br><span class="line">    <span class="keyword">if</span> (clauseContext.getJoinexpression() != <span class="keyword">null</span>)          <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (clauseContext.getCombineConditions().size() != <span class="number">0</span>)   <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;  <span class="comment">//属于select,然后既不是combine，又不是join，那么就是aggregate</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>普通的select可以看做是aggregate,比如<code>select count(id) from a where</code>就是一种聚合. 因为select子句是count(id)<br>但是如果是<code>select id from a join b on a.id=b.id</code>因为有join操作就不是aggregate了.<br>所以可以看到SelectSplitter针对这两种语句分成了AggregateSplitter和JoinSplitter.  </p>
+</blockquote>
+<p>只有验证成功,才可以在此Splitter上调用split: 根据AnalyzeContext创建Operator算子, 即根据语义分析结果拆分内容</p>
+<h3 id="SourceOperatorSplitter_-&gt;_Input/Output_Operator">SourceOperatorSplitter -&gt; Input/Output Operator</h3><p>SourceOperatorSplitter的split会创建Input和Output算子和临时的pipe算子.   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SourceOperatorSplitter</span> <span class="keyword">implements</span> <span class="title">Splitter</span> </span>&#123;   <span class="comment">//源算子拆分,包括输入算子和输出算子</span></span><br><span class="line">    <span class="keyword">private</span> SplitContext result = <span class="keyword">new</span> SplitContext();</span><br><span class="line">    <span class="keyword">private</span> CreateStreamAnalyzeContext context;             <span class="comment">//由validate保证,所以下面的split方法可以强转</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> SplitContext <span class="title">split</span><span class="params">(AnalyzeContext parseContext)</span> </span>&#123;</span><br><span class="line">        context = (CreateStreamAnalyzeContext)parseContext;  <span class="comment">//语义解析结果</span></span><br><span class="line">        setParallelNumber();</span><br><span class="line">        addToInput();                       <span class="comment">//创建输入算子并加入到result中: InputStreamOperator</span></span><br><span class="line">        addToOutput();                      <span class="comment">//创建输出算子并加入到result中: OutputStreamOperator</span></span><br><span class="line">        addToPipe();                        <span class="comment">//连接算子: FilterOperator</span></span><br><span class="line">        result.setParseContext(context);    <span class="comment">//最后都要将AnalyzeContext设置到SplitContext中,说不定后面还是需要它的父亲(context)站出来撑腰呢.</span></span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在上篇语法结构的<code>C</code>部分,AnalyzeContext.analyze会将<code>语法解析的上下文结果</code>设置到<code>语义解析结果</code>中. 这里创建的<code>算子</code>则进一步依赖于语义解析结果.<br>所谓任何事物都是可以追朔到源头的: <strong><code>StatementContext-&gt;AnalyzeContext-&gt;Operator-&gt;SplitContext-&gt;Application</code></strong>, Operator并不是一步登天,与生俱来的.<br>可以看到context中的RecordReaderClass,DeserializerClass,ReadWriterProperties,SerDeProperties依次<code>登场</code>并进入到Operator的<code>戏局</code>里.<br>所以Operator沿袭了<code>祖先</code>的上下文数据, 现在新的世界格局将是以Operator为<code>主角</code>的了, 祖先们就可以<code>隐退江湖</code>了.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">addToInput</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (context.getDeserializerClassName() != <span class="keyword">null</span> &amp;&amp; context.getSerializerClassName() == <span class="keyword">null</span>) &#123;</span><br><span class="line">        Operator inop = createInputSourceOperator();    <span class="comment">//创建算子</span></span><br><span class="line">        <span class="keyword">if</span> (inputConverter.validate(inop)) &#123;</span><br><span class="line">            inop = inputConverter.convert(inop);</span><br><span class="line">        &#125;</span><br><span class="line">        result.addOperators(inop);      <span class="comment">//这个很重要,将新创建的算子添加到SplitContext中, 后面才会在设置到Application中 ⬅️ </span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> InputStreamOperator <span class="title">createInputSourceOperator</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    String operatorName = getOperatorName(context.getRecordReaderClassName(),<span class="string">"Input"</span>);</span><br><span class="line">    <span class="comment">//创建输入流算子</span></span><br><span class="line">    InputStreamOperator op = <span class="keyword">new</span> InputStreamOperator(buildUtils.getNextOperatorName(operatorName), parallelNumber);</span><br><span class="line">    <span class="comment">//设置输入算子的属性: 反序列化类, 读取记录类</span></span><br><span class="line">    op.setName(context.getStreamAlias());</span><br><span class="line">    op.setDeserializerClassName(context.getDeserializerClassName());</span><br><span class="line">    op.setRecordReaderClassName(context.getRecordReaderClassName());</span><br><span class="line">    <span class="comment">//反序列化类的属性和读取记录的属性, 对应CQL最原始的properties. </span></span><br><span class="line">    op.setArgs(<span class="keyword">new</span> TreeMap&lt;String, String&gt;());</span><br><span class="line">    op.getArgs().putAll(context.getReadWriterProperties());</span><br><span class="line">    op.getArgs().putAll(context.getSerDeProperties());</span><br><span class="line">    <span class="keyword">return</span> op;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>pipe stream算子属于中间算子，本来是不会对应任何算子，只要解析出schema即可的. 但是为了和CQL的整体规则一致，便于后面创建算子之间的连线，<br>所以这里创建一个空的filter算子，不带任何过滤。 这样，就可以在优化器阶段将这个filter算子优化掉  </p>
+</blockquote>
+<blockquote>
+<p>每个operator的参数用一个Map args来保存, 比如上面输入算子的参数包括了ReadWriterProperties和SerDeProperties.<br>因为执行器不知道每个operator中到底需要哪些参数，所以只能都放在map中, 由上层客户端进行填充，并在底层运行时检测</p>
+</blockquote>
+<h3 id="InsertSplitter_-&gt;_Insert_Operator">InsertSplitter -&gt; Insert Operator</h3><p>insert into语句的AnalyzeContext包含了outputStreamName和select子句, 输出流可以直接设置到SplitContext结果中. 而select子句需要<br>再次调用查询相关的Splitter(返回值也是SplitContext), 并将其结果产生的operators和transitions添加到insert的SplitContext中.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">InsertSplitter</span> <span class="keyword">implements</span> <span class="title">Splitter</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> InsertAnalyzeContext context;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> SplitContext <span class="title">split</span><span class="params">(AnalyzeContext parseContext)</span> </span>&#123;</span><br><span class="line">        context = (InsertAnalyzeContext)parseContext;</span><br><span class="line">        result.setOutputStreamName(context.getOutputStreamName());</span><br><span class="line">        <span class="comment">//insert中包含了select, 所以要先创建select算子, 调用SelectSplitter.split</span></span><br><span class="line">        SplitContext selectResult = OperatorSplitter.split(buildUtils, context.getSelectContext());</span><br><span class="line">        <span class="comment">//将select的结果算子和连接都加入到insert算子中</span></span><br><span class="line">        result.getOperators().addAll(selectResult.getOperators());</span><br><span class="line">        result.getTransitions().addAll(selectResult.getTransitions());</span><br><span class="line">        result.setParseContext(context);</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>SourceOperatorSplitter和InsertSplitter设置到SplitContext result中的内容并不是一样的. 这是由于不同的AnalyzeContext所存储的<br>数据也是不同的, 数据源只需要序列化类,读取类等. 而插入语句则有输出流和输入源(select). 所以你<code>吃的是什么草, 挤出来的奶也是不一样的</code>.  </p>
+</blockquote>
+<h3 id="SelectSplitter">SelectSplitter</h3><p>SelectSplitter包含了<code>DataSource,①Aggregate,②JoinSplitter</code>.针对select语句的拆分以及Schema分为:  </p>
+<p>1、最一般的select子句。<br>只有一个schema, 输入和输出都是(同)一个schema, 不论有没有窗口，都必须放在聚合算子(AggregateSplitter)中。<br>只要有where，就都放在functor算子(表达式)中，在优化器中，再进行调整，可以改为filter或者继承再聚合算子中。  </p>
+<blockquote>
+<p>单单一个select为什么要添加聚合算子?<br>答: 聚合不一定就是group by, 可能是filter过滤,limit限制条数等.<br>而select后面是可以跟上filter或者limit等. 聚合还可以是count,sum等.  </p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">                     |SELECT子句</span><br><span class="line">insert into stream s0 select id,name from s0 where id&gt;10</span><br><span class="line">                      ---------------        ----------- </span><br><span class="line">                      Aggregate              Functor(expression)</span><br></pre></td></tr></table></figure>
+<p>2、Join: 多个Join的schema，一个outputschema. 先查询出多个表所有的列，再在functor算子中进行列过滤。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">select s0.id,s1.name from s0 join s1 on s0.id = s1.id</span><br><span class="line">                     ------- -------</span><br><span class="line">                     s0元数据 s1元数据</span><br><span class="line">                            ⬇️</span><br><span class="line">       -----------------------------</span><br><span class="line">       Functor列过滤</span><br></pre></td></tr></table></figure>
+<p>3、Groupby: 聚合算子<br>4、orderby: 同一般select子句<br>5、Join语句中不支持聚合和groupby，至少目前不支持<br>6、三种过滤<br>A.窗口之后的过滤：where，放在聚合算子中<br>B.窗口之前的过滤：filter，前面加一个filter算子, 但是这样就牵扯到schema的变化，这个就麻烦一些了。先解析出所有的列，再进行过滤。<br>C.聚合之后的过滤：having，放在聚合算子中  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SELECT type,count(id) FROM s0 where code=&apos;test&apos; (id&gt;10)[ROWS 10] HAVING count(id)&gt;100 </span><br><span class="line">                              ----------------  -------          --------------------</span><br><span class="line">                              A⬇                B⬇️              C⬇️</span><br><span class="line">                              Aggregate         Filter+Agg       Aggregate</span><br></pre></td></tr></table></figure>
+<p>总结下：<br>1、<code>聚合算子</code>是必须有的。<br>2、Orderby必须放在独立sort算子中<br>3、limit放在output中作为限制，但是目前还不支持<br>4、<code>一个select语句，无论如何拆分，都只有一个输出schema</code>. (至少目前是这样,后面在优化器中会进行调整,将where中的一些列加入到select中,进行一些列变换)<br>5、Join时候，先查询该流<code>所有列</code>的Join结果，之后再进行<code>列过滤</code><br>6、Sort、Join、Aggregate算子都是按照<code>字段</code>进行分发，其他都是<code>随机</code>分发  </p>
+<p>抽象类SelectSplitter的splitFromClause交给子类(Join,DataSource,AggregatePlitter)自己去实现:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">SelectSplitter</span> <span class="keyword">implements</span> <span class="title">Splitter</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> SplitContext result = <span class="keyword">new</span> SplitContext();       <span class="comment">//算子的拆分结果, 数据主要由AnalyzeContext而来</span></span><br><span class="line">    <span class="keyword">private</span> SelectAnalyzeContext selectAnalyzeContext;      <span class="comment">//AnalyzeContext语义解析结果    </span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> SplitContext <span class="title">split</span><span class="params">(AnalyzeContext parseContext)</span> </span>&#123;</span><br><span class="line">        initParameters(parseContext);   <span class="comment">//初始化, 由于Select语句包含了很多子句,因此还要在这里定义其他子句的AnalyzeContext.</span></span><br><span class="line">        setParallelNumber();</span><br><span class="line">        splitFromClause();              <span class="comment">//抽象方法</span></span><br><span class="line">        result.setParseContext(selectAnalyzeContext);       <span class="comment">//设置到SplitContext结果中</span></span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> SelectClauseAnalyzeContext selectClauseContext; <span class="comment">//既然要解析Slect语句,就要解析它包含的所有子句! 正如前面的insert也要先获得select!</span></span><br><span class="line">    <span class="keyword">private</span> FromClauseAnalyzeContext fromClauseContext;</span><br><span class="line">    ...</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">initParameters</span><span class="params">(AnalyzeContext parseContext)</span> </span>&#123;</span><br><span class="line">        selectAnalyzeContext = (SelectAnalyzeContext)parseContext;</span><br><span class="line">        selectClauseContext = selectAnalyzeContext.getSelectClauseContext();</span><br><span class="line">        fromClauseContext = selectAnalyzeContext.getFromClauseContext();</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>关于层级嵌套: 比如insert中嵌套了select. 所以解析insert时要先解析select,再把select设置到insert中.<br>同样select语句包含了更多的子句,比如select子句,from子句, 所以也要把旗下包含的所有子句都解析完了,自己才是完整的可用的.  </p>
+</blockquote>
+<h3 id="AggregateSplitter_-&gt;_FilterOp_+_AggregateOp_+_Transition">AggregateSplitter -&gt; FilterOp + AggregateOp + Transition</h3><p>AggregateSplitter的父类是SelectSplitter, 而Select包含From子句. From中可以有①FilterOperator: <code>filter before window</code><br>流前的过滤: <code>FROM transform (evnetid&gt;10)[range UNBOUNDED]</code>. 其中[]表示window, 而[]前面的()则是filter过滤.<br>②拆分AggregateOperator, 因为聚合算子可能包括多种聚合操作, 如果存在则都设置到AggregateOperator对应的字段中.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">splitFromClause</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">//获取Select中From子句的语义解析结果</span></span><br><span class="line">    FromClauseAnalyzeContext clauseContext = getFromClauseContext();    <span class="comment">//定义在父类SelectSplitter中,初始化时由Select获取</span></span><br><span class="line">    String streamName = clauseContext.getInputStreams().get(<span class="number">0</span>);</span><br><span class="line">    <span class="comment">//① 在Window操作前可以有Filter操作, 拆分出Filter算子, 在父类SelectSplitter中实现</span></span><br><span class="line">    FilterOperator fop = splitFiterBeforeWindow(streamName);</span><br><span class="line">    <span class="comment">//② 聚合算子</span></span><br><span class="line">    AggregateOperator aggregateOperator = splitAggregateOperator(clauseContext, streamName);</span><br><span class="line">    <span class="comment">//③ 创建算子之间的连接</span></span><br><span class="line">    OperatorTransition transition = createTransition(fop, aggregateOperator, streamName);</span><br><span class="line">    </span><br><span class="line">    getResult().addOperators(fop);                  <span class="comment">//过滤算子</span></span><br><span class="line">    getResult().addOperators(aggregateOperator);    <span class="comment">//聚合算子</span></span><br><span class="line">    getResult().addTransitions(transition);         <span class="comment">//从过滤算子到聚合算子的连线</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">protected</span> FilterOperator <span class="title">splitFiterBeforeWindow</span><span class="params">(String streamName)</span> </span>&#123;</span><br><span class="line">    FromClauseAnalyzeContext clauseContext = getFromClauseContext();</span><br><span class="line">    <span class="comment">//新创建一个Filter过滤算子, from stream(id&gt;1)[RANGE 10s] 可以在流之后,窗口之前的中间存在Filter过滤: 在进入窗口前过滤</span></span><br><span class="line">    FilterOperator fop = <span class="keyword">new</span> FilterOperator(buildUtils.getNextOperatorName(<span class="string">"Filter"</span>), parallelNumber);</span><br><span class="line">    <span class="comment">//从From语义解析结果中获取filterBeforeWindow对应当前stream的filter表达式,比如上面的id&gt;1</span></span><br><span class="line">    ExpressionDescribe expression = clauseContext.getFilterBeForeWindow().get(streamName);</span><br><span class="line">    fop.setFilterExpression(expression.toString());                     <span class="comment">//过滤条件表达式,比如id&gt;1</span></span><br><span class="line">    fop.setOutputExpression(createFilterOutputExpression(streamName));  <span class="comment">//输出列</span></span><br><span class="line">    <span class="keyword">return</span> fop;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> AggregateOperator <span class="title">splitAggregateOperator</span><span class="params">(FromClauseAnalyzeContext clauseContext, String streamName)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//创建新的聚合算子</span></span><br><span class="line">    AggregateOperator aggop = <span class="keyword">new</span> AggregateOperator(getBuildUtils().getNextOperatorName(<span class="string">"Aggregator"</span>), getParallelNumber());</span><br><span class="line">    parseWindow(clauseContext, streamName, aggop);  <span class="comment">//解析窗口. Window其实也是From的一部分,所以需要从From子句中获取Windows设置到aggop里</span></span><br><span class="line">    parseWhere(aggop);                              <span class="comment">//解析过滤: setFilterBeforeAggregate,在聚合之前的过滤.</span></span><br><span class="line">    aggop.setFilterAfterAggregate(parseHaving());   <span class="comment">//解析having</span></span><br><span class="line">    aggop.setGroupbyExpression(parseGroupby());     <span class="comment">//解析分组</span></span><br><span class="line">    aggop.setOrderBy(parseOrderBy());               <span class="comment">//解析排序</span></span><br><span class="line">    aggop.setLimit(parseLimit());                   <span class="comment">//解析限制</span></span><br><span class="line">    aggop.setOutputExpression(getSelectClauseContext().toString());     <span class="comment">//输出表达式: select关键字后面的都是输出</span></span><br><span class="line">    <span class="keyword">return</span> aggop;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>AggregateOperator对Select子句的解析最后都是字符串.  </p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>aggregation</th>
+<th>setXXX</th>
+<th>AnalyzerContext</th>
+<th>parseXXX</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>window</td>
+<td>setWindow</td>
+<td>FromClauseAnalyzeContext.windows.get(streamName)</td>
+<td>parseWindow</td>
+</tr>
+<tr>
+<td>where</td>
+<td>setFilterBeforeAggregate</td>
+<td>FilterClauseAnalzyeContext whereClauseContext</td>
+<td>parseWhere</td>
+</tr>
+<tr>
+<td>having</td>
+<td>setFilterAfterAggregate</td>
+<td>FilterClauseAnalzyeContext havingClauseContext</td>
+<td>parseHaving</td>
+</tr>
+<tr>
+<td>group by</td>
+<td>setGroupbyExpression</td>
+<td>SelectClauseAnalyzeContext groupbyClauseContext</td>
+<td>parseGroupby</td>
+</tr>
+<tr>
+<td>order by</td>
+<td>setOrderBy</td>
+<td>OrderByClauseAnalyzeContext</td>
+<td>parseOrderBy</td>
+</tr>
+<tr>
+<td>limit</td>
+<td>setLimit</td>
+<td>LimitClauseAnalzyeContext</td>
+<td>parseLimit</td>
+</tr>
+<tr>
+<td>output exp</td>
+<td>setOutputExpression</td>
+<td>SelectClauseAnalyzeContext selectClauseContext</td>
+<td>getSelectClauseContext</td>
+</tr>
+</tbody>
+</table>
+<p>通过上面的AggregateSplitter.split方法,我们知道了聚合算子由FilterBeforeWindow,Window,FilterBeforeAggregate,Having,GroupBy,OrderBy,Limit组成.  </p>
+<blockquote>
+<p>语法结构中并没有Aggregate这种类型, 但是我们发现Aggregate用到的这些和Select语句中包含的子句都差不多. 其中两个Window可以认为是From子句.<br>FilterBeforeAggregate是Where子句, 这样Select语句的所有部分就和Aggregate都吻合了! 所以说Select也是一种Aggregate! (^_^这不是巧合吧) </p>
+</blockquote>
+<h4 id="AggregateOperator">AggregateOperator</h4><p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151126173430754" alt="stream-operators"></p>
+<p>AggregateOperator聚合算子:包含了window,以及window前后的filter操作. 当然还少不了count,sum之类的UDAF函数计算和UDF函数计算(BasicAggFunctionOperator)<br>AggregateOperator &gt;&gt; BasicAggFunctionOperator &gt;&gt; InnerFunctionOperator 这些类的字段正好对应了聚合算子的所有组成部分.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AggregateOperator</span> <span class="keyword">extends</span> <span class="title">BasicAggFunctionOperator</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Window window;                  <span class="comment">//窗口 ==&gt; From子句</span></span><br><span class="line">    <span class="keyword">private</span> String filterBeforeAggregate;   <span class="comment">//filter的过滤条件 ==&gt; Where子句</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BasicAggFunctionOperator</span> <span class="keyword">extends</span> <span class="title">InnerFunctionOperator</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String filterAfterAggregate;    <span class="comment">//聚合类的过滤条件, 这里都是udaf函数, 过滤一定发生在数据聚合之后, 这里的表达式一定使用的是outputSchema中的列名称</span></span><br><span class="line">    <span class="keyword">private</span> String groupbyExpression;       <span class="comment">//分组的表达式</span></span><br><span class="line">    <span class="keyword">private</span> String orderBy;                 <span class="comment">//排序: 允许有多个字段，之间按照逗号分割, 允许出现udf和udaf函数</span></span><br><span class="line">    <span class="keyword">private</span> Integer limit;                  <span class="comment">//窗口的输出限制</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">InnerFunctionOperator</span> <span class="keyword">extends</span> <span class="title">Operator</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String outputExpression;        <span class="comment">//输出的列定义,不光有单纯的列，还有udf以及udaf函数</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>过滤条件是一个字符串形式的逻辑表达式, 允许有and,or以及大括号和udf函数, 但是绝对不允许出现udaf函数，因为这没有聚合操作<br><strong>过滤发生在数据进入窗口之后，聚合之前</strong>. 比如 (a&gt;1 and a &lt;100) or (b is not null) 就是where的过滤， </p>
+<p>InnerFunctionOperator功能性算子，主要为系统提供window，join，order by，group by等聚合操作。<br>这里的名称和operator包中的不一样. 这里定义的这些operator，主要是进行执行计划的序列化和反序列化的。<br>所有的数据类型全部是<code>字符串类型</code>，之后还要经过语法的解析，物理执行计划的优化之后，才会在application中提交。 </p>
+<h4 id="Transition">Transition</h4><p>别忘了,还有createTransition创建连线哦: 在AggregateSplitter.splitFromClause中fromOp是FilterBeforeWindow FilterOperator, toOp是AggregateOperator.  </p>
+<p>算子之间进行连接, 涉及到分组策略, Storm中Bolt可以指定怎么根据输入源进行分组, 即输入源将数据怎么分流到当前Bolt. 分组是有一定依据的,不能胡乱连接.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> OperatorTransition <span class="title">createTransition</span><span class="params">(Operator fromOp, Operator toOp, String streamName)</span> </span>&#123;</span><br><span class="line">    FromClauseAnalyzeContext clauseContext = getFromClauseContext();</span><br><span class="line">    DistributeType distype = DistributeType.SHUFFLE;</span><br><span class="line">    String disFields = <span class="keyword">null</span>;</span><br><span class="line">    Schema schema = clauseContext.getInputSchemas().get(<span class="number">0</span>);</span><br><span class="line">    <span class="comment">//如果有GroupBy,分组策略就是字段分组(distype=FIELDS), 比如group by type, 则按照type字段分组(disFields=type).  </span></span><br><span class="line">    <span class="keyword">if</span> (getGroupbyClauseContext() != <span class="keyword">null</span>) &#123;</span><br><span class="line">        disFields = removeDataSourceColumnsFromGroupbyExpression(schema, getGroupbyClauseContext().toString());</span><br><span class="line">        distype = DistributeType.FIELDS;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//现在是在SelectSpiltter中, 所以可能是Aggregate,Join,DataSource中任意一种.  </span></span><br><span class="line">    <span class="keyword">if</span> (toOp <span class="keyword">instanceof</span> JoinFunctionOperator) &#123;</span><br><span class="line">        List&lt;Schema&gt; inputSchemas = getFromClauseContext().getInputSchemas();</span><br><span class="line">        schema = BaseAnalyzer.getSchemaByName(streamName, inputSchemas);</span><br><span class="line">        <span class="keyword">if</span> (((JoinFunctionOperator)toOp).getJoinType() != JoinType.CROSS_JOIN) &#123;</span><br><span class="line">            disFields = getJoinExpression(schema);</span><br><span class="line">            distype = DistributeType.FIELDS;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//创建起始算子到结束算子之间的连线, 并确定分组策略,分组字段, 发起连接的算子的schema信息</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> OperatorTransition(buildUtils.getNextStreamName(), fromOp, toOp, distype, disFields, schema);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>现在似乎要逐步用Storm的例子来理解了,否则算子之间为什么要进行连接? 连接之后就确定了上游算子怎么发送数据到下游算子. 假设Storm有两个Bolt: Bolt1和Bolt2.<br>Bolt1过滤数据,输出(word,count)两个字段. 为了能使得对Bolt1过滤后的数据进行分流,Bolt2使用Bolt1的word字段进行FieldGrouping. 这样Bolt1相同的word字段<br>只会到相同的Bolt任务中, 不同的word字段会分发到不同的Bolt2任务. 所以可以把Bolt1看做过滤算子, Bolt2看做是聚合算子, 中间存在分组连接对Bolt1的数据分流.  </p>
+</blockquote>
+<blockquote>
+<p>那么具体下游算子要怎么接收上游算子的数据呢? 不用担心! 这里先只是创建连接,只要有连接,就都好办了,找对关系找对门路是最重要的!</p>
+</blockquote>
+<h4 id="SplitContext">SplitContext</h4><p>现在不难看出SplitContext的作用是各类语义分析结果拆分内容. 和前面几个XXXContext一样都只是保存数据的介质(还记得StatementContext,AnalyzeContext吗)<br>常见的CQL语句格式<code>insert into stream s0 select</code>中insert语句确定了<code>outputStreamName</code>, select语句确定算子拆分的结果:<code>operators和transitions</code>.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SplitContext</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> List&lt;OperatorTransition&gt; transitions = <span class="keyword">new</span> ArrayList&lt;OperatorTransition&gt;();</span><br><span class="line">    <span class="keyword">private</span> List&lt;Operator&gt; operators = <span class="keyword">new</span> ArrayList&lt;Operator&gt;();</span><br><span class="line">    <span class="keyword">private</span> String outputStreamName;        <span class="comment">//输出的流名称: 指的是在CQL中显示指定输出流名称的。例如insert into 之类的语句</span></span><br><span class="line">    <span class="keyword">private</span> AnalyzeContext parseContext;    <span class="comment">//CQL解析结果: 通过这个结果，可以进行多个CQL之间的连接</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>每一条CQL语句都对应一个AnalyzeContext, 每个AnalyzeContext都有一个Splitter用来创建算子. 即使上面我们创建了Transition连接, 但也是在同一个CQL语句内的!<br>而一个完整的Topology是要求能把多个CQL语句的上下文都串联起来组成一个DAG图的. 所以这就是在SplitContext中保留AnalyzeContext的含义: It’ time to Combine!  </p>
+</blockquote>
+<h3 id="OperatorCombiner">OperatorCombiner</h3><p>现在我们知道为什么要进行合并了,因为如果仅仅是拆分每一条CQL语句, 这样最后都是一段一段的,我们需要把这些一段一段拼接成完整的图.<br>目前只有两种CQL语句: 一种是流定义create stream语句, 一种是insert into语句. 对于流定义没有算子之间的连接,但是schema还是需要的.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> SplitContext <span class="title">combine</span><span class="params">(List&lt;SplitContext&gt; splitContexts)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; splitContexts.size(); i++) &#123;</span><br><span class="line">        combineSplitContext(splitContexts.get(i));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">combineSplitContext</span><span class="params">(SplitContext context)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//原始每一条CQL的算子和连线不能被破坏的! 要重新加入最后的返回结果中. </span></span><br><span class="line">    result.getOperators().addAll(context.getOperators());</span><br><span class="line">    result.getTransitions().addAll(context.getTransitions());</span><br><span class="line">    <span class="comment">//如果是SourceOperatorSplitter对应的CreateStreamAnalyzeContext, 是没有transition的.  </span></span><br><span class="line">    <span class="keyword">if</span> (context.getParseContext() <span class="keyword">instanceof</span> CreateStreamAnalyzeContext)&#123;</span><br><span class="line">        addSchemasFromCreateStream(context);    <span class="comment">//添加到inputStreams,outputStreams,pipeStreams</span></span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//合并时新添加的只是CQL与CQL之间的连线! 对于算子已经都是完整的了,不会缺胳膊断腿的,不需要再添加. ⬅️</span></span><br><span class="line">    createTransition(context);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">createTransition</span><span class="params">(SplitContext context)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//MultiInsertStatementAnalyzeContext</span></span><br><span class="line">    <span class="comment">//InsertUserOperatorStatementAnalyzeContext</span></span><br><span class="line">    InsertAnalyzeContext insertContext = (InsertAnalyzeContext)context.getParseContext();</span><br><span class="line">    createFromTransition(context, insertContext);</span><br><span class="line">    createToTransition(context, insertContext);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Splitter中SourceOperatorSplitter是没有operators和transitions, InsertSplitter的算子和连线则依赖于SelectSpitter.<br>所以如果是CreateStreamAnalyzeContext则不会调用createTransition, 只有三种insert才会调用:Insert,MultiInsert,UDFInsert    </p>
+</blockquote>
+<p>将多个算子组合起来, 组建算子之间的上下级关系. 算子之间的连线，有两种来源：<br>1、算子是由<code>一条CQL语句</code>拆分出多个算子组成，这样，连线就可以在拆分的时候确定。<br>2、算子是由<code>多条CQL语句</code>组合而来，通过使用<code>insert into select from</code>这样的语句，就可以实现多个算子之间的级联。<br>甚至可以改变算子之间的连接关系。比如在aggregate算子之前加入union算子, 在aggregate算子之后加入split算子。  </p>
+<p>为每个<code>insert into select</code>语句解析出来的结果加入上下文连线。<br>CQL语句之间的连线，必然从inputStream或者PipeStream发起，连接到outputStream或者PipeStream.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151129160212682" alt="input-pipe-output"></p>
+<h4 id="PipeStream">PipeStream</h4><p>splitOperators在拆分之前, 会首先解析是否需要创建之前没有声明过的流. 如果不存在,则创建PipeStream.   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseAutoCreatePipeStream</span><span class="params">(List&lt;SplitContext&gt; splitContexts, AnalyzeContext pcontext)</span> </span>&#123;</span><br><span class="line">    parseAutoCreatePipeStreamForInsert(splitContexts, pcontext);</span><br><span class="line">    parseAutoCreatePipeStreamForMultiInsert(splitContexts, pcontext);</span><br><span class="line">    parseAutoCreatePipeStreamForUserOperator(splitContexts, pcontext);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseAutoCreatePipeStreamForInsert</span><span class="params">(List&lt;SplitContext&gt; splitContexts, AnalyzeContext pcontext)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (pcontext <span class="keyword">instanceof</span> InsertAnalyzeContext) &#123;</span><br><span class="line">        InsertAnalyzeContext ipc = (InsertAnalyzeContext)pcontext;</span><br><span class="line">        <span class="keyword">if</span> (!ipc.isPipeStreamNotCreated()) <span class="keyword">return</span>;      <span class="comment">//允许类型不是输入/输出流的流不存在   </span></span><br><span class="line">        SplitContext sc = createPipeStreamSplitContext(ipc.getOutputSchema());</span><br><span class="line">        splitContexts.add(sc);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> SplitContext <span class="title">createPipeStreamSplitContext</span><span class="params">(Schema schema)</span> </span>&#123;</span><br><span class="line">    LOG.info(<span class="string">"create pipe Stream while stream is not created!"</span>);</span><br><span class="line">    CreateStreamAnalyzeContext pipe = <span class="keyword">new</span> CreateStreamAnalyzeContext();</span><br><span class="line">    pipe.setSchema(schema);</span><br><span class="line">    pipe.setStreamName(schema.getId());</span><br><span class="line">    <span class="keyword">return</span> OperatorSplitter.split(buildUtils, pipe);    <span class="comment">//输入输出流使用SourceOperatorSplitter拆分算子</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>比如下面的<code>multi insert</code>语句, 其中teststream是事先创建好的, 而s1,s2,s3都没有创建过, 在解析的时候判断这些insert对应的stream没有创建过,<br>就会创建这些pipe-stream. 因为insert的schema取决于select, 所以这些pipe-stream的schema等于InsertAnalyzeContext的outputSchema.   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">FROM teststream</span><br><span class="line">  INSERT INTO STREAM s1 SELECT *</span><br><span class="line">  INSERT INTO STREAM s2 SELECT a</span><br><span class="line">  INSERT INTO STREAM s3 SELECT id, name WHERE id &gt; 10</span><br><span class="line">PRARLLEL 4;</span><br></pre></td></tr></table></figure>
+<p>判断PipeStream是否创建过在InsertStatementAnalyzer.analyze中. 只要是insert语句, 如果在系统已有的schemas中不存在, 就设置setPipeStreamNotCreated=true<br>这样parseAutoCreatePipeStreamForInsert在判断到isPipeStreamNotCreated才会创建createPipeStreamSplitContext. 否则schema已经存在就不再需要创建了.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if (checkSchemaExists(streamName)) &#123;</span><br><span class="line">    context.setOutputSchema(getSchemaByName(streamName));</span><br><span class="line">&#125; else &#123;</span><br><span class="line">    context.setPipeStreamNotCreated(true);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="From_&amp;_To_Transition">From &amp; To Transition</h4><p>首先找到insert into语句中计算出来的连线的起点。找到对应的算子. 然后根据起点的schema名称，找到对应的流名称，创建连线  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">createFromTransition</span><span class="params">(SplitContext context, InsertAnalyzeContext insertContext)</span> </span>&#123;</span><br><span class="line">    List&lt;OperatorTransition&gt; startTransitions = context.getFirstTransitons();</span><br><span class="line">    <span class="keyword">for</span> (OperatorTransition transition : startTransitions) &#123;</span><br><span class="line">        Operator op = context.getOperatorById(transition.getFromOperatorId());</span><br><span class="line">        String startStreamName = transition.getSchemaName();</span><br><span class="line">        SplitContext fromContext = getFromSplitContext(startStreamName);</span><br><span class="line">        Schema schema = getInputSchema(startStreamName, insertContext);</span><br><span class="line">        String nextStreamName = buildUtils.getNextStreamName();</span><br><span class="line">        </span><br><span class="line">        Operator fromOp = fromContext.getLastOperator();</span><br><span class="line">        OperatorTransition fromtransition = <span class="keyword">new</span> OperatorTransition(nextStreamName, fromOp, op, DistributeType.SHUFFLE, <span class="keyword">null</span>, schema);</span><br><span class="line">        result.addTransitions(fromtransition);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">createToTransition</span><span class="params">(SplitContext context, InsertAnalyzeContext insertContext)</span> </span>&#123;</span><br><span class="line">    Set&lt;Operator&gt; ops = getLastOperator(context);</span><br><span class="line">    <span class="keyword">for</span> (Operator op : ops) &#123;</span><br><span class="line">        String startStreamName = insertContext.getOutputStreamName();</span><br><span class="line">        SplitContext toContext = getToSplitContext(startStreamName);</span><br><span class="line">        Schema schema = insertContext.getOutputSchema();</span><br><span class="line">        String nextStreamName = buildUtils.getNextStreamName();</span><br><span class="line">        </span><br><span class="line">        Operator toOp = toContext.getFirstOperator();</span><br><span class="line">        OperatorTransition totransition = <span class="keyword">new</span> OperatorTransition(nextStreamName, op, toOp, DistributeType.SHUFFLE, <span class="keyword">null</span>, schema);</span><br><span class="line">        result.addTransitions(totransition);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="物理优化">物理优化</h3><p>拆分并组合算子后,因为每个算子之间都通过transition来连接(没有通过连线连接的算子是一个孤岛,是不会起作用的),所以可以进一步优化.<br>changeUnionOperators:union算子替换和changeSchemaAfterAggregate: 替换所有的having和orderby这些在聚合之后的表达式.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PhysicOptimizer</span> <span class="keyword">implements</span> <span class="title">Optimizer</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Application <span class="title">optimize</span><span class="params">(Application app)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">new</span> AggregateConverter().optimize(app);</span><br><span class="line">        <span class="keyword">new</span> FilterPruner().optimize(app);</span><br><span class="line">        <span class="keyword">new</span> SameStreamCombiner().optimize(app);</span><br><span class="line">        <span class="keyword">new</span> SameTransitionPruner().optimize(app);</span><br><span class="line">        <span class="keyword">return</span> app;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/11/27/2015-11-27-StreamCQL-operator/">StreamCQL源码阅读(3) 拆分组合算子</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年11月27日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/11/27/2015-11-27-StreamCQL-operator/" title="StreamCQL源码阅读(3) 拆分组合算子">http://github.com/zqhxuyuan/2015/11/27/2015-11-27-StreamCQL-operator/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/11/27/2015-11-27-StreamCQL-operator/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/11/29/2015-11-29-StreamCQL-application/">
+        StreamCQL源码阅读(4) 应用程序执行
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/11/26/2015-11-26-StreamCQL-schema/">
+        StreamCQL源码阅读(2) 语法和语义解析
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前戏:_buildApplication"><span class="toc-number">1.</span> <span class="toc-text">前戏: buildApplication</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#正文:_Split_and_Combine_Operators"><span class="toc-number">2.</span> <span class="toc-text">正文: Split and Combine Operators</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#SourceOperatorSplitter_->_Input/Output_Operator"><span class="toc-number">2.1.</span> <span class="toc-text">SourceOperatorSplitter -&gt; Input/Output Operator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#InsertSplitter_->_Insert_Operator"><span class="toc-number">2.2.</span> <span class="toc-text">InsertSplitter -&gt; Insert Operator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SelectSplitter"><span class="toc-number">2.3.</span> <span class="toc-text">SelectSplitter</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AggregateSplitter_->_FilterOp_+_AggregateOp_+_Transition"><span class="toc-number">2.4.</span> <span class="toc-text">AggregateSplitter -&gt; FilterOp + AggregateOp + Transition</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#AggregateOperator"><span class="toc-number">2.4.1.</span> <span class="toc-text">AggregateOperator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Transition"><span class="toc-number">2.4.2.</span> <span class="toc-text">Transition</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#SplitContext"><span class="toc-number">2.4.3.</span> <span class="toc-text">SplitContext</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OperatorCombiner"><span class="toc-number">2.5.</span> <span class="toc-text">OperatorCombiner</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#PipeStream"><span class="toc-number">2.5.1.</span> <span class="toc-text">PipeStream</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#From_&_To_Transition"><span class="toc-number">2.5.2.</span> <span class="toc-text">From &amp; To Transition</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#物理优化"><span class="toc-number">2.6.</span> <span class="toc-text">物理优化</span></a></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/11/27/2015-11-27-StreamCQL-operator/" data-title="StreamCQL源码阅读(3) 拆分组合算子" data-url="http://github.com/zqhxuyuan/2015/11/27/2015-11-27-StreamCQL-operator/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/11/29/2015-11-29-StreamCQL-application/" title="上一篇: StreamCQL源码阅读(4) 应用程序执行">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/11/26/2015-11-26-StreamCQL-schema/" title="下一篇: StreamCQL源码阅读(2) 语法和语义解析">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

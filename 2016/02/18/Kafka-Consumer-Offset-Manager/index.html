@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>译：Kafka消费者的Offset管理 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="https://cwiki.apache.org/confluence/display/KAFKA/Inbuilt+Consumer+Offset+Management">
+<meta name="keywords" content="kafka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="译：Kafka消费者的Offset管理">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/02/18/Kafka-Consumer-Offset-Manager/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="https://cwiki.apache.org/confluence/display/KAFKA/Inbuilt+Consumer+Offset+Management">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160223142716750">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160223142729875">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160223142742613">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.346Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="译：Kafka消费者的Offset管理">
+<meta name="twitter:description" content="https://cwiki.apache.org/confluence/display/KAFKA/Inbuilt+Consumer+Offset+Management">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160223142716750">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Kafka-Consumer-Offset-Manager" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/02/18/Kafka-Consumer-Offset-Manager/" class="article-date">
+  	<time datetime="2016-02-17T16:00:00.000Z" itemprop="datePublished">2016-02-18</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      译：Kafka消费者的Offset管理
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/wiki/">wiki</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/">kafka</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p><a href="https://cwiki.apache.org/confluence/display/KAFKA/Inbuilt+Consumer+Offset+Management" target="_blank" rel="noopener">https://cwiki.apache.org/confluence/display/KAFKA/Inbuilt+Consumer+Offset+Management</a><br><a id="more"></a></p>
+<h2 id="介绍">介绍</h2><p>实现内置的消费者offset管理功能有两种方式:  </p>
+<p>1.让消费者创建一个内置的producer示例,并且像生产消息一样发送offsets<br>2.让消费者使用offset commit请求API来提交offsets. 我们让brokers记录offset消息到磁盘上,<br>并且使用消息的复制特征,达到持久性和可用性. 所以实际上在broker端的offset提交处理和生产者请求<br>的处理是一样的逻辑.在broker端重构代码可以使我们重用已有的代码.  </p>
+<h2 id="Offset_Management">Offset Management</h2><h3 id="Offsets_topic">Offsets topic</h3><p>消费者的offset提交请求会作为生产请求发送到”__offsets”的topic. 一个offset提交消息包括下面字段:  </p>
+<table>
+<thead>
+<tr>
+<th>fields</th>
+<th>content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key</td>
+<td>Consumer Group, topic, partition</td>
+</tr>
+<tr>
+<td>Payload</td>
+<td>Offset, metadata, timestamp</td>
+</tr>
+</tbody>
+</table>
+<p>offset提交消息会根据消费组的key(消费组名称)进行分区. 对于一个给定的消费组,它的所有消息都会发送到唯一的broker,<br>这对offset的抓取请求会更加容易,因为不需要以分散-收集的方式对多个brokers发送请求并收集结果(只针对一个broker).  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160223142716750" alt="k_offsets_topics"></p>
+<p>这种方式的缺点是如果任何一个消费组负责消费很多数量的partitions,会多某些brokers造成性能瓶颈,会增加需要<br>处理的offset提交请求. 不过offsets topic的消息量并不会很大,所以这应该不会成为一个问题.  </p>
+<h3 id="Offset_managers">Offset managers</h3><p>Offset manager负责存储,抓取,和维护消费者的offsets. 每个broker都有一个offset manager实例. 有两种具体的实现:  </p>
+<ul>
+<li>ZookeeperOffsetManager: 调用zookeeper来存储和接收offset</li>
+<li>DefaultOffsetManager: 提供消费者offsets内置的offset管理</li>
+</ul>
+<p>在config/server.properties中新增了”offset.storage”属性,用来在两种实现中选择一种. 对于DefaultOffsetManager<br>还有两个其他属性: “offsets.topic.replication.factor”和”offsets.topic.num.partitions”,默认值都是1.<br>这两个属性会用来自动地创建”offsets topic”即”__offsets” topic(这种方式将offset作为和普通消息一样的topic).<br>理想情况下,”offsets topic”的副本因子(比如3或4个副本)应该比其他正常的kafka topic要高,目的是获得更高的可用性.  </p>
+<p><strong>offsets是怎么保存到DefaultOffsetManager?</strong>  </p>
+<p>除了将offset作为logs保存到磁盘上,DefaultOffsetManager维护了一张能快速服务于offset抓取请求的consumer offsets表.<br>broker在offsets表(缓存)中包含仅仅是”offsets topic”的partitions中属于leader partition对应的条目(存储的是offset).<br>(即这些partitions的replicas只会在他们自己的logs中有offset信息,并不会对应offset表中的条目).  </p>
+<p>offsets topic的logs的segment大小相比正常的topics设置的很低,默认”offsets.topic.segment.bytes”=10MB.<br>这样LogCleaner会更快地选出未清理的segments,结果就是能够更频繁地清理. 同样log的大小设置的越小也有助于<br>减少读取logs的时间,在把读取出来的logs信息放到offsets缓存中也更快(比如重启kafka时会重新加载日志文件).  </p>
+<h3 id="Offsets_manager_interface">Offsets manager interface</h3><p>下面是offset manager接口的概要.  </p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>DefaultOffsetManager</th>
+<th>ZookeeperOffsetManager</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>startup</td>
+<td>初始化内部变量(zkClient和log manager)</td>
+<td>初始化zkClient对象</td>
+</tr>
+<tr>
+<td>getOffset</td>
+<td>从offset table中读取</td>
+<td>从zookeeper中读取</td>
+</tr>
+<tr>
+<td>putOffset</td>
+<td>添加offset到offset table</td>
+<td>写入zookeeper</td>
+</tr>
+<tr>
+<td>triggerLoadOffsets</td>
+<td>当leader变化或者已经存在的broker成为某些partition的leader,需要从磁盘上为指定的partition加载logs,并形成offsets table</td>
+<td>nothing</td>
+</tr>
+<tr>
+<td>cleanup</td>
+<td>leader变化或者某些partition的leader变成了follower,需要清理offsets table</td>
+</tr>
+<tr>
+<td>shutdown</td>
+<td>关闭scheduler,上面的triggerLoadOffsets是个异步线程</td>
+<td>nothing</td>
+</tr>
+</tbody>
+</table>
+<h2 id="Offset_Commit实现">Offset Commit实现</h2><h3 id="消费端">消费端</h3><p>一条offset提交消息会作为生产请求.当消费者启动时,会为”offsets topic”创建一个消费者. 下面是内置的生产者的一些属性:  </p>
+<p>|property|value|explain|<br>|producer.type|sync|可以使用异步.但是使用同步可以避免延迟的生产请求(因为是批量消息),并且我们需要立即知道offset消息是否被broker成功接收<br>|request.required.acks|-1|确保所有的replicas和leader是同步的,并且能看到所有的offset消息<br>|key.serializer.class|StringEncoder|key和payload都是strings</p>
+<p>注意我们没有对提交的offset消息进行压缩,因为每条消息本身大小是很小的,如果压缩了反而适得其反.<br>目前key和offset的值通过纯文本方式传递. 我们可以转换为更加紧凑的二进制协议,而不是把<br>Long类型的offset和Int类型的partition作为字符串. 当然在不断演进时还要考虑版本和格式协议.  </p>
+<h3 id="broker端">broker端</h3><p>broker把接收到的offset提交信息当做一个正常的生产请求,对offset请求的处理和正常的生产者请求处理方式是一样的.<br>一旦将数据追加到leader的本地日志中,并且所有的replicas都赶上leader.leader检查生产请求是”offsets topic”,<br>(因为broker端的处理逻辑针对offset请求和普通生产请求是一样的,如果是offset请求,还需要有不同的处理分支)<br>它就会要求offset manager添加这个offset(对于延迟的生产请求,更新操作会在延迟的生产请求被完成的时候).<br>因为设置了acks=-1,只有当这些offsets成功地复制到ISR中的所有brokers,才会被提交给offset manager.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160223142729875" alt="k_offset_commit_broker"></p>
+<p>offsets topic会在第一次的offset提交请求时被自动创建.即一个集群中的第一个消费者会触发创建过程.  </p>
+<h2 id="Offset_Fetch实现">Offset Fetch实现</h2><h3 id="消费端-1">消费端</h3><p>消费者启动时,会首先创建到任意一个存活的brokers的通道.因此消费者会发送它所有”OffsetFetchRequest”<br>到这个随机选中的broker. 如果出现错误,这个通道就会被关闭,并重新创建一个随机的通道.  </p>
+<h3 id="broker端-1">broker端</h3><p>一个Offset抓取请求包含了多个topic-partitions. 接收请求的broker可能有也可能没有请求的partitions的offset信息.<br>因此接收请求的brokers也会和其他broker通信. 一个通道连接池会用来转发请求给partition的leader broker.<br>下面是一个broker在接收到一个offset抓取请求后的步骤:  </p>
+<ul>
+<li>接收请求的broker首先决定”offset topic”的哪个partition负责这个请求</li>
+<li>从broker的leader cache中找出对应partition的leader(会在controller的每次metadata更新请求中更新缓存)</li>
+<li>如果接收请求的broker就是leader,它会从自己的offset manager中读取出offset,并添加到响应中<br>如果offset不存在,返回UnknownTopicOrPartitionCode<br>如果broker正在加载offsets table,返回OffsetLoadingCode.消费者受到这个状态码会在之后重试  </li>
+<li>如果接收请求的broker不是指定topic-partition的leader,它会将OffsetFetchRequest转发给这个partition的当前leader  </li>
+<li>如果”offsets topic”这个时候不存在,它会尝试自动创建,在创建成果后,会返回offset=-1</li>
+</ul>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160223142742613" alt="k_offset_fetch_broker"></p>
+<h2 id="Broker_failover">Broker failover</h2><p>当broker启动时,它会按照正常流程执行. 但是当对”offsets topic”的某些partition而言,broker状态发生改变,<br>即被当做partition的leader或者follower时,LeaderAndIsrRequest请求会被触发:  </p>
+<ul>
+<li>如果broker是”offsets topic”中一些partitions的leader, broker会读取指定partition的logs文件,<br>并将offsets加载到offset table缓存中.<br>1) 任何对这些partition的提交请求仍然会更新offsets表.我们会防止日志文件中过期的offsets覆盖最近的提交请求的offsets.<br>2) 被”offsets topic”中partition管理的offset抓取请求的keys直到加载成功之前是不会被使用的.<br>broker会返回OffsetLoadingCode的OffsetFetchResponse给消费者客户端. </li>
+<li>如果broker是follower: 和其他正常的kafka topic一样,follower会从leader中抓取数据.<br>由于follower的offset manager不再负责partitions,它们会在cleanup方法被调用时清理数据.    </li>
+</ul>
+<h2 id="Offset清理">Offset清理</h2><h3 id="Offset移除协议">Offset移除协议</h3><p>带有null的payload的OffsetCommitRequest表示指定的key(group-topic-partition)的offset应该被删除.<br>假设一个broker拥有offsets topic的partition X,收到了null payloads的这样一个请求.<br>正常的append-to-logs流程会继续运行,并且followers也会同步leader的数据. 当offset manager提交offset时,<br>它检查到payload是”null”,就会删除zk和offsets表中有这个key的条目.<br>如果一个消费组的所有条目都被删除了,就会删除zk中当前消费组对应的znode(/consumers/[group_id]).<br>这只是覆盖了zk和offset表的清理. 不过数据仍然存在于offsets topic的logs中.<br>log cleaner线程运行在”dedupe”模式时也会对offsets topic的logs使用null payload清理数据.  </p>
+<h3 id="手动清理">手动清理</h3><p>用户可以通过自定义一个要删除的offset的消费组. 该工具首先和zk进行联系得到如下信息:  </p>
+<ul>
+<li>请求的消费组是否存在,如果不存在,则停止(消费组必须存在)</li>
+<li>消费组有没有存活的消费者, 如果有,也停止(消费组必须没有存活的消费者)</li>
+<li>从zk中得到这个消费组下所有的消费topics(/consumers/[group]/owners)</li>
+<li>得到每个topics的partition编号</li>
+</ul>
+<p>在得到上面这些信息后发送一个OffsetCommitRequest,其中key是所有的group-topic-partition,<br>value是null payloads. 移除offset的过程和上面的移除协议是一样的.<br>根据时间的移除策略也是可行的,只要在OffsetFetchResponse中返回每个offset的时间撮.<br>(offset抓取之后,就开始重置计时器,如果在指定时间内这个partition没有再被fetch,就可以被移除了)  </p>
+<h3 id="自动清理">自动清理</h3><p>在OffsetManager中有一个单独的线程周期性地运行着自动清理offset. 该线程会读取当前broker中对应了<br>offsets topic所有partitions的logs,对每个key(group-topic-partition),会保存logs中<br>最近发现的条目的时间撮. 然后(清理线程)会向自己(broker)发送一个OffsetCommitRequest.<br>这个请求的条件应该满足:(当前时间撮-最近offset条目的时间撮)&gt;OFFSET_RETENTION_PERIOD(保留间隔)  </p>
+<p>当所有的brokers记录了指定的group-topic-partition的payload=null,毫无疑问可以放心地删除.<br>即使broker在log cleaner在完成清理之前当掉了不过又马上恢复过来. 在加载阶段就会防止删除的offsets<br>被加入到offset表. 有一点要注意,如果broker记录了要提交的消息为null payload到磁盘上,但是在<br>清理zk之前失败了, 会导致zk中存在过期的条目. 在ZookeeperOffsetManager的zk加载阶段需要处理这种情况.  </p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/02/18/Kafka-Consumer-Offset-Manager/">译：Kafka消费者的Offset管理</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年02月18日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/02/18/Kafka-Consumer-Offset-Manager/" title="译：Kafka消费者的Offset管理">http://github.com/zqhxuyuan/2016/02/18/Kafka-Consumer-Offset-Manager/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/02/18/Kafka-Consumer-Offset-Manager/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/02/19/Kafka-Consumer-Design/">
+        译：Kafka Consumer Rewrite Design
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/01/29/2016-01-29-Kafka-Consumer-offset/">
+        Kafka源码分析 Consumer(3) offset
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#介绍"><span class="toc-number">1.</span> <span class="toc-text">介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Offset_Management"><span class="toc-number">2.</span> <span class="toc-text">Offset Management</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Offsets_topic"><span class="toc-number">2.1.</span> <span class="toc-text">Offsets topic</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Offset_managers"><span class="toc-number">2.2.</span> <span class="toc-text">Offset managers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Offsets_manager_interface"><span class="toc-number">2.3.</span> <span class="toc-text">Offsets manager interface</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Offset_Commit实现"><span class="toc-number">3.</span> <span class="toc-text">Offset Commit实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#消费端"><span class="toc-number">3.1.</span> <span class="toc-text">消费端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#broker端"><span class="toc-number">3.2.</span> <span class="toc-text">broker端</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Offset_Fetch实现"><span class="toc-number">4.</span> <span class="toc-text">Offset Fetch实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#消费端-1"><span class="toc-number">4.1.</span> <span class="toc-text">消费端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#broker端-1"><span class="toc-number">4.2.</span> <span class="toc-text">broker端</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Broker_failover"><span class="toc-number">5.</span> <span class="toc-text">Broker failover</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Offset清理"><span class="toc-number">6.</span> <span class="toc-text">Offset清理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Offset移除协议"><span class="toc-number">6.1.</span> <span class="toc-text">Offset移除协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#手动清理"><span class="toc-number">6.2.</span> <span class="toc-text">手动清理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#自动清理"><span class="toc-number">6.3.</span> <span class="toc-text">自动清理</span></a></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/02/18/Kafka-Consumer-Offset-Manager/" data-title="译：Kafka消费者的Offset管理" data-url="http://github.com/zqhxuyuan/2016/02/18/Kafka-Consumer-Offset-Manager/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/02/19/Kafka-Consumer-Design/" title="上一篇: 译：Kafka Consumer Rewrite Design">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/01/29/2016-01-29-Kafka-Consumer-offset/" title="下一篇: Kafka源码分析 Consumer(3) offset">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

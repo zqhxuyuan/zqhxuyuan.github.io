@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Kafka技术内幕 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="《Kafka技术内幕》图灵社区主页 |ChinaPub购买链接 |京东购买链接 |">
+<meta name="keywords" content="kafka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka技术内幕">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2018/01/01/Kafka-Code-Index/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="《Kafka技术内幕》图灵社区主页 |ChinaPub购买链接 |京东购买链接 |">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171019131423727">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171019132244310">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171019132056607">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.339Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kafka技术内幕">
+<meta name="twitter:description" content="《Kafka技术内幕》图灵社区主页 |ChinaPub购买链接 |京东购买链接 |">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171019131423727">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Kafka-Code-Index" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2018/01/01/Kafka-Code-Index/" class="article-date">
+  	<time datetime="2017-12-31T16:00:00.000Z" itemprop="datePublished">2018-01-01</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kafka技术内幕
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/kafka/">kafka</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/">kafka</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>《Kafka技术内幕》<br><a href="http://www.ituring.com.cn/book/1927" target="_blank" rel="noopener">图灵社区主页</a> |<br><a href="http://product.china-pub.com/6817109" target="_blank" rel="noopener">ChinaPub购买链接</a> |<br><a href="https://item.jd.com/12234113.html?dist=jd" target="_blank" rel="noopener">京东购买链接</a> |<br><a id="more"></a></p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171019131423727" alt="book"></p>
+<p>Update:</p>
+<p>2017-11-22: 公司内部做的一个分享：<a href="https://pan.baidu.com/s/1o85h2K6" target="_blank" rel="noopener">Kafka构建流式数据处理平台</a></p>
+<h2 id="本书介绍：">本书介绍：</h2><p>本书主要以0.10版本的Kafka源码为基础，并通过图文详解的方式分析Kafka内部组件的实现细节，全书原创的图片有近400幅。对于Kafka流处理的一些新特性，也会分析0.11版本的相关源码。本书各个章节的主要内容如下。</p>
+<ul>
+<li>第一章首先介绍了Kafka作为流式数据平台的三个组成，包括消息系统、存储系统、流处理系统。Kafka基本概念的三种模型，包括分区模型、消费模型、分布式模型。然后介绍了Kafka几个比较重要的设计思路，最后介绍了如何在一台机器上模拟单机模式与分布式模式，以及如何搭建源码开发环境。</li>
+<li>第二章从一个生产者的示例开始，引出了新版本生产者的两种消息发送方式。生产者客户端利用记录收集器、发送线程，对消息集进行分组和缓存，并为目标节点创建生产请求，发送到不同的代理节点。接着介绍了与网络相关的Kafka通道、选择器、轮询等NIO操作。另外还介绍了Scala版本的旧生产者，它使用阻塞通道的方式发送请求。最后介绍了服务端采用<code>Reactor</code>模式处理客户端的请求。</li>
+<li>第三章首先介绍了消费者相关的基础概念，然后从一个消费者的示例开始，引出了基于ZooKeeper的高级消费者API，理解高级API主要是要理解消费线程的模型以及变量的传递方式。接着介绍了消费者提交分区偏移量的两种方式。最后，我们举了一个低级API的示例，开发者需要自己实现一些比较复杂的逻辑处理才能保证消费程序的健壮性和稳定性。</li>
+<li>第四章介绍了新版本的消费者，不同于旧版本的消费者，新版本去除了ZooKeeper的依赖，统一了旧版本的高级API和低级API，并提供了两种消费方式：订阅和分配。新版本引入订阅状态来管理消费者的订阅信息、并使用拉取器拉取消息。新版本的消费者没有使用拉取线程，而是采用轮询的方式拉取消息，它的性能比旧版本的消费者更好。另外还介绍了消费者采用回调器、处理器、监听器、适配器、组合模式、链式调用等实现不同类型的异步请求。最后，我们介绍了新消费者的心跳任务、提交偏移量以及三种消息处理语义的使用方式。</li>
+<li>第五章介绍了新版本消费者相关的协调者实现，主要包括“加入组”与“同步组”。每个消费者都有一个客户端的协调者，服务端也有一个消费组级别的协调者负责处理所有消费者客户端的请求。当消费组触发再平衡操作，服务端的协调者会记录消费组元数据的变化，并通过状态机保证消费组状态的正常转换。本章会通过很多不同的示例场景来帮助读者理解消费组相关的实现。</li>
+<li>第六章介绍了Kafka的存储层实现，包括日志的读写、日志的管理、日志的压缩等一些常用的日志操作。服务端通过副本管理器处理客户端的生产请求和拉取请求。接着介绍了副本机制相关的分区、副本、最高水位、复制点等一些概念。最后介绍了延迟操作接口与延迟缓存。服务端如果不能立即返回响应结果给客户端，会先将延迟操作缓存起来，直到请求处理完成或超时。</li>
+<li>第七章介绍了作为服务端核心的Kafka控制器，它主要负责管理分区状态机和副本状态机，以及多种类型的监听器，比如代理节点上线和下线、删除主题、重新分配分区等。控制器的一个重要职责是选举分区的主副本。不同代理节点根据控制器下发的请求，决定成为分区的主副本还是从副本。另外，我们还分析了本地副本与远程副本的区别，以及元数据缓存的作用。</li>
+<li>第八章首先介绍了两种集群的同步工具：Kafka内置的MirrorMaker和Uber开源的uReplicator。接着介绍了新版本Kafka提供的连接器框架，以及如何开发一个自定义的连接器。然后介绍了连接器的架构模型的具体实现，主要包括数据模型、Connector模型、Worker模型。</li>
+<li>第九章介绍了Kafka流处理的两种API：低级Processor API和高级DSL。本章我们重点介绍了流处理的线程模型，主要包括流实例、流线程、流任务。我们还介绍了流处理的本地状态存储，它主要用来作为备份任务的数据恢复。高级DSL包括两个组件：<code>KStream</code>与<code>KTable</code>，它们都定义了一些常用的流处理算子操作，比如无状态的操作（过滤、映射等）、有状态的操作（连接、窗口等）。</li>
+<li>第十章介绍了Kafka的一些高级特性，比如客户端的配额、新的消息格式、事务特性。</li>
+</ul>
+<p>本书相关的示例代码在笔者的Github主页<a href="https://github.com/zqhxuyuan/kafka-book">https://github.com/zqhxuyuan/kafka-book</a>上，另外，限于篇幅，本书的附录部分会放在个人博客上。由于个人能力有限，文中的错误在所难免，读者在阅读本书的过程中，发现不妥之处，可以私信笔者的微博：<a href="http://weibo.com/xuyuantree" target="_blank" rel="noopener">http://weibo.com/xuyuantree</a>，笔者会定期将勘误表更新到个人博客上。</p>
+<h2 id="English_Introduce">English Introduce</h2><p>《Apache Kafka Internal》</p>
+<p>This book mostly based on Kafka-0.10, and some part of 0.11 for streaming. It has nearly 400 pictures to analysis Kafka internal implementation. The book written from client to coordinator, from storage to controller, and also including Kafka Connect and Kafka Streams. Here is content introduction of each chapter:</p>
+<p>Chapter 1: Being a streaming platform, kafka composed of message system, storage and streaming processing. There are three model of Kafka basic concepts: Partition model, Consumer model and Distributed model. We also introduce some important design ideas of kafka, such as file system persistent, data transformation, producer and consumer, replication and HA.</p>
+<p>Chapter 2: From a producer example into how client send message. The whole workflow include record accumulator, sender thread, grouping message, create request and at last send to different target broker. Then we introduce Kafka channel, selector and also how server use NIO reactor to handle client request.</p>
+<p>Chapter 3: From a old high-level consumer example into zookeeper based api. The most important of high-level consuemr is consumer thread model. Then we introduce two approach to commit consumer offset which is zookeeper or internal topic. After that, we illustrate how to write low-level consumer to ensure processing messages stability and robust.</p>
+<p>Chapter 4: New version consumer client use subscription state and polling fetch instead of fetcher thread. We also introduce how consumer use callback, handler, listener, adapter, chain to implement different asynchronous request mode. Last we introduce heartbeat, offset commit and three consumer processing semantic: at-most-once,at-least-once,exactly-once.</p>
+<p>Chapter 5: New consumer communicate with server coordinator by ConsumerCoordinator, there’re mainly two request/response involved: Join-group and Sync-group. This process also called consumer group rebalance. We also discussed how server coordinator use state machine to ensure group state transformation, such as PreparingRebalance,AwaitingSync,Stable. This chapter also give some different scene to help reader understand how consumer group worked in production environment.</p>
+<p>Chapter 6: Kafka’s storage layer process include log read/write, log manager, log compaction. In server side, ReplicationManager is responsible for client’s request. Then we introduce Replication mechanism concepts, such as Partition, Replication, HW, LEO. Last we introduce delayed operation and delayed purgatory. If server can’t response immediately to client, they have to cache request and send response to client some times later.</p>
+<p>Chapter 7: Kafka Controller component is in charge of managing PartitionState, ReplicationState, and some listeners, such as broker up/down, topic deletion, partition reassign. The main duty of controller is selecting partition’s leader and sent LeaderAndIsr request down to brokers. Target brokers receiving request will decide to be partition leader or follower. Furthermore, we introduce the different between local replication and remote replication, also the function of metadata cache.</p>
+<p>Chapter 8: First we introduce two kind of cluster synchronization: Kafka internal MirrorMaker and Uber open sourced uReplicator, we also show how apache helix build replicated uReplicator. Next we introduce new build-in kafka connect framework and how to develop a custom connector plugin. Then we deep into connector’s architecture, mainly concentrate on data model, connector model, worker model.</p>
+<p>Chapter 9: Introduce Kafka Streams two api: low-level processor and high-level DSL. This chapter focus on streaming thread model, including stream instance, thread and task. We also introduce local state store used by standby task for recovery. After that, we introduce two abstract components in High-level DSL: KStream and KTable, they both based on low-level processor, support common operator and advance function, such as window, join and so on.</p>
+<p>Chapter 10: Introduce some advanced features. such as client quota, new message format in 0.11 and also  transaction support.</p>
+<h2 id="目录">目录</h2><p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171019132244310" alt="toc1"></p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171019132056607" alt="toc"></p>
+<h2 id="勘误表">勘误表</h2><p>TODO</p>
+<hr>
+<p>下面是以前写的一些博客，当然实际的书籍已经改动很大了，下面的一些博文仅供参考。</p>
+<h2 id="Introduce">Introduce</h2><ul>
+<li><a href="http://zqhxuyuan.github.io/2016/01/05/2016-01-05-Kafka-Unix/" target="_blank" rel="noopener">使用Unix管道解释Kafka</a></li>
+<li><a href="http://zqhxuyuan.github.io/2016/01/13/2016-01-13-Kafka-Picture/" target="_blank" rel="noopener">Kafka图文理解</a></li>
+</ul>
+<h2 id="源码分析汇总">源码分析汇总</h2><ul>
+<li><a href="http://zqhxuyuan.github.io/2016/01/06/2016-01-06-Kafka_Producer/" target="_blank" rel="noopener">生产者(java)</a></li>
+<li><a href="http://zqhxuyuan.github.io/2016/01/07/2016-01-07-Kafka_Producer-scala/" target="_blank" rel="noopener">生产者(scala)</a></li>
+<li><a href="http://zqhxuyuan.github.io/2016/01/08/2016-01-08-Kafka_SocketServer/" target="_blank" rel="noopener">网络层SocketServer</a></li>
+<li><a href="http://zqhxuyuan.github.io/2016/01/10/2016-01-10-Kafka_LogAppend/" target="_blank" rel="noopener">消息存储到日志文件中</a></li>
+<li><a href="http://zqhxuyuan.github.io/2016/01/14/2016-01-14-Kafka-ISR/" target="_blank" rel="noopener">Partition的ISR工作机制</a></li>
+<li><a href="http://zqhxuyuan.github.io/2016/01/19/2016-01-19-Kafka-Consumer-scala/" target="_blank" rel="noopener">消费者初始化(scala)</a></li>
+<li><a href="http://zqhxuyuan.github.io/2016/01/20/2016-01-20-Kafka-Consumer-fetcher/" target="_blank" rel="noopener">消费者抓取流程</a></li>
+<li>☆☆☆<a href="http://zqhxuyuan.github.io/2016/05/26/2016-05-13-Kafka-Book-Sample/" target="_blank" rel="noopener">旧的样章</a>  </li>
+</ul>
+<h2 id="新消费者">新消费者</h2><ul>
+<li>☆☆☆☆☆<a href="http://zqhxuyuan.github.io/2016/02/20/Kafka-Consumer-New/" target="_blank" rel="noopener">译：使用新的Kafka消费者客户端</a></li>
+</ul>
+<h2 id="Kafka_Connect">Kafka Connect</h2><ul>
+<li><a href="http://zqhxuyuan.github.io/2016/02/21/Kafka-Connect/" target="_blank" rel="noopener">使用Kafka Connect构建一个可扩展的ETL管道</a></li>
+<li><a href="http://zqhxuyuan.github.io/2016/02/21/Kafka-connect-pipeline/" target="_blank" rel="noopener">使用Kafka Connect构建大规模低延迟的数据管道</a></li>
+</ul>
+<h2 id="Kafka_Streams">Kafka Streams</h2><ul>
+<li><a href="http://zqhxuyuan.github.io/2016/11/18/Kafka-CQRS-Streams/" target="_blank" rel="noopener">译：Kafka事件驱动和流处理</a></li>
+<li>☆☆☆☆☆<a href="http://zqhxuyuan.github.io/2016/11/02/Kafka-Streams-cn/" target="_blank" rel="noopener">Kafka Streams中文翻译</a></li>
+<li><a href="http://zqhxuyuan.github.io/2016/10/29/Kafka-Interactive-Query/" target="_blank" rel="noopener">译：Kafka交互式查询和流处理的统一</a></li>
+</ul>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2018/01/01/Kafka-Code-Index/">Kafka技术内幕</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2018年01月01日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2018/01/01/Kafka-Code-Index/" title="Kafka技术内幕">http://github.com/zqhxuyuan/2018/01/01/Kafka-Code-Index/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2018/01/01/Kafka-Code-Index/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2020/01/01/2020-1-1-job/">
+        蚂蚁金服中间件招聘广告
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2017/12/31/Kafka-Book-Resources/">
+        Kafka技术内幕拾遗
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#本书介绍："><span class="toc-number">1.</span> <span class="toc-text">本书介绍：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#English_Introduce"><span class="toc-number">2.</span> <span class="toc-text">English Introduce</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#目录"><span class="toc-number">3.</span> <span class="toc-text">目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#勘误表"><span class="toc-number">4.</span> <span class="toc-text">勘误表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Introduce"><span class="toc-number">5.</span> <span class="toc-text">Introduce</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#源码分析汇总"><span class="toc-number">6.</span> <span class="toc-text">源码分析汇总</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#新消费者"><span class="toc-number">7.</span> <span class="toc-text">新消费者</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kafka_Connect"><span class="toc-number">8.</span> <span class="toc-text">Kafka Connect</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kafka_Streams"><span class="toc-number">9.</span> <span class="toc-text">Kafka Streams</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2018/01/01/Kafka-Code-Index/" data-title="Kafka技术内幕" data-url="http://github.com/zqhxuyuan/2018/01/01/Kafka-Code-Index/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2020/01/01/2020-1-1-job/" title="上一篇: 蚂蚁金服中间件招聘广告">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2017/12/31/Kafka-Book-Resources/" title="下一篇: Kafka技术内幕拾遗">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

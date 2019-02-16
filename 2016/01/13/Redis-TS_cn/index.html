@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Redis Time Series | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="http://www.infoq.com/articles/redis-time-series">
+<meta name="keywords" content="redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis Time Series">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/01/13/Redis-TS_cn/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="http://www.infoq.com/articles/redis-time-series">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.382Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redis Time Series">
+<meta name="twitter:description" content="http://www.infoq.com/articles/redis-time-series">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Redis-TS_cn" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/01/13/Redis-TS_cn/" class="article-date">
+  	<time datetime="2016-01-12T16:00:00.000Z" itemprop="datePublished">2016-01-13</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Redis Time Series
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/translate/">translate</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p><a href="http://www.infoq.com/articles/redis-time-series" target="_blank" rel="noopener">http://www.infoq.com/articles/redis-time-series</a><br><a id="more"></a></p>
+<p>Redis自从创建之初就被用于存储和分析时间序列数据. 它从最开始作为一个缓冲区和日志的存储, 发展到现在包含了丰富的数据结构和类型, 并提供了不同的方法来分析Redis中的数据. 这篇文章会介绍使用Redis的最灵活的方法来分析时间序列数据.  </p>
+<h2 id="竞态条件和事务">竞态条件和事务</h2><p>在Redis中每个单独的命令都是原子性的,但是多个命令顺序执行则不具有原子性,而且可能存在竞态条件会导致错误的结果. 为了解决这种问题, 这里会使用”事务管道”和”Lua脚本”来防止竞态条件.  </p>
+<p>如果使用Python客户端访问Redis,在Redis的Connection实例上调用无参数的pipeline()会构造一个”事务管道”(其他客户端中会叫做事务或者MULTI/EXEC事务).<br>在底层管道会收集传进来的所有命令直到execute方法被调用. 当execute方法调用,客户端会向Redis发送MULTI命令,然后紧跟着所有收集到的命令,最后是EXEC命令.<br>当这一组命令被Redis执行,Redis会保证原子性地执行这一组命令,而不会被其他命令打断.  </p>
+<h2 id="使用SortedSet和Hashes进行高级分析">使用SortedSet和Hashes进行高级分析</h2><p>在Redis中存储和分析时间数据最灵活的方式使用Sorted Set和Hash这两种数据结构.  </p>
+<p>Sorted Set是一种结合了hashTable和有序的Tree的结构. 简而言之,Sorted Set的每个条目是字符串的”member”和浮点类型的”score”.<br>member作为hash的键,score作为Tree的有序值. 通过这种组合,你可以根据member或score的值直接获取members和scores, 而且还有其他方法可以根据score的值获取有序的members和scores.  </p>
+<h3 id="存储事件">存储事件</h3><p>存储时间序列数据的通常做法是使用一个或多个的Sorted Sets和一些Hashes.<br>它是很多应用最底层的构建单元,广泛应用在社交网络比如Twitter,新站点Reddit或Hacker News.<br>它们都基于Redis之上构建了一种完全面向对象映射的应用程序.  </p>
+<p>举个例子,我们接收一个网站上代表用户活动的事件流,假设所有的事件都有四个共同的属性:id,timestamp,type,user.<br>并且还有一些其他可变的属性,根据type而不同. 为了存储每一条事件,我们会使用Redis的Hash来存储,它的key来自于事件的id.<br>为了生成事件id,可以使用不同的数据源(这个数据源负责生成唯一的事件id),这里我们暂时使用Redis的counter计数器生成id.<br>在64位的平台上使用64位的Redis最多可以生成2^63-1条事件,并且主要限制于机器的可用内存.  </p>
+<p>当我们准备好了数据,会首先以hash存储,然后插入一个member/score对到Sorted Set中,从event-id(member)映射到event-timestamp(score)</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">record_event</span><span class="params">(conn, event)</span>:</span></span><br><span class="line">    id = conn.incr(<span class="string">'event:id'</span>)      <span class="comment"># use counter to increment event-id </span></span><br><span class="line">    event[<span class="string">'id'</span>] = id</span><br><span class="line">    event_key = <span class="string">'event:&#123;id&#125;'</span>.format(id=id)</span><br><span class="line"></span><br><span class="line">    pipe = conn.pipeline(<span class="keyword">True</span>)</span><br><span class="line">    pipe.hmset(event_key, event)    <span class="comment"># hash, key is event-key, value is the whole event object</span></span><br><span class="line">    pipe.zadd(<span class="string">'events'</span>, **&#123;id: event[<span class="string">'timestamp'</span>]&#125;) <span class="comment">#Sorted Set. member is id, score is timestamp</span></span><br><span class="line">    pipe.execute()</span><br></pre></td></tr></table></figure>
+<p>在record_event函数中,我们接收了一条事件,从Redis中计算出新的id,作为这条事件的id, 并生成event的key.<br>然后开始创建一个管道,存储这条事件到hash-map,添加event-id到event-timestamp到sorted set.<br>当事务管道执行完成后, 这条事件就被记录并存储在Redis中了.  </p>
+<h3 id="事件分析">事件分析</h3><p>现在我们可以有多种方式来分析时间序列数据. 可以使用<code>ZRANG</code>扫描出最旧和最新的事件id,之后可能把事件记录拉取出来用于分析.<br>可以结合使用<code>ZRANGEBYSCORE</code>和<code>LIMIT</code>参数获取某个时间点之前或之后的10条或100条事件.<br>可以使用<code>ZCOUNT</code>计算一段时间内的事件数量. 或者使用LUA脚本实现,比如下面的例子,计算给定一段时间范围的不同类型的事件数量.  </p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">import json</span><br><span class="line"></span><br><span class="line">def count_types(conn, start, <span class="keyword">end</span>):</span><br><span class="line">    counts = count_types_lua(keys=[<span class="string">'events'</span>], args=[start, <span class="keyword">end</span>])</span><br><span class="line">    <span class="keyword">return</span> json.loads(counts)</span><br><span class="line"></span><br><span class="line">count_types_lua = conn.register_script(<span class="string">''</span><span class="string">'</span></span><br><span class="line"><span class="string">local counts = &#123;&#125;</span></span><br><span class="line"><span class="string">local ids = redis.call('</span>ZRANGEBYSCORE<span class="string">', KEYS[1], ARGV[1], ARGV[2])</span></span><br><span class="line"><span class="string">for i, id in ipairs(ids) do</span></span><br><span class="line"><span class="string">    local type = redis.call('</span>HGET<span class="string">', '</span>event:<span class="string">' .. id, '</span><span class="built_in">type</span><span class="string">')</span></span><br><span class="line"><span class="string">    counts[type] = (counts[type] or 0) + 1</span></span><br><span class="line"><span class="string">end</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">return cjson.encode(counts)</span></span><br><span class="line"><span class="string">'</span><span class="string">''</span>)</span><br></pre></td></tr></table></figure>
+<p>count_types函数准备了封装好的lua脚本,lua脚本首先初始化了一个results map(也叫做table),然后使用<code>ZRANGEBYSCORE</code>读取指定时间范围内的事件id列表. 获取到所有id后,读取出这条事件对应的类型,并增加计数器的值,最后返回json的格式串.</p>
+<h3 id="性能提升和数据模型">性能提升和数据模型</h3>
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/01/13/Redis-TS_cn/">Redis Time Series</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年01月13日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/01/13/Redis-TS_cn/" title="Redis Time Series">http://github.com/zqhxuyuan/2016/01/13/Redis-TS_cn/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/01/13/Redis-TS_cn/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/01/13/2016-01-13-Kafka-Picture/">
+        译：Kafka图文详解
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/01/10/2016-01-10-Kafka_LogAppend/">
+        Kafka源码分析 KafkaApis(LogAppend)
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#竞态条件和事务"><span class="toc-number">1.</span> <span class="toc-text">竞态条件和事务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用SortedSet和Hashes进行高级分析"><span class="toc-number">2.</span> <span class="toc-text">使用SortedSet和Hashes进行高级分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#存储事件"><span class="toc-number">2.1.</span> <span class="toc-text">存储事件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#事件分析"><span class="toc-number">2.2.</span> <span class="toc-text">事件分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#性能提升和数据模型"><span class="toc-number">2.3.</span> <span class="toc-text">性能提升和数据模型</span></a></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/01/13/Redis-TS_cn/" data-title="Redis Time Series" data-url="http://github.com/zqhxuyuan/2016/01/13/Redis-TS_cn/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/01/13/2016-01-13-Kafka-Picture/" title="上一篇: 译：Kafka图文详解">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/01/10/2016-01-10-Kafka_LogAppend/" title="下一篇: Kafka源码分析 KafkaApis(LogAppend)">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

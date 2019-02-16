@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Kafka源码分析 Consumer(1) 初始化 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Kafka Consumer Init">
+<meta name="keywords" content="kafka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka源码分析 Consumer(1) 初始化">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/01/19/2016-01-19-Kafka-Consumer-scala/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Kafka Consumer Init">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160218100003188">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160218100146706">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160126150532822">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160218100016532">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160125104919159">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160126162107763">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160127113745034">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160218103058934">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160126173525524">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160218113605365">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160218111100842">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160127083105757">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160127083148382">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160127083206226">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160127083219632">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160218132018296">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160127083346742">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160127120246496">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.239Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kafka源码分析 Consumer(1) 初始化">
+<meta name="twitter:description" content="Kafka Consumer Init">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160218100003188">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2016-01-19-Kafka-Consumer-scala" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/01/19/2016-01-19-Kafka-Consumer-scala/" class="article-date">
+  	<time datetime="2016-01-18T16:00:00.000Z" itemprop="datePublished">2016-01-19</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kafka源码分析 Consumer(1) 初始化
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Source/">Source</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/">kafka</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Kafka Consumer Init<br><a id="more"></a></p>
+<h2 id="high-level_consumer">high-level consumer</h2><p>有时候应用程序从Kafka读取数据，并不太关心消息offset的处理. 所以Hight Level Consumer提供了一个从Kafka消费数据的高层抽象.<br>High Level Consumer将从某个Partition读取的最后一条消息的offset存于Zookeeper中. 这个offset基于Consumer Group的名称.<br>Consumer Group是整个Kafka集群全局的. 所以要特别小心在新的逻辑启动之前要关闭所有的旧的逻辑(消费者进程).<br>当新的消费者加入同一个消费组时,Kafka会添加这个消费者的线程到要消费的topic的可用线程集合中,并且触发re-balance.<br>在re-balance时,kafka会分配可用的partition给可用的线程,可能移动一个partition到其他的线程中.<br>如果你的消费者逻辑混合了新的和旧的处理逻辑,很可能有些消息会被分配到旧的处理逻辑中.  </p>
+<p>High Level Consumer可以(应该)是多线程的应用程序.线程模型是以topic的partitions数量为中心的,不过有些规则:  </p>
+<ul>
+<li>如果线程数量多于partition的数量，有部分线程无法消费该topic下任何一条消息  </li>
+<li>如果线程数量少于partition的数量，有一些线程会消费多个partition的数据</li>
+<li>如果线程数量等于partition的数量，则正好一个线程消费一个partition的数据</li>
+<li>当添加更多的消费者进程/线程会触发re-balance,导致partition的分配发生了变化</li>
+</ul>
+<p>如果一个线程消费多个partitions,并不会保证收到的消息的有序性,不过在同一个partition里的offset则是有序的.<br>比如某个消费者线程从partition-10接收5条消息,然后从partition-11接收了6条消息,接着再从partition-10接收了5条消息,<br>然后还是从partition-10又接收了5条消息,即使这个时候partition-11也有数据. 但是并不保证partition之间的顺序.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160218100003188" alt="k_consumer_thread"></p>
+<p>High-level的实现依赖于Consumer Group.Kafka保证同一consumer group中只有一个consumer会消费某条消息.<br>即每一个consumer实例只会消费某一个或多个特定partition的数据,而一个partition的数据只会被一个特定的consumer所消费.  </p>
+<ul>
+<li>同一条消息会被多个ConsumerGroup消费,所以有多个ConsumerGroup,每个ConsumerGroup只有一个Consumer,实现了广播.<br>通常不同的ConsumerGroup的消费处理逻辑是不同的,这样同一份数据源(消息)交给不同的处理逻辑.</li>
+<li>一个ConsumerGroup有多个Consumer,一条消息只会被这个ConsumerGroup的一个消费者所消费.实现了单播.    </li>
+</ul>
+<p>不过通常的设计如下图,有多个ConsumerGroup, 并且每个ConsumerGroup中也有多个Consumer.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160218100146706" alt="k_consumer_group"></p>
+<h2 id="high-level_Consumer_Example">high-level Consumer Example</h2><p>消费者示例, 指定要消费的topic和线程数,返回每个topic对应的KafkaStream列表,每个线程对应一个KafkaStream.<br>下面的示例中只使用了一个线程,所以通过streams.get(0)获取到该线程对应的KafkaStream.然后从流中读取出消息.    </p>
+<p>topicCountMap表示客户端可以同时消费多个topic,那为什么要设置线程数呢? 因为一个topic有多个partition分布在<br>多个broker节点上.即使是同一个broker,也可能有这个topic的多个partition. 用不同的线程来隔离不同的partition.   </p>
+<ul>
+<li>ConsumerConnector: Consumer的连接器,这里基于ZK实现,是ZookeeperConsumerConnector</li>
+<li>KafkaStream: 消息流,每个消费者线程都对应了一个消息流,消息会放入消息流的阻塞队列中</li>
+<li>ConsumerIterator: 消费者迭代器,只有迭代器开始迭代获取数据时,才会返回给消费者</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">ConsumerConfig conf = <span class="keyword">new</span> ConsumerConfig(props);</span><br><span class="line">ConsumerConnector consumer = kafka.consumer.Consumer.createJavaConsumerConnector(conf);</span><br><span class="line">Map&lt;String, Integer&gt; topicCountMap = <span class="keyword">new</span> HashMap&lt;String, Integer&gt;();</span><br><span class="line">topicCountMap.put(topic, <span class="keyword">new</span> Integer(<span class="number">1</span>));</span><br><span class="line">Map&lt;String, List&lt;KafkaStream&lt;<span class="keyword">byte</span>[], <span class="keyword">byte</span>[]&gt;&gt;&gt; consumerMap = consumer.createMessageStreams(topicCountMap);</span><br><span class="line">List&lt;KafkaStream&lt;<span class="keyword">byte</span>[], <span class="keyword">byte</span>[]&gt;&gt; streams = consumerMap.get(topic);</span><br><span class="line">KafkaStream&lt;<span class="keyword">byte</span>[], <span class="keyword">byte</span>[]&gt; stream = streams.get(<span class="number">0</span>); </span><br><span class="line"></span><br><span class="line">ConsumerIterator&lt;<span class="keyword">byte</span>[], <span class="keyword">byte</span>[]&gt; it = stream.iterator();</span><br><span class="line"><span class="keyword">while</span> (it.hasNext())&#123;</span><br><span class="line">    System.out.println(<span class="string">"message: "</span> + <span class="keyword">new</span> String(it.next().message()));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>多线程版本可以参考: <a href="https://cwiki.apache.org/confluence/display/KAFKA/Consumer+Group+Example" target="_blank" rel="noopener">https://cwiki.apache.org/confluence/display/KAFKA/Consumer+Group+Example</a>  </p>
+<h2 id="ConsumerConnector">ConsumerConnector</h2><p>Consumer定义在ConsumerConnector接口同一个文件中.默认创建的ConsumerConnector是ZookeeperConsumerConnector  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">Consumer</span> <span class="keyword">extends</span> <span class="title">Logging</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">createJavaConsumerConnector</span></span>(config: <span class="type">ConsumerConfig</span>): kafka.javaapi.consumer.<span class="type">ConsumerConnector</span> = &#123;</span><br><span class="line">    <span class="keyword">val</span> consumerConnect = <span class="keyword">new</span> kafka.javaapi.consumer.<span class="type">ZookeeperConsumerConnector</span>(config)</span><br><span class="line">    consumerConnect</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ConsumerConnector主要有创建消息流(createMessageStreams)和提交offset(commitOffsets)两种方法.<br>Consumer会根据消息流消费数据, 并且定时提交offset.由客户端自己保存offset是kafka采用pull拉取消息的一个附带工作.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">ConsumerConnector</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">createMessageStreams</span></span>(topicCountMap: <span class="type">Map</span>[<span class="type">String</span>,<span class="type">Int</span>]): <span class="type">Map</span>[<span class="type">String</span>, <span class="type">List</span>[<span class="type">KafkaStream</span>[<span class="type">Array</span>[<span class="type">Byte</span>],<span class="type">Array</span>[<span class="type">Byte</span>]]]]</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">commitOffsets</span></span>(offsetsToCommit: immutable.<span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">OffsetAndMetadata</span>], retryOnFailure: <span class="type">Boolean</span>)</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">setConsumerRebalanceListener</span></span>(listener: <span class="type">ConsumerRebalanceListener</span>)</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">shutdown</span></span>()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="ZookeeperConsumerConnector">ZookeeperConsumerConnector</h2><p>一个Consumer会创建一个ZookeeperConsumerConnector,代表一个消费者进程.  </p>
+<ul>
+<li>fetcher: 消费者获取数据, 使用ConsumerFetcherManager fetcher线程抓取数据</li>
+<li>zkUtils: 消费者要和ZK通信, 除了注册自己,还有其他信息也会写到ZK中</li>
+<li>topicThreadIdAndQueues: 消费者会指定自己消费哪些topic,并指定线程数, 所以topicThreadId都对应一个队列</li>
+<li>messageStreamCreated: 消费者会创建消息流, 每个队列都对应一个消息流</li>
+<li>offsetsChannel: offset可以存储在ZK或者kafka中,如果存在kafka里,像其他请求一样,需要和Broker通信</li>
+<li>还有其他几个Listener监听器,分别用于topicPartition的更新,负载均衡,消费者重新负载等</li>
+</ul>
+<blockquote>
+<p>虽然high level consumer不需要在应用程序中自己管理offset等,但kafka内部还是会帮你管理offset的.<br>为什么ConsumerConnector是ZookeeperConsumerConnector,因为消费者的offset是保存在ZooKeeper中的.  </p>
+</blockquote>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[kafka] <span class="class"><span class="keyword">class</span> <span class="title">ZookeeperConsumerConnector</span>(<span class="params">val config: <span class="type">ConsumerConfig</span>, val enableFetcher: <span class="type">Boolean</span></span>) </span></span><br><span class="line"><span class="class">        <span class="keyword">extends</span> <span class="title">ConsumerConnector</span> <span class="keyword">with</span> <span class="title">Logging</span> <span class="keyword">with</span> <span class="title">KafkaMetricsGroup</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> fetcher: <span class="type">Option</span>[<span class="type">ConsumerFetcherManager</span>] = <span class="type">None</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> zkUtils: <span class="type">ZkUtils</span> = <span class="literal">null</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> topicRegistry = <span class="keyword">new</span> <span class="type">Pool</span>[<span class="type">String</span>, <span class="type">Pool</span>[<span class="type">Int</span>, <span class="type">PartitionTopicInfo</span>]]</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> checkpointedZkOffsets = <span class="keyword">new</span> <span class="type">Pool</span>[<span class="type">TopicAndPartition</span>, <span class="type">Long</span>]</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> topicThreadIdAndQueues = <span class="keyword">new</span> <span class="type">Pool</span>[(<span class="type">String</span>, <span class="type">ConsumerThreadId</span>), <span class="type">BlockingQueue</span>[<span class="type">FetchedDataChunk</span>]]</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> scheduler = <span class="keyword">new</span> <span class="type">KafkaScheduler</span>(threads = <span class="number">1</span>, threadNamePrefix = <span class="string">"kafka-consumer-scheduler-"</span>)</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> messageStreamCreated = <span class="keyword">new</span> <span class="type">AtomicBoolean</span>(<span class="literal">false</span>)</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> offsetsChannel: <span class="type">BlockingChannel</span> = <span class="literal">null</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> sessionExpirationListener: <span class="type">ZKSessionExpireListener</span> = <span class="literal">null</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> topicPartitionChangeListener: <span class="type">ZKTopicPartitionChangeListener</span> = <span class="literal">null</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> loadBalancerListener: <span class="type">ZKRebalancerListener</span> = <span class="literal">null</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> wildcardTopicWatcher: <span class="type">ZookeeperTopicEventWatcher</span> = <span class="literal">null</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> consumerRebalanceListener: <span class="type">ConsumerRebalanceListener</span> = <span class="literal">null</span></span><br><span class="line"></span><br><span class="line">  connectZk()                       <span class="comment">// ① 创建ZkUtils,会创建对应的ZkConnection和ZkClient</span></span><br><span class="line">  createFetcher()                   <span class="comment">// ② 创建ConsumerFetcherManager,消费者fetcher线程</span></span><br><span class="line">  ensureOffsetManagerConnected()    <span class="comment">// ③ 确保连接上OffsetManager.</span></span><br><span class="line">  <span class="keyword">if</span> (config.autoCommitEnable) &#123;    <span class="comment">// ④ 启动定时提交offset线程</span></span><br><span class="line">    scheduler.startup              </span><br><span class="line">    scheduler.schedule(<span class="string">"kafka-consumer-autocommit"</span>, autoCommit, ...)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="zk_and_broker">zk and broker</h3><ul>
+<li>① <code>/brokers</code> -&gt;&gt; <code>topics</code>和<code>ids</code>: 集群中所有的topics,以及所有的brokers.</li>
+<li>② <code>/brokers/ids/broker_id</code> -&gt; 主机的基本信息,包括主机地址和端口号</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[zk: 192.168.47.83:2181,192.168.47.84:2181,192.168.47.86:2181(CONNECTED) 1] ls /brokers</span><br><span class="line">[topics, ids]</span><br><span class="line"></span><br><span class="line">[zk: 192.168.47.83:2181,192.168.47.84:2181,192.168.47.86:2181(CONNECTED) 2] ls /brokers/ids</span><br><span class="line">[3, 5, 4]</span><br><span class="line">[zk: 192.168.47.83:2181,192.168.47.84:2181,192.168.47.86:2181(CONNECTED) 4] get /brokers/ids/3</span><br><span class="line">&#123;&quot;jmx_port&quot;:10055,&quot;timestamp&quot;:&quot;1453380999577&quot;,&quot;host&quot;:&quot;192.168.48.153&quot;,&quot;version&quot;:1,&quot;port&quot;:9092&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>③ <code>/brokers/topics/topic_name</code> -&gt; topic的每个partition,以及分配的replicas(AR)</li>
+<li>④ <code>/brokers/topics/topic_name/partitions/partition_id/state</code> -&gt; 这个partition的leader,isr</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[zk: 192.168.47.83:2181,192.168.47.84:2181,192.168.47.86:2181(CONNECTED) 17] get /brokers/topics/topic1</span><br><span class="line">&#123;&quot;version&quot;:1,&quot;partitions&quot;:&#123;&quot;2&quot;:[5,4],&quot;1&quot;:[4,3],&quot;0&quot;:[3,5]&#125;&#125;   ⬅️</span><br><span class="line"></span><br><span class="line">[zk: 192.168.47.83:2181,192.168.47.84:2181,192.168.47.86:2181(CONNECTED) 12] ls /brokers/topics/topic1/partitions</span><br><span class="line">[2, 1, 0]</span><br><span class="line">[zk: 192.168.47.83:2181,192.168.47.84:2181,192.168.47.86:2181(CONNECTED) 13] ls /brokers/topics/topic1/partitions/0</span><br><span class="line">[state]</span><br><span class="line">[zk: 192.168.47.83:2181,192.168.47.84:2181,192.168.47.86:2181(CONNECTED) 15] get /brokers/topics/topic1/partitions/0/state</span><br><span class="line">&#123;&quot;controller_epoch&quot;:1775,&quot;leader&quot;:3,&quot;version&quot;:1,&quot;leader_epoch&quot;:145,&quot;isr&quot;:[3,5]&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160126150532822" alt="k_partition_info"></p>
+<blockquote>
+<p>上图是kafka manager中某个topic的PartitionInfo, 集群只有3个节点,这个topic有3个partition,2个副本.  </p>
+</blockquote>
+<p><strong>② Broker node registry</strong>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/brokers/ids/0 --&gt; &#123; &quot;host&quot; : &quot;host:port&quot;, &quot;topics&quot; : </span><br><span class="line">  &#123;&quot;topic1&quot;: [&quot;partition1&quot; ... &quot;partitionN&quot;], ..., &quot;topicN&quot;: [&quot;partition1&quot; ... &quot;partitionN&quot;] &#125; &#125;</span><br></pre></td></tr></table></figure>
+<p>每个Broker节点在自己启动的时候,会在/brokers下创建一个逻辑节点. 内容包括了Broker的主机和端口, Broker服务的所有topic,<br>以及分配到当前Broker的这个topic的partition列表(并不是topic的全部partition,会将所有partition分布在不同的brokers). </p>
+<blockquote>
+<p>A consumer subscribes to event changes of the broker node registry.<br>当Broker挂掉的时候,在这个Broker上的所有Partition都丢失了,而Partition是给消费者服务的.<br>所以Broker挂掉后在做迁移的时候,会将其上的Partition转移到其他Broker上,因此消费者要消费的Partition也跟着变化.  </p>
+</blockquote>
+<p><strong>③ Broker topic registry</strong>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/brokers/topics/topic1 -&gt; &#123;&quot;version&quot;:1,&quot;partitions&quot;:&#123;&quot;2&quot;:[5,4],&quot;1&quot;:[4,3],&quot;0&quot;:[3,5]&#125;&#125;</span><br></pre></td></tr></table></figure>
+<p>虽然topic是在/brokers下,但是这个topic的信息是全局的.在创建topic的时候,这个topic的每个partition的编号以及replicas.<br>具体每个partition的Leader以及isr信息则是在<code>/brokers/topics/topic_name/partitions/partition_id/state</code>  </p>
+<h3 id="zk_and_consumer">zk and consumer</h3><p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160218100016532" alt="k_zk_consumer"></p>
+<p><strong>Consumer id registry</strong>: <code>/consumers/[group_id]/ids/[consumer_id] -&gt; topic1,...topicN</code>  </p>
+<p>每个消费者会将它的id注册为临时znode并且将它所消费的topic设置为znode的值,当客户端(消费者)退出时,znode(consumer_id)会被删除.  </p>
+<blockquote>
+<p><code>A consumer subscribes to event changes of the consumer id registry within its group.</code><br>每个consumer会订阅它所在的消费组中关于consumer_id注册的更新事件. 为什么要注册呢,因为Kafka只会将一条消息发送到一个消费组中唯一的一个消费者.<br>如果某个消费者挂了,它要把本来发给挂的消费者的消费转给这个消费组中其他的消费者.同理,有新消费者加入消费组时,也会进行负载均衡.  </p>
+</blockquote>
+<p><strong>Partition owner registry</strong>: <code>/consumers/[group_id]/owner/[topic]/[broker_id-partition_id] --&gt; consumer_node_id</code>  </p>
+<p>在消费时,每个topic的partition只能被一个消费者组中的唯一的一个消费者消费.在每次重新负载的时候,这个映射策略就会重新构建.  </p>
+<p><strong>Consumer offset tracking</strong>: <code>/consumers/[group_id]/offsets/[topic]/[broker_id-partition_id] --&gt; offset_counter_value</code>  </p>
+<p>每个消费者都要跟踪自己消费的每个Partition最近的offset.表示自己读取到Partition的最新位置.<br>由于一个Partition只能被消费组中的一个消费者消费,所以offset是以<code>消费组</code>为级别的,而不是消费者.<br>因为如果原来的消费者挂了后,应当将这个Partition交给同一个消费组中别的消费者,而此时offset是没有变化的.<br>一个partition可以被不同的<code>消费者组</code>中的不同消费者消费，所以不同的消费者组必须维护他们各自对该partition消费的最新的offset</p>
+<h2 id="init">init</h2><p>在创建ZookeeperConsumerConnector时,有几个初始化方法需要事先执行.  </p>
+<ul>
+<li>因为消费者要和ZK通信,所以connectZk会确保连接上ZooKeeper</li>
+<li>消费者要消费数据,需要有抓取线程,所有的抓取线程交给ConsumerFetcherManager统一管理</li>
+<li>由消费者客户端自己保存offset,而消费者会消费多个topic的多个partition.  </li>
+<li>类似多个数据抓取线程有管理类,多个partition的offset管理类OffsetManager是一个GroupCoordinator  </li>
+<li>定时提交线程会使用OffsetManager建立的通道定时提交offset到zk或者kafka.  </li>
+</ul>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160125104919159" alt="k_consumer_connector_init"></p>
+<h2 id="createMessageStreams">createMessageStreams</h2><p>由ConsumerConnector创建消息流,需要指定解码器,因为要将日志反序列化(生产者写消息时对消息序列化到日志文件).  </p>
+<p>consume并不真正的消费数据,只是初始化存放数据的queue.真正消费数据的是对该queue进行shallow iterator.<br>在kafka的运行过程中,会有其他的线程将数据放入partition对应的queue中. 而queue是用于KafkaStream的.<br>一旦数据添加到queue后,KafkaStream的阻塞队列就有数据了,消费者就可以从队列中消费消息.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">createMessageStreams</span></span>[<span class="type">K</span>,<span class="type">V</span>](topicCountMap: <span class="type">Map</span>[<span class="type">String</span>,<span class="type">Int</span>], </span><br><span class="line">  keyDecoder: <span class="type">Decoder</span>[<span class="type">K</span>], valueDecoder: <span class="type">Decoder</span>[<span class="type">V</span>]) : <span class="type">Map</span>[<span class="type">String</span>, <span class="type">List</span>[<span class="type">KafkaStream</span>[<span class="type">K</span>,<span class="type">V</span>]]] = &#123;</span><br><span class="line">  consume(topicCountMap, keyDecoder, valueDecoder)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">consume</span></span>[<span class="type">K</span>, <span class="type">V</span>](topicCountMap: scala.collection.<span class="type">Map</span>[<span class="type">String</span>,<span class="type">Int</span>], </span><br><span class="line">  keyDecoder: <span class="type">Decoder</span>[<span class="type">K</span>], valueDecoder: <span class="type">Decoder</span>[<span class="type">V</span>]) : <span class="type">Map</span>[<span class="type">String</span>,<span class="type">List</span>[<span class="type">KafkaStream</span>[<span class="type">K</span>,<span class="type">V</span>]]] = &#123;</span><br><span class="line">  <span class="keyword">val</span> topicCount = <span class="type">TopicCount</span>.constructTopicCount(consumerIdString, topicCountMap)</span><br><span class="line">  <span class="keyword">val</span> topicThreadIds = topicCount.getConsumerThreadIdsPerTopic</span><br><span class="line"></span><br><span class="line">  <span class="comment">// make a list of (queue,stream) pairs, one pair for each threadId 只是准备了队列和流,数据什么时候填充呢?</span></span><br><span class="line">  <span class="keyword">val</span> queuesAndStreams = topicThreadIds.values.map(threadIdSet =&gt;</span><br><span class="line">    threadIdSet.map(_ =&gt; &#123;</span><br><span class="line">      <span class="keyword">val</span> queue =  <span class="keyword">new</span> <span class="type">LinkedBlockingQueue</span>[<span class="type">FetchedDataChunk</span>](config.queuedMaxMessages)</span><br><span class="line">      <span class="keyword">val</span> stream = <span class="keyword">new</span> <span class="type">KafkaStream</span>[<span class="type">K</span>,<span class="type">V</span>](queue, config.consumerTimeoutMs, keyDecoder, valueDecoder, config.clientId)</span><br><span class="line">      (queue, stream)</span><br><span class="line">    &#125;)</span><br><span class="line">  ).flatten.toList  <span class="comment">//threadIdSet是个集合,外层的topicThreadIds.values也是集合,所以用flatten压扁为queue-stream对</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">val</span> dirs = <span class="keyword">new</span> <span class="type">ZKGroupDirs</span>(config.groupId)                  <span class="comment">// /consumers/[group_id]</span></span><br><span class="line">  registerConsumerInZK(dirs, consumerIdString, topicCount)    <span class="comment">// /consumers/[group_id]/ids/[consumer_id]</span></span><br><span class="line">  reinitializeConsumer(topicCount, queuesAndStreams)          <span class="comment">// 重新初始化消费者 ⬅️</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 返回KafkaStream, 每个Topic都对应了多个KafkaStream. 数量和topicCount中的count一样</span></span><br><span class="line">  loadBalancerListener.kafkaMessageAndMetadataStreams.asInstanceOf[<span class="type">Map</span>[<span class="type">String</span>, <span class="type">List</span>[<span class="type">KafkaStream</span>[<span class="type">K</span>,<span class="type">V</span>]]]]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>consumerIdString</code>会返回当前Consumer在哪个ConsumerGroup的编号.每个consumer在消费组中的编号都是唯一的.<br>一个消费者,对一个topic可以使用多个线程一起消费(一个进程可以有多个线程). 当然一个消费者也可以消费多个topic.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">makeConsumerThreadIdsPerTopic</span></span>(consumerIdString: <span class="type">String</span>, topicCountMap: <span class="type">Map</span>[<span class="type">String</span>,  <span class="type">Int</span>]) = &#123;</span><br><span class="line">  <span class="keyword">val</span> consumerThreadIdsPerTopicMap = <span class="keyword">new</span> mutable.<span class="type">HashMap</span>[<span class="type">String</span>, <span class="type">Set</span>[<span class="type">ConsumerThreadId</span>]]()</span><br><span class="line">  <span class="keyword">for</span> ((topic, nConsumers) &lt;- topicCountMap) &#123;                <span class="comment">// 每个topic有几个消费者线程</span></span><br><span class="line">    <span class="keyword">val</span> consumerSet = <span class="keyword">new</span> mutable.<span class="type">HashSet</span>[<span class="type">ConsumerThreadId</span>]   <span class="comment">// 一个消费者线程对应一个ConsumerThreadId</span></span><br><span class="line">    <span class="keyword">for</span> (i &lt;- <span class="number">0</span> until nConsumers)</span><br><span class="line">      consumerSet += <span class="type">ConsumerThreadId</span>(consumerIdString, i)</span><br><span class="line">    consumerThreadIdsPerTopicMap.put(topic, consumerSet)      <span class="comment">// 每个topic都有多个Consumer线程,但是只有一个消费者进程</span></span><br><span class="line">  &#125;</span><br><span class="line">  consumerThreadIdsPerTopicMap                                <span class="comment">// topic到消费者线程集合的映射</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>假设消费者C1声明了topic1:2, topic2:3. topicThreadIds=consumerThreadIdsPerTopicMap.<br>topicThreadIds.values = [ (C1_1,C1_2), (C1_1,C1_2,C1_3)]一共有5个线程,queuesAndStreams也有5个元素.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">consumerThreadIdsPerTopicMap = &#123;</span><br><span class="line">    topic1: [<span class="type">C1_1</span>, <span class="type">C1_2</span>],</span><br><span class="line">    topic2: [<span class="type">C1_1</span>, <span class="type">C1_2</span>, <span class="type">C1_3</span>]</span><br><span class="line">&#125;</span><br><span class="line">topicThreadIds.values = [</span><br><span class="line">    [<span class="type">C1_1</span>, <span class="type">C1_2</span>],</span><br><span class="line">    [<span class="type">C1_1</span>, <span class="type">C1_2</span>, <span class="type">C1_3</span>]</span><br><span class="line">]</span><br><span class="line">threadIdSet循环[<span class="type">C1_1</span>, <span class="type">C1_2</span>]时, 生成两个queue-&gt;stream pair. </span><br><span class="line">threadIdSet循环[<span class="type">C1_1</span>, <span class="type">C1_2</span>, <span class="type">C1_3</span>]时, 生成三个queue-&gt;stream pair. </span><br><span class="line">queuesAndStreams = [</span><br><span class="line">    (<span class="type">LinkedBlockingQueue_1</span>,<span class="type">KafkaStream_1</span>),      <span class="comment">//topic1:C1_1</span></span><br><span class="line">    (<span class="type">LinkedBlockingQueue_2</span>,<span class="type">KafkaStream_2</span>),      <span class="comment">//topic1:C1_2</span></span><br><span class="line">    (<span class="type">LinkedBlockingQueue_3</span>,<span class="type">KafkaStream_3</span>),      <span class="comment">//topic2:C1_1</span></span><br><span class="line">    (<span class="type">LinkedBlockingQueue_4</span>,<span class="type">KafkaStream_4</span>),      <span class="comment">//topic2:C1_2</span></span><br><span class="line">    (<span class="type">LinkedBlockingQueue_5</span>,<span class="type">KafkaStream_5</span>),      <span class="comment">//topic2:C1_3</span></span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>对于消费者而言,它只要指定要消费的topic和线程数量就可以了,其他具体这个topic分成多少个partition,<br>以及topic-partition是分布是哪个broker上,对于客户端而言都是透明的.<br>客户端关注的是我的每个线程都对应了一个队列,每个队列都是一个消息流就可以了.<br>在Producer以及前面分析的Fetcher,都是以Broker-Topic-Partition为级别的.<br>AbstractFetcherManager的fetcherThreadMap就是以brokerAndFetcherId来创建拉取线程的.<br>而消费者是通过拉取线程才有数据可以消费的,所以客户端的每个线程实际上也是针对Partition级别的.  </p>
+<h3 id="registerConsumerInZK">registerConsumerInZK</h3><p>消费者需要向ZK注册一个临时节点,路径为:<code>/consumers/[group_id]/ids/[consumer_id]</code>,内容为订阅的topic.    </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">registerConsumerInZK</span></span>(dirs: <span class="type">ZKGroupDirs</span>, consumerIdString: <span class="type">String</span>, topicCount: <span class="type">TopicCount</span>) &#123;</span><br><span class="line">  <span class="keyword">val</span> consumerRegistrationInfo = <span class="type">Json</span>.encode(<span class="type">Map</span>(<span class="string">"version"</span> -&gt; <span class="number">1</span>, </span><br><span class="line">    <span class="string">"subscription"</span> -&gt; topicCount.getTopicCountMap, <span class="string">"pattern"</span> -&gt; topicCount.pattern, <span class="string">"timestamp"</span> -&gt; timestamp))</span><br><span class="line">  <span class="keyword">val</span> zkWatchedEphemeral = <span class="keyword">new</span> <span class="type">ZKCheckedEphemeral</span>(dirs.consumerRegistryDir + <span class="string">"/"</span> + consumerIdString, </span><br><span class="line">    consumerRegistrationInfo, zkUtils.zkConnection.getZookeeper, <span class="literal">false</span>)</span><br><span class="line">  zkWatchedEphemeral.create()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>问题:什么时候这个节点会被删除掉呢? Consumer进程挂掉时,或者Session失效时删除临时节点. 重连时会重新创建.<br>由于是临时节点,一旦创建节点的这个进程挂掉了,临时节点就会自动被删除掉. 这是由zk机制决定的,不是由消费者完成的.  </p>
+</blockquote>
+<h3 id="reinitializeConsumer_listener">reinitializeConsumer listener</h3><p>当前Consumer在ZK注册之后,需要重新初始化Consumer. 对于全新的消费者,注册多个监听器,在zk的对应节点的注册事件发生时,会回调监听器的方法.  </p>
+<ul>
+<li>将topic对应的消费者线程id及对应的LinkedBlockingQueue放入topicThreadIdAndQueues中,LinkedBlockingQueue是真正存放数据的queue</li>
+<li>① 注册<code>sessionExpirationListener</code>,监听状态变化事件.在session失效重新创建session时调用</li>
+<li>② 向<code>/consumers/[group_id]/ids</code>注册Child变更事件的<code>loadBalancerListener</code>,当消费组下的消费者发生变化时调用</li>
+<li>③ 向<code>/brokers/topics/[topic]</code>注册Data变更事件的<code>topicPartitionChangeListener</code>,在topic数据发生变化时调用</li>
+<li>显式调用<code>loadBalancerListener.syncedRebalance()</code>, 会调用reblance方法进行consumer的初始化工作</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">reinitializeConsumer</span></span>[<span class="type">K</span>,<span class="type">V</span>](topicCount: <span class="type">TopicCount</span>, </span><br><span class="line">  queuesAndStreams: <span class="type">List</span>[(<span class="type">LinkedBlockingQueue</span>[<span class="type">FetchedDataChunk</span>],<span class="type">KafkaStream</span>[<span class="type">K</span>,<span class="type">V</span>])]) &#123;</span><br><span class="line">  <span class="keyword">val</span> dirs = <span class="keyword">new</span> <span class="type">ZKGroupDirs</span>(config.groupId)</span><br><span class="line">  <span class="comment">// ② listener to consumer and partition changes</span></span><br><span class="line">  <span class="keyword">if</span> (loadBalancerListener == <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">val</span> topicStreamsMap = <span class="keyword">new</span> mutable.<span class="type">HashMap</span>[<span class="type">String</span>,<span class="type">List</span>[<span class="type">KafkaStream</span>[<span class="type">K</span>,<span class="type">V</span>]]]</span><br><span class="line">    loadBalancerListener = <span class="keyword">new</span> <span class="type">ZKRebalancerListener</span>(config.groupId, consumerIdString, </span><br><span class="line">      topicStreamsMap.asInstanceOf[scala.collection.mutable.<span class="type">Map</span>[<span class="type">String</span>, <span class="type">List</span>[<span class="type">KafkaStream</span>[_,_]]]])</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ① create listener for session expired event if not exist yet</span></span><br><span class="line">  <span class="keyword">if</span> (sessionExpirationListener == <span class="literal">null</span>) sessionExpirationListener = </span><br><span class="line">    <span class="keyword">new</span> <span class="type">ZKSessionExpireListener</span>(dirs, consumerIdString, topicCount, loadBalancerListener)</span><br><span class="line">  <span class="comment">// ③ create listener for topic partition change event if not exist yet</span></span><br><span class="line">  <span class="keyword">if</span> (topicPartitionChangeListener == <span class="literal">null</span>) </span><br><span class="line">    topicPartitionChangeListener = <span class="keyword">new</span> <span class="type">ZKTopicPartitionChangeListener</span>(loadBalancerListener)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// listener to consumer and partition changes</span></span><br><span class="line">  zkUtils.zkClient.subscribeStateChanges(sessionExpirationListener)</span><br><span class="line">  zkUtils.zkClient.subscribeChildChanges(dirs.consumerRegistryDir, loadBalancerListener)</span><br><span class="line">  <span class="comment">// register on broker partition path changes.</span></span><br><span class="line">  topicStreamsMap.foreach &#123; topicAndStreams =&gt; </span><br><span class="line">    zkUtils.zkClient.subscribeDataChanges(<span class="type">BrokerTopicsPath</span>+<span class="string">"/"</span>+topicAndStreams._1, topicPartitionChangeListener)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// explicitly trigger load balancing for this consumer</span></span><br><span class="line">  loadBalancerListener.syncedRebalance()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ZKRebalancerListener传入ZKSessionExpireListener和ZKTopicPartitionChangeListener.它们都会使用ZKRebalancerListener完成自己的工作. </p>
+<p><strong>ZKSessionExpireListener</strong>  </p>
+<p>当Session失效时,新的会话建立时,立即进行rebalance操作.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ZKSessionExpireListener</span>(<span class="params">val dirs: <span class="type">ZKGroupDirs</span>, val consumerIdString: <span class="type">String</span>, </span></span></span><br><span class="line"><span class="class"><span class="params">  val topicCount: <span class="type">TopicCount</span>, val loadBalancerListener: <span class="type">ZKRebalancerListener</span></span>) <span class="keyword">extends</span> <span class="title">IZkStateListener</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">handleNewSession</span></span>() &#123;</span><br><span class="line">    loadBalancerListener.resetState()</span><br><span class="line">    registerConsumerInZK(dirs, consumerIdString, topicCount)</span><br><span class="line">    loadBalancerListener.syncedRebalance()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>ZKTopicPartitionChangeListener</strong>  </p>
+<p>当topic的数据变化时,通过触发的方式启动rebalance操作.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ZKTopicPartitionChangeListener</span>(<span class="params">val loadBalancerListener: <span class="type">ZKRebalancerListener</span></span>) </span></span><br><span class="line"><span class="class">  <span class="keyword">extends</span> <span class="title">IZkDataListener</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">handleDataChange</span></span>(dataPath : <span class="type">String</span>, data: <span class="type">Object</span>) &#123;</span><br><span class="line">    loadBalancerListener.rebalanceEventTriggered()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>ZKRebalancerListener watcher</strong>  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ZKRebalancerListener</span>(<span class="params">val group: <span class="type">String</span>, val consumerIdString: <span class="type">String</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">                           val kafkaMessageAndMetadataStreams: mutable.<span class="type">Map</span>[<span class="type">String</span>,<span class="type">List</span>[<span class="type">KafkaStream</span>[_,_]]]</span>)</span></span><br><span class="line"><span class="class">  <span class="keyword">extends</span> <span class="title">IZkChildListener</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> isWatcherTriggered = <span class="literal">false</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> lock = <span class="keyword">new</span> <span class="type">ReentrantLock</span></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> cond = lock.newCondition()</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> watcherExecutorThread = <span class="keyword">new</span> <span class="type">Thread</span>(consumerIdString + <span class="string">"_watcher_executor"</span>) &#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">run</span></span>() &#123;</span><br><span class="line">      <span class="keyword">var</span> doRebalance = <span class="literal">false</span></span><br><span class="line">      <span class="keyword">while</span> (!isShuttingDown.get) &#123;</span><br><span class="line">          lock.lock()</span><br><span class="line">          <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 如果isWatcherTriggered=false,则不会触发syncedRebalance. 等待1秒后,继续判断</span></span><br><span class="line">            <span class="keyword">if</span> (!isWatcherTriggered)</span><br><span class="line">              cond.await(<span class="number">1000</span>, <span class="type">TimeUnit</span>.<span class="type">MILLISECONDS</span>) <span class="comment">// wake up periodically so that it can check the shutdown flag</span></span><br><span class="line">          &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="comment">// 不管isWatcherTriggered值是多少,在每次循环时,都会执行. 如果isWatcherTriggered=true,则会执行syncedRebalance</span></span><br><span class="line">            doRebalance = isWatcherTriggered</span><br><span class="line">            <span class="comment">// 重新设置isWatcherTriggered=false, 因为其他线程触发一次后就失效了,想要再次触发,必须再次设置isWatcherTriggered=true</span></span><br><span class="line">            isWatcherTriggered = <span class="literal">false</span></span><br><span class="line">            lock.unlock()</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="keyword">if</span> (doRebalance) syncedRebalance        <span class="comment">// 只有每次rebalanceEventTriggered时,才会调用一次syncedRebalance</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  watcherExecutorThread.start()</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 触发rebalance开始进行, 修改isWatcherTriggered标志位,触发cond条件运行</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">rebalanceEventTriggered</span></span>() &#123;</span><br><span class="line">    inLock(lock) &#123;</span><br><span class="line">      isWatcherTriggered = <span class="literal">true</span></span><br><span class="line">      cond.signalAll()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>watcherExecutorThread线程通过锁的方式判断何时需要进行syncedRebalance操作.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160126162107763" alt="k_listener"></p>
+<p>reinitializeConsumer的topicStreamsMap是从(topic,thread)-&gt;(queue,stream)根据topic获取stream得来的.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> topicStreamsMap = loadBalancerListener.kafkaMessageAndMetadataStreams</span><br><span class="line"><span class="comment">// map of &#123;topic -&gt; Set(thread-1, thread-2, ...)&#125;</span></span><br><span class="line"><span class="keyword">val</span> consumerThreadIdsPerTopic: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Set</span>[<span class="type">ConsumerThreadId</span>]] = topicCount.getConsumerThreadIdsPerTopic</span><br><span class="line"><span class="comment">// list of (Queue, KafkaStreams): (queue1,stream1),(queue2,stream2),...</span></span><br><span class="line"><span class="keyword">val</span> allQueuesAndStreams = queuesAndStreams </span><br><span class="line"></span><br><span class="line"><span class="comment">// (topic,thread-1), (topic,thread-2), ... 一个topic有多个线程:threadIds,将threadIds中每个threadId都添加上topic标识</span></span><br><span class="line"><span class="keyword">val</span> topicThreadIds = consumerThreadIdsPerTopic.map &#123;</span><br><span class="line">  <span class="keyword">case</span>(topic, threadIds) =&gt; threadIds.map((topic, _))</span><br><span class="line">&#125;.flatten</span><br><span class="line"><span class="comment">// (topic,thread-1), (queue1, stream1)</span></span><br><span class="line"><span class="comment">// (topic,thread-2), (queue2, stream2)</span></span><br><span class="line"><span class="keyword">val</span> threadQueueStreamPairs = topicThreadIds.zip(allQueuesAndStreams)</span><br><span class="line"></span><br><span class="line">threadQueueStreamPairs.foreach(e =&gt; &#123;</span><br><span class="line">  <span class="keyword">val</span> topicThreadId = e._1  <span class="comment">// (topic,threadId)</span></span><br><span class="line">  <span class="keyword">val</span> q = e._2._1           <span class="comment">// Queue</span></span><br><span class="line">  topicThreadIdAndQueues.put(topicThreadId, q)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> groupedByTopic = threadQueueStreamPairs.groupBy(_._1._1)</span><br><span class="line"><span class="comment">// 根据topic分组之后, groupedByTopic的每个元素的_1为topic,_2为属于这个topic的所有(topic,thread-1), (queue1, stream1)形式的列表</span></span><br><span class="line">groupedByTopic.foreach(e =&gt; &#123;</span><br><span class="line">  <span class="keyword">val</span> topic = e._1</span><br><span class="line">  <span class="comment">// e._2是一个List[((topic,thread),(queue,stream))],下面收集这个topic的所有stream</span></span><br><span class="line">  <span class="keyword">val</span> streams = e._2.map(_._2._2).toList</span><br><span class="line">  topicStreamsMap += (topic -&gt; streams)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160127113745034" alt="k_topic_streams_map"></p>
+<h2 id="ZKRebalancerListener_rebalance">ZKRebalancerListener rebalance</h2><p>因为消费者加入/退出时,消费组的成员会发生变化,而消费组中的所有存活消费者负责消费可用的partitions.<br>可用的partitions或者消费组中的消费者成员一旦发生变化,都要重新分配partition给存活的消费者.下面是一个示例.    </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160218103058934" alt="k_partition_assign"></p>
+<p>当然分配partition的工作绝不仅仅是这么简单的,还要处理与之相关的线程,并重建必要的数据:    </p>
+<ul>
+<li>① 关闭数据抓取线程，获取之前为topic设置的存放数据的queue并清空该queue</li>
+<li>② 释放partition的ownership,删除partition和consumer的对应关系</li>
+<li>③ 为各个partition重新分配threadid</li>
+<li>获取partition最新的offset并重新初始化新的PartitionTopicInfo(queue存放数据,两个offset为partition最新的offset)</li>
+<li>④ 重新将partition对应的新的consumer信息写入zookeeper</li>
+<li>⑤ 重新创建partition的fetcher线程</li>
+</ul>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160126173525524" alt="k_rebalance"></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">rebalance</span></span>(cluster: <span class="type">Cluster</span>): <span class="type">Boolean</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> myTopicThreadIdsMap = <span class="type">TopicCount</span>.constructTopicCount(group, consumerIdString, </span><br><span class="line">    zkUtils, config.excludeInternalTopics).getConsumerThreadIdsPerTopic</span><br><span class="line">  <span class="keyword">val</span> brokers = zkUtils.getAllBrokersInCluster()</span><br><span class="line">  <span class="keyword">if</span> (brokers.size == <span class="number">0</span>) &#123;</span><br><span class="line">    zkUtils.zkClient.subscribeChildChanges(<span class="type">BrokerIdsPath</span>, loadBalancerListener)</span><br><span class="line">    <span class="literal">true</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// ① 停止fetcher线程防止数据重复.如果当前调整失败了,被释放的partitions可能被其他消费者拥有.</span></span><br><span class="line">    <span class="comment">// 而没有先停止fetcher的话,原先的消费者仍然会和新的拥有者共同消费同一份数据.  </span></span><br><span class="line">    closeFetchers(cluster, kafkaMessageAndMetadataStreams, myTopicThreadIdsMap)</span><br><span class="line">    <span class="comment">// ② 释放topicRegistry中topic-partition的owner</span></span><br><span class="line">    releasePartitionOwnership(topicRegistry)</span><br><span class="line">    <span class="comment">// ③ 为partition重新分配消费者....</span></span><br><span class="line">    <span class="comment">// ④ 为partition添加consumer owner</span></span><br><span class="line">    <span class="keyword">if</span>(reflectPartitionOwnershipDecision(partitionAssignment)) &#123;</span><br><span class="line">        allTopicsOwnedPartitionsCount = partitionAssignment.size</span><br><span class="line">        topicRegistry = currentTopicRegistry</span><br><span class="line">        <span class="comment">// ⑤ 创建拉取线程</span></span><br><span class="line">        updateFetcher(cluster)</span><br><span class="line">        <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>rebalance操作涉及了以下内容:  </p>
+<ul>
+<li>PartitionOwnership: Partition的所有者(ownership)的删除和重建</li>
+<li>AssignmentContext: 分配信息上下文</li>
+<li>PartitionAssignor: 为Partition分配Consumer的算法</li>
+<li>PartitionAssignment: Partition分配之后的上下文</li>
+<li>PartitionTopicInfo: Partition的最终信息</li>
+<li>Fetcher: 完成了rebalance,消费者就可以重新开始抓取数据</li>
+</ul>
+<h3 id="1)_PartitionOwnership">1) PartitionOwnership</h3><p>topicRegistry的数据结构是: <code>topic -&gt; (partition -&gt; PartitionTopicInfo)</code>, 表示现有的topic注册信息.<br>当partition被consumer所拥有后, 会在zk中创建<code>/consumers/[group_id]/owner/[topic]/[partition_id] --&gt; consumer_node_id</code><br>释放所有partition的ownership, 数据来源于topicRegistry的topic-partition(消费者所属的group_id也是确定的).<br>所以deletePartitionOwnershipFromZK会删除<code>/consumers/[group_id]/owner/[topic]/[partition_id]</code>节点.<br>这样partition没有了owner,说明这个partition不会被consumer消费了,也就相当于consumer释放了partition.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160218113605365" alt="k_partition_ownership"></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">releasePartitionOwnership</span></span>(localTopicRegistry: <span class="type">Pool</span>[<span class="type">String</span>, <span class="type">Pool</span>[<span class="type">Int</span>, <span class="type">PartitionTopicInfo</span>]])= &#123;</span><br><span class="line">  <span class="keyword">for</span> ((topic, infos) &lt;- localTopicRegistry) &#123;</span><br><span class="line">    <span class="keyword">for</span>(partition &lt;- infos.keys) &#123;</span><br><span class="line">      deletePartitionOwnershipFromZK(topic, partition)</span><br><span class="line">    &#125;</span><br><span class="line">    localTopicRegistry.remove(topic)</span><br><span class="line">  &#125;</span><br><span class="line">  allTopicsOwnedPartitionsCount = <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">deletePartitionOwnershipFromZK</span></span>(topic: <span class="type">String</span>, partition: <span class="type">Int</span>) &#123;</span><br><span class="line">  <span class="keyword">val</span> topicDirs = <span class="keyword">new</span> <span class="type">ZKGroupTopicDirs</span>(group, topic)</span><br><span class="line">  <span class="keyword">val</span> znode = topicDirs.consumerOwnerDir + <span class="string">"/"</span> + partition</span><br><span class="line">  zkUtils.deletePath(znode)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>重建ownership. 参数partitionAssignment会指定partition(TopicAndPartition)要分配给哪个consumer(ConsumerThreadId)消费的.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">reflectPartitionOwnershipDecision</span></span>(partitionAssignment: <span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">ConsumerThreadId</span>]): <span class="type">Boolean</span> = &#123;</span><br><span class="line">  <span class="keyword">var</span> successfullyOwnedPartitions : <span class="type">List</span>[(<span class="type">String</span>, <span class="type">Int</span>)] = <span class="type">Nil</span></span><br><span class="line">  <span class="keyword">val</span> partitionOwnershipSuccessful = partitionAssignment.map &#123; partitionOwner =&gt;</span><br><span class="line">    <span class="keyword">val</span> topic = partitionOwner._1.topic</span><br><span class="line">    <span class="keyword">val</span> partition = partitionOwner._1.partition</span><br><span class="line">    <span class="keyword">val</span> consumerThreadId = partitionOwner._2</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 返回/consumers/[group_id]/owner/[topic]/[partition_id]节点路径,然后创建节点,节点内容为:consumerThreadId</span></span><br><span class="line">    <span class="keyword">val</span> partitionOwnerPath = zkUtils.getConsumerPartitionOwnerPath(group, topic, partition)</span><br><span class="line">    zkUtils.createEphemeralPathExpectConflict(partitionOwnerPath, consumerThreadId.toString)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 成功创建的节点,加入到列表中</span></span><br><span class="line">    successfullyOwnedPartitions ::= (topic, partition)</span><br><span class="line">    <span class="literal">true</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 判断上面的创建节点操作(为consumer分配partition)是否有错误,一旦有一个有问题,就全部回滚(删除掉).只有所有成功才算成功</span></span><br><span class="line">  <span class="keyword">val</span> hasPartitionOwnershipFailed = partitionOwnershipSuccessful.foldLeft(<span class="number">0</span>)((sum, decision) =&gt; sum + (<span class="keyword">if</span>(decision) <span class="number">0</span> <span class="keyword">else</span> <span class="number">1</span>))</span><br><span class="line">  <span class="keyword">if</span>(hasPartitionOwnershipFailed &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    successfullyOwnedPartitions.foreach(topicAndPartition =&gt; deletePartitionOwnershipFromZK(topicAndPartition._1, topicAndPartition._2))</span><br><span class="line">    <span class="literal">false</span></span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>关于consumer的注册节点出现的地方有:开始时的registerConsumerInZK,以及这里的先释放再注册.  </p>
+</blockquote>
+<h3 id="2)_AssignmentContext">2) AssignmentContext</h3><p>AssignmentContext是PartitionAssignor要为某个消费者分配的上下文.因为消费者只订阅了特定的topic,所以首先要选出topic.<br>每个topic都是有partitions map,表示这个topic有哪些partition,以及对应的replicas.进而得到<code>partitionsForTopic</code>.<br><code>consumersForTopic</code>:要在当前消费者所在的消费组中,找到所有订阅了这个topic的消费者.以topic为粒度,统计所有的线程数.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160218111100842" alt="k_assignment_context"></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AssignmentContext</span>(<span class="params">group: <span class="type">String</span>, val consumerId: <span class="type">String</span>, excludeInternalTopics: <span class="type">Boolean</span>, zkUtils: <span class="type">ZkUtils</span></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 当前消费者的消费topic和消费线程, 因为指定了consumerId,所以是针对当前consumer而言</span></span><br><span class="line">  <span class="keyword">val</span> myTopicThreadIds: collection.<span class="type">Map</span>[<span class="type">String</span>, collection.<span class="type">Set</span>[<span class="type">ConsumerThreadId</span>]] = &#123;</span><br><span class="line">    <span class="keyword">val</span> myTopicCount = <span class="type">TopicCount</span>.constructTopicCount(group, consumerId, zkUtils, excludeInternalTopics)</span><br><span class="line">    myTopicCount.getConsumerThreadIdsPerTopic</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 属于某个topic的所有partitions. 当然topic是当前消费者订阅的范围内,其他topic并不关心</span></span><br><span class="line">  <span class="keyword">val</span> partitionsForTopic: collection.<span class="type">Map</span>[<span class="type">String</span>, <span class="type">Seq</span>[<span class="type">Int</span>]] = zkUtils.getPartitionsForTopics(myTopicThreadIds.keySet.toSeq)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 在当前消费组内,属于某个topic的所有consumers</span></span><br><span class="line">  <span class="keyword">val</span> consumersForTopic: collection.<span class="type">Map</span>[<span class="type">String</span>, <span class="type">List</span>[<span class="type">ConsumerThreadId</span>]] = zkUtils.getConsumersPerTopic(group, excludeInternalTopics)</span><br><span class="line">  <span class="keyword">val</span> consumers: <span class="type">Seq</span>[<span class="type">String</span>] = zkUtils.getConsumersInGroup(group).sorted</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>/brokers/topics/topic_name</code>记录的是topic的partition分配情况.获取partition信息,读取的是partitions字段(partitionMap).    </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getPartitionsForTopics</span></span>(topics: <span class="type">Seq</span>[<span class="type">String</span>]): mutable.<span class="type">Map</span>[<span class="type">String</span>, <span class="type">Seq</span>[<span class="type">Int</span>]] = &#123;</span><br><span class="line">  getPartitionAssignmentForTopics(topics).map &#123; topicAndPartitionMap =&gt;</span><br><span class="line">    <span class="keyword">val</span> topic = topicAndPartitionMap._1</span><br><span class="line">    <span class="keyword">val</span> partitionMap = topicAndPartitionMap._2</span><br><span class="line">    (topic -&gt; partitionMap.keys.toSeq.sortWith((s,t) =&gt; s &lt; t))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>每个消费者都可以指定消费的topic和线程数,对于同一个消费组中多个消费者可以指定消费同一个topic或不同topic.<br>获取topic的所有consumers时,统计所有消费这个topic的消费者线程(原先以消费者,现在转换为以topic).<br>注意: 这里是取出当前消费组下所有消费者的所有topic,并没有过滤出属于当前消费者感兴趣的topics.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getConsumersPerTopic</span></span>(group: <span class="type">String</span>, excludeInternalTopics: <span class="type">Boolean</span>) : mutable.<span class="type">Map</span>[<span class="type">String</span>, <span class="type">List</span>[<span class="type">ConsumerThreadId</span>]] = &#123;</span><br><span class="line">  <span class="keyword">val</span> dirs = <span class="keyword">new</span> <span class="type">ZKGroupDirs</span>(group)</span><br><span class="line">  <span class="comment">// 当前消费组下所有的consumers</span></span><br><span class="line">  <span class="keyword">val</span> consumers = getChildrenParentMayNotExist(dirs.consumerRegistryDir)</span><br><span class="line">  <span class="keyword">val</span> consumersPerTopicMap = <span class="keyword">new</span> mutable.<span class="type">HashMap</span>[<span class="type">String</span>, <span class="type">List</span>[<span class="type">ConsumerThreadId</span>]]</span><br><span class="line">  <span class="keyword">for</span> (consumer &lt;- consumers) &#123;</span><br><span class="line">    <span class="comment">// 每个consumer都指定了topic和thread-count</span></span><br><span class="line">    <span class="keyword">val</span> topicCount = <span class="type">TopicCount</span>.constructTopicCount(group, consumer, <span class="keyword">this</span>, excludeInternalTopics)</span><br><span class="line">    <span class="keyword">for</span> ((topic, consumerThreadIdSet) &lt;- topicCount.getConsumerThreadIdsPerTopic) &#123;</span><br><span class="line">      <span class="comment">// 现在是在同一个consumer里, 对同一个topic,有多个thread-id</span></span><br><span class="line">      <span class="keyword">for</span> (consumerThreadId &lt;- consumerThreadIdSet)</span><br><span class="line">        <span class="comment">// 最后按照topic分,而不是按照consumer分,比如多个consumer都消费了同一个topic,则这些consuemr会加入到同一个topic中</span></span><br><span class="line">        consumersPerTopicMap.get(topic) <span class="keyword">match</span> &#123;</span><br><span class="line">          <span class="keyword">case</span> <span class="type">Some</span>(curConsumers) =&gt; consumersPerTopicMap.put(topic, consumerThreadId :: curConsumers)</span><br><span class="line">          <span class="keyword">case</span> _ =&gt; consumersPerTopicMap.put(topic, <span class="type">List</span>(consumerThreadId))</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> ((topic, consumerList) &lt;- consumersPerTopicMap) consumersPerTopicMap.put(topic, consumerList.sortWith((s,t) =&gt; s &lt; t))</span><br><span class="line">  consumersPerTopicMap</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="3)_PartitionAssignor">3) PartitionAssignor</h3><p>将可用的partitions以及消费者线程排序, 将partitions处于线程数,表示每个线程(不是消费者数量)平均可以分到几个partition.<br>如果除不尽,剩余的会分给前面几个消费者线程. 比如有两个消费者,每个都是两个线程,一共有5个可用的partitions:(p0-p4).<br>每个消费者线程(一共四个线程)可以获取到至少一共partition(5/4=1),剩余一个(5%4=1)partition分给第一个线程.<br>最后的分配结果为: <code>p0 -&gt; C1-0, p1 -&gt; C1-0, p2 -&gt; C1-1, p3 -&gt; C2-0, p4 -&gt; C2-1</code>  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160127083105757" alt="k_range_assign"></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RangeAssignor</span>(<span class="params"></span>) <span class="keyword">extends</span> <span class="title">PartitionAssignor</span> <span class="keyword">with</span> <span class="title">Logging</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">assign</span></span>(ctx: <span class="type">AssignmentContext</span>) = &#123;</span><br><span class="line">    <span class="keyword">val</span> valueFactory = (topic: <span class="type">String</span>) =&gt; <span class="keyword">new</span> mutable.<span class="type">HashMap</span>[<span class="type">TopicAndPartition</span>, <span class="type">ConsumerThreadId</span>]</span><br><span class="line">    <span class="comment">// consumerThreadId -&gt; (TopicAndPartition -&gt; ConsumerThreadId). 所以上面的valueFactory的参数不对哦!</span></span><br><span class="line">    <span class="keyword">val</span> partitionAssignment = <span class="keyword">new</span> <span class="type">Pool</span>[<span class="type">String</span>, mutable.<span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">ConsumerThreadId</span>]](<span class="type">Some</span>(valueFactory))</span><br><span class="line">    <span class="keyword">for</span> (topic &lt;- ctx.myTopicThreadIds.keySet) &#123;</span><br><span class="line">      <span class="keyword">val</span> curConsumers = ctx.consumersForTopic(topic)                   <span class="comment">// 订阅了topic的消费者列表(4)</span></span><br><span class="line">      <span class="keyword">val</span> curPartitions: <span class="type">Seq</span>[<span class="type">Int</span>] = ctx.partitionsForTopic(topic)       <span class="comment">// 属于topic的partitions(5)</span></span><br><span class="line">      <span class="keyword">val</span> nPartsPerConsumer = curPartitions.size / curConsumers.size    <span class="comment">// 每个线程都可以有这些个partition(1)</span></span><br><span class="line">      <span class="keyword">val</span> nConsumersWithExtraPart = curPartitions.size % curConsumers.size  <span class="comment">// 剩余的分给前面几个(1)</span></span><br><span class="line">      <span class="keyword">for</span> (consumerThreadId &lt;- curConsumers) &#123;                          <span class="comment">// 每个消费者线程: C1_0,C1_1,C2_0,C2_1</span></span><br><span class="line">        <span class="keyword">val</span> myConsumerPosition = curConsumers.indexOf(consumerThreadId) <span class="comment">// 线程在列表中的索引: 0,1,2,3</span></span><br><span class="line">        <span class="keyword">val</span> startPart = nPartsPerConsumer * myConsumerPosition + myConsumerPosition.min(nConsumersWithExtraPart)</span><br><span class="line">        <span class="keyword">val</span> nParts = nPartsPerConsumer + (<span class="keyword">if</span> (myConsumerPosition + <span class="number">1</span> &gt; nConsumersWithExtraPart) <span class="number">0</span> <span class="keyword">else</span> <span class="number">1</span>)</span><br><span class="line">        <span class="comment">// Range-partition the sorted partitions to consumers for better locality. </span></span><br><span class="line">        <span class="comment">// The first few consumers pick up an extra partition, if any.</span></span><br><span class="line">        <span class="keyword">if</span> (nParts &gt; <span class="number">0</span>)</span><br><span class="line">          <span class="keyword">for</span> (i &lt;- startPart until startPart + nParts) &#123;</span><br><span class="line">            <span class="keyword">val</span> partition = curPartitions(i)</span><br><span class="line">            <span class="comment">// record the partition ownership decision 记录partition的ownership决定,即把partition分配给consumerThreadId</span></span><br><span class="line">            <span class="keyword">val</span> assignmentForConsumer = partitionAssignment.getAndMaybePut(consumerThreadId.consumer)</span><br><span class="line">            assignmentForConsumer += (<span class="type">TopicAndPartition</span>(topic, partition) -&gt; consumerThreadId)</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 前面的for循环中的consumers是和当前消费者有相同topic的,如果消费者的topic和当前消费者不一样,则在本次assign中不会为它分配的.  </span></span><br><span class="line">    <span class="comment">// assign Map.empty for the consumers which are not associated with topic partitions 没有和partition关联的consumer分配空的partiton.</span></span><br><span class="line">    ctx.consumers.foreach(consumerId =&gt; partitionAssignment.getAndMaybePut(consumerId))</span><br><span class="line">    partitionAssignment</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>假设有如下的消费者-订阅topic的关系.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160127083148382" alt="k_assign1"></p>
+<p>首先找到和consumer1有相同订阅主题的消费者</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160127083206226" alt="k_assign2"></p>
+<p>对于consumer1的所有topic,分配给有这个订阅关系的所有订阅者 </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160127083219632" alt="k_assign3"></p>
+<h3 id="4)_PartitionAssignment_-&gt;_PartitionTopicInfo">4) PartitionAssignment -&gt; PartitionTopicInfo</h3><p>这是ZKRebalancerListener.rebalance的第三步.首先为当前消费者创建AssignmentContext上下文.<br>上面知道partitionAssignor.assign的返回值是所有consumer的分配结果(虽然有些consumer在本次中并没有分到partition)<br>partitionAssignment的结构是<code>consumerThreadId -&gt; (TopicAndPartition -&gt; ConsumerThreadId)</code>,<br>所以获取当前consumer只要传入assignmentContext.consumerId就可以得到当前消费者的PartitionAssignment.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160218132018296" alt="k_partition_assignment"></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ③ 为partition重新选择consumer</span></span><br><span class="line"><span class="keyword">val</span> assignmentContext = <span class="keyword">new</span> <span class="type">AssignmentContext</span>(group, consumerIdString, config.excludeInternalTopics, zkUtils)</span><br><span class="line"><span class="keyword">val</span> globalPartitionAssignment = partitionAssignor.assign(assignmentContext)</span><br><span class="line"><span class="keyword">val</span> partitionAssignment = globalPartitionAssignment.get(assignmentContext.consumerId)</span><br><span class="line"><span class="keyword">val</span> currentTopicRegistry = <span class="keyword">new</span> <span class="type">Pool</span>[<span class="type">String</span>, <span class="type">Pool</span>[<span class="type">Int</span>, <span class="type">PartitionTopicInfo</span>]](</span><br><span class="line">  valueFactory = <span class="type">Some</span>((topic: <span class="type">String</span>) =&gt; <span class="keyword">new</span> <span class="type">Pool</span>[<span class="type">Int</span>, <span class="type">PartitionTopicInfo</span>]))</span><br><span class="line"></span><br><span class="line"><span class="comment">// fetch current offsets for all topic-partitions</span></span><br><span class="line"><span class="keyword">val</span> topicPartitions = partitionAssignment.keySet.toSeq</span><br><span class="line"><span class="keyword">val</span> offsetFetchResponseOpt = fetchOffsets(topicPartitions)</span><br><span class="line"><span class="keyword">val</span> offsetFetchResponse = offsetFetchResponseOpt.get</span><br><span class="line">topicPartitions.foreach(topicAndPartition =&gt; &#123;</span><br><span class="line">    <span class="keyword">val</span> (topic, partition) = topicAndPartition.asTuple</span><br><span class="line">    <span class="keyword">val</span> offset = offsetFetchResponse.requestInfo(topicAndPartition).offset</span><br><span class="line">    <span class="keyword">val</span> threadId = partitionAssignment(topicAndPartition)</span><br><span class="line">    addPartitionTopicInfo(currentTopicRegistry, partition, topic, offset, threadId)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// ④ ⑤ 注册到zk上, 并创建新的fetcher线程</span></span><br><span class="line"><span class="keyword">if</span>(reflectPartitionOwnershipDecision(partitionAssignment)) &#123;</span><br><span class="line">    topicRegistry = currentTopicRegistry  <span class="comment">// topicRegistry来自上一步的addPartitionTopicInfo, 它会被用于updateFetcher</span></span><br><span class="line">    updateFetcher(cluster)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>PartitionAssignment的key是TopicAndPartition,根据所有topicAndPartitions获取这些partitions的offsets.<br>返回值offsetFetchResponse包含了对应的offset, 最终根据这些信息创建对应的PartitionTopicInfo.<br>PartitionTopicInfo包含Partition和Topic:队列用来存放数据(topicThreadIdAndQueues在reinitializeConsumer中放入),<br>consumedOffset和fetchedOffset都是来自于offset参数,即上面offsetFetchResponse中partition的offset.  </p>
+<p>currentTopicRegistry这个结构也很重要: <code>topic -&gt; (partition -&gt; PartitionTopicInfo)</code><br>key是topic,正如名称所示是topic的注册信息(topicRegistry).又因为来自于fetchOffsets,所以表示的是最新当前的.  </p>
+<blockquote>
+<p>queue从topicThreadIdAndQueues中获得,在consume方法中queue也作为KafkaStream的参数.<br>所以后面只要面向PartitionTopicInfo,就能获取到底层的queue,也就可以为KafkaStream的queue填充数据.  </p>
+</blockquote>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">  <span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">addPartitionTopicInfo</span></span>(currentTopicRegistry: <span class="type">Pool</span>[<span class="type">String</span>, <span class="type">Pool</span>[<span class="type">Int</span>, <span class="type">PartitionTopicInfo</span>]],</span><br><span class="line">                                    partition: <span class="type">Int</span>, topic: <span class="type">String</span>, offset: <span class="type">Long</span>, consumerThreadId: <span class="type">ConsumerThreadId</span>) &#123;</span><br><span class="line">    <span class="keyword">val</span> partTopicInfoMap = currentTopicRegistry.getAndMaybePut(topic)</span><br><span class="line">    <span class="keyword">val</span> queue = topicThreadIdAndQueues.get((topic, consumerThreadId))</span><br><span class="line">    <span class="keyword">val</span> consumedOffset = <span class="keyword">new</span> <span class="type">AtomicLong</span>(offset)</span><br><span class="line">    <span class="keyword">val</span> fetchedOffset = <span class="keyword">new</span> <span class="type">AtomicLong</span>(offset)</span><br><span class="line">    <span class="keyword">val</span> partTopicInfo = <span class="keyword">new</span> <span class="type">PartitionTopicInfo</span>(topic,partition,queue,consumedOffset,fetchedOffset,</span><br><span class="line">      <span class="keyword">new</span> <span class="type">AtomicInteger</span>(config.fetchMessageMaxBytes), config.clientId)</span><br><span class="line">    partTopicInfoMap.put(partition, partTopicInfo)</span><br><span class="line">    checkpointedZkOffsets.put(<span class="type">TopicAndPartition</span>(topic, partition), offset)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意:一个threadId可以消费同一个topic的多个partition. 而一个threadId对应一个queue.<br>所以一个queue也就可以消费多个partition. 即对于不同的partition,可能使用同一个队列来消费.<br>比如消费者设置了一个线程,就只有一个队列,而partition分了两个给它,这样一个队列就要处理两个partition了.  </p>
+</blockquote>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160127083346742" alt="k_topic_thread_queue_info"></p>
+<h3 id="5)_updateFetcher_&amp;_closeFetchers">5) updateFetcher &amp; closeFetchers</h3><p>这里我们看到了在ZooKeeperConsumerConnector初始化时创建的fetcher(ConsumerFetcherManager)终于派上用场了.<br>allPartitionInfos是分配给Consumer的Partition列表(但是这里还不知道Leader的,所以在Manager中要自己寻找Leader).  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">updateFetcher</span></span>(cluster: <span class="type">Cluster</span>) &#123;   <span class="comment">// update partitions for fetcher</span></span><br><span class="line">  <span class="keyword">var</span> allPartitionInfos : <span class="type">List</span>[<span class="type">PartitionTopicInfo</span>] = <span class="type">Nil</span></span><br><span class="line">  <span class="comment">// topicRegistry是在addPartitionTopicInfo中加到currentTopicRegistry,再被赋值给topicRegistry</span></span><br><span class="line">  <span class="keyword">for</span> (partitionInfos &lt;- topicRegistry.values)  </span><br><span class="line">    <span class="keyword">for</span> (partition &lt;- partitionInfos.values)    <span class="comment">// PartitionTopicInfo</span></span><br><span class="line">      allPartitionInfos ::= partition </span><br><span class="line">  fetcher <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">Some</span>(f) =&gt; f.startConnections(allPartitionInfos, cluster)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建Fetcher是为PartitionInfos准备开始连接,在rebalance时一开始要先closeFetchers就是关闭已经建立的连接.<br>relevantTopicThreadIdsMap是当前消费者的topic-&gt;threadIds,要从topicThreadIdAndQueues过滤出需要清除的queues.  </p>
+<table>
+<thead>
+<tr>
+<th>DataStructure</th>
+<th>Explain</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>relevantTopicThreadIdsMap</td>
+<td>消费者注册的topic-&gt;threadIds</td>
+</tr>
+<tr>
+<td>topicThreadIdAndQueues</td>
+<td>消费者的(topic,threadId)-&gt;queue</td>
+</tr>
+<tr>
+<td>messageStreams</td>
+<td>消费者注册的topic-&gt;List[KafkaStream]消息流</td>
+</tr>
+</tbody>
+</table>
+<p>关闭Fetcher时要注意: 先提交offset,然后才停止消费者. 因为在停止消费者的时候当前的数据块中还会有点残留数据.<br>因为这时候还没有释放partiton的ownership(即partition还归当前consumer所有),强制提交offset,<br>这样拥有这个partition的下一个消费者线程(rebalance后),就可以使用已经提交的offset了,确保不中断.<br>因为fetcher线程已经关闭了(stopConnections),这是消费者能得到的最后一个数据块,以后不会有了,直到平衡结束,fetcher重新开始  </p>
+<blockquote>
+<p>topicThreadIdAndQueues来自于topicThreadIds,所以它的topic应该都在relevantTopicThreadIdsMap的topics中.<br>为什么还要过滤呢? 注释中说到在本次平衡之后,只需要清理可能不再属于这个消费者的队列(部分的topicPartition抓取队列).  </p>
+</blockquote>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">closeFetchers</span></span>(cluster: <span class="type">Cluster</span>, messageStreams: <span class="type">Map</span>[<span class="type">String</span>,<span class="type">List</span>[<span class="type">KafkaStream</span>[_,_]]], </span><br><span class="line">  relevantTopicThreadIdsMap: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Set</span>[<span class="type">ConsumerThreadId</span>]]) &#123;</span><br><span class="line">  <span class="comment">// only clear the fetcher queues for certain topic partitions that *might* </span></span><br><span class="line">  <span class="comment">// no longer be served by this consumer after this rebalancing attempt</span></span><br><span class="line">  <span class="keyword">val</span> queuesTobeCleared = topicThreadIdAndQueues.filter(q =&gt; relevantTopicThreadIdsMap.contains(q._1._1)).map(q =&gt; q._2)</span><br><span class="line">  closeFetchersForQueues(cluster, messageStreams, queuesTobeCleared)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">closeFetchersForQueues</span></span>(cluster: <span class="type">Cluster</span>, messageStreams: <span class="type">Map</span>[<span class="type">String</span>,<span class="type">List</span>[<span class="type">KafkaStream</span>[_,_]]], </span><br><span class="line">  queuesToBeCleared: <span class="type">Iterable</span>[<span class="type">BlockingQueue</span>[<span class="type">FetchedDataChunk</span>]]) &#123;</span><br><span class="line">  <span class="keyword">val</span> allPartitionInfos = topicRegistry.values.map(p =&gt; p.values).flatten</span><br><span class="line">  fetcher <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">Some</span>(f) =&gt;</span><br><span class="line">      f.stopConnections     <span class="comment">// 停止FetcherManager管理的所有Fetcher线程</span></span><br><span class="line">      clearFetcherQueues(allPartitionInfos, cluster, queuesToBeCleared, messageStreams)</span><br><span class="line">      <span class="keyword">if</span> (config.autoCommitEnable) commitOffsets(<span class="literal">true</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">clearFetcherQueues</span></span>(topicInfos: <span class="type">Iterable</span>[<span class="type">PartitionTopicInfo</span>], cluster: <span class="type">Cluster</span>, </span><br><span class="line">  queuesTobeCleared: <span class="type">Iterable</span>[<span class="type">BlockingQueue</span>[<span class="type">FetchedDataChunk</span>]], messageStreams: <span class="type">Map</span>[<span class="type">String</span>,<span class="type">List</span>[<span class="type">KafkaStream</span>[_,_]]]) &#123;</span><br><span class="line">  <span class="comment">// Clear all but the currently iterated upon chunk in the consumer thread's queue</span></span><br><span class="line">  queuesTobeCleared.foreach(_.clear)</span><br><span class="line">  <span class="comment">// Also clear the currently iterated upon chunk in the consumer threads</span></span><br><span class="line">  <span class="keyword">if</span>(messageStreams != <span class="literal">null</span>) messageStreams.foreach(_._2.foreach(s =&gt; s.clear()))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>问题:新创建的ZKRebalancerListener中kafkaMessageAndMetadataStreams(即这里的messageStreams)为空的Map.<br>如何清空里面的数据? 实际上KafkaStream只是一个迭代器,在运行过程中会有数据放入到这个流中,这样流就有数据了.  </p>
+</blockquote>
+<h2 id="ConsumerFetcherManager">ConsumerFetcherManager</h2><p>topicInfos是上一步updateFetcher的topicRegistry,是分配给给consumer的注册信息:topic-&gt;(partition-&gt;PartitionTopicInfo).<br>Fetcher线程要抓取数据关心的是PartitionTopicInfo,首先要找出Partition Leader(因为只向Leader Partition发起抓取请求).<br>初始时假设所有topicInfos(PartitionTopicInfo)都找不到Leader,即同时加入partitionMap和noLeaderPartitionSet.<br>在LeaderFinderThread线程中如果找到Leader,则从noLeaderPartitionSet中移除.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">startConnections</span></span>(topicInfos: <span class="type">Iterable</span>[<span class="type">PartitionTopicInfo</span>], cluster: <span class="type">Cluster</span>) &#123;</span><br><span class="line">  leaderFinderThread = <span class="keyword">new</span> <span class="type">LeaderFinderThread</span>(consumerIdString + <span class="string">"-leader-finder-thread"</span>)</span><br><span class="line">  leaderFinderThread.start()</span><br><span class="line"></span><br><span class="line">  inLock(lock) &#123;</span><br><span class="line">    partitionMap = topicInfos.map(tpi =&gt; (<span class="type">TopicAndPartition</span>(tpi.topic, tpi.partitionId), tpi)).toMap</span><br><span class="line">    <span class="keyword">this</span>.cluster = cluster</span><br><span class="line">    noLeaderPartitionSet ++= topicInfos.map(tpi =&gt; <span class="type">TopicAndPartition</span>(tpi.topic, tpi.partitionId))</span><br><span class="line">    cond.signalAll()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ConsumerFetcherManager管理了当前Consumer的所有Fetcher线程.<br>注意ConsumerFetcherThread构造函数中的partitionMap和构建FetchRequest时的partitionMap是不同的.<br>不过它们的相同点是都有offset信息.并且都有fetch操作.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160127120246496" alt="k_fetcher_manager_start"></p>
+<h2 id="小结">小结</h2><p>high level的Consumer Rebalance的控制策略是由每一个Consumer通过在Zookeeper上注册Watch完成的。<br>每个Consumer被创建时会触发Consumer Group的Rebalance,具体的启动流程是:    </p>
+<ul>
+<li>(High Level)Consumer启动时将其ID注册到其Consumer Group下 (registerConsumerInZK)  </li>
+<li>在/consumers/[group_id]/ids上和/brokers/ids上分别注册Watch (reinitializeConsumer-&gt;Listener)  </li>
+<li>强制自己在其Consumer Group内启动Rebalance流程 (ZKRebalancerListener.rebalance)  </li>
+</ul>
+<p>在这种策略下，每一个Consumer或者Broker的增加或者减少都会触发Consumer Rebalance。<br>因为每个Consumer只负责调整自己所消费的Partition，为了保证整个Consumer Group的一致性，<br>当一个Consumer触发了Rebalance时，该Consumer Group内的其它所有其它Consumer也应该同时触发Rebalance。  </p>
+<p>该方式有如下缺陷:<br><strong>Herd effect(羊群效应)</strong>: 任何Broker或者Consumer的增减都会触发所有的Consumer的Rebalance<br><strong>Split Brain(脑裂)</strong>: 每个Consumer分别单独通过Zookeeper判断哪些Broker和Consumer 宕机了，<br>那么不同Consumer在同一时刻从Zookeeper“看”到的View就可能不一样，这是由Zookeeper的特性决定的，这就会造成不正确的Reblance尝试。<br><strong>调整结果不可控</strong>: 所有的Consumer都并不知道其它Consumer的Rebalance是否成功，这可能会导致Kafka工作在一个不正确的状态。</p>
+<h2 id="Ref">Ref</h2><ul>
+<li><a href="http://uohzoaix.github.io/studies" target="_blank" rel="noopener">http://uohzoaix.github.io/studies</a></li>
+<li><a href="http://flychao88.iteye.com/blog/2268481" target="_blank" rel="noopener">http://flychao88.iteye.com/blog/2268481</a></li>
+</ul>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/01/19/2016-01-19-Kafka-Consumer-scala/">Kafka源码分析 Consumer(1) 初始化</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年01月19日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/01/19/2016-01-19-Kafka-Consumer-scala/" title="Kafka源码分析 Consumer(1) 初始化">http://github.com/zqhxuyuan/2016/01/19/2016-01-19-Kafka-Consumer-scala/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/01/19/2016-01-19-Kafka-Consumer-scala/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/01/20/2016-01-20-Kafka-Consumer-fetcher/">
+        Kafka源码分析 Consumer(2) Fetcher
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/01/15/2016-01-15-Kafka-Delay/">
+        Kafka源码分析 DelayOperation
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#high-level_consumer"><span class="toc-number">1.</span> <span class="toc-text">high-level consumer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#high-level_Consumer_Example"><span class="toc-number">2.</span> <span class="toc-text">high-level Consumer Example</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ConsumerConnector"><span class="toc-number">3.</span> <span class="toc-text">ConsumerConnector</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ZookeeperConsumerConnector"><span class="toc-number">4.</span> <span class="toc-text">ZookeeperConsumerConnector</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#zk_and_broker"><span class="toc-number">4.1.</span> <span class="toc-text">zk and broker</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#zk_and_consumer"><span class="toc-number">4.2.</span> <span class="toc-text">zk and consumer</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#init"><span class="toc-number">5.</span> <span class="toc-text">init</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#createMessageStreams"><span class="toc-number">6.</span> <span class="toc-text">createMessageStreams</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#registerConsumerInZK"><span class="toc-number">6.1.</span> <span class="toc-text">registerConsumerInZK</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#reinitializeConsumer_listener"><span class="toc-number">6.2.</span> <span class="toc-text">reinitializeConsumer listener</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ZKRebalancerListener_rebalance"><span class="toc-number">7.</span> <span class="toc-text">ZKRebalancerListener rebalance</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1)_PartitionOwnership"><span class="toc-number">7.1.</span> <span class="toc-text">1) PartitionOwnership</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2)_AssignmentContext"><span class="toc-number">7.2.</span> <span class="toc-text">2) AssignmentContext</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3)_PartitionAssignor"><span class="toc-number">7.3.</span> <span class="toc-text">3) PartitionAssignor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4)_PartitionAssignment_->_PartitionTopicInfo"><span class="toc-number">7.4.</span> <span class="toc-text">4) PartitionAssignment -&gt; PartitionTopicInfo</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5)_updateFetcher_&_closeFetchers"><span class="toc-number">7.5.</span> <span class="toc-text">5) updateFetcher &amp; closeFetchers</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ConsumerFetcherManager"><span class="toc-number">8.</span> <span class="toc-text">ConsumerFetcherManager</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#小结"><span class="toc-number">9.</span> <span class="toc-text">小结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ref"><span class="toc-number">10.</span> <span class="toc-text">Ref</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/01/19/2016-01-19-Kafka-Consumer-scala/" data-title="Kafka源码分析 Consumer(1) 初始化" data-url="http://github.com/zqhxuyuan/2016/01/19/2016-01-19-Kafka-Consumer-scala/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/01/20/2016-01-20-Kafka-Consumer-fetcher/" title="上一篇: Kafka源码分析 Consumer(2) Fetcher">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/01/15/2016-01-15-Kafka-Delay/" title="下一篇: Kafka源码分析 DelayOperation">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

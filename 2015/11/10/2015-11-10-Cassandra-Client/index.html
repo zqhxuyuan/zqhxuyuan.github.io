@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Cassandra Client查询优化 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="大数据源码阅读系列之ApacheCassandra: Cassandra客户端的查询优化">
+<meta name="keywords" content="cassandra">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cassandra Client查询优化">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/11/10/2015-11-10-Cassandra-Client/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="大数据源码阅读系列之ApacheCassandra: Cassandra客户端的查询优化">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.188Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cassandra Client查询优化">
+<meta name="twitter:description" content="大数据源码阅读系列之ApacheCassandra: Cassandra客户端的查询优化">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-11-10-Cassandra-Client" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/11/10/2015-11-10-Cassandra-Client/" class="article-date">
+  	<time datetime="2015-11-09T16:00:00.000Z" itemprop="datePublished">2015-11-10</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Cassandra Client查询优化
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Source/">Source</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cassandra/">cassandra</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>大数据源码阅读系列之ApacheCassandra: Cassandra客户端的查询优化</p>
+<a id="more"></a>
+<h2 id="一次查询的流程">一次查询的流程</h2><p>通过Session执行查询等SQL语句:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">session.execute()</span><br></pre></td></tr></table></figure>
+<p>AbstractSession会异步地执行, 但是这种异步是Uninterruptibly不可中断的:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">AbstractSession.execute(Statement) : ResultSet</span><br><span class="line">executeAsync(statement).getUninterruptibly()</span><br></pre></td></tr></table></figure>
+<p>根据Statement创建Message.Request, new Requests.Execute或者Query.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SessionManager: executeQuery(makeRequestMessage(statement, null), statement)</span><br></pre></td></tr></table></figure>
+<p>执行查询: executeQuery(Message.Request msg, Statement statement)  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DefaultResultSetFuture future = new DefaultResultSetFuture(this, , msg);</span><br><span class="line">execute(future, statement);</span><br></pre></td></tr></table></figure>
+<p>DefaultResultSetFuture结合了ResultSet返回结果集合和Future功能, 并实现了RequestHandler的Callback回调接口:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">class DefaultResultSetFuture extends AbstractFuture&lt;ResultSet&gt; implements ResultSetFuture, RequestHandler.Callback &#123;</span><br><span class="line">    private volatile RequestHandler handler;</span><br><span class="line">    public void register(RequestHandler handler) &#123;</span><br><span class="line">        this.handler = handler;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>execute发送请求, 传入的callback是DefaultResultSetFuture:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">new RequestHandler(this, callback, statement).sendRequest();</span><br></pre></td></tr></table></figure>
+<p>创建的RequestHandler会将callback注册到自己: callback.register(this) 调用到DefaultResultSetFuture的register方法.<br>即设置DefaultResultSetFuture的handler为刚刚创建的RequestHandler.<br>在RequestHandler中, 还会负责调用callback即DefaultResultSetFuture的onSet方法, 用来设置返回值结果.  </p>
+<p>一个请求包含了多个查询计划, 如果执行失败, 则回调callback.onException.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public void sendRequest() &#123;</span><br><span class="line">    while (queryPlan.hasNext() &amp;&amp; !isCanceled) &#123;</span><br><span class="line">        Host host = queryPlan.next();</span><br><span class="line">        if (query(host))</span><br><span class="line">            return;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>查询计划实际上是当前请求会将请求依次转发到哪些节点上,所以是个Iterator<host><br>客户端连接到Cassandra, Driver提供了一个连接池. 查询时从连接池里borrow一个连接对象, 然后在这个Connection上发起调用请求:  </host></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">private boolean query(Host host) &#123;</span><br><span class="line">    currentPool = manager.pools.get(host);</span><br><span class="line">    PooledConnection connection = currentPool.borrowConnection(manager.configuration().getPoolingOptions().getPoolTimeoutMillis(), TimeUnit.MILLISECONDS)</span><br><span class="line">    connectionHandler = connection.write(this);</span><br><span class="line">    return true;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>write会返回一个ResponseHandler. 发送读取请求, 收到响应请求. RequestHandler和ResponseHandler是相对应的.   </p>
+<p>现在AbstractSession.executeAsync请求基本已经处理完成, 剩下的就是获取数据了.  </p>
+<p>获取数据getUninterruptibly,通过future.get获取. future对象就是DefaultResultSetFuture.   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">while (true) &#123;</span><br><span class="line">  try &#123;</span><br><span class="line">    return future.get();</span><br><span class="line">  &#125; catch (InterruptedException e) &#123;</span><br><span class="line">    interrupted = true;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>只有在被中断抛出异常的时候, 数据获取线程才会停止. 这就存在一个问题,如果有数据,但是查询很慢,是不是要等到获取出数据才返回.<br>那么Cassandra本身设置的read time out是否会起作用?</p>
+<h2 id="异步+不能中断">异步+不能中断</h2><p>CassandraClient查询: session.execute()</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> ResultSet <span class="title">execute</span><span class="params">(Statement statement)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> executeAsync(statement).getUninterruptibly();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注: Statement包括了insert和select. </p>
+<p>executeAsync是异步执行的(AbstractSession):  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> ResultSetFuture <span class="title">executeAsync</span><span class="params">(Statement statement)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> executeQuery(makeRequestMessage(statement, <span class="keyword">null</span>), statement);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>但是却是Uninterrupted不能中断的: 等待结果返回是不能中断的(DefaultResultSetFuture).   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Waits for the query to return and return its result.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * This method is usually more convenient than &#123;<span class="doctag">@link</span> #get&#125; because it:</span></span><br><span class="line"><span class="comment"> * &lt;ul&gt;</span></span><br><span class="line"><span class="comment"> *   &lt;li&gt;Waits for the result uninterruptibly, and so doesn't throw InterruptedException&#125;.</span></span><br><span class="line"><span class="comment"> *   &lt;li&gt;Returns meaningful exceptions, instead of having to deal with ExecutionException.&lt;/li&gt;</span></span><br><span class="line"><span class="comment"> * &lt;/ul&gt;</span></span><br><span class="line"><span class="comment"> * As such, it is the preferred way to get the future result.  </span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@throws</span> NoHostAvailableException if no host in the cluster can be contacted successfully to execute this query.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@throws</span> QueryExecutionException if the query triggered an execution</span></span><br><span class="line"><span class="comment"> * exception, that is an exception thrown by Cassandra when it cannot execute</span></span><br><span class="line"><span class="comment"> * the query with the requested consistency level successfully.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ResultSet <span class="title">getUninterruptibly</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> Uninterruptibles.getUninterruptibly(<span class="keyword">this</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (ExecutionException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> extractCauseFromExecutionException(e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Uninterrupted的实现:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;V&gt; <span class="function">V <span class="title">getUninterruptibly</span><span class="params">(Future&lt;V&gt; future)</span> <span class="keyword">throws</span> ExecutionException </span>&#123;</span><br><span class="line">  <span class="keyword">boolean</span> interrupted = <span class="keyword">false</span>;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> future.get();</span><br><span class="line">      &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">        interrupted = <span class="keyword">true</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (interrupted) &#123;</span><br><span class="line">      Thread.currentThread().interrupt();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这种对于Future而言是适合的, 而Future的特点是要等到执行完成才有返回值. 如果Future执行时间很长, 就会导致查询Cassandra超时.  </p>
+<blockquote>
+<p>疑问: Cassandra中设置的read time out=2s为什么没有起作用?  可能是driver客户端本身存在的问题. </p>
+</blockquote>
+<p>结论: 执行statement虽然使用executeAsync异步查询, 但是获取返回值是不能中断的: 包装上Future直到返回结果. </p>
+<h2 id="带超时的Future">带超时的Future</h2><p>DefaultResultSetFuture还提供了一个带超时的Future:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Waits for the provided time for the query to return and return its result if available.</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ResultSet <span class="title">getUninterruptibly</span><span class="params">(<span class="keyword">long</span> timeout, TimeUnit unit)</span> <span class="keyword">throws</span> TimeoutException </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> Uninterruptibles.getUninterruptibly(<span class="keyword">this</span>, timeout, unit);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (ExecutionException e) &#123;</span><br><span class="line">        <span class="keyword">throw</span> extractCauseFromExecutionException(e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>超时的控制通过将时间传入future, 如果到时间了还没有返回值, 则中断:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;V&gt; <span class="function">V <span class="title">getUninterruptibly</span><span class="params">(Future&lt;V&gt; future, <span class="keyword">long</span> timeout,  TimeUnit unit)</span> <span class="keyword">throws</span> ExecutionException, TimeoutException </span>&#123;</span><br><span class="line">  <span class="keyword">boolean</span> interrupted = <span class="keyword">false</span>;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">long</span> remainingNanos = unit.toNanos(timeout);</span><br><span class="line">    <span class="keyword">long</span> end = System.nanoTime() + remainingNanos;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// Future treats negative timeouts just like zero.</span></span><br><span class="line">        <span class="keyword">return</span> future.get(remainingNanos, NANOSECONDS);</span><br><span class="line">      &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">        interrupted = <span class="keyword">true</span>;</span><br><span class="line">        remainingNanos = end - System.nanoTime();</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (interrupted) &#123;</span><br><span class="line">      Thread.currentThread().interrupt();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这种调用应该可以解决无法中断的问题.  但是AbstractSession的方法中没有提供带超时时间的execute方法.<br>一种方式是修改AbstractSession添加对应的方法. 并在CassandraClient中使用这种带超时的方式.<br>但这种方式需要修改源码, 并打包.  </p>
+<h2 id="直接在CassandraClient控制">直接在CassandraClient控制</h2><p>DefaultResultSetFuture的cancel上说明了怎么使用Timeout:<br>但是这种方式只是取消客户端查询,并不会取消在Cassandra服务端已经开始的请求.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Attempts to cancel the execution of the request corresponding to this</span></span><br><span class="line"><span class="comment"> * future. This attempt will fail if the request has already returned.</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;</span></span><br><span class="line"><span class="comment"> * Please note that this only cancels the request driver side, but nothing</span></span><br><span class="line"><span class="comment"> * is done to interrupt the execution of the request Cassandra side (and that even</span></span><br><span class="line"><span class="comment"> * if &#123;<span class="doctag">@code</span> mayInterruptIfRunning&#125; is true) since  Cassandra does not</span></span><br><span class="line"><span class="comment"> * support such interruption.</span></span><br><span class="line"><span class="comment"> * &lt;p&gt;</span></span><br><span class="line"><span class="comment"> * This method can be used to ensure no more work is performed driver side</span></span><br><span class="line"><span class="comment"> * (which, while it doesn't include stopping a request already submitted</span></span><br><span class="line"><span class="comment"> * to a Cassandra node, may include not retrying another Cassandra host on</span></span><br><span class="line"><span class="comment"> * failure/timeout) if the ResultSet is not going to be retried. Typically,</span></span><br><span class="line"><span class="comment"> * the code to wait for a request result for a maximum of 1 second could</span></span><br><span class="line"><span class="comment"> * look like:</span></span><br><span class="line"><span class="comment"> * &lt;pre&gt;</span></span><br><span class="line"><span class="comment"> *   ResultSetFuture future = session.executeAsync(...some query...);</span></span><br><span class="line"><span class="comment"> *   try &#123;</span></span><br><span class="line"><span class="comment"> *       ResultSet result = future.get(1, TimeUnit.SECONDS);</span></span><br><span class="line"><span class="comment"> *       ... process result ...</span></span><br><span class="line"><span class="comment"> *   &#125; catch (TimeoutException e) &#123;</span></span><br><span class="line"><span class="comment"> *       future.cancel(true); // Ensure any resource used by this query driver</span></span><br><span class="line"><span class="comment"> *                            // side is released immediately</span></span><br><span class="line"><span class="comment"> *       ... handle timeout ...</span></span><br><span class="line"><span class="comment"> *   &#125;</span></span><br><span class="line"><span class="comment"> * &lt;pre&gt;</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> mayInterruptIfRunning the value of this parameter is currently</span></span><br><span class="line"><span class="comment"> * ignored.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> &#123;<span class="doctag">@code</span> false&#125; if the future could not be cancelled (it has already</span></span><br><span class="line"><span class="comment"> * completed normally); &#123;<span class="doctag">@code</span> true&#125; otherwise.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">cancel</span><span class="params">(<span class="keyword">boolean</span> mayInterruptIfRunning)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">super</span>.cancel(mayInterruptIfRunning))</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    handler.cancel();</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以CassandraClient的查询可以改造成:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//带超时的SQL</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ResultSet <span class="title">getResultSetTimeout</span><span class="params">(BoundStatement bstmt)</span> </span>&#123;</span><br><span class="line">    ResultSetFuture future = session.executeAsync(bstmt);</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        ResultSet result = future.get(<span class="number">500</span>, TimeUnit.MILLISECONDS);</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (TimeoutException e) &#123;</span><br><span class="line">        future.cancel(<span class="keyword">true</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (ExecutionException e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> List&lt;Row&gt; <span class="title">getRowTimeout</span><span class="params">(BoundStatement bstmt)</span></span>&#123;</span><br><span class="line">    ResultSet resultSet = getResultSetTimeout(bstmt);</span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">null</span> == resultSet) <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">    List&lt;Row&gt; resultRows = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    Iterator&lt;Row&gt; it = resultSet.iterator();</span><br><span class="line">    <span class="keyword">while</span> (it.hasNext()) &#123;</span><br><span class="line">        resultRows.add(it.next());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> resultRows;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/11/10/2015-11-10-Cassandra-Client/">Cassandra Client查询优化</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年11月10日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/11/10/2015-11-10-Cassandra-Client/" title="Cassandra Client查询优化">http://github.com/zqhxuyuan/2015/11/10/2015-11-10-Cassandra-Client/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/11/10/2015-11-10-Cassandra-Client/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/11/11/2015-11-11-Cassandra-Stream/">
+        Cassandra源码分析之Stream
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/10/16/Cassandra-query/">
+        Cassandra查询
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#一次查询的流程"><span class="toc-number">1.</span> <span class="toc-text">一次查询的流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#异步+不能中断"><span class="toc-number">2.</span> <span class="toc-text">异步+不能中断</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#带超时的Future"><span class="toc-number">3.</span> <span class="toc-text">带超时的Future</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#直接在CassandraClient控制"><span class="toc-number">4.</span> <span class="toc-text">直接在CassandraClient控制</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/11/10/2015-11-10-Cassandra-Client/" data-title="Cassandra Client查询优化" data-url="http://github.com/zqhxuyuan/2015/11/10/2015-11-10-Cassandra-Client/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/11/11/2015-11-11-Cassandra-Stream/" title="上一篇: Cassandra源码分析之Stream">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/10/16/Cassandra-query/" title="下一篇: Cassandra查询">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Kafka技术内幕附录 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Kafka技术内幕附录">
+<meta name="keywords" content="kafka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka技术内幕附录">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2017/12/31/Kafka-Book-Appendix/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Kafka技术内幕附录">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20170928175456695">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.336Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kafka技术内幕附录">
+<meta name="twitter:description" content="Kafka技术内幕附录">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20170928175456695">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Kafka-Book-Appendix" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2017/12/31/Kafka-Book-Appendix/" class="article-date">
+  	<time datetime="2017-12-30T16:00:00.000Z" itemprop="datePublished">2017-12-31</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kafka技术内幕附录
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/kafka/">kafka</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/">kafka</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Kafka技术内幕附录<br><a id="more"></a></p>
+<h1 id="第11章：附录">第11章：附录</h1><h2 id="11-1_Kafka基本操作">11.1 Kafka基本操作</h2><h3 id="11-1-1_创建、修改、删除、查看主题">11.1.1 创建、修改、删除、查看主题</h3><p>我们可以手动创建主题或者让Kafka自动创建主题，手动创建主题必须指定分区数和副本因子。如果服务端开启了自动创建主题，新数据写入一个不存在的主题，服务端会自动创建这个主题。自动模式下主题的配置信息在server.properties文件中，比如分区数默认只有一个。因为分区是Kafka的最小并行单位，所以我们一般会根据集群规模设置合理的分区数，来达到客户端和服务端的负载均衡。副本因子（<code>replication-factor</code>）是分区的副本数量，每条消息会复制到多个节点上，一般设置为3个副本。假设副本数为<em>N</em>，则最多允许<em>N</em> - 1个节点宕机。 下面的实验在本机安装Kafka，假设ZK的端口为2181，Kafka的端口为9092。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># 创建主题</span><br><span class="line">$ bin/kafka-topics.sh --zookeeper localhost:2181 --create \</span><br><span class="line">    --topic test --partitions 1 --replication-factor 3</span><br><span class="line"># 修改主题的分区数</span><br><span class="line">$ bin/kafka-topics.sh --zookeeper localhost:2181 --alter \</span><br><span class="line">    --topic test --partitions 2</span><br><span class="line"># 列出所有的主题</span><br><span class="line">$ bin/kafka-topics.sh --list --zookeeper localhost:2181</span><br><span class="line">test</span><br><span class="line"># 查看某个主题的详细信息</span><br><span class="line">$ bin/kafka-topics.sh --describe --zookeeper localhost:2181 --topic test</span><br><span class="line">Topic:test  PartitionCount:1    ReplicationFactor:1 Configs:</span><br><span class="line">    Topic: test Partition: 0    主副本: 0   Replicas: 0 Isr: 0</span><br></pre></td></tr></table></figure>
+<p>在0.8.2版本之后，Kafka提供了删除主题的功能，但是默认并不会直接将Topic数据物理删除。如果要启用物理删除（即删除主题后，日志文件也会一同删除），需要在server.properties中设置<code>delete.topic.enable=true</code>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kafka-topics.sh --zookeeper localhost:2181 --delete --topic test</span><br><span class="line">Topic test is marked for deletion.</span><br><span class="line">Note: This will have no impact if delete.topic.enable is not set to true.</span><br><span class="line"></span><br><span class="line">$ bin/kafka-topics.sh --list --zookeeper localhost:2181</span><br><span class="line">test - marked for deletion</span><br></pre></td></tr></table></figure>
+<p>管理员创建好主题后，主题会被生产者和消费者使用。注意下面的实验中，新版本的生产者和消费者都是使用Broker地址连接Kafka集群，旧版本的消费者则使用ZK地址连接Kafka集群。</p>
+<h3 id="11-1-2_生产者和消费者">11.1.2 生产者和消费者</h3><p>在终端控制台模拟生产消息和消费消息，每个控制台的消费者都会被分配唯一的消费组：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"># 生产者</span><br><span class="line">$ bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test</span><br><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line"># 旧消费者（控制台）</span><br><span class="line">$ bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic test</span><br><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line"># 新消费者（控制台）</span><br><span class="line">$ bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \</span><br><span class="line">  --new-consumer --topic test --from-beginning</span><br></pre></td></tr></table></figure>
+<p>执行查看消费组列表的操作，可以列出当前活动的消费组，默认控制台的消费组是<code>console-consumer</code>加上一个随机数。上面由于分别启动了两个版本的消费者，所以对应了两个消费组。当然，也可以在控制台通过其他参数来指定消费组。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 查看使用旧消费者的消费组列表</span><br><span class="line">$ bin/kafka-consumer-groups.sh --list --zookeeper localhost:2181</span><br><span class="line">console-consumer-36296</span><br><span class="line"># 查询使用新消费者的消费组列表</span><br><span class="line">$ bin/kafka-consumer-groups.sh --list --bootstrap-server localhost:9092</span><br><span class="line">console-consumer-89231</span><br></pre></td></tr></table></figure>
+<p>查看消费组对某个主题的消费状态，需要指定主题和消费组，这会打印出主题的所有分区、日志的大小、所属的消费者等。<br>采用新消费者方式的<code>Owner</code>为<code>none</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kafka-consumer-offset-checker.sh --zookeeper localhost:2181 \</span><br><span class="line">  --topic test --group console-consumer-36296</span><br><span class="line">Group         Topic Pid Offset logSize Lag Owner</span><br><span class="line">console-36296 test  0   2      2       0   dp0652-f94edaea-0</span><br><span class="line">console-36296 test  1   1      1       0   dp0652-f94edaea-0</span><br><span class="line">console-36296 test  2   2      2       0   dp0652-f94edaea-0</span><br><span class="line"></span><br><span class="line">$ bin/kafka-consumer-offset-checker.sh --zookeeper localhost:2181 \</span><br><span class="line">  --topic test --group console-consumer-89231</span><br><span class="line">Group         Topic Pid Offset logSize Lag Owner</span><br><span class="line">console-89231 test  0   2      2       0   none</span><br><span class="line">console-89231 test  1   1      1       0   none</span><br><span class="line">console-89231 test  2   2      2       0   none</span><br></pre></td></tr></table></figure>
+<h3 id="11-1-3_扩展集群">11.1.3 扩展集群</h3><p>要向已有的Kafka集群添加新节点，我们只需要保证<code>broker.id</code>编号是唯一的，即可启动Kafka服务。但是新节点不会自动地分配到分区，除非在新加节点之后，新创建了主题。因此，通常我们希望在新添加节点后，能够将旧节点上的分区迁移一部分到新节点上，从而达到负载均衡的目的。迁移分区，实际上是将新节点作为分区的备份副本，当新节点完全复制了一个分区的所有数据，并且加入分区的ISR集合后，旧节点已有的一个副本就会被删除。在整个迁移过程中，分区的副本数保持不变，只不过分区的所属节点从旧节点迁移到了新节点。Kafka提供了分区重新分配（<code>partition reassignment tool</code>）的工具来在不同节点之间移动分区，但该工具并不会自动学习Kafka集群的数据分布来移动分区达到数据的均匀分布，管理员需要手动指定哪些主题或分区需要移动。使用该工具需要执行下面的3个步骤。</p>
+<ol>
+<li><code>--generate</code>：给定主题和需要移动到的目标节点，生成候选的分区分配计划。</li>
+<li><code>--execute</code>：根据上一步的分区分配计划或者手动定义的计划执行数据迁移的任务。</li>
+<li><code>--verify</code>：验证上一步执行任务涉及的所有分区的分配状态是否已经完成。</li>
+</ol>
+<p>下面的示例会将<code>foo1</code>和<code>foo2</code>主题的所有分区全部移动到新的节点5、6上，最后这两个主题的所有分区都只在5、6节点上。第一步生成计划时，会列举出当前主题所有分区目前所在的节点，如果执行失败，管理员还可以进行回滚操作。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"># [1] 生成分区分配计划，指定需要移动的主题和需要移动到的目标节点</span><br><span class="line">$ cat topics-to-move.json</span><br><span class="line">&#123;&quot;topics&quot;: [&#123;&quot;topic&quot;: &quot;foo1&quot;&#125;, &#123;&quot;topic&quot;: &quot;foo2&quot;&#125;], &quot;version&quot;:1&#125;</span><br><span class="line">$ bin/kafka-reassign-partitions.sh --zookeeper localhost:2181 </span><br><span class="line">    --topics-to-move-json-file topics-to-move.json \</span><br><span class="line">    --broker-list &quot;5,6&quot; --generate</span><br><span class="line">Current partition replica assignment</span><br><span class="line">&#123;&quot;version&quot;:1, &quot;partitions&quot;:[</span><br><span class="line">    &#123;&quot;topic&quot;:&quot;foo1&quot;,&quot;partition&quot;:2,&quot;replicas&quot;:[1,2]&#125;,</span><br><span class="line">    &#123;&quot;topic&quot;:&quot;foo1&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[3,4]&#125;,</span><br><span class="line">    &#123;&quot;topic&quot;:&quot;foo2&quot;,&quot;partition&quot;:2,&quot;replicas&quot;:[1,2]&#125;,</span><br><span class="line">    &#123;&quot;topic&quot;:&quot;foo2&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[3,4]&#125;,</span><br><span class="line">    &#123;&quot;topic&quot;:&quot;foo1&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[2,3]&#125;,</span><br><span class="line">    &#123;&quot;topic&quot;:&quot;foo2&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[2,3]&#125;]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Proposed partition reassignment configuration</span><br><span class="line">&#123;&quot;version&quot;:1, &quot;partitions&quot;:[&#123;&quot;topic&quot;:&quot;foo1&quot;,&quot;partition&quot;:2,&quot;replicas&quot;:[5,6]&#125;,</span><br><span class="line">    &#123;&quot;topic&quot;:&quot;foo1&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[5,6]&#125;,</span><br><span class="line">    &#123;&quot;topic&quot;:&quot;foo2&quot;,&quot;partition&quot;:2,&quot;replicas&quot;:[5,6]&#125;,</span><br><span class="line">    &#123;&quot;topic&quot;:&quot;foo2&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[5,6]&#125;,</span><br><span class="line">    &#123;&quot;topic&quot;:&quot;foo1&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[5,6]&#125;,</span><br><span class="line">    &#123;&quot;topic&quot;:&quot;foo2&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[5,6]&#125;]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># [2] 执行分区重新分配的任务</span><br><span class="line">$ bin/kafka-reassign-partitions.sh --zookeeper localhost:2181 \</span><br><span class="line">  --reassignment-json-file expand-cluster-reassignment.json --execute</span><br><span class="line"></span><br><span class="line"># [3] 验证分区重新分配的进度</span><br><span class="line">$ bin/kafka-reassign-partitions.sh --zookeeper localhost:2181 \</span><br><span class="line">    --reassignment-json-file expand-cluster-reassignment.json --verify</span><br><span class="line">Status of partition reassignment:</span><br><span class="line">Reassignment of partition [foo1,0] completed successfully</span><br><span class="line">Reassignment of partition [foo1,1] is in progress</span><br><span class="line">Reassignment of partition [foo1,2] is in progress</span><br><span class="line">Reassignment of partition [foo2,0] completed successfully</span><br><span class="line">Reassignment of partition [foo2,1] completed successfully</span><br><span class="line">Reassignment of partition [foo2,2] completed successfully</span><br></pre></td></tr></table></figure>
+<p>除了给定主题，由工具生成所有分区的执行计划，我们也可以直接指定主题需要迁移的分区（当然在<code>execute</code>阶段，工具还是会列出指定主题分区当前所在的节点）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">$ cat custom-reassignment.json</span><br><span class="line">&#123;&quot;version&quot;:1,&quot;partitions&quot;:[</span><br><span class="line">  &#123;&quot;topic&quot;:&quot;foo1&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[5,6]&#125;,</span><br><span class="line">  &#123;&quot;topic&quot;:&quot;foo2&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[2,3]&#125;</span><br><span class="line">]&#125;</span><br><span class="line">$ bin/kafka-reassign-partitions.sh --zookeeper localhost:2181 \</span><br><span class="line">  --reassignment-json-file custom-reassignment.json --execute</span><br><span class="line">Current partition replica assignment</span><br><span class="line">&#123;&quot;version&quot;:1, &quot;partitions&quot;:[</span><br><span class="line">  &#123;&quot;topic&quot;:&quot;foo1&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[1,2]&#125;,</span><br><span class="line">  &#123;&quot;topic&quot;:&quot;foo2&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[3,4]&#125;]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Save this to use as the --reassignment-json-file option during rollback</span><br><span class="line">Successfully started reassignment of partitions</span><br><span class="line">&#123;&quot;version&quot;:1, &quot;partitions&quot;:[</span><br><span class="line">  &#123;&quot;topic&quot;:&quot;foo1&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[5,6]&#125;,</span><br><span class="line">  &#123;&quot;topic&quot;:&quot;foo2&quot;,&quot;partition&quot;:1,&quot;replicas&quot;:[2,3]&#125;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>除此之外，迁移工具还适用于给分区增加副本数。增加副本数是复制（而不是移动）已有的分区到其他节点，不管使用手动还是自动生成的分配计划，都要包含分区之前所在的节点。下面的示例中，<code>foo</code>主题的分区0只有一个副本是存在节点5上，增加到3个副本后，存在的节点有5、6、7这3个节点。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">$ cat increase-replication-factor.json</span><br><span class="line">&#123;&quot;version&quot;:1, &quot;partitions&quot;:[</span><br><span class="line">    &#123;&quot;topic&quot;:&quot;foo&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[5,6,7]&#125;]</span><br><span class="line">&#125;</span><br><span class="line">$ bin/kafka-reassign-partitions.sh --zookeeper localhost:2181 \</span><br><span class="line">    --reassignment-json-file increase-replication-factor.json --execute</span><br><span class="line">Current partition replica assignment</span><br><span class="line">&#123;&quot;version&quot;:1, &quot;partitions&quot;:[&#123;</span><br><span class="line">    &quot;topic&quot;:&quot;foo&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[5]&#125;]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Save this to use as the --reassignment-json-file option during rollback</span><br><span class="line">Successfully started reassignment of partitions</span><br><span class="line">&#123;&quot;version&quot;:1, &quot;partitions&quot;:[</span><br><span class="line">    &#123;&quot;topic&quot;:&quot;foo&quot;,&quot;partition&quot;:0,&quot;replicas&quot;:[5,6,7]&#125;]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># 副本数为一个时的主题信息</span><br><span class="line">$ bin/kafka-topics.sh --zookeeper localhost:2181 --topic foo --describe</span><br><span class="line">Topic:foo PartitionCount:1  ReplicationFactor:1 Configs:</span><br><span class="line">    Topic: foo  Partition: 0  主副本: 5 Replicas: 5 Isr: 5</span><br><span class="line"></span><br><span class="line"># 增加副本数后的主题信息</span><br><span class="line">$ bin/kafka-topics.sh --zookeeper localhost:2181 --topic foo --describe</span><br><span class="line">Topic:foo PartitionCount:1  ReplicationFactor:3 Configs:</span><br><span class="line">    Topic: foo  Partition: 0  主副本: 5 Replicas: 5,6,7 Isr: 5,6,7</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>注意：</strong>修改主题的分区数可以直接采用修改主题的方式，但是修改分区的副本数涉及数据的复制，需要用到上面的分区迁移工具。</p>
+</blockquote>
+<h2 id="11-2_安全机制（Security）">11.2 安全机制（<code>Security</code>）</h2><p>Kafka的安全机制主要分为下面两个部分：</p>
+<ul>
+<li>身份认证（<code>Authentication</code>）：对客户端与服务器的连接进行身份认证。Kafka目前支持<code>SSL</code>、<code>SASL/Kerberos</code>、<code>SASL/PLAIN</code>三种认证机制。</li>
+<li>权限控制（<code>Authorization</code>）：对消息级别的访问控制列表（ACL）权限控制。</li>
+</ul>
+<p>下面以<code>SASL/PLAIN</code>的身份认证为例，服务端需要先修改下面三个配置文件，然后启动服务端：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">$ vi config/server.properties</span><br><span class="line">listeners=SASL_PLAINTEXT://localhost:9092</span><br><span class="line">security.inter.broker.protocol=SASL_PLAINTEXT</span><br><span class="line">sasl.mechanism.inter.broker.protocol=PLAIN</span><br><span class="line">sasl.enabled.mechanisms=PLAIN</span><br><span class="line"></span><br><span class="line">$ vi config/jaas.conf</span><br><span class="line">KafkaServer &#123;</span><br><span class="line">  org.apache.kafka.common.security.plain.PlainLoginModule required</span><br><span class="line">  username=&quot;admin&quot;</span><br><span class="line">  password=&quot;admin&quot;</span><br><span class="line">  user_admin=&quot;admin&quot;</span><br><span class="line">&#125;;</span><br><span class="line">KafkaClient &#123;</span><br><span class="line">  org.apache.kafka.common.security.plain.PlainLoginModule required</span><br><span class="line">  username=&quot;admin&quot;</span><br><span class="line">  password=&quot;admin&quot;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">$ vi bin/kafka-run-class.sh</span><br><span class="line">KAFKA_SASL_OPTS=&quot;-Djava.security.auth.login.config=../config/jaas.conf&quot;</span><br><span class="line">KAFKA_OPTS=&quot;$KAFKA_SASL_OPTS $KAFKA_OPTS&quot;</span><br></pre></td></tr></table></figure>
+<p>客户端也需要添加两个配置项，下面以控制台的生产者和消费者为例，说明客户端的身份认证：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ vi config/producer.properties</span><br><span class="line">security.protocol=SASL_PLAINTEXT</span><br><span class="line">sasl.mechanism=PLAIN</span><br><span class="line"></span><br><span class="line">$ vi config/consumer.properties</span><br><span class="line">security.protocol=SASL_PLAINTEXT</span><br><span class="line">sasl.mechanism=PLAIN</span><br><span class="line"></span><br><span class="line">$ bin/kafka-console-producer.sh --broker-list localhost:9092 \</span><br><span class="line">  --topic test-security --producer.config config/producer.properties</span><br><span class="line">hello</span><br><span class="line"></span><br><span class="line">$ bin/kafka-console-consumer.sh --new-consumer \</span><br><span class="line">  --bootstrap-server localhost:9092 --topic test-security \</span><br><span class="line">  --from-beginning --consumer.config config/consumer.properties</span><br><span class="line">hello</span><br></pre></td></tr></table></figure>
+<p>如果使用代码，还需要设置<code>java.security.auth.login.config</code>为系统的环境变量配置。下面是生产者使用身份认证的示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">KafkaProducerDemo</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 设置客户端登陆的身份认证机制，指定配置文件</span></span><br><span class="line">    System.setProperty(<span class="string">"java.security.auth.login.config"</span>, </span><br><span class="line">      <span class="string">"/Users/zhengqh/.../resources/kafka_client_jaas.conf"</span>);</span><br><span class="line">    Properties props = <span class="keyword">new</span> Properties();</span><br><span class="line">    props.put(<span class="string">"bootstrap.servers"</span>, <span class="string">"localhost:9092"</span>);</span><br><span class="line">    props.put(<span class="string">"client.id"</span>, <span class="string">"DemoProducer"</span>);</span><br><span class="line">    props.put(<span class="string">"key.serializer"</span>, <span class="string">"org.apache.kafka.common.serialization.IntegerSerializer"</span>);</span><br><span class="line">    props.put(<span class="string">"value.serializer"</span>,  <span class="string">"org.apache.kafka.common.serialization.StringSerializer"</span>);</span><br><span class="line">    props.put(<span class="string">"security.protocol"</span>, <span class="string">"SASL_PLAINTEXT"</span>); <span class="comment">// 安全协议类型</span></span><br><span class="line">    props.put(<span class="string">"sasl.mechanism"</span>, <span class="string">"PLAIN"</span>); <span class="comment">// 安全机制</span></span><br><span class="line">    KafkaProducer&lt;Integer, String&gt; producer = <span class="keyword">new</span> KafkaProducer&lt;&gt;(props);</span><br><span class="line">    ProducerRecord&lt;Integer, String&gt; record1 = <span class="keyword">new</span> ProducerRecord&lt;Integer, String&gt;(<span class="string">"test-security"</span>, <span class="number">1</span>, <span class="string">"one"</span>);</span><br><span class="line">    producer.send(record1, <span class="keyword">new</span> Callback() &#123;</span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompletion</span><span class="params">(RecordMetadata recordMetadata,Exception e)</span></span>&#123;</span><br><span class="line">        System.out.println(recordMetadata);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    producer.flush();</span><br><span class="line">    producer.close();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面我们只分析了<code>SASL_PLAINTEXT</code>安全协议的例子，Kafka支持的其他安全协议以及权限认证可以参考官方的文档。另外，服务端与ZooKeeper以及服务端之间也都有安全机制和身份认证机制，这里就不再深入分析。</p>
+<h2 id="11-3_Kafka配置">11.3 Kafka配置</h2><p>Kafka官方文档中针对服务端（代理节点）、主题、生产者、消费者都有完整的配置说明，下面列举了比较重要的一些配置项。</p>
+<h3 id="11-3-1_服务端的配置项">11.3.1 服务端的配置项</h3><p>服务端的配置项参见表1。</p>
+<p>表1 服务端配置信息</p>
+<table>
+<thead>
+<tr>
+<th>配置项</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>broker.id</code></td>
+<td>Kafka服务器的编号，同一个集群不同节点的编号应该唯一</td>
+</tr>
+<tr>
+<td><code>zookeeper.connect</code></td>
+<td>连接ZooKeeper的地址，不同Kafka集群如果连接到同一个ZooKeeper，应该使用不同的chroot路径</td>
+</tr>
+<tr>
+<td><code>auto.create.topics.enable</code></td>
+<td>自动创建主题，默认为<code>true</code></td>
+</tr>
+<tr>
+<td><code>auto.leader.rebalance.enable</code></td>
+<td>开启主副本自动平衡，当节点宕机后，会影响这个节点上的主副本转移到其他节点，宕机的节点重启后只能作为备份副本，如果开启平衡，则会将主副本转移到原节点</td>
+</tr>
+<tr>
+<td><code>delete.topic.enable</code></td>
+<td>自动删除主题，默认为<code>false</code>，通过<code>delete</code>命令删除主题，并不会物理删除，只有开启该选项才会真正删除主题的日志文件</td>
+</tr>
+<tr>
+<td><code>log.dirs</code></td>
+<td>日志文件的目录，可以指定多个目录。默认是/tmp/kafka-logs</td>
+</tr>
+<tr>
+<td><code>log.flush.interval.messages</code></td>
+<td>在消息集刷写到磁盘之前需要收集的消息数量，默认值为<code>Long.MAX</code></td>
+</tr>
+<tr>
+<td><code>log.flush.scheduler.interval.ms</code></td>
+<td>日志刷新线程过久，检查一次是否有日志文件需要刷写到磁盘，默认值为<code>Long.MAX</code>。</td>
+</tr>
+<tr>
+<td><code>log.retention.bytes</code></td>
+<td>日志文件超过最大大小时删除旧数据，默认值为<code>-1</code>，即永不会删除</td>
+</tr>
+<tr>
+<td><code>log.retention.hours</code></td>
+<td>日志文件保留的时间，默认为168小时，即7天</td>
+</tr>
+<tr>
+<td><code>log.segment.bytes</code></td>
+<td>单个日志文件片段的最大值，默认为1 GB，日志超过1 GB后会刷写到磁盘</td>
+</tr>
+<tr>
+<td><code>message.max.bytes</code></td>
+<td>服务端接收的消息最大值，默认为1 MB，即一批消息最大不能超过1 MB</td>
+</tr>
+<tr>
+<td><code>min.insync.replicas</code></td>
+<td>当生产者的应答策略设置为<code>all</code>时，写操作的数量必须满足该值才算成功。默认值为<code>1</code>，表示只要写到一个节点就算成功</td>
+</tr>
+<tr>
+<td><code>offsets.commit.required.acks</code></td>
+<td>消费者提交偏移量和生产者写消息的行为类似，用应答来表示写操作是否成功，默认值为<code>-1</code></td>
+</tr>
+<tr>
+<td><code>offsets.commit.timeout.ms</code></td>
+<td>类似于生产者的请求超时时间，写请求会被延迟，默认5秒</td>
+</tr>
+<tr>
+<td><code>offsets.topic.num.partitions</code></td>
+<td>消费者提交偏移量内部主题的分区数量，默认为50个</td>
+</tr>
+<tr>
+<td><code>offsets.topic.replication.factor</code></td>
+<td>消费者提交偏移量内部主题的副本数量，默认为3个</td>
+</tr>
+<tr>
+<td><code>replica.fetch.min.bytes</code></td>
+<td>每个拉取请求最少要拉取的字节数量，默认为1byte。</td>
+</tr>
+<tr>
+<td><code>replica.fetch.wait.max.ms</code></td>
+<td>每个拉取请求的最大等待时间，默认为500毫秒</td>
+</tr>
+<tr>
+<td><code>replica.lag.time.max.ms</code></td>
+<td>备份副本在指定时间内都没有发送拉取请求，或者在这个时间内仍然没有赶上主副本，它将会被从ISR中移除，默认10秒</td>
+</tr>
+<tr>
+<td><code>request.timeout.ms</code></td>
+<td>客户端从发送请求到接收响应的超时时间，默认30秒</td>
+</tr>
+<tr>
+<td><code>zookeeper.session.timeout.ms</code></td>
+<td>ZooKeeper会话的超时时间，默认6秒</td>
+</tr>
+<tr>
+<td><code>default.replication.factor</code></td>
+<td>自动创建的主题的副本数，默认为1个</td>
+</tr>
+<tr>
+<td><code>log.cleaner.delete.retention.ms</code></td>
+<td>被删除的记录保存的时间，默认为1天</td>
+</tr>
+<tr>
+<td><code>log.cleaner.enable</code></td>
+<td>是否开启日志清理线程，当清理策略为<code>compact</code>时，建议开启</td>
+</tr>
+<tr>
+<td><code>log.index.interval.bytes</code></td>
+<td>添加1条索引到日志文件的间隔，默认为4096条</td>
+</tr>
+<tr>
+<td><code>log.index.size.max.bytes</code></td>
+<td>索引文件的最大大小，默认为10 MB</td>
+</tr>
+<tr>
+<td><code>num.partitions</code></td>
+<td>每个主题的分区数量，默认为1个</td>
+</tr>
+<tr>
+<td><code>replica.fetch.max.bytes</code></td>
+<td>拉取请求中每个分区的消息最大值，默认为1 MB</td>
+</tr>
+<tr>
+<td><code>replica.fetch.response.max.bytes</code></td>
+<td>整个拉取请求的消息最大值，默认为10 MB</td>
+</tr>
+</tbody>
+</table>
+<p>主题级别的一些配置和服务端级别的设置类似，比如<code>flush.messages</code>类似<code>log.flush.interval.messages</code>，表示刷写到磁盘的消息数量；<code>flush.ms</code>类似<code>log.flush.scheduler.interval.ms</code>，表示刷写到磁盘的时间间隔；<code>max.message.bytes</code>类似<code>message.max.bytes</code>，表示服务端接收的单条消息大小。</p>
+<h3 id="11-3-2_生产者的配置项">11.3.2 生产者的配置项</h3><p>生产者配置信息参见表2。</p>
+<p>表2 生产者配置信息</p>
+<table>
+<thead>
+<tr>
+<th>配置项</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bootstrap.servers</code></td>
+<td>生产者客户端连接Kafka集群的地址和端口，多个节点用逗号分隔</td>
+</tr>
+<tr>
+<td><code>acks</code></td>
+<td>生产者请求要求主副本收到的应答数量满足后，写请求才算成功。<code>0</code>表示记录添加到网络缓冲区后就认为已经发送，生产者不会等待服务端的任何应答；<code>1</code>表示主副本会将记录到本地日志文件，但不会等待任何备份副本的应答；<code>-1</code>或<code>all</code>表示主副本必须等待ISR中所有副本都返回应答给它</td>
+</tr>
+<tr>
+<td><code>retries</code></td>
+<td>发送时出现短暂的错误或者收到错误码，客户端会重新发送记录。如果<code>max.in.flight.requests.per.connection</code>没有设置为<code>1</code>，在异常重试时，服务端收到的记录可能是乱序的</td>
+</tr>
+<tr>
+<td><code>buffer.memory</code></td>
+<td>生产者发送记录给服务端在客户端的缓冲区，默认为32 MB</td>
+</tr>
+<tr>
+<td><code>batch.size</code></td>
+<td>当多条记录发送到同一个分区，生产者会尝试将一批记录分成更少的请求，来提高客户端和服务端的性能，默认每一个Batch的大小为16 KB。如果一条记录就超过了16 KB，则这条记录不会和其他记录组成Batch。Batch太小会减小吞吐量，Batch太大会占用太多的内存</td>
+</tr>
+<tr>
+<td><code>max.request.size</code></td>
+<td>一个请求的最大值，实际上也是记录的最大值。注意服务端关于记录的最大值（Broker的<code>message.max.bytes</code>，或者Topic的<code>max.message.bytes</code>）可能和它不同（实际上默认值都是1 MB）。这个配置项会限制生产者一个请求中Batch的记录数，防止发送过大的请求</td>
+</tr>
+<tr>
+<td><code>partitioner.class</code></td>
+<td>消息的分区语义，对消息进行路由到指定的分区，实现分区接口</td>
+</tr>
+<tr>
+<td><code>request.timeout.ms</code></td>
+<td>客户端等待一个请求的响应的最长时间，超时后客户端会重新发送或失败</td>
+</tr>
+<tr>
+<td><code>timeout.ms</code></td>
+<td>服务端等待备份的应答来达到生产者设置的<code>ack</code>的最长时间，超时后不满足失败</td>
+</tr>
+</tbody>
+</table>
+<h3 id="11-3-3_新消费者的配置项">11.3.3 新消费者的配置项</h3><p>新消费者的配置信息参见表3。</p>
+<p>表3 新消费者的配置信息</p>
+<table>
+<thead>
+<tr>
+<th>配置项</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fetch.min.bytes</code></td>
+<td>拉取请求要求服务端返回的数据最小值，如果服务端的数据量还不够，客户端的请求会一直等待，直到服务端收集到足够的数据才会返回响应给客户端。默认值为1个字节，表示服务端处理的拉取请求数据量只要达到1个字节就立即收到响应，或者因为在等待数据的到达一直没有满足最小值时而超时后，拉取请求也会结束。将该值设置大一点，可以牺牲一些延迟来获取服务端更高的吞吐量</td>
+</tr>
+<tr>
+<td><code>fetch.max.bytes</code></td>
+<td>服务端对一个拉取请求返回数据的最大值，默认值为50 MB</td>
+</tr>
+<tr>
+<td><code>fetch.max.wait.ms</code></td>
+<td>在没有收集到满足<code>fetch.min.bytes</code>大小的数据之前，服务端对拉取请求的响应会阻塞直到超时，默认500毫秒</td>
+</tr>
+<tr>
+<td><code>group.id</code></td>
+<td>消费者所述的唯一消费组名称，在使用基于Kafka的偏移量管理策略，或者使用消费组管理协议的订阅方法时，必须指定消费组名称</td>
+</tr>
+<tr>
+<td><code>heartbeat.interval.ms</code></td>
+<td>使用消费组管理协议时消费者和协调者的心跳间隔，心跳用来确保消费者的会话保持活动的状态，以及当有新消费者加入或消费者离开时可以更容易地进行平衡，该选项必须比<code>session.timeout.ms</code>小，通常设置为不大于它的1/3。默认值为3秒，我们可以将心跳值设置得更低，来更好地控制平衡：需要平衡时，心跳间隔越短就能越快地感知到</td>
+</tr>
+<tr>
+<td><code>max.partition.fetch.bytes</code></td>
+<td>服务端返回的数据中每个分区的最大值，默认值为1 MB</td>
+</tr>
+<tr>
+<td><code>session.timeout.ms</code></td>
+<td>使用消费组管理协议检测到消费者失败的最大时间，消费者定时地向Broker发送心跳表示处于存活状态。服务端的Broker会记录消费者的心跳时间，如果在指定的会话时间内都没有收到消费者的心跳，Broker会将其从消费组中移除并启动一次平衡</td>
+</tr>
+<tr>
+<td><code>auto.offset.reset</code></td>
+<td>Kafka中没有分区的初始偏移量，消费者任何定位分区位置。<code>earliest</code>表示重置到最旧的位置；<code>latest</code>表示重置到最新的位置，默认值为<code>latest</code></td>
+</tr>
+<tr>
+<td><code>enable.auto.commit</code></td>
+<td>消费者的偏移量是否会在后台定时地提交，默认值为<code>true</code></td>
+</tr>
+<tr>
+<td><code>auto.commit.interval.ms</code></td>
+<td>消费者自动提交偏移量的时间间隔，默认值为5秒</td>
+</tr>
+<tr>
+<td><code>max.poll.interval.ms</code></td>
+<td>使用消费组管理协议时，在调用<code>poll()</code>之间的最大延迟，它设置了消费者在下一次拉取更多记录之前允许的最长停顿时间。如果超时后消费者仍然没有调用<code>poll()</code>，那么消费者就会被认为失败了，就会启动消费组的平衡，默认值为5秒</td>
+</tr>
+<tr>
+<td><code>max.poll.records</code></td>
+<td>在一次<code>poll()</code>调用中允许返回的最大记录数，默认值为500条</td>
+</tr>
+<tr>
+<td><code>partition.assignment.strategy</code></td>
+<td>使用消费者管理协议时，消费者实例之间用来进行分区分配的策略，默认值为<code>RangeAssignor</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="11-4_Kafka其他操作实验">11.4 Kafka其他操作实验</h2><h3 id="11-4-1_ZooKeeper连接配置">11.4.1 ZooKeeper连接配置</h3><p>Kafka的ZooKeeper配置和命令行的ZooKeeper地址不一致导致连接不上ZooKeeper，下面是server.properties的ZooKeeper连接配置，指定了Kafka在ZooKeeper中的根节点是<code>/kafka</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">broker.id=0</span><br><span class="line">#listeners=PLAINTEXT://:9092</span><br><span class="line">zookeeper.connect=localhost:2181/kafka</span><br><span class="line">log.dirs=/tmp/kafka-logs</span><br></pre></td></tr></table></figure>
+<p>如果命令行中连接的ZooKeeper地址没有加上<code>/kafka</code>，创建主题会报错可用的节点为0，加上<code>/kafka</code>后可以成功创建主题：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kafka-topics.sh --create --zookeeper localhost:2181 \</span><br><span class="line">--replication-factor 1 --partitions 1 --topic test</span><br><span class="line">Error while executing topic command : RF: 1 larger than available brokers: 0</span><br><span class="line">ERROR AdminOperationException: RF: 1 larger than available brokers: 0</span><br><span class="line">    at kafka.admin.AdminUtils$.assignReplicasToBrokers(AdminUtils.scala:117)</span><br><span class="line">    at kafka.admin.AdminUtils$.createTopic(AdminUtils.scala:403)</span><br><span class="line">    at kafka.admin.TopicCommand$.createTopic(TopicCommand.scala:110)</span><br><span class="line">    at kafka.admin.TopicCommand$.main(TopicCommand.scala:61)</span><br><span class="line">    at kafka.admin.TopicCommand.main(TopicCommand.scala)</span><br><span class="line"></span><br><span class="line">$ bin/kafka-topics.sh --create --zookeeper localhost:2181/kafka \</span><br><span class="line">--replication-factor 1 --partitions 1 --topic test</span><br><span class="line">Created topic &quot;test&quot;.</span><br><span class="line">$ bin/kafka-topics.sh --list --zookeeper localhost:2181/kafka</span><br><span class="line">test</span><br></pre></td></tr></table></figure>
+<p>生产者连接的是Kafka代理节点的地址，和ZooKeeper没有关系。而旧消费者连接的是ZooKeeper，所以也要加上<code>/kafka</code>才能读取到消息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test</span><br><span class="line">this is a message</span><br><span class="line">this is another message</span><br><span class="line">$ bin/kafka-console-consumer.sh --zookeeper localhost:2181/kafka \</span><br><span class="line">  --topic test --from-beginning</span><br><span class="line">this is a message</span><br><span class="line">this is another message</span><br></pre></td></tr></table></figure>
+<p>上面的实验通过在Kafka服务端的配置文件中设置ZooKeeper根节点，可以在一个ZooKeeper中区分多个Kafka集群。下面的实验就利用了该功能。</p>
+<h3 id="11-4-2_MirrorMaker演示消费者线程数量">11.4.2 <code>MirrorMaker</code>演示消费者线程数量</h3><p>单机模拟多个Kafka集群，每个集群各自只有一台服务器。不同Kafka集群的<code>zookeeper.connect</code>配置项分别是：<code>localhost:2181/kafka</code>和<code>localhost:2181/kafka_dc</code>（这两个集群叫作kafka集群、kafka_dc集群）。查看ZooKeeper的节点，因为是不同的Kafka集群，所以代理节点的编号可以一样（当然由于在本机模拟多个集群，端口号不能一样）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[zk: localhost:2181(CONNECTED) 0] ls /</span><br><span class="line">[kafka_dc, zookeeper, kafka]</span><br><span class="line">[zk: localhost:2181(CONNECTED) 3] ls /kafka/brokers/ids</span><br><span class="line">[0]</span><br><span class="line">[zk: localhost:2181(CONNECTED) 4] ls /kafka_dc/brokers/ids</span><br><span class="line">[0]</span><br></pre></td></tr></table></figure>
+<p>在Kafka集群创建分区数只有一个的主题<code>test</code>，然后启动<code>MirrorMaker</code>，设置消费者线程数量为3：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kafka-mirror-maker.sh --num.streams 3 \</span><br><span class="line">  --consumer.config config/consumer_source.properties \</span><br><span class="line">  --producer.config config/producer_dest.properties --whitelist test</span><br></pre></td></tr></table></figure>
+<p>ZooKeeper中消费者的数量也有3个，但是因为分区只有一个，消费者<code>Owner</code>也只有一个：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[zk: localhost:2181] ls /kafka/consumers/mm/ids</span><br><span class="line">[mm_zqhmac-dd52d0ea, mm_zqhmac-60c27086, mm_zqhmac-d0eece39]</span><br><span class="line">[zk: localhost:2181] get /kafka/consumers/mm/owners/test/0</span><br><span class="line">mm_zqhmac-60c27086-0</span><br><span class="line">[zk: localhost:2181] get /kafka/consumers/mm/ids/mm_zqhmac-60c27086</span><br><span class="line">&#123;&quot;version&quot;:1,&quot;subscription&quot;:&#123;&quot;test&quot;:1&#125;,&quot;pattern&quot;:&quot;white_list&quot;&#125;</span><br></pre></td></tr></table></figure>
+<p>因为消费者数量比分区的数量要多，所以有些消费者会分配不到分区。在执行<code>MirrorMaker</code>程序时，控制台会提示有两个消费者线程没有分配到分区。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">WARN No broker partitions consumed by consumer thread </span><br><span class="line">  mm_zqhmac-d0eece39-0 for topic test (kafka.consumer.RangeAssignor)</span><br><span class="line">WARN No broker partitions consumed by consumer thread </span><br><span class="line">  mm_zqhmac-dd52d0ea-0 for topic test (kafka.consumer.RangeAssignor)</span><br></pre></td></tr></table></figure>
+<p>通过控制台的消费者检查<code>Mirror</code>（kafka_dc）目标集群是否有数据写入，可以看到虽然我们没有在kafka_dc集群创建<code>test</code>主题，但是通过镜像工具，源集群的数据会复制到目标集群。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kafka-topics.sh --list --zookeeper localhost:2181/kafka_dc</span><br><span class="line">test</span><br><span class="line">$ bin/kafka-console-consumer.sh --zookeeper localhost:2181/kafka_dc \</span><br><span class="line">  --topic test --from-beginning</span><br><span class="line">this is third message</span><br><span class="line">this is fouth message</span><br></pre></td></tr></table></figure>
+<p>检查消费组所有消费者的消费情况，也只有一个消费者：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kafka-run-class.sh kafka.tools.ConsumerOffsetChecker \</span><br><span class="line">    --group mm --zookeeper localhost:2181/kafka --topic test</span><br><span class="line">Group  Topic  Pid   Offset  logSize   Lag    Owner</span><br><span class="line">mm     test   0     4       4         0      mm_zqhmac-60c27086-0</span><br></pre></td></tr></table></figure>
+<h3 id="11-4-3_生产者和消费者性能测试">11.4.3 生产者和消费者性能测试</h3><p>Kafka提供了一些工具类，包括生产者和消费者的性能测试，端到端的延迟。下面的实验是在一个小型的Kafka集群上，并且测试主题<code>test-rep-3</code>有3个副本、6个分区：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ zookeeper=192.168.6.55:2181,192.168.6.56:2181,192.168.6.57:2181/kafka010</span><br><span class="line">$ kafka=192.168.6.52:9092,192.168.6.52:9093,192.168.6.53:9094,192.168.6.53:9095</span><br><span class="line">$ bin/kafka-topics.sh --zookeeper $zookeeper --create \</span><br><span class="line">    --topic test-rep-3 --partitions 6 --replication-factor 3</span><br><span class="line">$ bin/kafka-topics.sh --describe --zookeeper $zookeeper --topic test-rep-3</span><br><span class="line">Topic:test-rep-3    PartitionCount:6    ReplicationFactor:3 Configs:</span><br><span class="line">Topic: test-rep-3   Partition: 0    主副本: 3   Replicas: 3,2,0 Isr: 3,2,0</span><br><span class="line">Topic: test-rep-3   Partition: 1    主副本: 0   Replicas: 0,3,1 Isr: 0,3,1</span><br><span class="line">Topic: test-rep-3   Partition: 2    主副本: 1   Replicas: 1,0,2 Isr: 1,0,2</span><br><span class="line">Topic: test-rep-3   Partition: 3    主副本: 2   Replicas: 2,1,3 Isr: 2,1,3</span><br><span class="line">Topic: test-rep-3   Partition: 4    主副本: 3   Replicas: 3,0,1 Isr: 3,0,1</span><br><span class="line">Topic: test-rep-3   Partition: 5    主副本: 0   Replicas: 0,1,2 Isr: 0,1,2</span><br></pre></td></tr></table></figure>
+<p>接着对生产者和消费者进行性能测试（笔者的测试环境还有其他服务，所以测试结果并不是很理想，如果要对Kafka进行压测，最好模拟线上的机器配置）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">#####生产者性能测试#####</span><br><span class="line">$ bin/kafka-run-class.sh org.apache.kafka.tools.ProducerPerformance \</span><br><span class="line">    --topic test-rep-3 --num-records 50000000 --record-size 100 \</span><br><span class="line">    --throughput -1 --producer-props acks=1 buffer.memory=67108864 \</span><br><span class="line">    batch.size=8196 bootstrap.servers=$kafka</span><br><span class="line">## 第一次在集群内测试</span><br><span class="line">50000000 records sent, 749906.261717 records/sec (71.52 MB/sec), </span><br><span class="line">50.73 ms avg latency, 1356.00 ms max latency, </span><br><span class="line">2 ms 50th, 266 ms 95th, 603 ms 99th, 1327 ms 99.9th.</span><br><span class="line">## 第二次在集群内测试</span><br><span class="line">50000000 records sent, 84956.858907 records/sec (8.10 MB/sec), </span><br><span class="line">5781.48 ms avg latency, 17968.00 ms max latency, </span><br><span class="line">9872 ms 50th, 16705 ms 95th, 17492 ms 99th, 17909 ms 99.9th.</span><br><span class="line">## 第三次在集群外测试</span><br><span class="line">50000000 records sent, 42554.459069 records/sec (4.06 MB/sec), </span><br><span class="line">11455.58 ms avg latency, 51425.00 ms max latency, </span><br><span class="line">82 ms 50th, 29290 ms 95th, 30192 ms 99th, 36732 ms 99.9th.</span><br><span class="line"></span><br><span class="line">#####消费者性能测试#####</span><br><span class="line">$ bin/kafka-consumer-perf-test.sh --zookeeper $zookeeper \</span><br><span class="line">    --messages 50000000 --topic test-rep-3 --threads 1</span><br><span class="line">## 第一次在集群内测试</span><br><span class="line">start, end, data.consumed.in.MB, MB.sec, data.consumed.in.nMsg, nMsg.sec</span><br><span class="line">17:00:32:149, 17:00:56:811, 4767.4932, 193.3133, 49990789, 2027037.1016</span><br><span class="line">## 第二次在集群内测试</span><br><span class="line">17:39:11:883, 17:44:03:117, 4768.3716, 16.3730, 50000000, 171683.2513</span><br><span class="line"></span><br><span class="line"># 消费者性能测试（多线程）</span><br><span class="line">$ bin/kafka-consumer-perf-test.sh --zookeeper $zookeeper \</span><br><span class="line">    --messages 50000000 --topic test-rep-3 --threads 6</span><br></pre></td></tr></table></figure>
+<p>在生产者的测试过程中，有些分区由于网络或者其他原因会对ISR进行调整，日志如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INFO Partition [test-rep-3,1] on broker 0: Shrinking ISR from 0,1,3 to 0,1</span><br><span class="line">INFO Partition [test-rep-3,5] on broker 0: Expanding ISR from 0,1 to 0,1,2</span><br><span class="line">INFO Partition [test-rep-3,1] on broker 0: Expanding ISR from 0,1 to 0,1,3</span><br></pre></td></tr></table></figure>
+<p>这时如果查看主题信息，会发现主题中每个分区的ISR和最开始创建的时候不同。不过等生产者测试运行完毕，再过一段时间，就会恢复到刚开始的ISR，这是因为默认开启了主副本自动迁移：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ bin/kafka-topics.sh --describe --zookeeper $zookeeper --topic test-rep-3</span><br><span class="line">Topic:test-rep-3    PartitionCount:6    ReplicationFactor:3 Configs:</span><br><span class="line">Topic:test-rep-3   Partition: 0    主副本: 3   Replicas: 3,2,0 Isr: 3,2</span><br><span class="line">Topic:test-rep-3   Partition: 1    主副本: 0   Replicas: 0,3,1 Isr: 0,1,3</span><br><span class="line">Topic:test-rep-3   Partition: 2    主副本: 1   Replicas: 1,0,2 Isr: 1,0</span><br><span class="line">Topic:test-rep-3   Partition: 3    主副本: 2   Replicas: 2,1,3 Isr: 2,3</span><br><span class="line">Topic:test-rep-3   Partition: 4    主副本: 3   Replicas: 3,0,1 Isr: 3</span><br><span class="line">Topic:test-rep-3   Partition: 5    主副本: 0   Replicas: 0,1,2 Isr: 0,1,2</span><br></pre></td></tr></table></figure>
+<h2 id="11-5_第三方工具">11.5 第三方工具</h2><h3 id="11-5-1_Confluent_Platform">11.5.1 Confluent Platform</h3><p>Confluent的各个组件和默认端口如下：</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Default Port</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zookeeper</td>
+<td>2181</td>
+</tr>
+<tr>
+<td>Apache Kafka brokers (plain text)</td>
+<td>9092</td>
+</tr>
+<tr>
+<td>Schema Registry REST API</td>
+<td>8081</td>
+</tr>
+<tr>
+<td>REST Proxy</td>
+<td>8082</td>
+</tr>
+<tr>
+<td>Kafka Connect REST API</td>
+<td>8083</td>
+</tr>
+<tr>
+<td>Confluent Control Center</td>
+<td>9021</td>
+</tr>
+</tbody>
+</table>
+<p>安装包主要有三个目录：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">confluent-3.3.0/bin/        # Driver scripts for starting/stopping services</span><br><span class="line">confluent-3.3.0/etc/        # Configuration files</span><br><span class="line">confluent-3.3.0/share/java/ # Jars</span><br></pre></td></tr></table></figure>
+<p>启动各个组件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">./bin/zookeeper-server-start ./etc/kafka/zookeeper.properties &amp;</span><br><span class="line">./bin/kafka-server-start ./etc/kafka/server.properties &amp;</span><br><span class="line">./bin/schema-registry-start ./etc/schema-registry/schema-registry.properties &amp;</span><br></pre></td></tr></table></figure>
+<h4 id="1-_控制中心（Controll_Center）">1. 控制中心（Controll Center）</h4><p>Confluent商业产品的一个重要功能是控制中心（Controll Center）。在启动控制中心之前呢，需要修改下面三个文件的配置信息：</p>
+<ul>
+<li>Kafka服务端的配置文件：etc/kafka/server.properties</li>
+<li>Kafka Connect集群的配置文件：etc/kafka/connect-distributed.properties</li>
+<li>控制中心中心的配置文件：etc/confluent-control-center/control-center.properties</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">sed &apos;s/#metric.reporters=io.confluent.metrics.reporter.ConfluentMetricsReporter/metric.reporters=io.confluent.metrics.reporter.ConfluentMetricsReporter/g&apos; &amp;&amp; \</span><br><span class="line">sed &apos;s/#confluent.metrics.reporter.bootstrap.servers=localhost:9092/confluent.metrics.reporter.bootstrap.servers=localhost:9092/g&apos; &amp;&amp; \</span><br><span class="line">sed &apos;s/#confluent.metrics.reporter.zookeeper.connect=localhost:2181/confluent.metrics.reporter.zookeeper.connect=localhost:2181/g&apos; &amp;&amp; \</span><br><span class="line">sed &apos;s/#confluent.metrics.reporter.topic.replicas=1/confluent.metrics.reporter.topic.replicas=1/g&apos; \</span><br><span class="line">etc/kafka/server.properties</span><br><span class="line"></span><br><span class="line">cat &lt;&lt;EOF &gt;&gt; etc/kafka/connect-distributed.properties</span><br><span class="line"></span><br><span class="line"># Interceptor setup</span><br><span class="line">consumer.interceptor.classes=io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor</span><br><span class="line">producer.interceptor.classes=io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">cat &lt;&lt;EOF &gt;&gt; etc/confluent-control-center/control-center.properties</span><br><span class="line"></span><br><span class="line"># Quickstart partition and replication values</span><br><span class="line">confluent.controlcenter.internal.topics.partitions=1</span><br><span class="line">confluent.controlcenter.internal.topics.replication=1</span><br><span class="line">confluent.controlcenter.command.topic.replication=1</span><br><span class="line">confluent.monitoring.interceptor.topic.partitions=1</span><br><span class="line">confluent.monitoring.interceptor.topic.replication=1</span><br><span class="line">confluent.metrics.topic.partition=1</span><br><span class="line">confluent.metrics.topic.replication=1</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+<p>接着启动confluent-control-center和分布式的Kafka连接器集群：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bin/control-center-start etc/confluent-control-center/control-center.properties &amp;</span><br><span class="line">bin/connect-distributed etc/kafka/connect-distributed.properties  &amp;</span><br></pre></td></tr></table></figure>
+<p>然后执行一些性能测试，比如执行生产者和消费者的性能测试脚本：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">bin/kafka-topics --zookeeper localhost:2181 --create \</span><br><span class="line">    --topic test-1 --partitions 1 --replication-factor 1</span><br><span class="line"></span><br><span class="line">bin/kafka-run-class org.apache.kafka.tools.ProducerPerformance \</span><br><span class="line">    --topic test-1 --num-records 50000000 --record-size 100 \</span><br><span class="line">    --throughput -1 --producer-props acks=1 buffer.memory=67108864 \</span><br><span class="line">    batch.size=8196 bootstrap.servers=localhost:9092</span><br><span class="line"></span><br><span class="line">bin/kafka-consumer-perf-test --zookeeper localhost:2181 \</span><br><span class="line">    --messages 50000000 --topic test-1 --threads 1</span><br></pre></td></tr></table></figure>
+<p>打开浏览器：<a href="http://192.168.6.53:9021" target="_blank" rel="noopener">http://192.168.6.53:9021</a>，观察到页面实时显示集群的相关度量曲线图：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20170928175456695" alt="controlcenter"></p>
+<h4 id="2-_连接器（Kafka_Connect）">2. 连接器（Kafka Connect）</h4><p>自带的kafka-connect-elasticsearch插件的相关文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0653 confluent-3.2.1]$ ll etc/kafka-connect-elasticsearch/</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users 803 9月  28 16:11 quickstart-elasticsearch.properties</span><br><span class="line"></span><br><span class="line">[qihuang.zheng@dp0653 confluent-3.2.1]$ ll share/java/kafka-connect-elasticsearch/</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users  263965 9月  28 16:12 commons-codec-1.9.jar</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users  434678 9月  28 16:12 commons-lang3-3.4.jar</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users   61829 9月  28 16:12 commons-logging-1.2.jar</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users  212164 9月  28 16:12 gson-2.4.jar</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users 2256213 9月  28 16:12 guava-18.0.jar</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users  177013 9月  28 16:12 httpasyncclient-4.1.1.jar</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users  732765 9月  28 16:12 httpclient-4.5.1.jar</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users  326724 9月  28 16:12 httpcore-4.4.4.jar</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users  356091 9月  28 16:12 httpcore-nio-4.4.4.jar</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users   18398 9月  28 16:12 jest-2.0.0.jar</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users  216228 9月  28 16:12 jest-common-2.0.0.jar</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users   44524 9月  28 16:12 kafka-connect-elasticsearch-3.2.1.jar</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users   41071 9月  28 16:12 slf4j-api-1.7.21.jar</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users   10680 9月  28 16:12 slf4j-simple-1.7.5.jar</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2017/12/31/Kafka-Book-Appendix/">Kafka技术内幕附录</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2017年12月31日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2017/12/31/Kafka-Book-Appendix/" title="Kafka技术内幕附录">http://github.com/zqhxuyuan/2017/12/31/Kafka-Book-Appendix/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2017/12/31/Kafka-Book-Appendix/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2017/12/31/Kafka-Book-Resources/">
+        Kafka技术内幕拾遗
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2017/10/25/Java-Threads/">
+        图解Java多线程
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#第11章：附录"><span class="toc-number">1.</span> <span class="toc-text">第11章：附录</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#11-1_Kafka基本操作"><span class="toc-number">1.1.</span> <span class="toc-text">11.1 Kafka基本操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-1-1_创建、修改、删除、查看主题"><span class="toc-number">1.1.1.</span> <span class="toc-text">11.1.1 创建、修改、删除、查看主题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-1-2_生产者和消费者"><span class="toc-number">1.1.2.</span> <span class="toc-text">11.1.2 生产者和消费者</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-1-3_扩展集群"><span class="toc-number">1.1.3.</span> <span class="toc-text">11.1.3 扩展集群</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-2_安全机制（Security）"><span class="toc-number">1.2.</span> <span class="toc-text">11.2 安全机制（Security）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-3_Kafka配置"><span class="toc-number">1.3.</span> <span class="toc-text">11.3 Kafka配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-3-1_服务端的配置项"><span class="toc-number">1.3.1.</span> <span class="toc-text">11.3.1 服务端的配置项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-3-2_生产者的配置项"><span class="toc-number">1.3.2.</span> <span class="toc-text">11.3.2 生产者的配置项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-3-3_新消费者的配置项"><span class="toc-number">1.3.3.</span> <span class="toc-text">11.3.3 新消费者的配置项</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-4_Kafka其他操作实验"><span class="toc-number">1.4.</span> <span class="toc-text">11.4 Kafka其他操作实验</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-4-1_ZooKeeper连接配置"><span class="toc-number">1.4.1.</span> <span class="toc-text">11.4.1 ZooKeeper连接配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-4-2_MirrorMaker演示消费者线程数量"><span class="toc-number">1.4.2.</span> <span class="toc-text">11.4.2 MirrorMaker演示消费者线程数量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-4-3_生产者和消费者性能测试"><span class="toc-number">1.4.3.</span> <span class="toc-text">11.4.3 生产者和消费者性能测试</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-5_第三方工具"><span class="toc-number">1.5.</span> <span class="toc-text">11.5 第三方工具</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-5-1_Confluent_Platform"><span class="toc-number">1.5.1.</span> <span class="toc-text">11.5.1 Confluent Platform</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-_控制中心（Controll_Center）"><span class="toc-number">1.5.1.1.</span> <span class="toc-text">1. 控制中心（Controll Center）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-_连接器（Kafka_Connect）"><span class="toc-number">1.5.1.2.</span> <span class="toc-text">2. 连接器（Kafka Connect）</span></a></li></ol></li></ol></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2017/12/31/Kafka-Book-Appendix/" data-title="Kafka技术内幕附录" data-url="http://github.com/zqhxuyuan/2017/12/31/Kafka-Book-Appendix/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2017/12/31/Kafka-Book-Resources/" title="上一篇: Kafka技术内幕拾遗">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2017/10/25/Java-Threads/" title="下一篇: 图解Java多线程">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

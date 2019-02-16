@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Spark on YARN | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Apache Spark On Yarn模式">
+<meta name="keywords" content="spark">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark on YARN">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/07/07/2015-07-07-Spark-on-YARN/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Apache Spark On Yarn模式">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/syarn1.png">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.170Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spark on YARN">
+<meta name="twitter:description" content="Apache Spark On Yarn模式">
+<meta name="twitter:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/syarn1.png">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-07-07-Spark-on-YARN" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/07/07/2015-07-07-Spark-on-YARN/" class="article-date">
+  	<time datetime="2015-07-06T16:00:00.000Z" itemprop="datePublished">2015-07-07</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Spark on YARN
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/bigdata/">bigdata</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Apache Spark On Yarn模式</p>
+<a id="more"></a>
+<p>参考文档：</p>
+<ul>
+<li><a href="http://spark.apache.org/docs/latest/running-on-yarn.html" target="_blank" rel="noopener">http://spark.apache.org/docs/latest/running-on-yarn.html</a></li>
+<li><a href="https://www.iteblog.com/archives/1223.html" target="_blank" rel="noopener">Spark:Yarn-cluster和Yarn-client区别与联系</a></li>
+</ul>
+<p>spark on yarn有两种模式：</p>
+<ul>
+<li>yarn client：Driver独立于YARN集群外</li>
+<li>yarn cluster：Driver运行在YARN集群中</li>
+</ul>
+<h2 id="yarn-cluster">yarn-cluster</h2><blockquote>
+<p>注意：其实在安装并启动好Hadoop后,Spark on YARN不需要任何配置。  </p>
+</blockquote>
+<p>1.上传spark-assembly.jar包到hdfs的某个路径下，比如这里是<code>/lib</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 lib]$ /usr/install/hadoop/bin/hadoop fs -mkdir /lib</span><br><span class="line">[qihuang.zheng@dp0652 lib]$ /usr/install/hadoop/bin/hadoop fs -put spark-assembly-1.4.0-hadoop2.6.0.jar /lib</span><br></pre></td></tr></table></figure>
+<p>2.提交作业时，spark-submit的时候<code>--master</code>发生了变化</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">SPARK_JAR=hdfs://tdhdfs/lib/spark-assembly-1.4.0-hadoop2.6.0.jar \</span><br><span class="line">./bin/spark-submit --class org.apache.spark.examples.SparkPi \</span><br><span class="line">    --master yarn-cluster \</span><br><span class="line">    --num-executors 3 \</span><br><span class="line">    --driver-memory 4g \</span><br><span class="line">    --executor-memory 2g \</span><br><span class="line">    --executor-cores 1 \</span><br><span class="line">    lib/spark-examples*.jar \</span><br><span class="line">    10</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意: 因为现在是Spark on YARN了,所以spark-submit的Job不会显示在Spark的UI上,而是HadoopYARN的UI上<br>而且, 因为是yarn-cluster模式, 终端并不会输出Pi的值! 相反,下面yarn-client模式会在终端输出Pi的值.</p>
+</blockquote>
+<h2 id="yarn-client">yarn-client</h2><p>和yarn-cluster一样，只不过<code>--master</code>由<code>yarn-cluster</code>改成了<code>yarn-client</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">SPARK_JAR=hdfs://tdhdfs/lib/spark-assembly-1.4.0-hadoop2.6.0.jar \</span><br><span class="line">bin/spark-submit --class org.apache.spark.examples.SparkPi \</span><br><span class="line">    --master yarn-client \</span><br><span class="line">    --num-executors 3 \</span><br><span class="line">    --driver-memory 4g \</span><br><span class="line">    --executor-memory 2g \</span><br><span class="line">    --executor-cores 1 \</span><br><span class="line">    lib/spark-examples-1.4.0-hadoop2.6.0.jar \</span><br><span class="line">    10</span><br></pre></td></tr></table></figure>
+<p>使用yarn-client提交应用程序，终端的日志输出: </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">15/07/07 15:34:07 INFO SparkUI: Started SparkUI at http://192.168.6.52:4040</span><br><span class="line">15/07/07 15:34:07 INFO SparkContext: Added JAR file:/usr/install/spark-1.4.0-bin-hadoop2.6/lib/spark-examples-1.4.0-hadoop2.6.0.jar at http://192.168.6.52:42366/jars/spark-examples-1.4.0-hadoop2.6.0.jar with timestamp 1436254447750</span><br><span class="line">15/07/07 15:34:08 INFO ConfiguredRMFailoverProxyProvider: Failing over to rm2</span><br><span class="line">15/07/07 15:34:08 INFO Client: Requesting a new application from cluster with 2 NodeManagers</span><br><span class="line">15/07/07 15:34:08 INFO Client: Verifying our application has not requested more than the maximum memory capability of the cluster (8192 MB per container)</span><br><span class="line">15/07/07 15:34:08 INFO Client: Will allocate AM container, with 896 MB memory including 384 MB overhead</span><br><span class="line">15/07/07 15:34:08 INFO Client: Setting up container launch context for our AM</span><br><span class="line">15/07/07 15:34:08 INFO Client: Preparing resources for our AM container</span><br><span class="line">15/07/07 15:34:08 WARN Client: SPARK_JAR detected in the system environment. This variable has been deprecated in favor of the spark.yarn.jar configuration variable.</span><br><span class="line">15/07/07 15:34:08 INFO Client: Source and destination file systems are the same. Not copying hdfs://tdhdfs/lib/spark-assembly-1.4.0-hadoop2.6.0.jar</span><br><span class="line">15/07/07 15:34:09 INFO Client: Uploading resource file:/tmp/spark-c564fff3-dd94-4b52-81c9-6e6f7e4d4ceb/__hadoop_conf__2813971044505707826.zip -&gt; hdfs://tdhdfs/user/qihuang.zheng/.sparkStaging/application_1436175086022_0003/__hadoop_conf__2813971044505707826.zip</span><br><span class="line">15/07/07 15:34:09 INFO Client: Setting up the launch environment for our AM container</span><br><span class="line">15/07/07 15:34:09 WARN Client: SPARK_JAR detected in the system environment. This variable has been deprecated in favor of the spark.yarn.jar configuration variable.</span><br><span class="line">15/07/07 15:34:09 INFO Client: Submitting application 3 to ResourceManager</span><br><span class="line">15/07/07 15:34:09 INFO YarnClientImpl: Submitted application application_1436175086022_0003</span><br><span class="line">15/07/07 15:34:10 INFO Client: Application report for application_1436175086022_0003 (state: ACCEPTED)</span><br><span class="line">15/07/07 15:34:11 INFO Client: Application report for application_1436175086022_0003 (state: ACCEPTED)</span><br><span class="line">...</span><br><span class="line">...</span><br><span class="line">15/07/07 15:34:38 INFO SparkContext: Starting job: reduce at SparkPi.scala:35</span><br><span class="line">15/07/07 15:34:38 INFO SparkContext: Created broadcast 0 from broadcast at DAGScheduler.scala:874</span><br><span class="line">15/07/07 15:34:38 INFO DAGScheduler: Submitting 10 missing tasks from ResultStage 0 (MapPartitionsRDD[1] at map at SparkPi.scala:31)</span><br><span class="line">15/07/07 15:34:38 INFO YarnScheduler: Adding task set 0.0 with 10 tasks</span><br><span class="line">15/07/07 15:34:38 INFO TaskSetManager: Starting task 0.0 in stage 0.0 (TID 0, dp0653, PROCESS_LOCAL, 1446 bytes)</span><br><span class="line">15/07/07 15:34:38 INFO TaskSetManager: Starting task 1.0 in stage 0.0 (TID 1, dp0652, PROCESS_LOCAL, 1446 bytes)</span><br><span class="line">...</span><br><span class="line">15/07/07 15:34:48 INFO BlockManagerInfo: Added broadcast_0_piece0 in memory on dp0653:43216 (size: 1202.0 B, free: 1060.3 MB)</span><br><span class="line">15/07/07 15:34:49 INFO TaskSetManager: Finished task 0.0 in stage 0.0 (TID 0) in 10414 ms on dp0653 (10/10)</span><br><span class="line">15/07/07 15:34:49 INFO DAGScheduler: ResultStage 0 (reduce at SparkPi.scala:35) finished in 10.420 s</span><br><span class="line">15/07/07 15:34:49 INFO YarnScheduler: Removed TaskSet 0.0, whose tasks have all completed, from pool</span><br><span class="line">15/07/07 15:34:49 INFO DAGScheduler: Job 0 finished: reduce at SparkPi.scala:35, took 10.776165 s</span><br><span class="line">Pi is roughly 3.144008</span><br></pre></td></tr></table></figure>
+<p>第一行日志：<code>Started SparkUI at http://192.168.6.52:4040</code>，所以client模式也可以在spark-ui上查看作业.</p>
+<blockquote>
+<p>注意：SparkUI指的是应用程序的UI，每个应用程序都有UI，并且端口都不同。不过Standalone模式，还有一个MasterUI(8082)。</p>
+</blockquote>
+<p>下图是YARN的应用程序, 第一个是yarn-client(7:38), 第二个是yarn-cluster(7:36)</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/syarn1.png" alt></p>
+<h3 id="问题">问题</h3><ul>
+<li>Spark on YARN有没有Master、Worker？没有！所以不需要启动Master、Worker。</li>
+<li>为什么yarn-client能看到结果,而yarn-cluster无法看到结果, 参考<a href="http://blog.csdn.net/book_mmicky/article/details/25714287" target="_blank" rel="noopener">http://blog.csdn.net/book_mmicky/article/details/25714287</a></li>
+</ul>
+<blockquote>
+<p>在YARN上部署Spark应用程序的时候，不需要象Standalone、Mesos一样提供URL作为master参数的值，<br>因为Spark应用程序可以在hadoop的配置文件里面获取相关的信息，<br>所以只需要简单以yarn-cluster或yarn-client指定给master就可以了  </p>
+<p>YARN Client:  Spark driver在客户机上运行，然后向YARN申请运行exeutor以运行Task<br>YARN Cluster: Spark driver将作为一个ApplicationMaster在YARN集群中先启动，<br>              然后再由ApplicationMaster向RM申请资源启动executor以运行Task</p>
+<p>采用yarn-client方式，因为driver在客户端，所以程序的运行结果可以在客户端显示<br>采用yarn-cluster方式，因为driver在YARN中运行，所以程序的运行结果不能在客户端显示，<br>   所以最好将结果保存在hdfs上，客户端的终端显示的是作为YARN的job的运行情况</p>
+</blockquote>
+<h3 id="新版本">新版本</h3><p>在新版本（2.0+）中，提交应用程序的命令为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bin/spark-shell --master yarn --deploy-mode cluster</span><br><span class="line">bin/spark-shell --master yarn --deploy-mode client</span><br></pre></td></tr></table></figure>
+<p>另外，新版本指定spark-assembly通过<code>spark.yarn.jars</code>配置项指定。<br>spark-1.6的hdfs路径只需要一个spark-assembly.jar即可，<br>而spark-2.x需要把jars下的所有jar包都上次到hdfs。</p>
+<h2 id="单机模式Spark_on_Yarn">单机模式Spark on Yarn</h2><p>UpdateDate: 20170720</p>
+<p>软件：</p>
+<ul>
+<li>hadoop-2.7.2</li>
+<li>spark-2.1.1-bin-hadoop2.7</li>
+</ul>
+<p>看官方的文档，十分钟入门，单机模式： <a href="http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/SingleCluster.html" target="_blank" rel="noopener">http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/SingleCluster.html</a>  </p>
+<p>HDFS UI：<a href="http://localhost:50070/" target="_blank" rel="noopener">http://localhost:50070/</a><br>YARN UI：<a href="http://localhost:8088/cluster" target="_blank" rel="noopener">http://localhost:8088/cluster</a></p>
+<p>查看HDFS和YARN的进程：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">➜  hadoop-2.7.2 jps -lm</span><br><span class="line">34976 org.apache.hadoop.yarn.server.nodemanager.NodeManager</span><br><span class="line">34628 org.apache.hadoop.hdfs.server.namenode.SecondaryNameNode</span><br><span class="line">34443 org.apache.hadoop.hdfs.server.namenode.NameNode</span><br><span class="line">34523 org.apache.hadoop.hdfs.server.datanode.DataNode</span><br><span class="line">34891 org.apache.hadoop.yarn.server.resourcemanager.ResourceManager</span><br></pre></td></tr></table></figure>
+<p>环境变量中添加下面两个配置，Spark的官网中说只要HADOOP_CONF_DIR或者YARN_CONF_DIR一个指向Hadoop即可，不需要export $HADOOP_HOME/bin之类</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">export HADOOP_HOME=/Users/zhengqh/Downloads/hadoop-2.7.2</span><br><span class="line">export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop</span><br><span class="line"></span><br><span class="line">source ~/.zshrc</span><br></pre></td></tr></table></figure>
+<p>确保机器有足够的内存</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">bin/spark-submit --class org.apache.spark.examples.SparkPi \</span><br><span class="line">--master yarn --deploy-mode client \</span><br><span class="line">examples/jars/spark-examples_2.11-2.1.1.jar 10</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/07/07/2015-07-07-Spark-on-YARN/">Spark on YARN</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年07月07日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/07/07/2015-07-07-Spark-on-YARN/" title="Spark on YARN">http://github.com/zqhxuyuan/2015/07/07/2015-07-07-Spark-on-YARN/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/07/07/2015-07-07-Spark-on-YARN/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/07/08/2015-07-08-Spark-QA/">
+        Spark QA
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/07/06/2015-07-06-Spark-Streamming/">
+        Spark Stramming入门
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#yarn-cluster"><span class="toc-number">1.</span> <span class="toc-text">yarn-cluster</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#yarn-client"><span class="toc-number">2.</span> <span class="toc-text">yarn-client</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#问题"><span class="toc-number">2.1.</span> <span class="toc-text">问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#新版本"><span class="toc-number">2.2.</span> <span class="toc-text">新版本</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#单机模式Spark_on_Yarn"><span class="toc-number">3.</span> <span class="toc-text">单机模式Spark on Yarn</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/07/07/2015-07-07-Spark-on-YARN/" data-title="Spark on YARN" data-url="http://github.com/zqhxuyuan/2015/07/07/2015-07-07-Spark-on-YARN/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/07/08/2015-07-08-Spark-QA/" title="上一篇: Spark QA">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/07/06/2015-07-06-Spark-Streamming/" title="下一篇: Spark Stramming入门">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

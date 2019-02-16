@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Kafka源码分析 KafkaController（翻译和注释） | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Kafka Controller">
+<meta name="keywords" content="kafka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka源码分析 KafkaController（翻译和注释）">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/02/23/2016-02-23-Kafka-Controller/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Kafka Controller">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160310090207079">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160309085146309">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160224133413052">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160310090248232">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160310104717825">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160310130841867">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160310104453777">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160309092701811">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160310104507199">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160310145330545">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160311085103389">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160311085124561">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160311084942405">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160313104935879">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160313104859597">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160311091731316">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160312092301167">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160312113420173">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160312132504155">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160312135626735">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.250Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kafka源码分析 KafkaController（翻译和注释）">
+<meta name="twitter:description" content="Kafka Controller">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160310090207079">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2016-02-23-Kafka-Controller" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/02/23/2016-02-23-Kafka-Controller/" class="article-date">
+  	<time datetime="2016-02-22T16:00:00.000Z" itemprop="datePublished">2016-02-23</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kafka源码分析 KafkaController（翻译和注释）
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Source/">Source</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/">kafka</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Kafka Controller<br><a id="more"></a></p>
+<h3 id="Replication">Replication</h3><p><strong>1) 数据同步</strong>  </p>
+<p>kafka在0.8版本前没有提供Partition的Replication机制，一旦Broker宕机，其上的所有Partition就都无法提供服务，而Partition又没有备份数据，数据的可用性就大大降低了。所以0.8后提供了Replication机制来保证Broker的failover。由于Partition有多个副本，为了保证多个副本之间的数据同步，有多种方案：  </p>
+<ul>
+<li>1.所有副本之间是无中心结构的，可同时读写数据，需要保证多个副本之间数据的同步</li>
+<li>2.在所有副本中选择一个Leader，生产者和消费者只和Leader副本交互，其他follower副本从Leader同步数据</li>
+</ul>
+<p>第一种方案看起来可以对客户端请求进行负载均衡，但是由于要在多个副本之间互相同步数据，数据的一致性和有序性难以保证。而第二种方案看起来客户端连接的节点会少点，而且其他副本同步数据可能没有那么及时，但是在正常情况下，客户端只需要和Leader一个副本通信即可，而其他follower只需要和Leader同步数据。假设有一个Partition有5个副本，4个follower只需要各自和leader建立一条链路通信，而对于第一种方案，5个副本之间要两两通信，确保Partition的每个副本的数据都是一致的。所以第一种方案虽然提供了客户端的负载均衡，但是对于服务端的设计带来比较大的复杂性，而第二种方案虽然限制了客户端只能连接Partition的Leader Replica，但这种简洁的设计使得服务端更加健壮。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160310090207079" alt="k_replica_design"></p>
+<p><strong>2) 同步策略</strong>  </p>
+<p>存在Replication的目的是为了在Leader发生故障时，follower副本能够代替Leader副本继续工作，即新的Leader必须拥有原来的Leader提交过的所有消息，那么在任何时刻follower要保证和Leader比起来总是最新的，或者说follower要和leader的数据始终保持同步。  </p>
+<p>有两种策略保证副本和leader是同步的，<code>primary-backup replication</code>和<code>quorum-based replication</code>。这两种模式下都会选举一个副本作为leader，其他的副本都作为follower。所有的写请求都会经过leader，然后leader会将写传播给follower（kafka因为使用pull模式，所以是follower从leader拉取数据，不过总的来说，目的都是将leader的数据同步给所有的follower）。  </p>
+<p>使用基于<strong>quorum</strong>的复制方式（也叫做<strong>Majority Vote</strong>，少数服从多数），leader需要等待副本集合中大多数的写操作完成（大多数的概念是指一半以上）。如果一些副本当掉了，副本组的大小也不会发生变化，这就会导致写操作无法写到失败的副本上，就无法满足半数以上的限制条件。这种模式下，假设有2N+1个副本，在提交之前要确保有N+1个副本复制完消息，为了保证正确选出新的Leader，失败的副本数不能超过N个。因为在剩下的任意N+1个Replica里，至少有一个Replica包含有最新的所有消息。这种策略的缺点是：为了保证Leader选举的正常进行，它所能容忍的失败的follower个数比较少，如果要容忍N个follower挂掉，必须要有2N+1个以上的副本。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160309085146309" alt="k_major_vote"></p>
+<p>使用<strong>主备</strong>模式复制，leader会等待组（所有的副本组成的集合）中所有副本写成功后才返回应答给客户端。如果其中一个副本当掉了，leader会将它从组中删除掉，并继续向剩余的副本写数据。一个失败的副本在恢复之后如果能赶上Leader，leader就会允许它重新加入组中。kafka中这个组的概念就是Leader副本的ISR集合。这个ISR里的所有副本都跟上了Leader，只有ISR里的成员才有被选为Leader的可能。这种模式下对于N+1个副本，一个Partition能在保证不丢失已经提交的消息的前提下容忍N个副本的失败（只要有一个副本没有失败，其他失败了都没有关系）。比较Majority Vote和ISR，为了容忍N个副本的失败，两者在<strong>提交前需要等待</strong>的副本数量是一样的（ISR中有N+1个副本才可以容忍N个副本失败，而Majority Vote副本总数=2N+1，N+1个副本成功，才能容忍N个副本失败，所以需要等待的副本都是N+1个。这里的等待一般是将请求发送到N+1个副本后，要等待这些副本应答后才表示成功提交），但是ISR需要的总的副本数几乎是Majority Vote的一半（假设ISR中所有副本都能跟上Leader，则一共也之后N+1个副本，而Majority Vote则需要2N+1个副本）。</p>
+<p><strong>3) leader选举</strong>  </p>
+<p>Leader选举本质上是一个分布式锁，有两种方式实现基于ZooKeeper的分布式锁：  </p>
+<ul>
+<li>1.节点名称唯一性：多个客户端创建一个节点，只有成功创建节点的客户端才能获得锁</li>
+<li>2.临时顺序节点：所有客户端在某个目录下创建自己的临时顺序节点，只有序号最小的才获得锁</li>
+</ul>
+<p>Majority Vote的选举策略和ZooKeeper中的Zab选举是类似的，实际上ZooKeeper内部本身就实现了少数服从多数的选举策略。kafka中对于Partition的leader副本的选举采用了第一种方法：为Partition分配副本，指定一个ZNode临时节点，第一个成功创建节点的副本就是Leader节点，其他副本会在这个ZNode节点上注册Watcher监听器，一旦Leader宕机，对应的临时节点就会被自动删除，这时注册在该节点上的所有Follower都会收到监听器事件，它们都会尝试创建该节点，只有创建成功的那个follower才会成为Leader（ZooKeeper保证对于一个节点只有一个客户端能创建成功），其他follower继续重新注册监听事件。  </p>
+<p><strong>4) 副本放置策略</strong>  </p>
+<p>kafka将一个逻辑意义的topic分成多个物理意义上的partition，每个partition是这个topic的一部分消息，将partition分布在多个brokers上，可以达到负载均衡的目的。除了Partition的分配，每个Partition都有Replcias，所以也要考虑Replica的分配策略，因为不能把一个Partition的所有Replicas都放在同一台机器上。一般我们希望将所有的Partition能够均匀地分布在集群中所有的Brokers上。Kafka分配Replica的算法如下：  </p>
+<ul>
+<li>将所有存活的N个Brokers和待分配的Partition排序</li>
+<li>将第i个Partition分配到第(i mod n)个Broker上，这个Partition的第一个Replica存在于这个分配的Broker上，并且会作为partition的优先副本</li>
+<li>将第i个Partition的第j个Replica分配到第((i + j) mod n)个Broker上</li>
+</ul>
+<p>假设集群一共有4个brokers，一个topic有4个partition，每个Partition有3个副本。下图是每个Broker上的副本分配情况。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160224133413052" alt="k_partition"></p>
+<p><strong>9) Follower failure</strong>  </p>
+<p>如果Follower Replica失败超过一定时间后，Leader会将这个失败的follower从ISR中移除（follower没有发送fetch请求）。由于ISR保存的是所有全部赶得上Leader的follower replicas，失败的follower肯定是赶不上了。虽然ISR现在少了一个，但是并不会引起的数据的丢失，ISR中剩余的replicas会继续同步数据（只要ISR中有一个follower，就不会丢失数据，实际上leader replica也是在ISR中的，所以即使所有的follower都挂掉了，只要leader没有问题，也不会出现问题的）。  </p>
+<p>当失败的follower恢复时，它首先将自己的日志截断到上次checkpointed时刻的HW（checkpoint是每个broker节点都有的）。因为checkpoint记录的是所有Partition的hw offset。当follower失败时，checkpoint中关于这个Partition的HW就不会再更新了。而这个时候存储的HW信息和follower partition replica的offset并不一定是一致的。比如这个follower获取消息比较快，但是ISR中有其他follower复制消息比较慢，这样Leader并不会很快地更新HW，这个快的follower的hw也不会更新（leader广播hw给follower）。这种情况下，这个follower日志的offset是比hw要大的。所以在它恢复之后，要将比hw多的部分截掉，然后继续从leader拉取消息（跟平时一样）。实际上，ISR中的每个follower日志的offset一定是比hw大的。因为只有ISR中所有follower都复制完消息，leader才会增加hw，而每个Replica复制消息后，都会增加自己的offset。也就是说有可能有些follower复制完了，而有另外一些follower还没有复制完，那么hw是不会增加的。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160310090248232" alt="k_replica_hw"></p>
+<p>Kafka的Replica实现到目前0.9版本为止，分别经历了三个阶段：  </p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>主要做法</th>
+<th>优缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>zookeeper，很多监听器</td>
+<td>脑裂，羊群效应，ZK集群负载过重</td>
+</tr>
+<tr>
+<td>2</td>
+<td>one brain，zk queue</td>
+<td>将Replcia改变的状态事件用ZK队列实现</td>
+</tr>
+<tr>
+<td>3</td>
+<td>state machine，controller, direct rpc</td>
+<td>直接RPC更快，状态机统一处理</td>
+</tr>
+</tbody>
+</table>
+<p><strong>11) zk path &amp; listeners</strong></p>
+<p>下表汇总了zk中和partition相关的节点，对于不同版本，路径可能不同，不过要存储的信息都是类似的：  </p>
+<table>
+<thead>
+<tr>
+<th>zookeeper path</th>
+<th>type and creator</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><em>v1</em></td>
+</tr>
+<tr>
+<td>/brokers/ids/[broker_id]–&gt;host:port</td>
+<td>临时节点,admin</td>
+<td>所有存活的Brokers的信息</td>
+</tr>
+<tr>
+<td>/brokers/topics/[topic]/[partition_id]/<strong>replicas</strong>–&gt;{broker_id …}</td>
+<td>admin</td>
+<td>每个Partition当前分配的Replicas(AR)</td>
+</tr>
+<tr>
+<td>brokers/topics/[topic]/[partition_id]/<strong>leader</strong>–&gt;broker_id</td>
+<td>临时节点,leader</td>
+<td>这个partition的当前leader副本</td>
+</tr>
+<tr>
+<td>/brokers/topics/[topic]/[partition_id]/<strong>ISR</strong>–&gt;{broker_id, …}</td>
+<td>leader</td>
+<td>保持和leader同步的replica编号</td>
+</tr>
+<tr>
+<td><em>v2</em></td>
+</tr>
+<tr>
+<td>/brokers/topics/[topic]/[partition_id]/<strong>leaderAndISR</strong>–&gt;<br>&nbsp;&nbsp;{leader:broker_id,ISR:{broker1..}}</td>
+<td>controller,leader</td>
+<td>Partition的Leader和ISR</td>
+</tr>
+<tr>
+<td><em>v3</em></td>
+</tr>
+<tr>
+<td>/brokers/topics/<strong>[topic]</strong>–&gt;{part1: [broker1, broker2]…}</td>
+<td>admin</td>
+<td>topic中所有Partition的AR</td>
+</tr>
+<tr>
+<td>/brokers/topics/[topic]/[partition_id]/<strong>state</strong>–&gt;<br>&nbsp;&nbsp;{leader:broker_id,ISR:{broker1..}}</td>
+<td>controller,leader</td>
+<td>Partition的状态信息类似leaderAndISR</td>
+</tr>
+<tr>
+<td>/controller –&gt; {brokerid}</td>
+<td>controller</td>
+<td>当前集群的controller节点</td>
+</tr>
+<tr>
+<td><em>common</em></td>
+</tr>
+<tr>
+<td>/admin/partitions_reassigned/[topic]/[partition_id]–&gt;{broker_id …}</td>
+<td>admin</td>
+<td>重新分配partition</td>
+</tr>
+<tr>
+<td>/admin/partitions_add/[topic]/[partition_id]–&gt;{broker_id …}</td>
+<td>admin</td>
+<td>新添加partition对应的AR</td>
+</tr>
+<tr>
+<td>/admin/partitions_remove/[topic]/[partition_id]</td>
+<td>admin</td>
+<td>删除topic中已经存在的partition</td>
+</tr>
+</tbody>
+</table>
+<p>在v2版本中，Partition重新分配的监听器只注册在leader的Broker上，而Leader和State变化的监听器注册在所有Broker上。一个Partition的多个Replica会分布在多个Broker上，只有在Leader Replica的Broker上才注册Partition-Reassigned监听器。而Leader和State变化对于Partition的所有副本都要能够感知，所以一个Partition所有Replica分布的Broker都要注册Leader-change和State-change监听器。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160310104717825" alt="k_replica_listeners"></p>
+<p><strong>12) Broker,Partition和Replica的事件流</strong>  </p>
+<p>Partition的Replica存储在Broker上，并且和ZooKeeper互相交互，主要完成这些工作：  </p>
+<ul>
+<li>1.Broker启动读取ZK中Partition的所有AR</li>
+<li>2.每个Replica判断Leader是否存在，不存在则进入选举阶段，存在则使自己成为Follower</li>
+<li>3.每个Replica都会在leader上注册监听器，当Leader发生变化时，所有Replica会开始选举Leader</li>
+<li>4.选举Leader时，最先创建leader节点的Replica成为Leader，其他Replica再次成为Follower</li>
+</ul>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160310130841867" alt="k_p_r_b_z"></p>
+<p>v1版本对于每个replica变化都会触发replicaStateChange调用。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160310104453777" alt="k_replica_v1"></p>
+<p>v1版本中，由于各种事件严重依赖ZooKeeper，存在着以下问题：  </p>
+<ul>
+<li>脑裂：虽然ZooKeeper能保证注册到节点上的所有监听器都会按顺序被触发，但并不能保证同一个时刻所有副本看到的状态是一样的，可能造成不同副本的响应不一致</li>
+<li>羊群效应：如果宕机的那个Broker的Partition数量很多，会造成多个Watch被触发，引起集群内大量的调整</li>
+<li>每个副本都要在ZK的Partition上注册Watcher，当集群内Partition数量很多时，会造成ZooKeeper负载过重</li>
+</ul>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160309092701811" alt="zk_listener_problem"></p>
+<p>v2版本不再为replicas注册Replica变化的事件，而是放到broker级别的状态变化事件。而且v2的startReplica和v1的replicaStateChange功能是相似的，都是完成replicas发生变化时判断是否需要选举或成为follower。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160310104507199" alt="k_replica_v2"></p>
+<p>所有的brokers只对状态变化事件进行响应，而且状态变化事件也只由Leader决定，状态变化是通过onPartitionsReassigned写到zk的<code>/brokers/state/[broker_id]</code>的请求事件队列触发的，而这个事件只注册在Partition的Leader Replica上。也就是说follower状态的改变只基于partition的Leader发送请求时才会发生，如果leader没有对某个follower说要改变状态，则follower是不会有任何事件发生的，这种方式类似于事件驱动的模式（引入了一个中间的状态机）。而第一版中任何一个replica改变，都有可能导致所有其他follower都要做出相应（直接触发）。</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160310145330545" alt="k_replica2state"></p>
+<p>注意：replicas的状态变化通过队列的形式并不会立即被触发，而leader变化事件要能立即被触发，所以要给这个事件单独注册Leader-Change监听器，而不能统一都放在State-Change监听器里，否则的话，leader变化事件可能会淹没在replicas的状态变化事件里，而没有被及时地处理（Leade变化这个事件是大BOSS发话，要立即执行，replicas的状态变化是其他领导发话，要进行排期依次处理）。  </p>
+<p>在这两个版本中，Partition都有一个commitQ队列用来缓存生产请求，并且每个Partition都有一个commit线程负责将消息写到Leader的本地日志中，并等待ISR中所有副本复制。Follower会向Leader抓取数据来保持和Leader的消息同步。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160311085103389" alt="k_produce_fetch"></p>
+<p>在Follower向Leader抓取数据时，要根据Follower的抓取进度判断是否应该把它加入ISR或从从ISR中移除：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">maybe_change_ISR() &#123;</span><br><span class="line">  // 如果follower太慢会被leader从ISR中移除,确保leader可以顺利提交消息尽管isr的副本数变少了</span><br><span class="line">  find the smallest leo (leo_min) of every replica in ISR</span><br><span class="line">  if ( leader.leo - leo_min &gt; MAX_BYTES_LAG || </span><br><span class="line">    the replica with leo_min hasn&apos;t updated leo for more than MAX_TIME_LAG)</span><br><span class="line">    newISR = ISR - replica with leo_min</span><br><span class="line"> </span><br><span class="line">  //如果follower赶上了leader,加入到ISR中</span><br><span class="line">  for each replica r not in ISR</span><br><span class="line">    if ( r.leo - leo_min &lt; MIN_BYTES_LAG)</span><br><span class="line">      newISR = ISR + r</span><br><span class="line"> </span><br><span class="line">  update the LeaderAndISR path in ZK with newISR</span><br><span class="line">  if (update in ZK successful) &#123;</span><br><span class="line">   leader.partition.ISR = new ISR</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Controller要解决的问题">Controller要解决的问题</h3><p>Replication的v3版本采用Controller实现，相比v2版本的主要不同点是：  </p>
+<ul>
+<li>Leader的变化从监听器改为由Controller管理</li>
+<li>控制器负责检测Broker的失败，并为每个受影响的Partition选举新的Leader</li>
+<li>控制器会将每个Leader的变化事件发送给受影响的每个Broker</li>
+<li>控制器和Broker之间的通信采用直接的RPC，而不是通过ZK队列</li>
+</ul>
+<p>虽然因为引入了Controller，需要实现Controller的failover。但它的优点有：  </p>
+<ul>
+<li>因为Leader管理被更加集中地管理，比较容易调试问题</li>
+<li>Leader变化针对ZK的读写可以批量操作，减少在failover过程中端到端的延迟</li>
+<li>更少的ZooKeeper监听器</li>
+<li>使用直接RPC协议相比队列实现的ZK，能够更加高效地在节点之间通信</li>
+</ul>
+<p>从整个集群的所有Brokers中选举出一个Controller，它主要负责：  </p>
+<ul>
+<li>Partition的Leader变化事件</li>
+<li>新创建或删除一个topic</li>
+<li>重新分配Partition</li>
+<li>管理分区的状态机和副本的状态机</li>
+</ul>
+<p>当控制器完成决策之后（决定了Partition新的Leader和ISR），它会将这个决策持久化到ZK中（将LeaderAndISR写入到ZK节点），并且向所有受到影响的Brokers通过直接RPC的形式直接发送新的决策（发送LeaderAndISRRequest）。这些决策（持久化到ZK中的数据）是真理之源，它们会被客户端用来路由请求（客户端只跟决策信息里的Leader交互），并且每个Broker启动的时候会用来恢复它的状态（Partition分配到Broker上，说明Broker现在拥有了分配到的Partition）。当Broker启动之后，它会接收控制器通过直接RPC的形式发送过来的最新的决策。  </p>
+<p>每个KafkaServer中都会创建一个KafkaController对象，但是集群中只允许存在一个Leader Controller，这是通过ZooKeeper选举出来的：第一个成功创建zk节点的那个Controller会成为Leader，其他的Controller会一直存在，但是并不会发挥作用。只有当原先的Controller挂掉后，才会选举出新的Controller。<strong>集群中所有Brokers选举一个Controller</strong>和<strong>Partition中所有Replicas选举一个Leader</strong>是类似的。有点类似于Hadoop-1.x中的SecondaryNameNode：同时启动NameNode和SecondaryNameNode，当NameNode挂掉后，SecondaryNameNode会代替成为NameNode角色。在系统运行过程中，SecondaryNameNode要同步NameNode的数据，这样在NameNode发生故障时，SecondaryNameNode切换为NameNode时数据并不会丢失或落后太多。Hadoop-2.x的HA使用了ZKFailoverController有两个Master：Active和Standby，工作原理和SNN是类似的，只不过Active Master将信息写入共享存储，Standby从共享存储中读取信息，保持与Active Master的同步，从而减少故障时的切换时间。不过KafkaController的failover机制并不会在系统运行过程中将其他所有Controller实例的数据和Leader同步，而是在Leader发生故障时重新选举，并且重新恢复数据。  </p>
+<p>原先在没有Controller时，Leader或者Replica的变化都是通过监听器完成的，现在引入Controller之后，不仅要处理Broker的failover，也要处理Controller的failover。Broker和Controller的failover也是通过注册在ZK上的Watcher监听器完成的，所有的Brokers监听一个Controller，Controller也监听所有的Controller，两者互相关注。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160311085124561" alt="k_controller_failover"></p>
+<p><strong>A.Broker Failover：on_broker_change</strong>  </p>
+<p>Broker失败，Controller注册在/brokers/ids的Watcher会触发调用onBrokerFailure。失败的Broker上的Replica可能是某个Partition的Leader也可能是某个Partition的follower。如果是Partition的Leader，那么Controller要确保有其他Broker成为这个Partition的Leader，如果是Partition的Follower，虽然不需要重新选举Leader，但是有可能Partition的ISR会变化。所以Controller首先会读取ZK中的ISR/AR选举新的Leader和ISR，然后把这个信息先保存到ZK中，最后把包含了新Leader和ISR的LeaderAndISR指令发送给受到影响的Brokers。收到指令的Broker如果Controller命令它成为某个Partition的Leader，那么原先为Follower副本的Replica就会becomeLeader。下面举个例子说明这个过程：  </p>
+<ul>
+<li>Partition1有三个副本：Replica1，Replica2，Replica3。其中Replica1是Leader，ISR=[1,2,3]</li>
+<li>Replica1所在的Broker1挂掉了（现在Partition没有了Leader），Controller触发onBrokerFailure</li>
+<li>Controller读取ZK的leaderAndISR，选举出新的leader和ISR。Leader=Replica2，ISR=[2,3]</li>
+<li>Controller将最新的leaderAndISR写到ZK中（leader=Replica2，ISR=[2,3]）</li>
+<li>Controller将最新的leaderAndISR构造成LeaderAndISRRequest发送给Broker2，Broker3</li>
+<li>Replica2所在的Broker2收到指令，因为最新的leader指示Replica2是Leader，所以Replica2成为Partition1的Leader</li>
+<li>Replica3所在的Broker3收到指令，Replica3仍然是follower，并且在ISR中，becomeFollower</li>
+</ul>
+<p>Broker失败后Controller端的处理步骤如下：  </p>
+<ol>
+<li>从ZK中读取现存的brokers</li>
+<li>broker宕机，会引起partition的Leader或ISR变化，获取在在这个broker上的partitions：set_p</li>
+<li>对set_p的每个Partition P<br>3.1 从ZK的leaderAndISR节点读取P的当前ISR<br>3.2 决定P的新Leader和新ISR（优先级分别是ISR中存活的broker，AR中任意存活的作为Leader）<br>3.3 将P最新的leader，ISR，epoch回写到ZK的leaderAndISR节点</li>
+<li>将set_p中每个Partition的LeaderAndISR指令（包括最新的leaderAndISR数据）发送给受到影响的brokers</li>
+</ol>
+<p>最后一步采用发送指令的方式实际上是一种RPC请求，之前的版本中采用的是在ZK的leader节点注册监听器来监控leader的变化，不过我们已经看到了这种方式会使得ZK的负载过重，而使用RPC的方式可以在不依赖ZK的情况下同样可以处理leader的变化。  </p>
+<p><code>如何决定P的新Leader和新ISR？</code>  </p>
+<p>假设AR=[1,2,3,4,5]，ISR=[1,2,3]，但是存活的Brokers=[2,3,5]。选择Leader的方式是ISR中目前存活的Brokers，比如目前存活的Broker是[2,3,4]，所以ISR中的副本1是不能作为Leader的，也不会再作为ISR了。Leader的选举是选举目前还存活的[2,3]中的一个，ISR的选举是选举在ISR中当前仍然存活的Broker=[2,3]。所以最后Leader=2，ISR=[2,3]。  </p>
+<p>假设AR=[1,2,3,4,5]，ISR=[1,2,3]，但是存活的Brokers=[4,6,7]。因为ISR中没有一个Broker在当前处于存活状态，所以只能退而求其次从AR中选择，幸运的是AR中的4目前是存活的，所以Leader=4，ISR=[4]。由于4不再ISR中，所以这种情况有可能会造成数据丢失，因为只有选举处于ISR中的，才不会丢失数据，但是现在ISR中的没有一个存活，所以也只好选择有可能丢失的Broekr，总比找不到任何的Broker要好吧。  </p>
+<p><code>什么叫做受到影响的brokers？</code>  </p>
+<p>Partition有多个Replicas，Replica是分布在Broker上的物理表示，所以一个Broker上受到影响的Replica的Partition肯定还有其他副本分布在其他Broker上，所有含有宕机Broker的Partition的节点都是受到影响的brokers。假如Broker1上有三个Partition，这些Partition有些是Leader（p1）有些则是Follower（p2，p3），如果是Leader，则受影响的brokers要负责选出这个Replica对应的Partition的新Leader；如果是follower，也有可能影响了Partition的ISR，所以Leader要负责更新ISR。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160311084942405" alt="k_affected_brokers"></p>
+<p><strong>B.创建或删除topics：on_topic_change</strong>  </p>
+<ol>
+<li>新创建一个topic，会同时指定Partition的个数，每个Partition都有AR信息写到ZK中</li>
+<li>为新创建的set_p 每个Partition P初始化leader：<br>2.1 选择AR中的一个存活的Broker作为新Leader，ISR=AR<br>2.2 将新Leader和ISR写到ZK的leaderAndISR节点</li>
+<li>发送LeaderAndISRCommand给受到影响的brokers</li>
+<li>如果是删除一个topic，则发送StopReplicaCommand给受影响的brokers</li>
+</ol>
+<p>Controller会在/brokers/topics上注册Watcher，所以有新topic创建/删除时，Controller会通过Watch得到新创建/删除的Topic的Partition/Replica分配。对于新创建的Topic，分配给Partition的AR中所有的Replica都还没有数据，可认为它们都是同步的，也即都在ISR中（ISR=AR），任意一个Replica都可作为Leader。  </p>
+<p>创建或删除topic的过程和onBrokerFailure类似都要经过三个步骤：1) 选举Leader和ISR；2) 将leaderAndISR写到ZK中；3) 将最新leaderAndISR的LeaderAndISR指令发送给受到影响的Brokers。这是因为brokerChange导致Partition的Leader或者ISR发生变化，而新创建topic时，根本就没有Leader和ISR，所以两者都需要为Partition选择Leader和ISR。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160313104935879" alt="k_broker_topic_change3"></p>
+<p><strong>C.Broker处理Controller发送的Command</strong>  </p>
+<p><code>on_LeaderAndISRCommand</code>  </p>
+<ol>
+<li>读取命令中的set_P</li>
+<li>对每个partition P<br>2.1 如果P在本地不存在，调用startReplica()创建一个新的Replia<br>2.2 指令要求这个Broker成为P的新Leader，调用becomeLeader<br>2.3 指令要求这个Broker作为Leader l的follower，调用becomeFollower</li>
+<li>如果指令中有INIT标记，则删除不在set_p中的所有本地partitions</li>
+</ol>
+<p>对于新创建的Partition，由于Replica都还没有在Broker上被创建，所以有可能指令中Partition的本地文件不存在，就需要新创建一个Replica。而如果是Broker失败发送过来的LeaderAndISRCommand，则一般受到影响接收LeaderAndISRCommand指定的Broker是有存在Replica的，那么指令里就会要求这个Broker上的副本要么成为Leader，要么成为Follower。比如上面A的图例中，Broker1宕机，其上的p1副本是Leader，现在集群中p1没有leader了，因此指令就会要求broker2的p1副本由原先的follower要转变为Leader了。  </p>
+<p>becomeLeader指的是当前接收LeaderAndISRCommand指令的Broker，原先是一个follower，现在要转变为Leader。由于作为Follower期间，它会从Leader抓取数据，而现在Leader不在了，所以首先要停止抓取数据线程。follower转变为Leader之后，要负责读写数据，所以要启动提交线程负责将消息存储到本地日志文件中。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">becomeLeader(r: Replica, command) &#123;</span><br><span class="line">  stop the ReplicaFetcherThread to the old leader</span><br><span class="line">  //after this, no more messages from the old leader can be appended to r  </span><br><span class="line">  r.partition.ISR = command.ISR</span><br><span class="line">  r.isLeader = true //enables reads/writes to this partition on this broker</span><br><span class="line">  start a commit thread on r</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意有可能新leader的HW会比之前的leader的HW要落后，这是因为新leader有可能是ISR，也有可能是AR中的replica。而原先作为Follower的replica，它的HW只会在向Leader发送抓取请求时，Leader在抓取响应中除了返回消息也会附带自己的HW给follower，Follower收到消息和HW后，才会更新自己的replica的HW，这中间有一定的时间间隔会导致Follower的HW会比Leader的HW要低。因此Follower在转变为Leader之后，它的HW是有可能比老的Leader的HW要低的。如果在leader角色转变之后，一个消费者客户端请求的offset可能比新的Leader的HW要大（因为消费者最多只消费到Leader的HW位置，但是消费者并不关心Leader到底有没有变化，所以如果旧的Leader的HW=10，那么客户端就可以消费到offset=10这个位置，而Leader发生转变后，HW可能降低为9，而这个时候客户端继续发送offset=10，就有可能比Leader的HW要大了！）。这种情况下，如果消费者要消费Leader的HW到LEO之间的数据，Broker会返回空的集合，而如果消费者请求的offset比LEO还要大，就会抛出OffsetOutofRangeException（LEO表示的是日志的最新位置，HW比LEO要小，客户端只能消费到HW位置，更不可能消费到LEO了）。  </p>
+<p>对于要转变为Follower的replica，原先如果是Leader的话，则要停止提交线程，由于当前Replica的leader可能会发生变化，所以在开始时要停止抓取线程，在最后要新创建到Replica最新leader的抓取线程，这中间还要截断日志到Replica的HW位置。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">becomeFollower(r: Replica) &#123;</span><br><span class="line">  stop the ReplicaFetcherThread to the old leader  </span><br><span class="line">  r.isLeader = false                                </span><br><span class="line">  //disables reads/writes to this partition on this broker</span><br><span class="line">  stop the commit thread, if any</span><br><span class="line">  truncate the log to r.hw</span><br><span class="line">  start a new ReplicaFetcherThread to the current leader of r, from offset r.leo</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>startReplica表示启动一个Replica，如果不存在Partition目录，则创建。并启动Replica的HW checkpoint线程，我们已经知道了Follower的HW是通过发送抓取请求，接收应答中包含了Leader的HW，设置为Follower Replica的HW（而Leader的HW又是由ISR提交来决定的，所以说ISR决定了HW能够增加，而Follower的HW则来自于Leader的HW）。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">startReplica(r: Replica) &#123;</span><br><span class="line">  create the partition directory locally, if not present</span><br><span class="line">  start the HW checkpoint thread for r</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下表是Broker收到LeaderAndISR指令后的动作，角色变化，以及线程的变化：  </p>
+<table>
+<thead>
+<tr>
+<th>action</th>
+<th>state transition</th>
+<th>thread</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>startReplica</td>
+<td>new replica</td>
+<td>start HW checkpoint</td>
+</tr>
+<tr>
+<td>becomeFollower</td>
+<td>leader to follower</td>
+<td>stop commit thread,start fetch thread</td>
+</tr>
+<tr>
+<td>becoleLeader</td>
+<td>follower to leader</td>
+<td>stop fetch thread,start commit thread</td>
+</tr>
+</tbody>
+</table>
+<p><code>on_StopReplicaCommand</code>  </p>
+<p>Replica既然可以start，也可以被stop掉，即通过StopReplicaCommand指令要求Broker停止掉Replica。</p>
+<ol>
+<li>从指令中读取partitions集合</li>
+<li>对每个partition P的每个Replica ，调用stopReplica<br>2.1 停止和r关联的抓取线程（当然针对的是Follower Replica）<br>2.2 停止r的HW checkpoint线程<br>2.3 删除partition目录</li>
+</ol>
+<p><strong>D.Controller Failover：on_controller_failover</strong>  </p>
+<p>由于Controller是从Brokers中选举出来的，所以Controller所在的节点也会作为Partition的存储节点的。当Controller挂掉后，Controller本身作为Broker也会触发新的Controller调用on_broker_change。但是在还没有选举出新的Controller之前，挂掉的Broker的on_broker_change不会被新的Controller调用（因为根本就没有可用的Controller）。所以对于挂掉的Controller节点，最紧迫的任务是首先选举出新的Controller，然后再由新的Controller触发挂掉的那个Controller的on_broker_change。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160313104859597" alt="k_onControllerFailover"></p>
+<p>还有一点Broker失败和Controller失败是不同的：Broker的failover是在Controller端处理的，因为我们知道Broker挂掉了，Controller负责在挂掉Controller和受影响的Broker之间更新数据（将新的leaderAndISR发送给受影响的Broker）。而Controller的failover则是在Broker处理的（成功创建Controller的那一个Broker）。实际上理解起来也很简单，任何角色A会在ZK上注册节点信息，并有另外的角色B负责监听，当角色A挂掉后，会由节点的监听器B处理A的failover。  </p>
+<p>因为Controller是集群中各种事件状态变化的中央控制器，比如Controller负责将LeaderAndISRCommand/StopReplicaCommand指令发送给集群中的brokers。因为Controller存在的作用就是负责处理某个Broker的事件变化，转换为请求，发送给其他的Broker，而Broker之间是不需要直接通信的。因此如果Controller这个大脑发生故障了，那么就等于各个Broker之间无法通信了。举个例子公司中开发某个项目并不需要所有人都围坐在一起从方案到需求到设计，通常在不同阶段有不同的人开不同的会议，不过每个会议都要求有一个项目组长（Controller）参与。在需求会议，项目组长收集需求人员的需求（源事件），项目组长整理需求后，在设计会议上，他会召集开发人员进行设计评审并分配不同的任务给不同的开发人员（由Controller分配任务给不同的Broker），可是有一天项目组长请假了，需求人员和开发人员就不知道如何通信了，因为他们之间的媒介无法连接了。那么怎么办呢，可以引入一个共享存储ZooKeeper：Controller将状态改变的事件都存储在ZooKeeper上确保数据不会丢失，这样即使Controller挂掉了，在新的Controller掌权之后，也能够从ZooKeeper中读取出所有事件，这种方式跟v2版本的Replica设计中ZK的state change队列（存储的是每个broker的state change requests）是类似的。但是真的需要为此再引入ZKQueue吗？实际上只要Controller节点保存的数据是无状态的，那么切换新的Controller之后能够恢复之前的集群状态信息就无需引入ZK队列。  </p>
+<ol>
+<li>创建<code>/controller-&gt;当前broker_id</code>的ZK节点，如果不成功则返回，表示竞选失败</li>
+<li>读取ZK中每个Partition的leaderAndISR节点数据</li>
+<li>对每个Partition都发送LeaderAndISRCommand（带上INIT标记位）给相关的Brokers</li>
+<li>触发调用on_broker_change()</li>
+<li>对没有leader的Partition，调用init_leaders(set_p)，这里跟创建topic时类似</li>
+<li>调用on_partitions_reassigned()重新分配Partition</li>
+<li>调用on_partitions_add()创建Partition</li>
+<li>调用on_partitons_remove()删除Partition</li>
+</ol>
+<p>第一步创建/controller节点，监听了这个节点的所有brokers都想要创建，但是只有一个Broker节点才能创建成功。on_controller_failover表示之前的Controller已经挂掉了，要在监听的broker并且成功创建/controller的节点处理旧的controller的failover（故障转移处理）。Controller挂掉时，它之前创建的/controller会被自动删除掉（并不在这个方法里处理，而是由ZK在controller进程挂掉时自动删除），所以就让其他一直默默潜水的brokers有机会成为新的Controller。  </p>
+<p><strong>E.Broker Startup：on_broker_startup</strong>  </p>
+<p>由于broker不管是启动还是发生故障，都会操作ZK中的/brokers/ids节点，而Controller牢牢地监控了这个节点的变化情况。当Broker刚启动时（这里指的是failover中的startup，如果说启动一个全新的broker，它上面是没有Replica的，而failover是之前存在Replica，发生故障后恢复过来的startup上面仍然有Replica的），为了让它所拥有的Replica能够正常提供服务，需要startReplica，同时其上的每个Replica要么成为Leader，要么成为Follower。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160311091731316" alt="k_on_broker"></p>
+<p>在on_broker_change里，Controller会将失败Broker上的Partition的指令发送给受影响的brokers（肯定不能发送给失败的Broker了），收到指令的brokers会对自己所拥有的Replica判断是否成为Leader或者Followr。而on_broker_start则是Controller直接处理刚刚启动的Broker。即on_broker_start是通过监听器直接处理，而on_broker_change是通过Controller发送命令给brokers处理，对于Broker而言都是针对Partition的Replica在Leader和Follower之间进行角色转换操作。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160312092301167" alt="k_broker_change_start"></p>
+<ol>
+<li>读取ZK中topic路径下每个topic所有Partition的AR（和partition路径的AR功能类似）</li>
+<li>读取ZK中分配给当前启动的Broker的每个Partition的leader和ISR（leaderAndISR）</li>
+<li>对分配给当前Broker的每个Replica<br>3.1 start replica<br>3.2 这个Broker是这个Partition的leader，becomeLeader<br>3.3 这个Broker是这个Partition的follower，becomeFollower</li>
+<li>删除不再分配给当前Broker的本地Partitions</li>
+</ol>
+<p>最后一步Broker在启动的时候需要删除不属于自己的partitions。这种场景可能是在这个broker当掉的时候，属于这个broker的topic被删除后又立马被重新创建。在删除topic的时候，所有broker都应该把这个topic的所有partition都删除掉，但是如果broker挂掉了，是无法进行任何操作的。在重新创建topic的时候，也不会将partition分配给当掉的broker，而只是分配partition给其他存活的broker。所以当掉的broker恢复正常后，应该把在删除topic时候的那些partition都删除掉。尽管又重新创建了topic，但是当掉broker上的partition是不能作为新创建的topic的partitions的，因为在当掉期间ZK中根本就不会记录属于当掉broker的partition分配信息。  </p>
+<p><strong>F.讨论</strong>  </p>
+<p><code>broker失败期间端到端的延迟</code>  </p>
+<ol>
+<li>broker关闭(关闭socket server后，需要关闭请求处理器和log)</li>
+<li>controller上的broker监听器被触发</li>
+<li>controller负责leadership变更，将新leader和isr发布到zk（每个受影响的partition都写一次zk）</li>
+<li>通过写到<code>ZKQueue</code>中通知每个broker leadership变化(每个broker写一次关于leader变化事件的zk)</li>
+<li>新leader等待isr中的follower成功连接上(Kafka RPC)</li>
+<li>follower首先截断日志，然后开始从leader抓取数据</li>
+</ol>
+<p>端到端的延迟指的是从Producer提交消息到这条消息被Consumer/Follower消费到的时间间隔。最耗时的是步骤三：对每个partition都要将新的leaderAndISR写一次zk。假设在broker发生故障时需要为10K个partition改变leader，每次zk写花费4ms，则总共会花费40s。不过可以使用zk中的multi()将所有Partition的写操作用批处理就只需要一次写。  </p>
+<p>步骤四中：controller会将最新的leadershipi变化事件通知给每个broker。在Replica的版本2中对于state change事件则采用队列的形式，对于leader的变化事件是通过监听器的方式通知注册在leader的所有broker节点。现在由于leader的管理交给了Controller，所以可以使用直接RPC代替监听器和队列。  </p>
+<p><code>ZKQueue vs 直接RPC</code>  </p>
+<p>通过ZK完成Controller和brokers的通信是非常低效的，因为每次通信都需要2次ZK写（每个写操作花费2个RPC），一次监听器的触发（写之后数据改变触发监听器调用），一次ZK读（监听器要获取最新的写操作结果），所以对于一次通信就花费了6次RPC（2*2+1+1=6，RPC指的是在不同节点之间的通信，controller和brokers是在不同节点上，需要通过RPC通信才能读写数据）。  </p>
+<p>如果controler和所有的brokers之间为了能够直接通信，在Broker端实现一个admin RPC，那么每次通信只需要一个RPC。使用RPC意味着当一个broker当掉后，它可能会丢失一些来自Controller的命令，所以在broker启动时它需要读取zk中保存的状态信息来恢复自己的状态。  </p>
+<p><code>如何处理多个leader?</code>  </p>
+<p>存在这样一种情况：有多个broker同时声称自己是某个partition的leader副本。比如broker A是partition的初始Leader，partition的ISR是{A,B,C}。然后broker A因为GC失去它在ZK中的注册信息。这时controller会认为broker A当掉了，并将partition的leader分配给了broker B，设置新的ISR为{B,C}，并写到ZK中（每次partition的leader发生变化，epoch也会增加）。在broker B成为leader的同时，broker A从GC中恢复过来，但是还没有收到controller发送的leadershipi变化指令。现在broker A和B都认为自己是leader，如果我们允许broker A和B能同时提交消息那就非常不幸了，因为所有副本之间的数据同步就会不一致了。不过当前的设计中实际上是不会允许出现这种情况的：<strong>当broker B成为leader之后，broker A是无法再提交任何新的消息的</strong>。  </p>
+<p>假设允许存在两个leader，生产者会同时往这两个leader写数据，但是能不能提交消息就类似于两阶段提交协议了：kafka的leader要能够提交一个消息的保证是ISR中的所有副本都复制成功。对于broker A为了保证能投提交消息m，它需要ISR中的每个副本（A,B,C）都要接收到消息m，而这个时候broker A仍然认为ISR是{A,B,C}，（这是broker A的一份本地拷贝，虽然这个时候ZK中的ISR已经被broker B改变了），但是ISR中的broker B是不会再接收到消息m的。因为在broker B成为Leader的时候，它会首先关掉到之前旧的broker A的数据抓取线程（broker B之前是follower，会向leader抓取数据，只有follower抓取数据，leader才能判断消息是否能提交），因为broker B的抓取线程被关闭了，broker A可能会认为B无法赶上Leader，既然因为B受到影响不能提交消息m，broker A干脆就想要把B从ISR中移除，这个时候broker A要将自己认为的最新的ISR写到ZK中。不过不幸的是broker A并不能完成这个操作：因为在写ZK的时候broker A会发现自己的epoch版本和ZK中的当前值并不匹配（broker B在选举为Leader之后会写到ZK中，并将epoch增加1，任何新的写操作的epoch都不能比当前epoch小），直到这个时刻，broker A才意识到它已经不再是partition的leader了（举个例子：一个团伙中大领导A突然消失了一段时间，众人在这段时间里选举出了新的领导B，并且向所有的成员都发话了，只有B的指令是管用的。在A回来时，没有人告诉他B已经成功上位，A还傻傻地认为自己还是最高BOSS，不过当他要发布指令的时候，发现每个人的指令只接受B的了，这时A才意识到MD自己已经被踢出局了）。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160312113420173" alt="k_2leader"></p>
+<p><code>broker故障客户端如何路由</code>  </p>
+<p>controller首先将受影响的partitions的新leader写到zk的leaderAndISR节点，然后才会向brokers发送leader改变的命令，brokers收到命令后会对leader改变的事件作出响应。由于客户端请求会使用leaderAndISR的数据来连接leader所在的节点，客户端的请求被路由到新leader所在的broker节点，但如果那个broker还没有准备好成为leader，就存在一个时间窗口对于客户端而言是不可用的。HBase只在regionserver响应了打开或关闭region的命令之后才更新元数据（这个元数据也用来响应客户端的请求，即客户端可以读取哪些region），而kafka这里则是controller先更新元数据（写入leaderAndISR）后才发送命令给broker，因此可能元数据已经更新，但是broker还没收到命令，或者收到命令后还没准备好成为leader。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160312132504155" alt="k_client_route"></p>
+<p>所以可能你会认为不要让controller先更新leaderAndISR节点，而是发送指令给brokers，每个broker在收到指令并处理完成后才，让每个broker来更新这个节点的数据。不过这里让controller来更新leaderAndISR节点是有原因的：我们是依赖ZK的leaderAndISR节点来保持controller和partition的leader的同步。当controller选举出新的leader之后，它并不希望ISR（新leader的ISR）被当前的leader（旧的leader）改变。否则的话（假设ISR可以被旧leader改变），新选举出来的leader在接管正式成为leader之前可能会被当前leader从ISR中剔除出去。通过立即将新leader发布到leaderAndISR节点，controller能够防止当前leader更新ISR（选举新的leader在写到ZK时，epoch增加，而如果当前leader想要更新ISR比如将新选举的leader从ISR中剔除掉，因为epoch不匹配，所以当前leader就不再有机会更新ISR了）。  </p>
+<p>一种方式是使用额外的ZK路径比如ExternalView来路由客户端请求解决这种短暂的不可用窗口。controller只会在broker响应leader改变的指令之后才更新ExternalView。对所有的partitions使用一个ExternalView或者每个partition都使用一个ExternalView各有利弊。前者对ZK有更少的负载，但是可能会强制客户端触发不必要的重新平衡。  </p>
+<p>正常情况下，leadership改变的指令会很快地被执行，所以在转换的这段时间里，我们可以依赖于客户端的重试机制，相对而言客户端的代价更小。即使broker成为新的leader花费了太长的时间，controller也会得到超时通知并触发一条告警信息通知admin。  </p>
+<p><code>leadership改变时，offset超过HW</code>  </p>
+<p>通常情况下，follower的HW总是落后于leader的HW。所以在leader变化时，消费者发送的offset中可能会落在新leader的HW和LEO之间（因为消费者的消费进度依赖于Leader的HW，旧Leader的HW比较高，而原先的follower作为新Leader，它的HW还是落后于旧Leader，所以消费者的offset虽然比旧Leader的HW低，但是有可能比新Leader的HW要大）。如果没有发生leader变化，服务端会返回OffsetOutOfRangeException给客户端。但这种情况下如果请求的offset介于HW和LEO之间，服务端会返回空消息集给消费者。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160312135626735" alt="k_client_hw_out"></p>
+<p><strong>G.小结</strong>  </p>
+<p>当前的KafkaController实现是多线程的控制器，并且模拟了状态机，它维护的状态有：  </p>
+<ul>
+<li>在每个节点上维护所有partitions的Replicas</li>
+<li>所有partitions的Leaders</li>
+</ul>
+<p>引起状态改变的输入事件有：  </p>
+<ol>
+<li>注册在ZooKeeper上的监听器<br>1) BrokerChangeListener（Broker挂掉）<br>2) DeleteTopicListener（删除Topic）<br>3) TopicChangeListener（更改Topic）<br>4) AddPartitionsListener（为Topic新增加Partition）<br>5) PartitionReassignedListener（Admin）<br>6) PreferredReplicaElectionListener（Admin）<br>7) ReassignedPartitionsIsrChangeListener</li>
+<li>到brokers的连接通道（controller被关闭）</li>
+<li>内部的调度任务（prefered leader选举）</li>
+</ol>
+<h2 id="Ref">Ref</h2><ul>
+<li><a href="https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Controller+Internals" target="_blank" rel="noopener">https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Controller+Internals</a></li>
+</ul>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/02/23/2016-02-23-Kafka-Controller/">Kafka源码分析 KafkaController（翻译和注释）</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年02月23日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/02/23/2016-02-23-Kafka-Controller/" title="Kafka源码分析 KafkaController（翻译和注释）">http://github.com/zqhxuyuan/2016/02/23/2016-02-23-Kafka-Controller/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/02/23/2016-02-23-Kafka-Controller/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/04/21/Cassandra-upgrade/">
+        Cassandra升级
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/02/22/2016-02-22-Kafka-Consumer-new/">
+        Kafka源码分析 KafkaConsumer（翻译和注释）
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#Replication"><span class="toc-number">1.</span> <span class="toc-text">Replication</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Controller要解决的问题"><span class="toc-number">2.</span> <span class="toc-text">Controller要解决的问题</span></a></li></ol><li class="toc-item toc-level-2"><a class="toc-link" href="#Ref"><span class="toc-number"></span> <span class="toc-text">Ref</span></a>
+</li></div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/02/23/2016-02-23-Kafka-Controller/" data-title="Kafka源码分析 KafkaController（翻译和注释）" data-url="http://github.com/zqhxuyuan/2016/02/23/2016-02-23-Kafka-Controller/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/04/21/Cassandra-upgrade/" title="上一篇: Cassandra升级">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/02/22/2016-02-22-Kafka-Consumer-new/" title="下一篇: Kafka源码分析 KafkaConsumer（翻译和注释）">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

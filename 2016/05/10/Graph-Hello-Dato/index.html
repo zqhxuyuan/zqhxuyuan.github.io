@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>图计算入门：Dato | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Dato的前身是PowerGraph，GraphLab Create，现在又改名为Dato，其Co-founder貌似是位华人（http://weibo.com/u/1863703874）。 案例集锦：https://dato.com/learn/gallery/手把手：https://dato.com/learn/how-to/，https://github.com/dato-code/how-">
+<meta name="keywords" content="graph">
+<meta property="og:type" content="article">
+<meta property="og:title" content="图计算入门：Dato">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/05/10/Graph-Hello-Dato/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Dato的前身是PowerGraph，GraphLab Create，现在又改名为Dato，其Co-founder貌似是位华人（http://weibo.com/u/1863703874）。 案例集锦：https://dato.com/learn/gallery/手把手：https://dato.com/learn/how-to/，https://github.com/dato-code/how-">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160512104247690">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160512104555881">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160512104913598">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160511155934888">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160511163609340">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160512084309447">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.326Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="图计算入门：Dato">
+<meta name="twitter:description" content="Dato的前身是PowerGraph，GraphLab Create，现在又改名为Dato，其Co-founder貌似是位华人（http://weibo.com/u/1863703874）。 案例集锦：https://dato.com/learn/gallery/手把手：https://dato.com/learn/how-to/，https://github.com/dato-code/how-">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160512104247690">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Graph-Hello-Dato" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/05/10/Graph-Hello-Dato/" class="article-date">
+  	<time datetime="2016-05-09T16:00:00.000Z" itemprop="datePublished">2016-05-10</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      图计算入门：Dato
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/work/">work</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/graph/">graph</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Dato的前身是PowerGraph，GraphLab Create，现在又改名为Dato，其Co-founder貌似是位华人（<a href="http://weibo.com/u/1863703874）。" target="_blank" rel="noopener">http://weibo.com/u/1863703874）。</a></p>
+<p>案例集锦：<a href="https://dato.com/learn/gallery/" target="_blank" rel="noopener">https://dato.com/learn/gallery/</a><br>手把手：<a href="https://dato.com/learn/how-to/" target="_blank" rel="noopener">https://dato.com/learn/how-to/</a>，<a href="https://github.com/dato-code/how-to">https://github.com/dato-code/how-to</a><br>用户指南：<a href="https://dato.com/learn/userguide/" target="_blank" rel="noopener">https://dato.com/learn/userguide/</a>，<a href="https://github.com/dato-code/userguide">https://github.com/dato-code/userguide</a><br>训练：<a href="https://github.com/dato-code/tutorials">https://github.com/dato-code/tutorials</a>  </p>
+<a id="more"></a>
+<h2 id="Dato_Quickstart">Dato Quickstart</h2><p>Dato需要注册才能使用, 并且有30天的试用期.注册地址：<a href="https://dato.com/download" target="_blank" rel="noopener">https://dato.com/download</a>，填写基本信息，然后会收到一封邮件。<br>注册之后会有一个安装指南的页面，Mac下有Dato Launcher带界面的，或者使用pip安装。  </p>
+<p>下面使用python的虚拟环境安装一个干净的dato测试环境:  </p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Create a virtual environment named dato-env</span></span><br><span class="line">virtualenv dato-env</span><br><span class="line"></span><br><span class="line"><span class="comment"># Activate the virtual environment</span></span><br><span class="line"><span class="built_in">source</span> dato-env/bin/activate</span><br><span class="line"></span><br><span class="line"><span class="comment"># Make sure pip is up to date</span></span><br><span class="line">pip install --upgrade pip</span><br><span class="line"></span><br><span class="line"><span class="comment"># Install IPython Notebook (optional)</span></span><br><span class="line">pip install <span class="string">"ipython[notebook]"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Install your licensed copy of GraphLab Create</span></span><br><span class="line">pip install --upgrade --no-cache-dir https://get.dato.com/GraphLab-Create/1.5.2/你的注册邮箱/分配给你的KEY/GraphLab-Create-License.tar.gz</span><br></pre></td></tr></table></figure>
+<p>如果是旧版本升级, 则到dato-env下执行: <code>bin/pip install graphlab-create==1.5.2</code>  </p>
+<p>测试dato可用: </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">➜  dato-env  bin/python</span><br><span class="line">Python <span class="number">2.7</span><span class="number">.8</span> (default, Oct <span class="number">20</span> <span class="number">2014</span>, <span class="number">15</span>:<span class="number">05</span>:<span class="number">19</span>) </span><br><span class="line">[GCC <span class="number">4.9</span><span class="number">.1</span>] on linux2</span><br><span class="line">Type <span class="string">"help"</span>, <span class="string">"copyright"</span>, <span class="string">"credits"</span> <span class="keyword">or</span> <span class="string">"license"</span> <span class="keyword">for</span> more information.</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> graphlab <span class="keyword">as</span> gl</span><br></pre></td></tr></table></figure>
+<p>如果没有报错, 说明可以使用graphlab的python包了.<br>如果执行路径不对,比如不在dato-env下或者直接敲入python都会报错找不到graphlab模块.比如错误是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; import graphlab as gl</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;&lt;stdin&gt;&quot;, line 1, in &lt;module&gt;</span><br><span class="line">ImportError: No module named graphlab</span><br></pre></td></tr></table></figure>
+<p>因为系统中已经有python了. 无法认识虚拟环境的python. 所以必须用的是虚拟环境下的python!  </p>
+<h3 id="Getting_Started_with_GraphLab_Create">Getting Started with GraphLab Create</h3><p>本节主要参考：<a href="https://dato.com/learn/gallery/notebooks/getting_started_with_graphlab_create.html" target="_blank" rel="noopener">https://dato.com/learn/gallery/notebooks/getting_started_with_graphlab_create.html</a>  </p>
+<p><strong>1.加载数据为SFrame</strong>  </p>
+<blockquote>
+<p>SFrame: tab分割的结构, 对数据再加工和特征构造非常理想<br>Graph: 对处理稀疏数据非常理想的一种结构<br>类似于Spark中将文本文件加载成RDD，简单说就是将外部数据源格式化成可以被内部系统认识的对象  </p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vertices = gl.SFrame.read_csv(<span class="string">'http://s3.amazonaws.com/dato-datasets/bond/bond_vertices.csv'</span>)</span><br><span class="line">edges = gl.SFrame.read_csv(<span class="string">'http://s3.amazonaws.com/dato-datasets/bond/bond_edges.csv'</span>)</span><br></pre></td></tr></table></figure>
+<p>读取csv文件时, gl会根据文件第一行的内容推断tab分割列的类型:  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bond_vertices: [str,str,int,int]  </span><br><span class="line">bond_edges: [str,str,str]</span><br></pre></td></tr></table></figure>
+<p>查看vertices顶点和edges边, 直接一个变量就可以了:  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>vertices</span><br><span class="line">+----------------+--------+-----------------+---------+</span><br><span class="line">|      name      | gender | license_to_kill | villian |</span><br><span class="line">+----------------+--------+-----------------+---------+</span><br><span class="line">|   James Bond   |   M    |        <span class="number">1</span>        |    <span class="number">0</span>    |</span><br><span class="line">|       M        |   M    |        <span class="number">1</span>        |    <span class="number">0</span>    |</span><br><span class="line">|   Moneypenny   |   F    |        <span class="number">1</span>        |    <span class="number">0</span>    |</span><br><span class="line">|       Q        |   M    |        <span class="number">1</span>        |    <span class="number">0</span>    |</span><br><span class="line">|    Wai Lin     |   F    |        <span class="number">1</span>        |    <span class="number">0</span>    |</span><br><span class="line">| Inga Bergstorm |   F    |        <span class="number">0</span>        |    <span class="number">0</span>    |</span><br><span class="line">| Elliot Carver  |   M    |        <span class="number">0</span>        |    <span class="number">1</span>    |</span><br><span class="line">|  Paris Carver  |   F    |        <span class="number">0</span>        |    <span class="number">1</span>    |</span><br><span class="line">|   Gotz Otto    |   M    |        <span class="number">0</span>        |    <span class="number">1</span>    |</span><br><span class="line">|  Henry Gupta   |   M    |        <span class="number">0</span>        |    <span class="number">1</span>    |</span><br><span class="line">+----------------+--------+-----------------+---------+</span><br><span class="line"></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>edges</span><br><span class="line">+----------------+------------+------------+</span><br><span class="line">|      src       |    dst     |  relation  |</span><br><span class="line">+----------------+------------+------------+</span><br><span class="line">|    Wai Lin     | James Bond |   friend   |</span><br><span class="line">|       M        | James Bond |  worksfor  |</span><br><span class="line">| Inga Bergstorm | James Bond |   friend   |</span><br><span class="line">| Elliot Carver  | James Bond | killed_by  |</span><br><span class="line">|   Gotz Otto    | James Bond | killed_by  |</span><br><span class="line">|   James Bond   |     M      | managed_by |</span><br><span class="line">|       Q        |     M      | managed_by |</span><br><span class="line">|   Moneypenny   |     M      | managed_by |</span><br><span class="line">|       Q        | Moneypenny | colleague  |</span><br><span class="line">|       M        | Moneypenny |  worksfor  |</span><br><span class="line">+----------------+------------+------------+</span><br></pre></td></tr></table></figure>
+<p><strong>2.创建图对象Graph,并添加顶点和边</strong>  </p>
+<blockquote>
+<p>先创建图对象，再在图上添加顶点和边。在一般的图数据库中，先创建顶点，然后用边把顶点的关联关系建立起来。<br>不过由于上面的edges已经存在源节点和目标节点的引用，所以直接把顶点对象和边对象加入图即可。<br>或者可以把vertices和edges各看做一张表，edges表引用了vertices的外键。所以图数据库也是一种数据库哦！  </p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">g = gl.SGraph()</span><br><span class="line">g = g.add_vertices(vertices=vertices, vid_field=<span class="string">'name'</span>)</span><br><span class="line">g = g.add_edges(edges=edges, src_field=<span class="string">'src'</span>, dst_field=<span class="string">'dst'</span>)</span><br></pre></td></tr></table></figure>
+<p>查看图的结构, 注意到把原先顶点的<code>name</code>改成了<code>__id</code>. 把边的<code>src,dst</code>改成<code>__src_id, __dst_id</code>.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>g</span><br><span class="line">SGraph(&#123;<span class="string">'num_edges'</span>: <span class="number">20</span>, <span class="string">'num_vertices'</span>: <span class="number">10</span>&#125;)</span><br><span class="line">Vertex Fields:[<span class="string">'__id'</span>, <span class="string">'gender'</span>, <span class="string">'license_to_kill'</span>, <span class="string">'villian'</span>]</span><br><span class="line">Edge Fields:[<span class="string">'__src_id'</span>, <span class="string">'__dst_id'</span>, <span class="string">'relation'</span>]</span><br></pre></td></tr></table></figure>
+<p>图对象提供了一些方法可以获取边和顶点. 跟原先的vertices,edges变量的输出类似. 毕竟把vertices和edges输入图后，再从图获取出来应该保持不变。 </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">g.get_vertices()</span><br><span class="line">g.get_edges()</span><br></pre></td></tr></table></figure>
+<p><strong>3.对图简单计算PageRank</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>pr = gl.pagerank.create(g)</span><br><span class="line">PROGRESS: Counting out degree</span><br><span class="line">PROGRESS: Done counting out degree</span><br><span class="line">PROGRESS: +-----------+-----------------------+</span><br><span class="line">PROGRESS: | Iteration | L1 change <span class="keyword">in</span> pagerank |</span><br><span class="line">PROGRESS: +-----------+-----------------------+</span><br><span class="line">PROGRESS: | <span class="number">1</span>         | <span class="number">6.65833</span>               |</span><br><span class="line">PROGRESS: | <span class="number">2</span>         | <span class="number">4.65611</span>               |</span><br><span class="line">PROGRESS: | <span class="number">3</span>         | <span class="number">3.46298</span>               |</span><br><span class="line">PROGRESS: | <span class="number">4</span>         | <span class="number">2.55686</span>               |</span><br><span class="line">PROGRESS: | <span class="number">5</span>         | <span class="number">1.95422</span>               |</span><br><span class="line">PROGRESS: | <span class="number">6</span>         | <span class="number">1.42139</span>               |</span><br><span class="line">PROGRESS: | <span class="number">7</span>         | <span class="number">1.10464</span>               |</span><br><span class="line">PROGRESS: | <span class="number">8</span>         | <span class="number">0.806704</span>              |</span><br><span class="line">PROGRESS: | <span class="number">9</span>         | <span class="number">0.631771</span>              |</span><br><span class="line">PROGRESS: | <span class="number">10</span>        | <span class="number">0.465388</span>              |</span><br><span class="line">PROGRESS: | <span class="number">11</span>        | <span class="number">0.364898</span>              |</span><br><span class="line">PROGRESS: | <span class="number">12</span>        | <span class="number">0.271257</span>              |</span><br><span class="line">PROGRESS: | <span class="number">13</span>        | <span class="number">0.212255</span>              |</span><br><span class="line">PROGRESS: | <span class="number">14</span>        | <span class="number">0.159062</span>              |</span><br><span class="line">PROGRESS: | <span class="number">15</span>        | <span class="number">0.124071</span>              |</span><br><span class="line">PROGRESS: | <span class="number">16</span>        | <span class="number">0.0935911</span>             |</span><br><span class="line">PROGRESS: | <span class="number">17</span>        | <span class="number">0.0727674</span>             |</span><br><span class="line">PROGRESS: | <span class="number">18</span>        | <span class="number">0.0551714</span>             |</span><br><span class="line">PROGRESS: | <span class="number">19</span>        | <span class="number">0.0427744</span>             |</span><br><span class="line">PROGRESS: | <span class="number">20</span>        | <span class="number">0.0325555</span>             |</span><br><span class="line">PROGRESS: +-----------+-----------------------+</span><br></pre></td></tr></table></figure>
+<p>上面我们看到直接使用gl的pagerank.create方法, 传入构造好的Graph对象, 就返回了pr对象. </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>pr</span><br><span class="line">Class                                   : PagerankModel</span><br><span class="line"></span><br><span class="line">Graph</span><br><span class="line">-----</span><br><span class="line">num_edges                               : <span class="number">20</span></span><br><span class="line">num_vertices                            : <span class="number">10</span></span><br><span class="line"></span><br><span class="line">Results</span><br><span class="line">-------</span><br><span class="line">graph                                   : SGraph. See m[<span class="string">'graph'</span>]</span><br><span class="line">change <span class="keyword">in</span> last iteration (L1 norm)      : <span class="number">0.0326</span></span><br><span class="line">vertex pagerank                         : SFrame. See m[<span class="string">'pagerank'</span>]</span><br><span class="line"></span><br><span class="line">Settings</span><br><span class="line">--------</span><br><span class="line">maximun number of iterations            : <span class="number">20</span></span><br><span class="line">convergence threshold (L1 norm)         : <span class="number">0.01</span></span><br><span class="line">probablity of random jumps to any node <span class="keyword">in</span> the graph: <span class="number">0.15</span></span><br><span class="line"></span><br><span class="line">Metrics</span><br><span class="line">-------</span><br><span class="line">training time (secs)                    : <span class="number">1.0853</span></span><br><span class="line">number of iterations                    : <span class="number">20</span></span><br><span class="line"></span><br><span class="line">Queryable Fields</span><br><span class="line">----------------</span><br><span class="line">training_time                           : Total training time of the model</span><br><span class="line">graph                                   : A new SGraph <span class="keyword">with</span> the pagerank <span class="keyword">as</span> a vertex property</span><br><span class="line">delta                                   : Change <span class="keyword">in</span> pagerank <span class="keyword">for</span> the last iteration <span class="keyword">in</span> L1 norm</span><br><span class="line">reset_probability                       : The probablity of randomly jumps to any node <span class="keyword">in</span> the graph</span><br><span class="line">pagerank                                : An SFrame <span class="keyword">with</span> each vertex<span class="string">'s pagerank</span></span><br><span class="line"><span class="string">num_iterations                          : Number of iterations</span></span><br><span class="line"><span class="string">threshold                               : The convergence threshold in L1 norm</span></span><br><span class="line"><span class="string">max_iterations                          : The maximun number of iterations to run</span></span><br></pre></td></tr></table></figure>
+<p>看到上面的可查询的字段, 都可以通过pr.get()来获得:  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>pr.get(<span class="string">'pagerank'</span>)</span><br><span class="line">+----------------+----------------+-------------------+</span><br><span class="line">|      __id      |    pagerank    |       delta       |</span><br><span class="line">+----------------+----------------+-------------------+</span><br><span class="line">|   Moneypenny   | <span class="number">1.18363921275</span>  |  <span class="number">0.00143637385736</span> |</span><br><span class="line">| Inga Bergstorm | <span class="number">0.869872717136</span> |  <span class="number">0.00477951418076</span> |</span><br><span class="line">|  Henry Gupta   | <span class="number">0.284762885673</span> | <span class="number">1.89255522874e-05</span> |</span><br><span class="line">|  Paris Carver  | <span class="number">0.284762885673</span> | <span class="number">1.89255522874e-05</span> |</span><br><span class="line">|       Q        | <span class="number">1.18363921275</span>  |  <span class="number">0.00143637385736</span> |</span><br><span class="line">|    Wai Lin     | <span class="number">0.869872717136</span> |  <span class="number">0.00477951418076</span> |</span><br><span class="line">|       M        | <span class="number">1.87718696576</span>  |  <span class="number">0.00666194771763</span> |</span><br><span class="line">|   James Bond   | <span class="number">2.52743578524</span>  |  <span class="number">0.0132914517076</span>  |</span><br><span class="line">| Elliot Carver  | <span class="number">0.634064732205</span> | <span class="number">0.000113553313724</span> |</span><br><span class="line">|   Gotz Otto    | <span class="number">0.284762885673</span> | <span class="number">1.89255522874e-05</span> |</span><br><span class="line">+----------------+----------------+-------------------+</span><br></pre></td></tr></table></figure>
+<p>但是上面是没有排序的, 我们按照pagerank这一列进行topK排序, 得到最重要的人: 邦德!  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>pr.get(<span class="string">'pagerank'</span>).topk(column_name=<span class="string">'pagerank'</span>)</span><br><span class="line">+----------------+----------------+-------------------+</span><br><span class="line">|      __id      |    pagerank    |       delta       |</span><br><span class="line">+----------------+----------------+-------------------+</span><br><span class="line">|   James Bond   | <span class="number">2.52743578524</span>  |  <span class="number">0.0132914517076</span>  |</span><br><span class="line">|       M        | <span class="number">1.87718696576</span>  |  <span class="number">0.00666194771763</span> |</span><br><span class="line">|   Moneypenny   | <span class="number">1.18363921275</span>  |  <span class="number">0.00143637385736</span> |</span><br><span class="line">|       Q        | <span class="number">1.18363921275</span>  |  <span class="number">0.00143637385736</span> |</span><br><span class="line">| Inga Bergstorm | <span class="number">0.869872717136</span> |  <span class="number">0.00477951418076</span> |</span><br><span class="line">|    Wai Lin     | <span class="number">0.869872717136</span> |  <span class="number">0.00477951418076</span> |</span><br><span class="line">| Elliot Carver  | <span class="number">0.634064732205</span> | <span class="number">0.000113553313724</span> |</span><br><span class="line">|  Henry Gupta   | <span class="number">0.284762885673</span> | <span class="number">1.89255522874e-05</span> |</span><br><span class="line">|  Paris Carver  | <span class="number">0.284762885673</span> | <span class="number">1.89255522874e-05</span> |</span><br><span class="line">|   Gotz Otto    | <span class="number">0.284762885673</span> | <span class="number">1.89255522874e-05</span> |</span><br><span class="line">+----------------+----------------+-------------------+</span><br></pre></td></tr></table></figure>
+<h3 id="ipython_notebook">ipython notebook</h3><p>在Mac下使用Dato Launcher安装成功后，启动GraphLab Create提供了两种方式，命令行或者IPythonNoteBook。<br>比如选择IPython方式，会自动打开浏览器，你可以创建一个PythonNoteBook，然后在浏览器上可以交互式地写代码。</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160512104247690" alt="graphlab ipython"></p>
+<p>通过g.show，还会打开一个页面：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160512104555881" alt="graphlab web"></p>
+<p>点击边或顶点，以顶点为例：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160512104913598" alt="graphlab vertices"></p>
+<h3 id="SFrame(Tablular表格类型的数据)">SFrame(Tablular表格类型的数据)</h3><h4 id="加载和保存">加载和保存</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#https://dato.com/learn/userguide/sframe/sframe-intro.html</span></span><br><span class="line"><span class="comment">#读取csv文件</span></span><br><span class="line">songs = gl.SFrame.read_csv(<span class="string">"http://s3.amazonaws.com/dato-datasets/millionsong/song_data.csv"</span>)</span><br><span class="line">usage_data = gl.SFrame.read_csv(<span class="string">"http://s3.amazonaws.com/dato-datasets/millionsong/10000.txt"</span>,</span><br><span class="line">                                header=<span class="keyword">False</span>,</span><br><span class="line">                                delimiter=<span class="string">'\t'</span>,</span><br><span class="line">                                column_type_hints=&#123;<span class="string">'X3'</span>:int&#125;)</span><br><span class="line"><span class="comment">#重命名列</span></span><br><span class="line">usage_data.rename(&#123;<span class="string">'X1'</span>:<span class="string">'user_id'</span>, <span class="string">'X2'</span>:<span class="string">'song_id'</span>, <span class="string">'X3'</span>:<span class="string">'listen_count'</span>&#125;)</span><br><span class="line"><span class="comment">#保存成SFrame的二进制格式，这样读取时直接加载，不需要解析</span></span><br><span class="line">usage_data.save(<span class="string">'./music_usage_data'</span>)</span><br><span class="line">same_usage_data = gl.load_sframe(<span class="string">'./music_usage_data'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#https://dato.com/learn/userguide/sframe/data-manipulation.html</span></span><br><span class="line"><span class="comment">#year的值如果是0，用None代替，防止计算summary时对整体造成偏差</span></span><br><span class="line"><span class="comment">#replace those zeroes with missing values with a Python lambda function</span></span><br><span class="line">songs[<span class="string">'year'</span>] = songs[<span class="string">'year'</span>].apply(<span class="keyword">lambda</span> x: <span class="keyword">None</span> <span class="keyword">if</span> x == <span class="number">0</span> <span class="keyword">else</span> x)</span><br></pre></td></tr></table></figure>
+<p>songs的原始示例数据如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">+--------------------+--------------------------------++--------------------------------+--------------------------------+------+</span><br><span class="line">|      song_id       |             title              ||            release             |          artist_name           | year |</span><br><span class="line">+--------------------+--------------------------------++--------------------------------+--------------------------------+------+</span><br><span class="line">| SOQMMHC12AB0180CB8 |          Silent Night          ||     Monster Ballads X-Mas      |        Faster Pussy cat        | 2003 |</span><br><span class="line">| SOVFVAK12A8C1350D9 |          Tanssi vaan           ||       Karkuteill\xc3\xa4       |        Karkkiautomaatti        | 1995 |</span><br><span class="line">| SOGTUKN12AB017F4F1 |       No One Could Ever        ||             Butter             |         Hudson Mohawke         | 2006 |</span><br><span class="line">| SOBNYVR12A8C13558C |      Si Vos Quer\xc3\xa9s      ||            De Culo             |          Yerba Brava           | 2003 |</span><br><span class="line">| SOHSBXH12A8C13B0DF |        Tangle Of Aspens        || Rene Ablaze Presents Winte ... |           Der Mystic           |  0   |</span><br><span class="line">| SOZVAPQ12A8C13B63C | Symphony No. 1 G minor &quot;Si ... || Berwald: Symphonies Nos. 1 ... |        David Montgomery        |  0   |</span><br><span class="line">| SOQVRHI12A6D4FB2D7 |        We Have Got Love        ||   Strictly The Best Vol. 34    |       Sasha / Turbulence       |  0   |</span><br><span class="line">| SOEYRFT12AB018936C |       2 Da Beat Ch&apos;yall        ||            Da Bomb             |           Kris Kross           | 1993 |</span><br><span class="line">| SOPMIYT12A6D4F851E |            Goodbye             ||           Danny Boy            |          Joseph Locke          |  0   |</span><br><span class="line">| SOJCFMH12A8C13B0C2 |   Mama_ mama can&apos;t you see ?   || March to cadence with the  ... | The Sun Harbor&apos;s Chorus-Do ... |  0   |</span><br><span class="line">+--------------------+--------------------------------++--------------------------------+--------------------------------+------+</span><br></pre></td></tr></table></figure>
+<p>usage_data的原始实例数据如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">+--------------------------------+--------------------+---------------+</span><br><span class="line">|               user_id          |      song_id       |  listen_count |</span><br><span class="line">+--------------------------------+--------------------+---------------+</span><br><span class="line">| b80344d063b5ccb3212f76538f ... | SOAKIMP12A8C130995 |      1        |</span><br><span class="line">| b80344d063b5ccb3212f76538f ... | SOBBMDR12A8C13253B |      2        |</span><br><span class="line">| b80344d063b5ccb3212f76538f ... | SOBXHDL12A81C204C0 |      1        |</span><br><span class="line">| b80344d063b5ccb3212f76538f ... | SOBYHAJ12A6701BF1D |      1        |</span><br><span class="line">| b80344d063b5ccb3212f76538f ... | SODACBL12A8C13C273 |      1        |</span><br><span class="line">| b80344d063b5ccb3212f76538f ... | SODDNQT12A6D4F5F7E |      5        |</span><br><span class="line">| b80344d063b5ccb3212f76538f ... | SODXRTY12AB0180F3B |      1        |</span><br><span class="line">| b80344d063b5ccb3212f76538f ... | SOFGUAY12AB017B0A8 |      1        |</span><br><span class="line">| b80344d063b5ccb3212f76538f ... | SOFRQTD12A81C233C0 |      1        |</span><br><span class="line">| b80344d063b5ccb3212f76538f ... | SOHQWYZ12A6D4FA701 |      1        |</span><br><span class="line">+--------------------------------+--------------------+---------------+</span><br></pre></td></tr></table></figure>
+<h4 id="数据转换">数据转换</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#apply a function to multiple columns. 添加love_count列表示在title和artist_name列出现love的次数</span></span><br><span class="line"><span class="comment">#when apply is called on an SFrame instead of an SArray as shown here, the input of the lambda function </span></span><br><span class="line"><span class="comment">#is a dictionary where the keys are the column names, and the values correspond to that row's values.</span></span><br><span class="line"><span class="comment">#lambda函数中row是一个map, row的key是列名,row.values是row对应的值</span></span><br><span class="line">songs[<span class="string">'love_count'</span>] = songs[[<span class="string">'title'</span>, <span class="string">'artist_name'</span>]].apply(</span><br><span class="line">    <span class="keyword">lambda</span> row: sum(x.lower().split(<span class="string">' '</span>).count(<span class="string">'love'</span>) <span class="keyword">for</span> x <span class="keyword">in</span> row.values()))</span><br><span class="line">songs.topk(<span class="string">'love_count'</span>, k=<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#根据类型选择列</span></span><br><span class="line">song[str]</span><br><span class="line"></span><br><span class="line"><span class="comment">#获取某一列的概要信息</span></span><br><span class="line">songs[<span class="string">'year'</span>].sketch_summary()</span><br><span class="line">songs[<span class="string">'year'</span>].show()</span><br><span class="line"></span><br><span class="line"><span class="comment">#过滤不需要的记录，只需要有记录年份的</span></span><br><span class="line">dated_songs = songs[songs[<span class="string">'year'</span>] != <span class="keyword">None</span>]</span><br><span class="line"><span class="comment">#summary打印的Length=value为0的记录 + 下面不为0的记录数</span></span><br><span class="line">len(dated_songs) </span><br><span class="line"></span><br><span class="line"><span class="comment">#多个过滤条件</span></span><br><span class="line">reasonable_usage = usage_data[(usage_data[<span class="string">'listen_count'</span>] &gt;= <span class="number">10</span>) &amp; (usage_data[<span class="string">'listen_count'</span>] &lt;= <span class="number">500</span>)]</span><br><span class="line">len(reasonable_usage)</span><br><span class="line"></span><br><span class="line"><span class="comment">#可视化SFrame</span></span><br><span class="line">songs.show</span><br><span class="line"></span><br><span class="line"><span class="comment">#songs中的song_id不是唯一的，因为相同song可能被不同的专辑收录，如果不关心专辑，可以过滤掉重复的song.</span></span><br><span class="line"><span class="comment">#比如song_id=1的有两条记录，一条在专辑1，一条在专辑2里，我们只需要一条即可，而不是把重复的都删掉！</span></span><br><span class="line">other_cols = songs.column_names()</span><br><span class="line">other_cols.remove(<span class="string">'song_id'</span>)</span><br><span class="line">agg_list = [gl.aggregate.SELECT_ONE(i) <span class="keyword">for</span> i <span class="keyword">in</span> other_cols]</span><br><span class="line"><span class="comment">#根据song_id分组，然后随机选择一条，这样每个song_id只有一条记录，最终的结果是每个song_id都是唯一的</span></span><br><span class="line">unique_songs = songs.groupby(<span class="string">'song_id'</span>, dict(zip(other_cols, agg_list)))</span><br><span class="line"></span><br><span class="line"><span class="comment">#播放量最多的歌曲。usage_data的列是用户id(user_id),歌曲id(song_id),播放量(listen_count)，所以相同歌曲会有多个用户播放</span></span><br><span class="line"><span class="comment">#select sum(listen_count) as total_listens, count(user_id) as num_unique_users from usage_data group by song_id</span></span><br><span class="line">tmp = usage_data.groupby([<span class="string">'song_id'</span>], &#123;<span class="string">'total_listens'</span>: gl.aggregate.SUM(<span class="string">'listen_count'</span>),</span><br><span class="line">                                       <span class="string">'num_unique_users'</span>: gl.aggregate.COUNT(<span class="string">'user_id'</span>)&#125;)</span><br><span class="line"><span class="comment">#usage_data表没有歌曲具体信息，只有歌曲编号，所以要关联歌曲表，获取歌曲的详细信息，并按照上一步计算出来的total_listens排序</span></span><br><span class="line"><span class="comment">#select songs.*, tmp.* from songs, tmp on songs.song_id = tmp.song_id order by tmp.total_listens desc</span></span><br><span class="line">tmp.join(songs, [<span class="string">'song_id'</span>]).topk(<span class="string">'total_listens'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#usage_data中含有user,song,以及播放量，可以认为是用户给歌曲打分，所以具备了推荐系统的必备元素</span></span><br><span class="line"><span class="comment">#当然不能简单地把播放了当做评分的值，而是要归一化，比如约定评分的取值范围是1-5</span></span><br><span class="line">s = usage_data[<span class="string">'listen_count'</span>].sketch_summary()</span><br><span class="line"><span class="keyword">import</span> numpy</span><br><span class="line">buckets = numpy.linspace(s.quantile(<span class="number">.005</span>), s.quantile(<span class="number">.995</span>), <span class="number">5</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">bucketize</span><span class="params">(x)</span>:</span></span><br><span class="line">    cur_bucket = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>,<span class="number">5</span>):</span><br><span class="line">        cur_bucket += <span class="number">1</span></span><br><span class="line">        <span class="keyword">if</span> x &lt;= buckets[i]:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    <span class="keyword">return</span> cur_bucket</span><br><span class="line">usage_data[<span class="string">'rating'</span>] = usage_data[<span class="string">'listen_count'</span>].apply(bucketize)</span><br><span class="line">usage_data</span><br></pre></td></tr></table></figure>
+<h4 id="复杂类型转换">复杂类型转换</h4><p><strong>list类型</strong>  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#复杂类型的转换，SArray的list和dict类型可以说不同的</span></span><br><span class="line"><span class="comment">#根据艺术家名字和发行的专辑名称分组，同一个专辑中的所有歌曲放在一个列表中</span></span><br><span class="line"><span class="comment">#select list(title),list(year) from songs group by release, artist_name</span></span><br><span class="line">albums = songs.groupby([<span class="string">'release'</span>,<span class="string">'artist_name'</span>], &#123;<span class="string">'tracks'</span>: gl.aggregate.CONCAT(<span class="string">'title'</span>),</span><br><span class="line">                                                   <span class="string">'years'</span>: gl.aggregate.CONCAT(<span class="string">'year'</span>)&#125;)</span><br><span class="line"><span class="comment">#添加year是为了调试，比如可以得出结论：在同一张专辑中的每首歌曲的发行时间不一定是相同的</span></span><br><span class="line">albums[<span class="number">0</span>]</span><br></pre></td></tr></table></figure>
+<p>albums的结果示例如下：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">+--------------------------------+--------------------------------+|--------------------------------+--------------------------------+</span><br><span class="line">|          artist_name           |            release             ||             tracks             |             years              |</span><br><span class="line">+--------------------------------+--------------------------------++--------------------------------+--------------------------------+</span><br><span class="line">|          Veruca Salt           |     Eight Arms To Hold You     || [\&apos;One Last Time\&apos;, \&apos;With ... | array(&apos;d&apos;, [1997.0, 1997.0 ... |</span><br><span class="line">|  Les Compagnons De La Chanson  | Heritage - Le Chant De Mal ... || [&apos;I Commedianti&apos;, &apos;Il Est  ... |              None              |</span><br><span class="line">| Nelly / Fat Joe / Young Tr ... |             Sweat              ||       [&apos;Grand Hang Out&apos;]       |      array(&apos;d&apos;, [2004.0])      |</span><br><span class="line">|           The Grouch           |       My Baddest B*tches       || [&apos;Silly Putty (Zion I Feat ... |      array(&apos;d&apos;, [1999.0])      |</span><br><span class="line">|         Ozzy Osbourne          | Diary of a madman / Bark a ... || [&quot;You Can\&apos;t Kill Rock And ... | array(&apos;d&apos;, [1981.0, 1983.0 ... |</span><br><span class="line">|        Peter Hunnigale         |      Reggae Hits Vol. 32       ||        [&apos;Weeks Go By&apos;]         |              None              |</span><br><span class="line">|         Burning Spear          |      Studio One Classics       ||        [&apos;Rocking Time&apos;]        |      array(&apos;d&apos;, [1973.0])      |</span><br><span class="line">|              Bond              |        New Classix 2008        ||   [&apos;Allegretto&apos;, &apos;Kashmir&apos;]    |              None              |</span><br><span class="line">| Lee Coombs feat. Katherine ... |            Control             || [&apos;Control (10Rapid Remix)&apos; ... |              None              |</span><br><span class="line">|         Stevie Wonder          |    Songs In The Key Of Life    || [&apos;Ngiculela-Es Una Histori ... |      array(&apos;d&apos;, [1976.0])      |</span><br><span class="line">+--------------------------------+--------------------------------++--------------------------------+--------------------------------+</span><br></pre></td></tr></table></figure>
+<p><strong>将list转为dict类型</strong>  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#CONCAT聚合将每一组的指定列的所有值创建为list，现在把list转为dict类型，key是年份，value是歌曲列表</span></span><br><span class="line"><span class="comment">#注意到分组字段多了year，实际上是先按照前两个字段分组，然后对列表中再按照year分组</span></span><br><span class="line">albums = songs.groupby([<span class="string">'release'</span>,<span class="string">'artist_name'</span>,<span class="string">'year'</span>], &#123;<span class="string">'tracks'</span>:gl.aggregate.CONCAT(<span class="string">'title'</span>)&#125;)</span><br><span class="line">albums = albums.unstack(column=[<span class="string">'year'</span>,<span class="string">'tracks'</span>], new_column_name=<span class="string">'track_dict'</span>)</span><br><span class="line">albums</span><br></pre></td></tr></table></figure>
+<p>dict类型的albums结果示例如下：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">+--------------------------------+--------------------------------++--------------------------------+</span><br><span class="line">|          artist_name           |            release             ||           track_dict           |</span><br><span class="line">+--------------------------------+--------------------------------++--------------------------------+</span><br><span class="line">|          Veruca Salt           |     Eight Arms To Hold You     || &#123;1994: [\&apos;Straight\&apos;], 199 ... |</span><br><span class="line">|  Les Compagnons De La Chanson  | Heritage - Le Chant De Mal ... ||              None              |</span><br><span class="line">| Nelly / Fat Joe / Young Tr ... |             Sweat              ||   &#123;2004: [&apos;Grand Hang Out&apos;]&#125;   |</span><br><span class="line">|           The Grouch           |       My Baddest B*tches       ||     &#123;1999: [&apos;Simple Man&apos;]&#125;     |</span><br><span class="line">|         Ozzy Osbourne          | Diary of a madman / Bark a ... || &#123;1986: [\&apos;Secret Loser\&apos;], ... |</span><br><span class="line">|        Peter Hunnigale         |      Reggae Hits Vol. 32       ||              None              |</span><br><span class="line">|         Burning Spear          |      Studio One Classics       ||    &#123;1973: [&apos;Rocking Time&apos;]&#125;    |</span><br><span class="line">|              Bond              |        New Classix 2008        ||              None              |</span><br><span class="line">| Lee Coombs feat. Katherine ... |            Control             ||              None              |</span><br><span class="line">|         Stevie Wonder          |    Songs In The Key Of Life    || &#123;1976: [&apos;Have A Talk With  ... |</span><br><span class="line">+--------------------------------+--------------------------------++--------------------------------+</span><br></pre></td></tr></table></figure>
+<p><strong>将dict转换为list</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#一张专辑中歌曲在不同的年份数量,length=1表示所有歌曲都是在同一年发行</span></span><br><span class="line">albums[<span class="string">'num_years'</span>] = albums[<span class="string">'track_dict'</span>].item_length()</span><br><span class="line">albums[<span class="string">'num_years'</span>].show()</span><br><span class="line"></span><br><span class="line"><span class="comment">#albums['track_dict']是个Map，上面添加了一列num_years，将Map转换为list(当然Map还在的)</span></span><br><span class="line"><span class="comment">#dict_values表示获取Map中的所有value，即year对应的歌曲列表</span></span><br><span class="line">albums[<span class="string">'track_list'</span>] = albums[<span class="string">'track_dict'</span>].dict_values()</span><br><span class="line">albums</span><br></pre></td></tr></table></figure>
+<p>下面的track_dict是dict，track_list是dict中value列表（这里把artist_name和release省略掉了），<br>注意Map的每个value本身就是一个List:  track_dict=Map[Int, List[String]]，<br>现在把List[String]抽取出来组成track_list，<br>即track_list的每个元素都是List[String], tract_list=List[List[String]] </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">+--------------------------------+-----------+--------------------------------+</span><br><span class="line">|           track_dict           | num_years |           track_list           |</span><br><span class="line">+--------------------------------+-----------+--------------------------------+</span><br><span class="line">| &#123;1994: [\&apos;Straight\&apos;], 199 ... |     2     | [[\&apos;Straight\&apos;], [\&apos;With D ... |</span><br><span class="line">|              None              |    None   |              None              |</span><br><span class="line">|   &#123;2004: [&apos;Grand Hang Out&apos;]&#125;   |     1     |      [[&apos;Grand Hang Out&apos;]]      |</span><br><span class="line">|     &#123;1999: [&apos;Simple Man&apos;]&#125;     |     1     |        [[&apos;Simple Man&apos;]]        |</span><br><span class="line">| &#123;1986: [\&apos;Secret Loser\&apos;], ... |     3     | [[&quot;You Can\&apos;t Kill Rock An ... |</span><br><span class="line">|              None              |    None   |              None              |</span><br><span class="line">|    &#123;1973: [&apos;Rocking Time&apos;]&#125;    |     1     |       [[&apos;Rocking Time&apos;]]       |</span><br><span class="line">|              None              |    None   |              None              |</span><br><span class="line">|              None              |    None   |              None              |</span><br><span class="line">| &#123;1976: [&apos;Have A Talk With  ... |     1     |   [[&apos;Have A Talk With God&apos;]]   |</span><br><span class="line">|              ...               |    ...    |              ...               |</span><br><span class="line">+--------------------------------+-----------+--------------------------------+</span><br></pre></td></tr></table></figure>
+<p>我们想把tract_list转换成List[String]，实际上和scala中的flatten类似（压扁）。即目标是：<br>将a list of lists change to a single list。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> itertools</span><br><span class="line">albums[<span class="string">'track_list'</span>] = albums[<span class="string">'track_list'</span>].apply(<span class="keyword">lambda</span> x: list(itertools.chain(*x)))</span><br><span class="line">albums</span><br></pre></td></tr></table></figure>
+<p>压扁后的示例如下，现在看起来就跟原始的songs类似了（当然原始数据没有分组）。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">+--------------------------------+-----------+--------------------------------+</span><br><span class="line">|           track_dict           | num_years |           track_list           |</span><br><span class="line">+--------------------------------+-----------+--------------------------------+</span><br><span class="line">| &#123;1994: [\&apos;Straight\&apos;], 199 ... |     2     | [\&apos;Straight\&apos;, \&apos;With Davi ... |</span><br><span class="line">|              None              |    None   |              None              |</span><br><span class="line">|   &#123;2004: [&apos;Grand Hang Out&apos;]&#125;   |     1     |       [&apos;Grand Hang Out&apos;]       |</span><br><span class="line">|     &#123;1999: [&apos;Simple Man&apos;]&#125;     |     1     |         [&apos;Simple Man&apos;]         |</span><br><span class="line">| &#123;1986: [\&apos;Secret Loser\&apos;], ... |     3     | [&quot;You Can\&apos;t Kill Rock And ... |</span><br><span class="line">|              None              |    None   |              None              |</span><br><span class="line">|    &#123;1973: [&apos;Rocking Time&apos;]&#125;    |     1     |        [&apos;Rocking Time&apos;]        |</span><br><span class="line">|              None              |    None   |              None              |</span><br><span class="line">|              None              |    None   |              None              |</span><br><span class="line">| &#123;1976: [&apos;Have A Talk With  ... |     1     |    [&apos;Have A Talk With God&apos;]    |</span><br><span class="line">|              ...               |    ...    |              ...               |</span><br><span class="line">+--------------------------------+-----------+--------------------------------+</span><br></pre></td></tr></table></figure>
+<p>可以在list或dict上直接过滤，比如下面要删除1994或1999的所有歌曲</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">albums[<span class="string">'track_dict'</span>] = albums[<span class="string">'track_dict'</span>].dict_trim_by_keys([<span class="number">1994</span>, <span class="number">1999</span>])</span><br></pre></td></tr></table></figure>
+<p>比如下面第一行记录和上面的第一行记录相比，1994的歌曲Straight不在track_dict中，上面第四行1999的Simple Man也被删了。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">+--------------------------------+-----------+--------------------------------+</span><br><span class="line">|           track_dict           | num_years |           track_list           |</span><br><span class="line">+--------------------------------+-----------+--------------------------------+</span><br><span class="line">| &#123;1997: [\&apos;With David Bowie ... |     2     | [\&apos;Straight\&apos;, \&apos;With Davi ... |</span><br><span class="line">|              None              |    None   |              None              |</span><br><span class="line">|   &#123;2004: [&apos;Grand Hang Out&apos;]&#125;   |     1     |       [&apos;Grand Hang Out&apos;]       |</span><br><span class="line">|               &#123;&#125;               |     1     |         [&apos;Simple Man&apos;]         |</span><br><span class="line">| &#123;1986: [\&apos;Secret Loser\&apos;], ... |     3     | [&quot;You Can\&apos;t Kill Rock And ... |</span><br><span class="line">|              None              |    None   |              None              |</span><br><span class="line">|    &#123;1973: [&apos;Rocking Time&apos;]&#125;    |     1     |        [&apos;Rocking Time&apos;]        |</span><br><span class="line">|              None              |    None   |              None              |</span><br><span class="line">|              None              |    None   |              None              |</span><br><span class="line">| &#123;1976: [&apos;Have A Talk With  ... |     1     |    [&apos;Have A Talk With God&apos;]    |</span><br><span class="line">|              ...               |    ...    |              ...               |</span><br><span class="line">+--------------------------------+-----------+--------------------------------+</span><br></pre></td></tr></table></figure>
+<p>dict对条目查找非常适合，可以在dict根据key进行过滤。比如下面的代码会在track_dict中，<br>只要这样记录中有一条1965的记录，就把整条记录都查询出来。类似于contains方法</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">albums[albums[<span class="string">'track_dict'</span>].dict_has_any_keys(<span class="number">1965</span>)]</span><br></pre></td></tr></table></figure>
+<p>把上面所有的列打包成一列：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">big_list = albums.pack_columns(albums.column_names())</span><br><span class="line">big_list</span><br></pre></td></tr></table></figure>
+<p>比如下面第一行第一个元素实际上是artist_name列,第二个元素是release列，所有列组成一个list<br>当然如果要反过来，把list分隔成单独的列，可以用<code>unpack</code>函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">+--------------------------------+</span><br><span class="line">|               X1               |</span><br><span class="line">+--------------------------------+</span><br><span class="line">| [\&apos;Veruca Salt\&apos;, \&apos;Eight  ... |</span><br><span class="line">| [&apos;Les Compagnons De La Cha ... |</span><br><span class="line">| [&apos;Nelly / Fat Joe / Young  ... |</span><br><span class="line">| [&apos;The Grouch&apos;, &apos;My Baddest ... |</span><br><span class="line">| [\&apos;Ozzy Osbourne\&apos;, \&apos;Diar ... |</span><br><span class="line">| [&apos;Peter Hunnigale&apos;, &apos;Regga ... |</span><br><span class="line">| [&apos;Burning Spear&apos;, &apos;Studio  ... |</span><br><span class="line">| [&apos;Bond&apos;, &apos;New Classix 2008 ... |</span><br><span class="line">| [&apos;Lee Coombs feat. Katheri ... |</span><br><span class="line">| [&apos;Stevie Wonder&apos;, &apos;Songs I ... |</span><br><span class="line">+--------------------------------+</span><br></pre></td></tr></table></figure>
+<h4 id="SparkRDD">SparkRDD</h4><p>将Spark的RDD和GraphLab的SFrame进行转换，实际上Spark也有DataFrame的概念，所以可以认为Spark的DataFrame和GraphLab的SFrame是类似的。（其实它们都借鉴了python pandas的DataFrame概念）  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">➜  spark-sframe git:(master) build/mvn package</span><br><span class="line">[INFO] Replacing /Users/zhengqh/Github/_graph/spark-sframe/target/uber-spark_unity-0.1.jar</span><br></pre></td></tr></table></figure>
+<h3 id="SGraph(图数据)">SGraph(图数据)</h3><p><strong>创建图</strong>  </p>
+<p>SGraph是基于SFrame之上提供支持图操作的一个数据结构。注意SGraph是个不可变对象，所以添加一个顶点或一条边后，要重新赋值。否则原来的graph仍然是空的。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> graphlab <span class="keyword">import</span> SGraph, Vertex, Edge</span><br><span class="line">g = SGraph()</span><br><span class="line">verts = [Vertex(<span class="number">0</span>, attr=&#123;<span class="string">'breed'</span>: <span class="string">'labrador'</span>&#125;),</span><br><span class="line">         Vertex(<span class="number">1</span>, attr=&#123;<span class="string">'breed'</span>: <span class="string">'labrador'</span>&#125;),</span><br><span class="line">         Vertex(<span class="number">2</span>, attr=&#123;<span class="string">'breed'</span>: <span class="string">'vizsla'</span>&#125;)]</span><br><span class="line"><span class="comment">#重新赋值</span></span><br><span class="line">g = g.add_vertices(verts)</span><br><span class="line">g = g.add_edges(Edge(<span class="number">1</span>, <span class="number">2</span>))</span><br><span class="line"><span class="keyword">print</span> g</span><br><span class="line"></span><br><span class="line">SGraph(&#123;<span class="string">'num_edges'</span>: <span class="number">1</span>, <span class="string">'num_vertices'</span>: <span class="number">3</span>&#125;)</span><br><span class="line">Vertex Fields:[<span class="string">'__id'</span>, <span class="string">'breed'</span>]</span><br><span class="line">Edge Fields:[<span class="string">'__src_id'</span>, <span class="string">'__dst_id'</span>]</span><br></pre></td></tr></table></figure>
+<p>因为在图对象上调用添加顶点和边的方法返回的仍然是一个图对象，所以可以用链式调用的方式创建一张图</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> graphlab <span class="keyword">import</span> SGraph, Vertex, Edge</span><br><span class="line">g = SGraph().add_vertices([Vertex(i) <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">10</span>)]).add_edges(</span><br><span class="line">    [Edge(i, i+<span class="number">1</span>) <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">9</span>)])</span><br></pre></td></tr></table></figure>
+<p>也可以基于SFrame的边列表构建图，不需要顶点，因为边中就包含了顶点。所以顶点会被自动加入到图中。<br>边的值列表中不作为source或者destination的都被作为边的属性。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> graphlab <span class="keyword">import</span> SFrame</span><br><span class="line">edge_data = SFrame.read_csv(<span class="string">'http://s3.amazonaws.com/dato-datasets/bond/bond_edges.csv'</span>)</span><br><span class="line"></span><br><span class="line">g = SGraph()</span><br><span class="line">g = g.add_edges(edge_data, src_field=<span class="string">'src'</span>, dst_field=<span class="string">'dst'</span>)</span><br><span class="line"><span class="keyword">print</span> g</span><br><span class="line"></span><br><span class="line">SGraph(&#123;<span class="string">'num_edges'</span>: <span class="number">20</span>, <span class="string">'num_vertices'</span>: <span class="number">10</span>&#125;)</span><br></pre></td></tr></table></figure>
+<p>当然也可以基于顶点和边一起来构造一张图：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> graphlab <span class="keyword">import</span> SFrame</span><br><span class="line">edge_data = SFrame.read_csv(<span class="string">'http://s3.amazonaws.com/dato-datasets/bond/bond_edges.csv'</span>)</span><br><span class="line">vertex_data = SFrame.read_csv(<span class="string">'http://s3.amazonaws.com/dato-datasets/bond/bond_vertices.csv'</span>)</span><br><span class="line"></span><br><span class="line">g = SGraph(vertices=vertex_data, edges=edge_data, vid_field=<span class="string">'name'</span>, src_field=<span class="string">'src'</span>, dst_field=<span class="string">'dst'</span>)</span><br></pre></td></tr></table></figure>
+<p>实际上上面构造SGraph的几种方式可以认为通过构造函数，构造函数可以是空的就要通过方法添加顶点和边，或者只有边，或者有边也有顶点，后两者都不需要通过方法，因为构造函数时已经把数据传入图对象中了。</p>
+<p><strong>检索图</strong>  </p>
+<p>小图可以用show方法展示，顶点的label标签可以是id或者任何的顶点属性，比如下面指定了标签为id</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">g.show(vlabel=<span class="string">'id'</span>, highlight=[<span class="string">'James Bond'</span>, <span class="string">'Moneypenny'</span>], arrows=<span class="keyword">True</span>)</span><br></pre></td></tr></table></figure>
+<p>大图显然不能用show把所有边和节点都展现出来，不过可以用<code>g.summary()</code>显示概要信息：图的节点数量和边数量。<br>或者通过get_vertices和get_edges方法返回SGraph的内容，这个返回值是SFrame，同样可以根据id或其他顶点属性</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">print</span> g.summary()</span><br><span class="line"></span><br><span class="line"><span class="comment">#查找图中id为邦德的顶点</span></span><br><span class="line">sub_verts = g.get_vertices(ids=[<span class="string">'James Bond'</span>])</span><br><span class="line"><span class="keyword">print</span> sub_verts</span><br><span class="line"></span><br><span class="line"><span class="comment">#查找图中边的属性为worksfor的所有边</span></span><br><span class="line">sub_edges = g.get_edges(fields=&#123;<span class="string">'relation'</span>: <span class="string">'worksfor'</span>&#125;)</span><br><span class="line"><span class="keyword">print</span> sub_edges</span><br></pre></td></tr></table></figure>
+<p><code>get_neighborhood</code>根据给定的目标顶点返回一个子图，radis半径表示目标节点和邻居节点的最大长度，比如1就是一度邻居，2就是二度邻居（也包括一度邻居）。<br>full_subgraph=true表示，目标节点的一度邻居之间也可以有边。比如下图中绿色节点都是给定目标节点（邦德和Moneypenny）的一度邻居。<br>M和Q，以及Otto和Carver都和对应的目标节点是一度的关系，它们之间的连线是因为设置了full_subgraph才有的。<br>如果full_subgraph=false，则邻居之间老死不相往来，邻居只和目标节点有往来。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160511155934888" alt="full_subgraph"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">targets = [<span class="string">'James Bond'</span>, <span class="string">'Moneypenny'</span>]</span><br><span class="line">subgraph = g.get_neighborhood(ids=targets, radius=<span class="number">1</span>, full_subgraph=<span class="keyword">True</span>)</span><br><span class="line">subgraph.show(vlabel=<span class="string">'id'</span>, highlight=[<span class="string">'James Bond'</span>, <span class="string">'Moneypenny'</span>], arrows=<span class="keyword">True</span>)</span><br></pre></td></tr></table></figure>
+<p><strong>修改图</strong>  </p>
+<p>SGraph是结构化不可变的，但是存储在边和顶点中的数据则是可变的。SGraph.vertices和SGraph.edges的返回值是SFrame。所以SFrame可以分成两种：  </p>
+<ol>
+<li>和graph相关的SFrame，这种叫做special SFrame</li>
+<li>正常的SFrame，叫做normal SFrame</li>
+</ol>
+<p>虽然下面两个方法打印的内容都是相同的，不过g.get_edges返回的是正常的SFrame（和SGraph对象毫无关系），<br>而g.edges返回的则是和Graph g绑定在一起的SFrame。要修改图中的边或节点的数据，要使用special SFrame。  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">g.edges.print_rows(<span class="number">5</span>)</span><br><span class="line">g.get_edges().print_rows(<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#使用special SFrame可以更新边的数据（属性）</span></span><br><span class="line">g.edges[<span class="string">'relation'</span>] = g.edges[<span class="string">'relation'</span>].apply(<span class="keyword">lambda</span> x: x[<span class="number">0</span>].upper())</span><br><span class="line">g.get_edges().print_rows(<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#使用normal SFrame无法更新边的属性。如果说有更新，则打印结果应该是小写的，不过实际上仍然是大写的</span></span><br><span class="line">e = g.get_edges()  <span class="comment"># e is a normal SFrame independent of g.</span></span><br><span class="line">e[<span class="string">'relation'</span>] = e[<span class="string">'relation'</span>].apply(<span class="keyword">lambda</span> x: x[<span class="number">0</span>].lower())</span><br><span class="line">g.get_edges().print_rows(<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#在special SFrame上调用head,tail,append等方法返回的是normal/regular SFrame，所以也是无法做更新操作的</span></span><br><span class="line">e = g.edges.head(<span class="number">5</span>)</span><br><span class="line">e[<span class="string">'is_friend'</span>] = e[<span class="string">'relation'</span>].apply(<span class="keyword">lambda</span> x: x[<span class="number">0</span>] == <span class="string">'F'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#虽然是special SFrame，不过它也可以使用normal SFrame的一些操作，比如添加或删除边的属性，来达到修改图的目的</span></span><br><span class="line">g.edges[<span class="string">'weight'</span>] = <span class="number">1.0</span></span><br><span class="line"><span class="keyword">del</span> g.edges[<span class="string">'weight'</span>]</span><br></pre></td></tr></table></figure>
+<p><code>triple_apply</code>方法提供了一种修改SGraph的顶点和边属性的方式。它会异步地将自定义的函数运用到所有的边上，<br>允许你基于顶点数据（源顶点和目标顶点）或者边数据修改边数据（无法修改顶点数据，如果要修改，可以为顶点新建一个属性，然后在遍历过程中修改）。  </p>
+<ol>
+<li>定义方法，输入参数：源顶点，边，目标顶点</li>
+<li>为SGraph的顶点节点添加一个新的属性，比如degree，初始值为0</li>
+<li>自定义的方法被运用到图中所有的边</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#在遍历每条边的时候，为源节点和目标节点的degree属性值+1</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">increment_degree</span><span class="params">(src, edge, dst)</span>:</span></span><br><span class="line">    src[<span class="string">'degree'</span>] += <span class="number">1</span></span><br><span class="line">    dst[<span class="string">'degree'</span>] += <span class="number">1</span></span><br><span class="line">    <span class="keyword">return</span> (src, edge, dst)</span><br><span class="line"></span><br><span class="line"><span class="comment">#每个顶点都添加一个新的属性degree，初始值为0</span></span><br><span class="line">g.vertices[<span class="string">'degree'</span>] = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">g = g.triple_apply(increment_degree, mutated_fields=[<span class="string">'degree'</span>])</span><br><span class="line"><span class="keyword">print</span> g.vertices.sort(<span class="string">'degree'</span>, ascending=<span class="keyword">False</span>)</span><br></pre></td></tr></table></figure>
+<p>计算每个顶点的degree的过程如下图：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160511163609340" alt="degree"></p>
+<p>返回结果如下,可以看到邦德是最受欢迎的人。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">+----------------+--------+--------+-----------------+---------+</span><br><span class="line">|      __id      | degree | gender | license_to_kill | villian |</span><br><span class="line">+----------------+--------+--------+-----------------+---------+</span><br><span class="line">|   James Bond   |   8    |   M    |        1        |    0    |</span><br><span class="line">| Elliot Carver  |   7    |   M    |        0        |    1    |</span><br><span class="line">|       M        |   6    |   M    |        1        |    0    |</span><br><span class="line">|   Moneypenny   |   4    |   F    |        1        |    0    |</span><br><span class="line">|       Q        |   4    |   M    |        1        |    0    |</span><br><span class="line">|  Paris Carver  |   3    |   F    |        0        |    1    |</span><br><span class="line">| Inga Bergstorm |   2    |   F    |        0        |    0    |</span><br><span class="line">|  Henry Gupta   |   2    |   M    |        0        |    1    |</span><br><span class="line">|    Wai Lin     |   2    |   F    |        1        |    0    |</span><br><span class="line">|   Gotz Otto    |   2    |   M    |        0        |    1    |</span><br><span class="line">+----------------+--------+--------+-----------------+---------+</span><br></pre></td></tr></table></figure>
+<h3 id="时间序列数据">时间序列数据</h3><p>时间序列数据通常将时间撮作为索引（就好像表的主键一样），根据时间撮可以做这些事情：</p>
+<ol>
+<li>以不同的时间间隔对数据<code>分组</code></li>
+<li>将不同时间段的数据进行<code>聚合</code></li>
+<li>将数据转换成正常的分散的间隔，比如将秒级别转换成小时级别，去掉分秒的精度</li>
+<li>窗口操作</li>
+</ol>
+<p>TimeSeries对象也是基于SFrame，指定索引列，通过TimeSeries构造函数就可以将普通的SFrame转换为TimeSeries对象。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> graphlab <span class="keyword">as</span> gl</span><br><span class="line"></span><br><span class="line">household_data = gl.SFrame(<span class="string">"http://s3.amazonaws.com/dato-datasets/household_electric_sample.sf"</span>)</span><br><span class="line">household_ts = gl.TimeSeries(household_data, index=<span class="string">"DateTime"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#TimeSeries可以转换为SFrame</span></span><br><span class="line">sf = household_ts.to_sframe()</span><br><span class="line"></span><br><span class="line"><span class="comment">#TimeSeries中的每一列都是一个SArray对象，选择部分列：</span></span><br><span class="line">ts_power = household_ts[[<span class="string">'Global_active_power'</span>, <span class="string">'Global_reactive_power'</span>]]</span><br></pre></td></tr></table></figure>
+<p>时间撮建立索引后，会按照时间撮排序，示例数据：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">+---------------------+---------------------+-----------------------+---------+</span><br><span class="line">|       DateTime      | Global_active_power | Global_reactive_power | Voltage |</span><br><span class="line">+---------------------+---------------------+-----------------------+---------+</span><br><span class="line">| 2006-12-16 17:24:00 |        4.216        |         0.418         |  234.84 |</span><br><span class="line">| 2006-12-16 17:26:00 |        5.374        |         0.498         |  233.29 |</span><br><span class="line">| 2006-12-16 17:28:00 |        3.666        |         0.528         |  235.68 |</span><br><span class="line">| 2006-12-16 17:29:00 |         3.52        |         0.522         |  235.02 |</span><br><span class="line">| 2006-12-16 17:31:00 |         3.7         |          0.52         |  235.22 |</span><br><span class="line">| 2006-12-16 17:32:00 |        3.668        |          0.51         |  233.99 |</span><br><span class="line">| 2006-12-16 17:40:00 |         3.27        |         0.152         |  236.73 |</span><br><span class="line">| 2006-12-16 17:43:00 |        3.728        |          0.0          |  235.84 |</span><br><span class="line">| 2006-12-16 17:44:00 |        5.894        |          0.0          |  232.69 |</span><br><span class="line">| 2006-12-16 17:46:00 |        7.026        |          0.0          |  232.21 |</span><br><span class="line">+---------------------+---------------------+-----------------------+---------+</span><br></pre></td></tr></table></figure>
+<p><em>Resampling</em>  </p>
+<ul>
+<li>Mapping – The operation that determines which time slice a specific observation belongs to. 决定时间片/粒度</li>
+<li>Interpolation/Upsampling – The operation used to fill in the missing values when there are no observations that map to a particular time slice.</li>
+<li>Aggregation/Downsampling –The operation used to aggregate multiple observations that belong to the same time slice. 聚合操作</li>
+</ul>
+<p>下面的示例中将属于同一天的记录，取最大值（每一列都要取）。可以这么理解：</p>
+<ol>
+<li>把每条记录的时间撮格式从yyyyMMdd hh:mm:ss转换为yyyyMMdd</li>
+<li>将属于同一天yyyyMMdd的记录中取最大的那条记录代表当天的记录</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> datetime <span class="keyword">as</span> dt</span><br><span class="line"></span><br><span class="line">day = dt.timedelta(days = <span class="number">1</span>)</span><br><span class="line">daily_ts = household_ts.resample(day, downsample_method=<span class="string">'max'</span>, upsample_method=<span class="keyword">None</span>)</span><br></pre></td></tr></table></figure>
+<p>从示例结果可以看到原先每分钟都有一条记录，现在结果集中一天只有一条记录：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">+---------------------+---------------------+-----------------------+---------+</span><br><span class="line">|       DateTime      | Global_active_power | Global_reactive_power | Voltage |</span><br><span class="line">+---------------------+---------------------+-----------------------+---------+</span><br><span class="line">| 2006-12-16 00:00:00 |        7.026        |         0.528         |  243.73 |</span><br><span class="line">| 2006-12-17 00:00:00 |         6.58        |         0.582         |  249.07 |</span><br><span class="line">| 2006-12-18 00:00:00 |        5.436        |         0.646         |  248.48 |</span><br><span class="line">| 2006-12-19 00:00:00 |         7.84        |         0.606         |  248.89 |</span><br><span class="line">| 2006-12-20 00:00:00 |        5.988        |         0.482         |  249.48 |</span><br><span class="line">| 2006-12-21 00:00:00 |        5.614        |         0.688         |  247.08 |</span><br><span class="line">| 2006-12-22 00:00:00 |        7.884        |         0.622         |  248.82 |</span><br><span class="line">| 2006-12-23 00:00:00 |        8.698        |         0.724         |  246.77 |</span><br><span class="line">| 2006-12-24 00:00:00 |        6.498        |         0.494         |  249.27 |</span><br><span class="line">| 2006-12-25 00:00:00 |        6.702        |          0.7          |  250.62 |</span><br><span class="line">+---------------------+---------------------+-----------------------+---------+</span><br></pre></td></tr></table></figure>
+<p>多个TimeSeries可以对被索引的时间撮列进行join：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sf_other = gl.SFrame(<span class="string">'http://s3.amazonaws.com/dato-datasets/household_electric_sample_2.sf'</span>)</span><br><span class="line">ts_other = gl.TimeSeries(sf_other, index = <span class="string">'DateTime'</span>)</span><br><span class="line">household_ts.index_join(ts_other, how=<span class="string">'inner'</span>)</span><br></pre></td></tr></table></figure>
+<p>时间序列的范围可以通过slice进行过滤。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> datetime <span class="keyword">as</span> dt</span><br><span class="line"></span><br><span class="line">start = dt.datetime(<span class="number">2006</span>, <span class="number">12</span>, <span class="number">16</span>, <span class="number">17</span>, <span class="number">24</span>)</span><br><span class="line">end = dt.datetime(<span class="number">2007</span>, <span class="number">11</span>, <span class="number">26</span>, <span class="number">21</span>, <span class="number">2</span>)</span><br><span class="line">sliced_ts = household_ts.slice(start, end)</span><br><span class="line"></span><br><span class="line">start = dt.datetime(<span class="number">2010</span>,<span class="number">1</span>,<span class="number">1</span>)</span><br><span class="line">end  = dt.datetime(<span class="number">2011</span>,<span class="number">1</span>,<span class="number">1</span>)</span><br><span class="line">ts_2010 = household_ts.slice(start, end)</span><br></pre></td></tr></table></figure>
+<p>将一个大的时间序列分成多组小的时间序列，比如按相同工作日分组，周一的数据都放在同一组，以此类推<br>返回值GroupedTimeSeries，每一个小组都是一个单独的时间序列。  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">household_ts_groups = household_ts.group(gl.TimeSeries.date_part.WEEKDAY)</span><br><span class="line"><span class="keyword">print</span> household_ts_groups.groups()</span><br><span class="line"></span><br><span class="line"><span class="comment">#获取其中一组</span></span><br><span class="line">household_ts_monday = household_ts_groups.get_group(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#循环所有组</span></span><br><span class="line"><span class="keyword">for</span> name, group <span class="keyword">in</span> household_ts_groups:</span><br><span class="line">  <span class="keyword">print</span> name, group</span><br></pre></td></tr></table></figure>
+<p>还可以将上面分在不同组的TimeSeries通过union组合成一更大的TimeSeries</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">household_ts_combined = household_ts_groups.get_group(<span class="number">0</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>, <span class="number">7</span>):</span><br><span class="line">  group = household_ts_groups.get_group(i)</span><br><span class="line">  household_ts_combined = household_ts_combined.union(group)</span><br></pre></td></tr></table></figure>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160512084309447" alt="group union ts"></p>
+<p><strong>Rolling</strong>  </p>
+<p>基于当前记录，统计过去几条或者往后几条，比如  </p>
+<ol>
+<li>window_start = -5 and window_end = 0，前5条，包括自己</li>
+<li>window_start = 0 and window_end = 5，后5条，包括自己</li>
+<li>window_start = -5 and window_end = -1，前5条，不包括自己</li>
+<li>window_start = 1 and window_end = 5，后5条，不包括自己</li>
+</ol>
+<p>对于第一条记录而言，如果要统计前面几条，显然因为前面没有任何记录。同理最后一条的后面也没有任何记录。<br>Rolling的算法有mean，sum，counts，variance，min，max，stand等。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">daily_ts[<span class="string">'Global_reactive_power_rolling_mean'</span>] = daily_ts[<span class="string">'Global_reactive_power'</span>].rolling_mean(<span class="number">-20</span>, <span class="number">0</span>)</span><br><span class="line">daily_ts[[<span class="string">'Global_reactive_power_rolling_mean'</span>, <span class="string">'Global_reactive_power'</span>]].print_rows(<span class="number">50</span>)</span><br></pre></td></tr></table></figure>
+<p>和rolling aggregates相对的是cumulative aggregates，使用所有之前的记录（包含当前）。该方法没有start或end参数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">daily_ts[<span class="string">'Global_reactive_power_cumulative_mean'</span>] = daily_ts[<span class="string">'Global_reactive_power'</span>].cumulative_mean()</span><br><span class="line">daily_ts[[<span class="string">'Global_reactive_power_cumulative_mean'</span>, <span class="string">'Global_reactive_power'</span>]]</span><br></pre></td></tr></table></figure>
+<p>不同聚合方式针对的特点：</p>
+<ul>
+<li>rolling means：capture recent trends in the data 最近的趋势</li>
+<li>cumulative means：spot global trends in the data 全局的趋势</li>
+</ul>
+<h2 id="数据建模">数据建模</h2><h3 id="Classification_分类模型">Classification 分类模型</h3><p>分类有多种模型，不过所有模型都提供下面四种方法（不一定每种模型都需要调用所有方法，比如分类模型调用classify，但不需要调用predict，回归模型调用predict不需要调用classify），GraphLab还可以自动选择最优的模型。</p>
+<ol>
+<li>create:创建模型</li>
+<li>predict：在模型上做预测（分类模型没有？）</li>
+<li>classify：提供充足的统计，来对数据进行分类（只有分类模型才有）</li>
+<li>evaluate：测量步骤2的预测的性能</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> graphlab <span class="keyword">as</span> gl</span><br><span class="line"></span><br><span class="line"><span class="comment"># Load the data</span></span><br><span class="line">data =  gl.SFrame(<span class="string">'http://s3.amazonaws.com/dato-datasets/regression/yelp-data.csv'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Restaurants with rating &gt;=3 are good 评分大于3的餐厅是不错的</span></span><br><span class="line">data[<span class="string">'is_good'</span>] = data[<span class="string">'stars'</span>] &gt;= <span class="number">3</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Make a train-test split 训练集和测试集</span></span><br><span class="line">train_data, test_data = data.random_split(<span class="number">0.8</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Automatically picks the right model based on your data. 自动选择最优模型</span></span><br><span class="line">model = gl.classifier.create(train_data, target=<span class="string">'is_good'</span>,</span><br><span class="line">                             features = [<span class="string">'user_avg_stars'</span>,</span><br><span class="line">                                         <span class="string">'business_avg_stars'</span>,</span><br><span class="line">                                         <span class="string">'user_review_count'</span>,</span><br><span class="line">                                         <span class="string">'business_review_count'</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment"># Generate predictions (class/probabilities etc.), contained in an SFrame.</span></span><br><span class="line">predictions = model.classify(test_data)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Evaluate the model, with the results stored in a dictionary</span></span><br><span class="line">results = model.evaluate(test_data)</span><br></pre></td></tr></table></figure>
+<h3 id="Regression_回归模型">Regression 回归模型</h3><p>Regression和Classification的区别是前者的值是离散的，后者的值是固定的（分类就那么几种）。</p>
+<p>回归模型简单来说就是：基于训练的数据（training data），学习出一个function，用来做预测（prediction）。<br>输入是input features，经过学习出来的function后，输出是output target。  </p>
+<h3 id="图分析">图分析</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line">data_file = <span class="string">'US_business_links'</span></span><br><span class="line"><span class="keyword">if</span> os.path.exists(data_file):</span><br><span class="line">    sg = graphlab.load_sgraph(data_file)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    url = <span class="string">'http://s3.amazonaws.com/dato-datasets/'</span> + data_file</span><br><span class="line">    sg = graphlab.load_sgraph(url)</span><br><span class="line">    sg.save(data_file)</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> sg.summary()</span><br></pre></td></tr></table></figure>
+<p><strong>PageRank</strong>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pr = graphlab.pagerank.create(sg, max_iterations=10)</span><br><span class="line">print pr.summary()</span><br><span class="line"></span><br><span class="line">pr_out = pr[&apos;pagerank&apos;]</span><br><span class="line">print pr_out.topk(&apos;pagerank&apos;, k=10)</span><br></pre></td></tr></table></figure>
+<p><strong>三角形数量</strong>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">tri = graphlab.triangle_counting.create(sg)</span><br><span class="line">print tri.summary()</span><br><span class="line"></span><br><span class="line">tri_out = tri[&apos;triangle_count&apos;]</span><br><span class="line">print tri_out.topk(&apos;triangle_count&apos;, k=10)</span><br></pre></td></tr></table></figure>
+<p><strong>最短路径</strong>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sssp = graphlab.shortest_path.create(sg, source_vid=&apos;Microsoft&apos;)</span><br><span class="line">sssp.get_path(vid=&apos;Weyerhaeuser&apos;, show=True,</span><br><span class="line">              highlight=[&apos;Microsoft&apos;, &apos;Weyerhaeuser&apos;], arrows=True, ewidth=1.5)</span><br></pre></td></tr></table></figure>
+<h3 id="Clustering">Clustering</h3><h2 id="Application">Application</h2><h3 id="推荐系统">推荐系统</h3><p>推荐场景：你可能感兴趣的（给定user_id，返回items），相似的商品（给定item_id，返回items）<br>必备数据：user_id, item_id, rate  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">actions = gl.SFrame.read_csv(&apos;./dataset/ml-20m/ratings.csv&apos;)</span><br><span class="line">items = gl.SFrame.read_csv(&apos;./dataset/ml-20m/movies.csv&apos;)</span><br><span class="line"></span><br><span class="line">training_data, validation_data = gl.recommender.util.random_split_by_user(actions, &apos;userId&apos;, &apos;movieId&apos;)</span><br><span class="line">model = gl.recommender.create(training_data, &apos;userId&apos;, &apos;movieId&apos;)</span><br><span class="line"></span><br><span class="line"># You can now make recommendations for all the users you&apos;ve just trained on</span><br><span class="line">results = model.recommend()</span><br></pre></td></tr></table></figure>
+<h2 id="Ref">Ref</h2><p><a href="http://cloga.info/graphlab%20create/2014/07/26/graphlab_create/" target="_blank" rel="noopener">http://cloga.info/graphlab%20create/2014/07/26/graphlab_create/</a></p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/05/10/Graph-Hello-Dato/">图计算入门：Dato</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年05月10日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/05/10/Graph-Hello-Dato/" title="图计算入门：Dato">http://github.com/zqhxuyuan/2016/05/10/Graph-Hello-Dato/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/05/10/Graph-Hello-Dato/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/05/16/Graph-Spark-GraphX/">
+        图计算入门：GraphX
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/05/10/Graph-compare/">
+        图计算框架乱斗
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Dato_Quickstart"><span class="toc-number">1.</span> <span class="toc-text">Dato Quickstart</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Getting_Started_with_GraphLab_Create"><span class="toc-number">1.1.</span> <span class="toc-text">Getting Started with GraphLab Create</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ipython_notebook"><span class="toc-number">1.2.</span> <span class="toc-text">ipython notebook</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SFrame(Tablular表格类型的数据)"><span class="toc-number">1.3.</span> <span class="toc-text">SFrame(Tablular表格类型的数据)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#加载和保存"><span class="toc-number">1.3.1.</span> <span class="toc-text">加载和保存</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#数据转换"><span class="toc-number">1.3.2.</span> <span class="toc-text">数据转换</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#复杂类型转换"><span class="toc-number">1.3.3.</span> <span class="toc-text">复杂类型转换</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#SparkRDD"><span class="toc-number">1.3.4.</span> <span class="toc-text">SparkRDD</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SGraph(图数据)"><span class="toc-number">1.4.</span> <span class="toc-text">SGraph(图数据)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#时间序列数据"><span class="toc-number">1.5.</span> <span class="toc-text">时间序列数据</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据建模"><span class="toc-number">2.</span> <span class="toc-text">数据建模</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Classification_分类模型"><span class="toc-number">2.1.</span> <span class="toc-text">Classification 分类模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Regression_回归模型"><span class="toc-number">2.2.</span> <span class="toc-text">Regression 回归模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#图分析"><span class="toc-number">2.3.</span> <span class="toc-text">图分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Clustering"><span class="toc-number">2.4.</span> <span class="toc-text">Clustering</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Application"><span class="toc-number">3.</span> <span class="toc-text">Application</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#推荐系统"><span class="toc-number">3.1.</span> <span class="toc-text">推荐系统</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ref"><span class="toc-number">4.</span> <span class="toc-text">Ref</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/05/10/Graph-Hello-Dato/" data-title="图计算入门：Dato" data-url="http://github.com/zqhxuyuan/2016/05/10/Graph-Hello-Dato/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/05/16/Graph-Spark-GraphX/" title="上一篇: 图计算入门：GraphX">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/05/10/Graph-compare/" title="下一篇: 图计算框架乱斗">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

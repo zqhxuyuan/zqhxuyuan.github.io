@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>用实例理解Storm的Stream概念 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="用实例理解Storm的Stream概念">
+<meta name="keywords" content="storm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用实例理解Storm的Stream概念">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/06/30/Hello-Storm/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="用实例理解Storm的Stream概念">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630130620777">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630151624828">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630151652272">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630130931827">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630131410099">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630152308250">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630171239447">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630172026287">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630172102944">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630172742296">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630174414242">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630175845225">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630175856746">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.329Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="用实例理解Storm的Stream概念">
+<meta name="twitter:description" content="用实例理解Storm的Stream概念">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630130620777">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Hello-Storm" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/06/30/Hello-Storm/" class="article-date">
+  	<time datetime="2016-06-29T16:00:00.000Z" itemprop="datePublished">2016-06-30</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      用实例理解Storm的Stream概念
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/bigdata/">bigdata</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/storm/">storm</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>用实例理解Storm的Stream概念</p>
+<a id="more"></a>
+<h2 id="缘起">缘起</h2><p>事情源于在看基于Storm的CEP引擎：<a href="https://github.com/calrissian/flowmix">flowmix</a><br>的<a href="https://github.com/calrissian/flowmix/blob/master/src/main/java/org/calrissian/flowmix/api/builder/FlowmixBuilder.java#L131">FlowmixBuilder</a>代码，<br>每个Bolt设置了这么多的<a href="https://github.com/calrissian/flowmix/blob/master/src/main/java/org/calrissian/flowmix/api/builder/FlowmixBuilder.java#L169">Group</a>，<br>而且<a href="https://github.com/calrissian/flowmix/blob/master/src/main/java/org/calrissian/flowmix/api/builder/FlowmixBuilder.java#L204">declareStream</a>也声明了这么多的stream-id，<br>对于只写过<a href="https://github.com/apache/storm/blob/master/examples/storm-starter/src/jvm/org/apache/storm/starter/WordCountTopology.java#L84">WordCountTopology</a>的小白而言，<br>直接懵逼了，没见过这么用的啊，我承认一开始是拒绝的，每个Bolt都设置了这么多Group，这TMD拓扑图是什么样的？  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> TopologyBuilder <span class="title">create</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  TopologyBuilder builder = <span class="keyword">new</span> TopologyBuilder();</span><br><span class="line">  builder.setSpout(EVENT, (IRichSpout) eventsComponent, eventLoaderParallelism == -<span class="number">1</span> ? parallelismHint : eventLoaderParallelism);</span><br><span class="line">  builder.setSpout(FLOW_LOADER_STREAM, (IRichSpout) flowLoaderSpout, <span class="number">1</span>);</span><br><span class="line">  builder.setSpout(<span class="string">"tick"</span>, <span class="keyword">new</span> TickSpout(<span class="number">1000</span>), <span class="number">1</span>);</span><br><span class="line">  builder.setBolt(INITIALIZER, <span class="keyword">new</span> FlowInitializerBolt(), parallelismHint)  <span class="comment">// kicks off a flow determining where to start</span></span><br><span class="line">            .localOrShuffleGrouping(EVENT)</span><br><span class="line">            .allGrouping(FLOW_LOADER_STREAM, FLOW_LOADER_STREAM);</span><br><span class="line"></span><br><span class="line">  declarebolt(builder, FILTER, <span class="keyword">new</span> FilterBolt(), parallelismHint, <span class="keyword">true</span>);</span><br><span class="line">  declarebolt(builder, SELECT, <span class="keyword">new</span> SelectorBolt(), parallelismHint, <span class="keyword">true</span>);</span><br><span class="line">  declarebolt(builder, PARTITION, <span class="keyword">new</span> PartitionBolt(), parallelismHint, <span class="keyword">true</span>);</span><br><span class="line">  declarebolt(builder, SWITCH, <span class="keyword">new</span> SwitchBolt(), parallelismHint, <span class="keyword">true</span>);</span><br><span class="line">  declarebolt(builder, AGGREGATE, <span class="keyword">new</span> AggregatorBolt(), parallelismHint, <span class="keyword">true</span>);</span><br><span class="line">  declarebolt(builder, JOIN, <span class="keyword">new</span> JoinBolt(), parallelismHint, <span class="keyword">true</span>);</span><br><span class="line">  declarebolt(builder, EACH, <span class="keyword">new</span> EachBolt(), parallelismHint, <span class="keyword">true</span>);</span><br><span class="line">  declarebolt(builder, SORT, <span class="keyword">new</span> SortBolt(), parallelismHint, <span class="keyword">true</span>);</span><br><span class="line">  declarebolt(builder, SPLIT, <span class="keyword">new</span> SplitBolt(), parallelismHint, <span class="keyword">true</span>);</span><br><span class="line">  declarebolt(builder, OUTPUT, outputBolt, parallelismHint, <span class="keyword">false</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> builder;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">declarebolt</span><span class="params">(TopologyBuilder builder, String boltName, IRichBolt bolt, <span class="keyword">int</span> parallelism, <span class="keyword">boolean</span> control)</span> </span>&#123;</span><br><span class="line">    BoltDeclarer declarer = builder.setBolt(boltName, bolt, parallelism)</span><br><span class="line">        .allGrouping(FLOW_LOADER_STREAM, FLOW_LOADER_STREAM)</span><br><span class="line">        .allGrouping(<span class="string">"tick"</span>, <span class="string">"tick"</span>)</span><br><span class="line">        .localOrShuffleGrouping(INITIALIZER, boltName)</span><br><span class="line">        .localOrShuffleGrouping(FILTER, boltName)</span><br><span class="line">        .fieldsGrouping(PARTITION, boltName, <span class="keyword">new</span> Fields(FLOW_ID, PARTITION))    <span class="comment">// guaranteed partitions will always group the same flow for flows that have joins with default partitions.</span></span><br><span class="line">        .localOrShuffleGrouping(AGGREGATE, boltName)</span><br><span class="line">        .localOrShuffleGrouping(SELECT, boltName)</span><br><span class="line">        .localOrShuffleGrouping(EACH, boltName)</span><br><span class="line">        .localOrShuffleGrouping(SORT, boltName)</span><br><span class="line">        .localOrShuffleGrouping(SWITCH, boltName)</span><br><span class="line">        .localOrShuffleGrouping(SPLIT, boltName)</span><br><span class="line">        .localOrShuffleGrouping(JOIN, boltName);</span><br><span class="line">  &#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">declareOutputStreams</span><span class="params">(OutputFieldsDeclarer declarer, Fields fields)</span> </span>&#123;</span><br><span class="line">    declarer.declareStream(PARTITION, fields);</span><br><span class="line">    declarer.declareStream(FILTER, fields);</span><br><span class="line">    declarer.declareStream(SELECT, fields);</span><br><span class="line">    declarer.declareStream(AGGREGATE, fields);</span><br><span class="line">    declarer.declareStream(SWITCH, fields);</span><br><span class="line">    declarer.declareStream(SORT, fields);</span><br><span class="line">    declarer.declareStream(JOIN, fields);</span><br><span class="line">    declarer.declareStream(SPLIT, fields);</span><br><span class="line">    declarer.declareStream(EACH, fields);</span><br><span class="line">    declarer.declareStream(OUTPUT, fields);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>先来复习下经典的WordCountTopology</p>
+<h2 id="WordCountTopology_Default_Stream">WordCountTopology Default Stream</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WordCountTopologySimple</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">RandomSentenceSpout</span> <span class="keyword">extends</span> <span class="title">BaseRichSpout</span> </span>&#123;</span><br><span class="line">        SpoutOutputCollector collector;</span><br><span class="line">        Random rand;</span><br><span class="line">        String[] sentences = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">open</span><span class="params">(Map conf, TopologyContext context, SpoutOutputCollector collector)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.collector = collector;</span><br><span class="line">            rand = <span class="keyword">new</span> Random();</span><br><span class="line">            sentences = <span class="keyword">new</span> String[]&#123; <span class="string">"the cow jumped over the moon"</span>, <span class="string">"an apple a day keeps the doctor away"</span>, <span class="string">"four score and seven years ago"</span>, <span class="string">"snow white and the seven dwarfs"</span>, <span class="string">"i am at two with nature"</span> &#125;;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">nextTuple</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            Utils.sleep(<span class="number">1000</span>);</span><br><span class="line">            String sentence = sentences[rand.nextInt(sentences.length)];</span><br><span class="line">            System.out.println(<span class="string">"\n"</span> + sentence);</span><br><span class="line">            <span class="keyword">this</span>.collector.emit(<span class="keyword">new</span> Values(sentence));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer declarer)</span> </span>&#123;</span><br><span class="line">            declarer.declare(<span class="keyword">new</span> Fields(<span class="string">"sentence"</span>));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">ack</span><span class="params">(Object id)</span> </span>&#123;&#125;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fail</span><span class="params">(Object id)</span> </span>&#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">SplitSentenceBolt</span> <span class="keyword">extends</span> <span class="title">BaseRichBolt</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> OutputCollector collector;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">prepare</span><span class="params">(Map config, TopologyContext context, OutputCollector collector)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.collector = collector;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Tuple tuple)</span> </span>&#123;</span><br><span class="line">            String sentence = tuple.getStringByField(<span class="string">"sentence"</span>);</span><br><span class="line">            String[] words = sentence.split(<span class="string">" "</span>);</span><br><span class="line">            <span class="keyword">for</span> (String word : words) &#123;</span><br><span class="line">                <span class="keyword">this</span>.collector.emit(<span class="keyword">new</span> Values(word));</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">this</span>.collector.ack(tuple);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer declarer)</span> </span>&#123;</span><br><span class="line">            declarer.declare(<span class="keyword">new</span> Fields(<span class="string">"word"</span>));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">WordCountBolt</span> <span class="keyword">extends</span> <span class="title">BaseBasicBolt</span> </span>&#123;</span><br><span class="line">        Map&lt;String, Integer&gt; counts = <span class="keyword">new</span> HashMap&lt;String, Integer&gt;();</span><br><span class="line">        <span class="keyword">private</span> OutputCollector collector;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">prepare</span><span class="params">(Map config, TopologyContext context, OutputCollector collector)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.collector = collector;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Tuple tuple, BasicOutputCollector collector)</span> </span>&#123;</span><br><span class="line">            String word = tuple.getString(<span class="number">0</span>);</span><br><span class="line">            Integer count = counts.get(word);</span><br><span class="line">            <span class="keyword">if</span> (count == <span class="keyword">null</span>) count = <span class="number">0</span>;</span><br><span class="line">            count++;</span><br><span class="line">            counts.put(word, count);</span><br><span class="line">            collector.emit(<span class="keyword">new</span> Values(word, count));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer declarer)</span> </span>&#123;</span><br><span class="line">            declarer.declare(<span class="keyword">new</span> Fields(<span class="string">"word"</span>, <span class="string">"count"</span>));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">PrinterBolt</span> <span class="keyword">extends</span> <span class="title">BaseBasicBolt</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> OutputCollector collector;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">prepare</span><span class="params">(Map config, TopologyContext context, OutputCollector collector)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.collector = collector;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Tuple tuple, BasicOutputCollector collector)</span> </span>&#123;</span><br><span class="line">            String first = tuple.getString(<span class="number">0</span>);</span><br><span class="line">            <span class="keyword">int</span> second = tuple.getInteger(<span class="number">1</span>);</span><br><span class="line">            System.out.println(first + <span class="string">","</span> + second);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer ofd)</span> </span>&#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        TopologyBuilder builder = <span class="keyword">new</span> TopologyBuilder();</span><br><span class="line">        builder.setSpout(<span class="string">"spout"</span>, <span class="keyword">new</span> RandomSentenceSpout(), <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        builder.setBolt(<span class="string">"split"</span>, <span class="keyword">new</span> SplitSentenceBolt(), <span class="number">2</span>).shuffleGrouping(<span class="string">"spout"</span>);</span><br><span class="line">        builder.setBolt(<span class="string">"count"</span>, <span class="keyword">new</span> WordCountBolt(), <span class="number">2</span>).fieldsGrouping(<span class="string">"split"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>));</span><br><span class="line">        builder.setBolt(<span class="string">"print"</span>, <span class="keyword">new</span> PrinterBolt(), <span class="number">1</span>).shuffleGrouping(<span class="string">"count"</span>);</span><br><span class="line"></span><br><span class="line">        Config conf = <span class="keyword">new</span> Config();</span><br><span class="line">        conf.setDebug(<span class="keyword">false</span>);</span><br><span class="line">        <span class="keyword">if</span> (args != <span class="keyword">null</span> &amp;&amp; args.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            conf.setNumWorkers(<span class="number">3</span>);</span><br><span class="line">            StormSubmitter.submitTopologyWithProgressBar(args[<span class="number">0</span>], conf, builder.createTopology());</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            conf.setMaxTaskParallelism(<span class="number">3</span>);</span><br><span class="line">            LocalCluster cluster = <span class="keyword">new</span> LocalCluster();</span><br><span class="line">            cluster.submitTopology(<span class="string">"word-count"</span>, conf, builder.createTopology());</span><br><span class="line">            Thread.sleep(<span class="number">10000</span>);</span><br><span class="line">            cluster.shutdown();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="SingleStream">SingleStream</h2><p>默认情况下：Spout发送到下游Bolt的stream-id，以及Bolt发送到下游Bolt或者接收上游Spout/Bolt的stream-id都是<code>default</code>。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630130620777" alt="stream-1"></p>
+<p>可以对Spout/Bolt在发送消息时自定义stream-id，同时必须在声明输出字段时，指定对应的stream-id。  </p>
+<blockquote>
+<p>代码说明：发射时指定<strong>一个</strong>stream-id，声明流时指定<strong>一个</strong>stream-id，topology设置Bolt时除了通过Group的component-id，还会指定上游组件的stream-id</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RandomSentenceSpout</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">nextTuple</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Utils.sleep(<span class="number">1000</span>);</span><br><span class="line">        String sentence = sentences[rand.nextInt(sentences.length)];</span><br><span class="line">        System.out.println(<span class="string">"\n"</span> + sentence);</span><br><span class="line">        <span class="keyword">this</span>.collector.emit(<span class="string">"split-stream"</span>, <span class="keyword">new</span> Values(sentence));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer declarer)</span> </span>&#123;</span><br><span class="line">        declarer.declareStream(<span class="string">"split-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"sentence"</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SplitSentenceBolt</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Tuple tuple)</span> </span>&#123;</span><br><span class="line">        String sentence = tuple.getStringByField(<span class="string">"sentence"</span>);</span><br><span class="line">        String[] words = sentence.split(<span class="string">" "</span>);</span><br><span class="line">        <span class="keyword">for</span> (String word : words) &#123;</span><br><span class="line">            <span class="keyword">this</span>.collector.emit(<span class="string">"count-stream"</span>, <span class="keyword">new</span> Values(word));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>.collector.ack(tuple);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer declarer)</span> </span>&#123;</span><br><span class="line">        declarer.declareStream(<span class="string">"count-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">WordCountBolt</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Tuple tuple)</span> </span>&#123;</span><br><span class="line">        String word = tuple.getString(<span class="number">0</span>);</span><br><span class="line">        Integer count = counts.get(word);</span><br><span class="line">        <span class="keyword">if</span> (count == <span class="keyword">null</span>) count = <span class="number">0</span>;</span><br><span class="line">        count++;</span><br><span class="line">        counts.put(word, count);</span><br><span class="line">        collector.emit(<span class="string">"print-stream"</span>, <span class="keyword">new</span> Values(word, count));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer declarer)</span> </span>&#123;</span><br><span class="line">        declarer.declareStream(<span class="string">"print-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>, <span class="string">"count"</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Topology</span> </span>&#123;</span><br><span class="line">    main()&#123;</span><br><span class="line">        TopologyBuilder builder = <span class="keyword">new</span> TopologyBuilder();</span><br><span class="line">        builder.setSpout(<span class="string">"spout"</span>, <span class="keyword">new</span> RandomSentenceSpout(), <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        builder.setBolt(<span class="string">"split"</span>, <span class="keyword">new</span> SplitSentenceBolt(), <span class="number">2</span>).shuffleGrouping(<span class="string">"spout"</span>, <span class="string">"split-stream"</span>);</span><br><span class="line">        builder.setBolt(<span class="string">"count"</span>, <span class="keyword">new</span> WordCountBolt(), <span class="number">2</span>).fieldsGrouping(<span class="string">"split"</span>, <span class="string">"count-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>));</span><br><span class="line">        builder.setBolt(<span class="string">"print"</span>, <span class="keyword">new</span> PrinterBolt(), <span class="number">1</span>).shuffleGrouping(<span class="string">"count"</span>, <span class="string">"print-stream"</span>);        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用自定义stream-id，主要分成两个步骤：  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630151624828" alt="stream-2_1"></p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630151652272" alt="stream-2_2"></p>
+<p>下图示例细说明了拓扑图中各个组件是怎么协调工作的：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630130931827" alt="stream-3"></p>
+<h2 id="MultiStream">MultiStream</h2><p>Spout/Bolt发射时可以指定多个stream-id，同样要在声明输出字段时指定所有在发射过程指定的stream-id。<br>虽然每条消息的输出消息流并不一定会用到所有的stream，比如下面示例中一条消息发射到stream1和stream3，<br>另外一条消息发射到stream2和stream3，stream1和stream2是互斥的，不可能同时发送到这两个stream。<br>但是可以看到在declareStream中，要同时指定所有的stream-id。  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Tuple input)</span> </span>&#123;</span><br><span class="line">    String word = input.getString(<span class="number">0</span>);</span><br><span class="line">    <span class="comment">//小于j的word发送给stream1; 大于j的word发送给stream2;</span></span><br><span class="line">    <span class="keyword">if</span>(word.compareTo(<span class="string">"j"</span>) &lt; <span class="number">0</span>)&#123;</span><br><span class="line">        collector.emit(<span class="string">"stream1"</span>, <span class="keyword">new</span> Values(word));</span><br><span class="line">    &#125;<span class="keyword">else</span> <span class="keyword">if</span>(word.compareTo(<span class="string">"j"</span>) &gt; <span class="number">0</span>)&#123;</span><br><span class="line">        collector.emit(<span class="string">"stream2"</span>, <span class="keyword">new</span> Values(word));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//不管什么都发送给stream3</span></span><br><span class="line">    collector.emit(<span class="string">"stream3"</span>, <span class="keyword">new</span> Values(word));</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(<span class="keyword">final</span> OutputFieldsDeclarer outputFieldsDeclarer)</span> </span>&#123;</span><br><span class="line">    outputFieldsDeclarer.declareStream(<span class="string">"stream1"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>));</span><br><span class="line">    outputFieldsDeclarer.declareStream(<span class="string">"stream2"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>));</span><br><span class="line">    outputFieldsDeclarer.declareStream(<span class="string">"stream3"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>程序员都喜欢流程图，喏，下图左上角第一个就是了，右上角是对应到Storm中的Topology，下面两图示例了两条消息在Storm的消息流的走向。</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630131410099" alt="stream-4"></p>
+<p>仿照上面的示例，对WordCountTopology的Spout/Bolt的发射方法都指定一个输出的stream-id，<br>同时在declareOutputFields声明多个输出的stream-id。  </p>
+<p>现在虽然Spout/Bolt声明了多个输出stream-id，但是<strong>emit时还是只发射到一个stream-id</strong>中。<br>所以本质上和前面的SingleStream是一样的，所以Topology不需要做任何改动也还是可以运行的。</p>
+<blockquote>
+<p>代码说明：发射时指定<strong>一个</strong>stream-id，声明流时指定<strong>多个</strong>stream-id，topology设置Bolt时除了通过Group的component-id，还会指定上游组件的stream-id<br>emit不变，topology不变</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RandomSentenceSpout</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">nextTuple</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.collector.emit(<span class="string">"split-stream"</span>, <span class="keyword">new</span> Values(sentence));              <span class="comment">//⬅            </span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer declarer)</span> </span>&#123;</span><br><span class="line">        declarer.declareStream(<span class="string">"split-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"sentence"</span>));         <span class="comment">//⬅</span></span><br><span class="line">        declarer.declareStream(<span class="string">"count-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"sentence"</span>));</span><br><span class="line">        declarer.declareStream(<span class="string">"print-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"sentence"</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SplitSentenceBolt</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Tuple tuple)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (String word : words) &#123;</span><br><span class="line">            <span class="keyword">this</span>.collector.emit(<span class="string">"count-stream"</span>, <span class="keyword">new</span> Values(word));              <span class="comment">//⬅</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer declarer)</span> </span>&#123;</span><br><span class="line">        declarer.declareStream(<span class="string">"split-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>));</span><br><span class="line">        declarer.declareStream(<span class="string">"count-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>));             <span class="comment">//⬅  </span></span><br><span class="line">        declarer.declareStream(<span class="string">"print-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">WordCountBolt</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Tuple tuple)</span> </span>&#123;</span><br><span class="line">        collector.emit(<span class="string">"print-stream"</span>, <span class="keyword">new</span> Values(word, count));                <span class="comment">//⬅</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer declarer)</span> </span>&#123;</span><br><span class="line">        declarer.declareStream(<span class="string">"split-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>, <span class="string">"count"</span>));</span><br><span class="line">        declarer.declareStream(<span class="string">"count-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>, <span class="string">"count"</span>)); </span><br><span class="line">        declarer.declareStream(<span class="string">"print-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>, <span class="string">"count"</span>));    <span class="comment">//⬅</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Topology</span> </span>&#123;</span><br><span class="line">    main()&#123;</span><br><span class="line">        TopologyBuilder builder = <span class="keyword">new</span> TopologyBuilder();</span><br><span class="line">        builder.setSpout(<span class="string">"spout"</span>, <span class="keyword">new</span> RandomSentenceSpout(), <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        builder.setBolt(<span class="string">"split"</span>, <span class="keyword">new</span> SplitSentenceBolt(), <span class="number">2</span>).shuffleGrouping(<span class="string">"spout"</span>, <span class="string">"split-stream"</span>);</span><br><span class="line">        builder.setBolt(<span class="string">"count"</span>, <span class="keyword">new</span> WordCountBolt(), <span class="number">2</span>).fieldsGrouping(<span class="string">"split"</span>, <span class="string">"count-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>));</span><br><span class="line">        builder.setBolt(<span class="string">"print"</span>, <span class="keyword">new</span> PrinterBolt(), <span class="number">1</span>).shuffleGrouping(<span class="string">"count"</span>, <span class="string">"print-stream"</span>);        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>那么我们为什么还要在Spout/Bolt中定义多个输出流呢？观察这部分代码，stream-id都是一样的，不同的是Fields部分，<br>如果将每个Spout/Bolt的多个declarer.declareStream抽取出来：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">declareStream</span><span class="params">(OutputFieldsDeclarer declarer, </span></span></span><br><span class="line"><span class="function"><span class="params">        Fields fields)</span></span>&#123;</span><br><span class="line">    declarer.declareStream(<span class="string">"split-stream"</span>, fields);</span><br><span class="line">    declarer.declareStream(<span class="string">"count-stream"</span>, fields);</span><br><span class="line">    declarer.declareStream(<span class="string">"print-stream"</span>, fields);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后在Spout/Bolt的declareOutputFields调用declareStream方法一次声明所有的stream-id，只需要传递不同的Fields即可。</p>
+<blockquote>
+<p>代码说明：声明多个stream时，每个组件的所有stream-id都一样，传入不同的Fields<br>emit不变，topology不变</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RandomSentenceSpout</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">nextTuple</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.collector.emit(<span class="string">"split-stream"</span>, <span class="keyword">new</span> Values(sentence));              <span class="comment">//⬅            </span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer declarer)</span> </span>&#123;</span><br><span class="line">         declareStream(declarer, <span class="keyword">new</span> Fields(<span class="string">"sentence"</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SplitSentenceBolt</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Tuple tuple)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (String word : words) &#123;</span><br><span class="line">            <span class="keyword">this</span>.collector.emit(<span class="string">"count-stream"</span>, <span class="keyword">new</span> Values(word));              <span class="comment">//⬅</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer declarer)</span> </span>&#123;</span><br><span class="line">         declareStream(declarer, <span class="keyword">new</span> Fields(<span class="string">"word"</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">WordCountBolt</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Tuple tuple)</span> </span>&#123;</span><br><span class="line">        collector.emit(<span class="string">"print-stream"</span>, <span class="keyword">new</span> Values(word, count));                <span class="comment">//⬅</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer declarer)</span> </span>&#123;</span><br><span class="line">        declareStream(declarer, <span class="keyword">new</span> Fields(<span class="string">"word"</span>, <span class="string">"count"</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Topology</span> </span>&#123;</span><br><span class="line">    main()&#123;</span><br><span class="line">        TopologyBuilder builder = <span class="keyword">new</span> TopologyBuilder();</span><br><span class="line">        builder.setSpout(<span class="string">"spout"</span>, <span class="keyword">new</span> RandomSentenceSpout(), <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        builder.setBolt(<span class="string">"split"</span>, <span class="keyword">new</span> SplitSentenceBolt(), <span class="number">2</span>)</span><br><span class="line">            .shuffleGrouping(<span class="string">"spout"</span>, <span class="string">"split-stream"</span>);</span><br><span class="line">        builder.setBolt(<span class="string">"count"</span>, <span class="keyword">new</span> WordCountBolt(), <span class="number">2</span>)</span><br><span class="line">            .fieldsGrouping(<span class="string">"split"</span>, <span class="string">"count-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>));</span><br><span class="line">        builder.setBolt(<span class="string">"print"</span>, <span class="keyword">new</span> PrinterBolt(), <span class="number">1</span>)</span><br><span class="line">            .shuffleGrouping(<span class="string">"count"</span>, <span class="string">"print-stream"</span>);        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样的好处是，如果事先知道所有的stream-id，只需要定义好declareStream，每个bolt都调用这个全局的方法即可。<br>实际上这种方式对于构建<strong>动态拓扑图</strong>是很有用的。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630152308250" alt="stream-5"></p>
+<h2 id="MultiGroup">MultiGroup</h2><p>通过把所有stream-id封装到一个方法中，而emit时只指定一个stream-id。<br>现在每个组件emit时只指定了一个stream-id，声明输出流时都指定了相同的stream-id集合。<br>也就是说Spout/Bolt中虽然声明了多个stream-id，但是一条消息只会选择一个stream-id。  </p>
+<p>那么可不可以对Group方式运用同样的方式呢，我们的目的是想要把setBolt这种逻辑也抽取出一个共同的方法。<br>下面这种方式肯定是不对的，首先无法抽取，因为每个Bolt的Group分组策略不同。  </p>
+<blockquote>
+<p>虽然是错误的，但是我们并没有对首尾组件用多个Group，这是为什么呢？<br>1.Spout没有所谓的分组，因为Spout就是源头，分组时指定component指的是当前component的数据源自这个指定的component<br>2.最后一个Bolt我们先不设置，这里有坑…</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">main()&#123;</span><br><span class="line">    TopologyBuilder builder = <span class="keyword">new</span> TopologyBuilder();</span><br><span class="line">    builder.setSpout(<span class="string">"spout"</span>, <span class="keyword">new</span> RandomSentenceSpout(), <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    builder.setBolt(<span class="string">"split"</span>, <span class="keyword">new</span> SplitSentenceBolt(), <span class="number">2</span>)</span><br><span class="line">            .shuffleGrouping(<span class="string">"spout"</span>, <span class="string">"split-stream"</span>)                      <span class="comment">//⬅</span></span><br><span class="line">            .shuffleGrouping(<span class="string">"split"</span>, <span class="string">"split-stream"</span>)</span><br><span class="line">            .shuffleGrouping(<span class="string">"count"</span>, <span class="string">"split-stream"</span>)</span><br><span class="line">    ;</span><br><span class="line">    builder.setBolt(<span class="string">"count"</span>, <span class="keyword">new</span> WordCountBolt(), <span class="number">2</span>)</span><br><span class="line">            .fieldsGrouping(<span class="string">"spout"</span>, <span class="string">"count-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>))</span><br><span class="line">            .fieldsGrouping(<span class="string">"split"</span>, <span class="string">"count-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>))   <span class="comment">//⬅</span></span><br><span class="line">            .fieldsGrouping(<span class="string">"count"</span>, <span class="string">"count-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>))</span><br><span class="line">    ;</span><br><span class="line">    builder.setBolt(<span class="string">"print"</span>, <span class="keyword">new</span> PrinterBolt(), <span class="number">1</span>)</span><br><span class="line">            .shuffleGrouping(<span class="string">"count"</span>, <span class="string">"print-stream"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而且也无法构建拓扑图，比如WordCountBolt的输入component=”spout”时，<br>在拓扑图中这个组件是<code>RandomSentenceSpout</code>，它的输出字段名称为”sentence”，根本就没有word这个字段。<br>下面的错误也证实了这一点：<code>Component: [count] subscribes from stream: [count-stream] of component [spout] with non-existent fields: #{&quot;word&quot;})</code><br><code>count</code>这个组件（即WordCountBolt）订阅了<code>spout</code>组件（即RandomSentenceSpout）的<code>count-stream</code>输出流，但是spout组件并不存在<code>word</code>字段。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">6972 [main] WARN  backtype.storm.daemon.nimbus - Topology submission exception. (topology name=&apos;word-count&apos;) #</span><br><span class="line">&lt;InvalidTopologyException InvalidTopologyException(msg:</span><br><span class="line">    Component: [count] subscribes from stream: [count-stream] of component [spout] with non-existent fields: #&#123;&quot;word&quot;&#125;)&gt;</span><br><span class="line">7002 [main] ERROR org.apache.storm.zookeeper.server.NIOServerCnxnFactory - Thread Thread[main,5,main] died</span><br><span class="line">backtype.storm.generated.InvalidTopologyException: null</span><br></pre></td></tr></table></figure>
+<p>正确使用多个stream-id的姿势：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">main()&#123;</span><br><span class="line">    TopologyBuilder builder = <span class="keyword">new</span> TopologyBuilder();</span><br><span class="line">    builder.setSpout(<span class="string">"spout"</span>, <span class="keyword">new</span> RandomSentenceSpout(), <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    builder.setBolt(<span class="string">"split"</span>, <span class="keyword">new</span> SplitSentenceBolt(), <span class="number">2</span>)</span><br><span class="line">            .shuffleGrouping(<span class="string">"spout"</span>, <span class="string">"split-stream"</span>)                      <span class="comment">//⬅</span></span><br><span class="line">            .fieldsGrouping(<span class="string">"split"</span>, <span class="string">"split-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>))</span><br><span class="line">            .shuffleGrouping(<span class="string">"count"</span>, <span class="string">"split-stream"</span>)</span><br><span class="line">    ;</span><br><span class="line">    builder.setBolt(<span class="string">"count"</span>, <span class="keyword">new</span> WordCountBolt(), <span class="number">2</span>)</span><br><span class="line">            .shuffleGrouping(<span class="string">"spout"</span>, <span class="string">"count-stream"</span>)</span><br><span class="line">            .fieldsGrouping(<span class="string">"split"</span>, <span class="string">"count-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>))   <span class="comment">//⬅</span></span><br><span class="line">            .shuffleGrouping(<span class="string">"count"</span>, <span class="string">"count-stream"</span>)</span><br><span class="line">    ;</span><br><span class="line">    builder.setBolt(<span class="string">"print"</span>, <span class="keyword">new</span> PrinterBolt(), <span class="number">1</span>)</span><br><span class="line">            .shuffleGrouping(<span class="string">"count"</span>, <span class="string">"print-stream"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在每个Bolt的Group方式都是一样的了，并且component-id也是一样的，只有最后的stream-id不同。<br>很好，可以像抽取declareStream那样抽取setBolt了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">main()&#123;</span><br><span class="line">    TopologyBuilder builder = <span class="keyword">new</span> TopologyBuilder();</span><br><span class="line">    builder.setSpout(<span class="string">"spout"</span>,<span class="keyword">new</span> RandomSentenceSpout(),<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    setBolt(builder, <span class="keyword">new</span> SplitSentenceBolt(), <span class="string">"split"</span>);</span><br><span class="line">    setBolt(builder, <span class="keyword">new</span> WordCountBolt(), <span class="string">"count"</span>);</span><br><span class="line">    builder.setBolt(<span class="string">"print"</span>, <span class="keyword">new</span> PrinterBolt(), <span class="number">1</span>)</span><br><span class="line">        .shuffleGrouping(<span class="string">"count"</span>, <span class="string">"print-stream"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setBolt</span><span class="params">(TopologyBuilder builder,IRichBolt bolt,String name)</span></span>&#123;</span><br><span class="line">    builder.setBolt(name, bolt, <span class="number">2</span>)</span><br><span class="line">            .shuffleGrouping(<span class="string">"spout"</span>, name + <span class="string">"-stream"</span>)</span><br><span class="line">            .fieldsGrouping(<span class="string">"split"</span>, name + <span class="string">"-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>))</span><br><span class="line">            .shuffleGrouping(<span class="string">"count"</span>, name + <span class="string">"-stream"</span>)</span><br><span class="line">    ;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>每个Bolt都设置了多种分组策略，而分组的第一个参数component表示数据源自哪里，<br>现在SplitSentenceBolt和WordCountBolt都定义了三种分组策略，<br>那么是不是说[split]的数据源有：[spout],[split],[count]，<br>同样[count]的数据源也有：[spout],[split],[count]，这跟实际的Topology结构就完全不一样了。<br>可以看到下图的拓扑结构比原先的WordCountTopology多了几条线（而且还能自己指向自己我也是醉了）。</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630171239447" alt="stream-7"></p>
+<p>不过虽然每个Bolt都有多个输入源，但是输入源组件不一定有指定的stream-id。<br>比如split的数据源虽然有三个[spout],[split],[count]，但是这三个组件中stream-id=”split-stream”的组件<br>只有[spout]，因此即使设置了三个数据源，另外两个数据源是无效的。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630172026287" alt="stream-8"></p>
+<p>同样[count]的数据源虽然也有三个[spout],[split],[count]，但是这三个组件中stream-id=”count-stream”的组件也只有[split]才有。</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630172102944" alt="stream-9"></p>
+<p>所以最后实际上拓扑图还是最原始的[spout]-&gt;[split]-&gt;[count]-&gt;[print]，并不会出现之前出现的多条线以及自己指向自己的情况。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630172742296" alt="stream-10"></p>
+<h2 id="最后一个Bolt">最后一个Bolt</h2><p>可以把最后一个PrintBolt也都加到每个Bolt的分组策略里吗？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">builder.setBolt(<span class="string">"split"</span>, <span class="keyword">new</span> SplitSentenceBolt(), <span class="number">2</span>)</span><br><span class="line">        .shuffleGrouping(<span class="string">"spout"</span>, <span class="string">"split-stream"</span>)                      <span class="comment">//⬅</span></span><br><span class="line">        .fieldsGrouping(<span class="string">"split"</span>, <span class="string">"split-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>))</span><br><span class="line">        .shuffleGrouping(<span class="string">"count"</span>, <span class="string">"split-stream"</span>)</span><br><span class="line">        .shuffleGrouping(<span class="string">"print"</span>, <span class="string">"split-stream"</span>)</span><br><span class="line">;</span><br><span class="line">builder.setBolt(<span class="string">"count"</span>, <span class="keyword">new</span> WordCountBolt(), <span class="number">2</span>)</span><br><span class="line">        .shuffleGrouping(<span class="string">"spout"</span>, <span class="string">"count-stream"</span>)</span><br><span class="line">        .fieldsGrouping(<span class="string">"split"</span>, <span class="string">"count-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>))   <span class="comment">//⬅</span></span><br><span class="line">        .shuffleGrouping(<span class="string">"count"</span>, <span class="string">"count-stream"</span>)</span><br><span class="line">        .shuffleGrouping(<span class="string">"print"</span>, <span class="string">"count-stream"</span>)</span><br><span class="line">;</span><br><span class="line">builder.setBolt(<span class="string">"print"</span>, <span class="keyword">new</span> PrinterBolt(), <span class="number">1</span>)</span><br><span class="line">        .shuffleGrouping(<span class="string">"spout"</span>, <span class="string">"print-stream"</span>)</span><br><span class="line">        .fieldsGrouping(<span class="string">"split"</span>, <span class="string">"print-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>))</span><br><span class="line">        .shuffleGrouping(<span class="string">"count"</span>, <span class="string">"print-stream"</span>)                      <span class="comment">//⬅</span></span><br><span class="line">        .shuffleGrouping(<span class="string">"print"</span>, <span class="string">"print-stream"</span>)</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+<p>拓扑图是这样的，虚线表示实际上是不存在的（因为输入源本身没有发射到这些stream）。</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630174414242" alt="stream-11"></p>
+<p>Opps….报错显示：[count]组件订阅了[print]组件中一个不存在的[count-stream]</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">9510 [main] WARN  backtype.storm.daemon.nimbus - Topology submission exception. (topology name=&apos;word-count&apos;) #</span><br><span class="line">&lt;InvalidTopologyException InvalidTopologyException(msg:Component: </span><br><span class="line">    [count] subscribes from non-existent stream: [count-stream] of component [print])&gt;</span><br><span class="line">9552 [main] ERROR org.apache.storm.zookeeper.server.NIOServerCnxnFactory - Thread Thread[main,5,main] died</span><br><span class="line">backtype.storm.generated.InvalidTopologyException: null</span><br></pre></td></tr></table></figure>
+<p>下面修改不同Bolt中和Print相关的分组方式，只有把Print全部注释掉才可以</p>
+<ol>
+<li>不注释:    [count] subscribes from non-existent stream: [count-stream] of component [print]</li>
+<li>注释①:    [split] subscribes from non-existent stream: [split-stream] of component [print]</li>
+<li>注释①②:  [print] subscribes from non-existent stream: [print-stream] of component [print]</li>
+<li>注释①②③: SUCCESS!</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">builder.setBolt(<span class="string">"split"</span>, <span class="keyword">new</span> SplitSentenceBolt(), <span class="number">2</span>)</span><br><span class="line">        .shuffleGrouping(<span class="string">"spout"</span>, <span class="string">"split-stream"</span>)                      <span class="comment">//⬅</span></span><br><span class="line">        .fieldsGrouping(<span class="string">"split"</span>, <span class="string">"split-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>))</span><br><span class="line">        .shuffleGrouping(<span class="string">"count"</span>, <span class="string">"split-stream"</span>)</span><br><span class="line">        <span class="comment">//.shuffleGrouping("print", "split-stream")  //②</span></span><br><span class="line">;</span><br><span class="line">builder.setBolt(<span class="string">"count"</span>, <span class="keyword">new</span> WordCountBolt(), <span class="number">2</span>)</span><br><span class="line">        .shuffleGrouping(<span class="string">"spout"</span>, <span class="string">"count-stream"</span>)</span><br><span class="line">        .fieldsGrouping(<span class="string">"split"</span>, <span class="string">"count-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>))   <span class="comment">//⬅</span></span><br><span class="line">        .shuffleGrouping(<span class="string">"count"</span>, <span class="string">"count-stream"</span>)</span><br><span class="line">        <span class="comment">//.shuffleGrouping("print", "count-stream")  //①</span></span><br><span class="line">;</span><br><span class="line">builder.setBolt(<span class="string">"print"</span>, <span class="keyword">new</span> PrinterBolt(), <span class="number">1</span>)</span><br><span class="line">        .shuffleGrouping(<span class="string">"spout"</span>, <span class="string">"print-stream"</span>)</span><br><span class="line">        .fieldsGrouping(<span class="string">"split"</span>, <span class="string">"print-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>))</span><br><span class="line">        .shuffleGrouping(<span class="string">"count"</span>, <span class="string">"print-stream"</span>)                      <span class="comment">//⬅</span></span><br><span class="line">        <span class="comment">//.shuffleGrouping("print", "print-stream")  //③</span></span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+<p>发生了什么事？不存在stream为什么就不行？可是前面以SplitSentenceBolt为例，split和count也不存在split-stream啊，为什么就不会报错呢？<br>原因在于我们的PrintBolt只是打印数据，然后什么都不做，它没有emit出任何消息，也就没有emit消息到任何消息流，所以下图中从PrintBolt出来的线根本就不存在！</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630175845225" alt="stream-12"></p>
+<p>怎么办呢，很简单，给PrintBolt添加一个带有stream-id的emit，同时也要在declareOutputFields中声明这个输出流。<br>只要PrintBolt有输出流，就不会报错了。也就是确保每个Bolt都会往下发送消息</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160630175856746" alt="stream-13"></p>
+<p>最终完整的代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WordCountTopologyStream3</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">RandomSentenceSpout</span> <span class="keyword">extends</span> <span class="title">BaseRichSpout</span> </span>&#123;</span><br><span class="line">        SpoutOutputCollector collector;</span><br><span class="line">        Random rand;</span><br><span class="line">        String[] sentences = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">open</span><span class="params">(Map conf, TopologyContext context, SpoutOutputCollector collector)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.collector = collector;</span><br><span class="line">            rand = <span class="keyword">new</span> Random();</span><br><span class="line">            sentences = <span class="keyword">new</span> String[]&#123; <span class="string">"the cow jumped over the moon"</span>, <span class="string">"an apple a day keeps the doctor away"</span>, <span class="string">"four score and seven years ago"</span>, <span class="string">"snow white and the seven dwarfs"</span>, <span class="string">"i am at two with nature"</span> &#125;;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">nextTuple</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            Utils.sleep(<span class="number">1000</span>);</span><br><span class="line">            String sentence = sentences[rand.nextInt(sentences.length)];</span><br><span class="line">            System.out.println(<span class="string">"\n"</span> + sentence);</span><br><span class="line">            <span class="keyword">this</span>.collector.emit(<span class="string">"split-stream"</span>, <span class="keyword">new</span> Values(sentence));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer declarer)</span> </span>&#123;</span><br><span class="line">            declareStream(declarer, <span class="keyword">new</span> Fields(<span class="string">"sentence"</span>));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">ack</span><span class="params">(Object id)</span> </span>&#123;&#125;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fail</span><span class="params">(Object id)</span> </span>&#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">SplitSentenceBolt</span> <span class="keyword">extends</span> <span class="title">BaseRichBolt</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> OutputCollector collector;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">prepare</span><span class="params">(Map config, TopologyContext context, OutputCollector collector)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.collector = collector;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Tuple tuple)</span> </span>&#123;</span><br><span class="line">            String sentence = tuple.getStringByField(<span class="string">"sentence"</span>);</span><br><span class="line">            String[] words = sentence.split(<span class="string">" "</span>);</span><br><span class="line">            <span class="keyword">for</span> (String word : words) &#123;</span><br><span class="line">                <span class="keyword">this</span>.collector.emit(<span class="string">"count-stream"</span>, <span class="keyword">new</span> Values(word));</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">this</span>.collector.ack(tuple);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer declarer)</span> </span>&#123;</span><br><span class="line">            declareStream(declarer, <span class="keyword">new</span> Fields(<span class="string">"word"</span>));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">WordCountBolt</span> <span class="keyword">extends</span> <span class="title">BaseRichBolt</span> </span>&#123;</span><br><span class="line">        Map&lt;String, Integer&gt; counts = <span class="keyword">new</span> HashMap&lt;String, Integer&gt;();</span><br><span class="line">        <span class="keyword">private</span> OutputCollector collector;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">prepare</span><span class="params">(Map config, TopologyContext context, OutputCollector collector)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.collector = collector;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Tuple tuple)</span> </span>&#123;</span><br><span class="line">            String word = tuple.getString(<span class="number">0</span>);</span><br><span class="line">            Integer count = counts.get(word);</span><br><span class="line">            <span class="keyword">if</span> (count == <span class="keyword">null</span>) count = <span class="number">0</span>;</span><br><span class="line">            count++;</span><br><span class="line">            counts.put(word, count);</span><br><span class="line">            collector.emit(<span class="string">"print-stream"</span>, <span class="keyword">new</span> Values(word, count));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer declarer)</span> </span>&#123;</span><br><span class="line">            declareStream(declarer, <span class="keyword">new</span> Fields(<span class="string">"word"</span>, <span class="string">"count"</span>));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">PrinterBolt</span> <span class="keyword">extends</span> <span class="title">BaseRichBolt</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> OutputCollector collector;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">prepare</span><span class="params">(Map config, TopologyContext context, OutputCollector collector)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.collector = collector;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Tuple tuple)</span> </span>&#123;</span><br><span class="line">            String first = tuple.getString(<span class="number">0</span>);</span><br><span class="line">            <span class="keyword">int</span> second = tuple.getInteger(<span class="number">1</span>);</span><br><span class="line">            System.out.println(first + <span class="string">","</span> + second);</span><br><span class="line">            collector.emit(<span class="string">"whatever-stream"</span>, <span class="keyword">new</span> Values(first + <span class="string">":"</span> + second));  <span class="comment">//⬅</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer declarer)</span> </span>&#123;</span><br><span class="line">            declareStream(declarer, <span class="keyword">new</span> Fields(<span class="string">"word:count"</span>));  <span class="comment">//⬅</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        TopologyBuilder builder = <span class="keyword">new</span> TopologyBuilder();</span><br><span class="line">        builder.setSpout(<span class="string">"spout"</span>, <span class="keyword">new</span> RandomSentenceSpout(), <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        setBolt(builder, <span class="keyword">new</span> SplitSentenceBolt(), <span class="string">"split"</span>);</span><br><span class="line">        setBolt(builder, <span class="keyword">new</span> WordCountBolt(), <span class="string">"count"</span>);</span><br><span class="line">        setBolt(builder, <span class="keyword">new</span> PrinterBolt(), <span class="string">"print"</span>);</span><br><span class="line"></span><br><span class="line">        Config conf = <span class="keyword">new</span> Config();</span><br><span class="line">        conf.setDebug(<span class="keyword">false</span>);</span><br><span class="line">        <span class="keyword">if</span> (args != <span class="keyword">null</span> &amp;&amp; args.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            conf.setNumWorkers(<span class="number">3</span>);</span><br><span class="line">            StormSubmitter.submitTopologyWithProgressBar(args[<span class="number">0</span>], conf, builder.createTopology());</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            conf.setMaxTaskParallelism(<span class="number">3</span>);</span><br><span class="line">            LocalCluster cluster = <span class="keyword">new</span> LocalCluster();</span><br><span class="line">            cluster.submitTopology(<span class="string">"word-count"</span>, conf, builder.createTopology());</span><br><span class="line">            Thread.sleep(<span class="number">10000</span>);</span><br><span class="line">            cluster.shutdown();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">declareStream</span><span class="params">(OutputFieldsDeclarer declarer, Fields fields)</span></span>&#123;</span><br><span class="line">        declarer.declareStream(<span class="string">"split-stream"</span>, fields);</span><br><span class="line">        declarer.declareStream(<span class="string">"count-stream"</span>, fields);</span><br><span class="line">        declarer.declareStream(<span class="string">"print-stream"</span>, fields);</span><br><span class="line">        declarer.declareStream(<span class="string">"whatever-stream"</span>, fields);      <span class="comment">//⬅</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setBolt</span><span class="params">(TopologyBuilder builder, IRichBolt bolt, String name)</span></span>&#123;</span><br><span class="line">        builder.setBolt(name, bolt, <span class="number">2</span>)</span><br><span class="line">                .shuffleGrouping(<span class="string">"spout"</span>, name + <span class="string">"-stream"</span>)</span><br><span class="line">                .fieldsGrouping(<span class="string">"split"</span>, name + <span class="string">"-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>))</span><br><span class="line">                .shuffleGrouping(<span class="string">"count"</span>, name + <span class="string">"-stream"</span>)</span><br><span class="line">                .shuffleGrouping(<span class="string">"print"</span>, name + <span class="string">"-stream"</span>)     <span class="comment">//⬅</span></span><br><span class="line">        ;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>你以为这样就完了吗，如果把PrintBolt的输出stream-id去掉，即采用默认的default的话：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">PrinterBolt</span> <span class="keyword">extends</span> <span class="title">BaseRichBolt</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Tuple tuple)</span> </span>&#123;</span><br><span class="line">        String first = tuple.getString(<span class="number">0</span>);</span><br><span class="line">        <span class="keyword">int</span> second = tuple.getInteger(<span class="number">1</span>);</span><br><span class="line">        System.out.println(first + <span class="string">","</span> + second);</span><br><span class="line">        <span class="comment">//collector.emit("whatever-stream", new Values(first + ":" + second));</span></span><br><span class="line">        collector.emit(<span class="keyword">new</span> Values(first + <span class="string">":"</span> + second));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">declareOutputFields</span><span class="params">(OutputFieldsDeclarer declarer)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//declareStream(declarer, new Fields("word:count"));</span></span><br><span class="line">        declarer.declare(<span class="keyword">new</span> Fields(<span class="string">"word:count"</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">declareStream</span><span class="params">(OutputFieldsDeclarer declarer, Fields fields)</span></span>&#123;</span><br><span class="line">    declarer.declareStream(<span class="string">"split-stream"</span>, fields);</span><br><span class="line">    declarer.declareStream(<span class="string">"count-stream"</span>, fields);</span><br><span class="line">    declarer.declareStream(<span class="string">"print-stream"</span>, fields);</span><br><span class="line">    <span class="comment">//declarer.declareStream("whatever-stream", fields);      //⬅</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setBolt</span><span class="params">(TopologyBuilder builder, IRichBolt bolt, String name)</span></span>&#123;</span><br><span class="line">    builder.setBolt(name, bolt, <span class="number">2</span>)</span><br><span class="line">            .shuffleGrouping(<span class="string">"spout"</span>, name + <span class="string">"-stream"</span>)</span><br><span class="line">            .fieldsGrouping(<span class="string">"split"</span>, name + <span class="string">"-stream"</span>, <span class="keyword">new</span> Fields(<span class="string">"word"</span>))</span><br><span class="line">            .shuffleGrouping(<span class="string">"count"</span>, name + <span class="string">"-stream"</span>)</span><br><span class="line">            .shuffleGrouping(<span class="string">"print"</span>, name + <span class="string">"-stream"</span>)</span><br><span class="line">    ;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>还是报错：[count]组件订阅了[print]组件中不存在的[count-stream]</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Component: [count] subscribes from non-existent stream: [count-stream] of component [print]</span><br></pre></td></tr></table></figure>
+<p>好吧，看来前面的组件都使用自定义的stream-id，最后一个组件也必须使用自定义的stream-id，即使这个stream-id看起来没什么意义！</p>
+<p>EOF.</p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/06/30/Hello-Storm/">用实例理解Storm的Stream概念</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年06月30日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/06/30/Hello-Storm/" title="用实例理解Storm的Stream概念">http://github.com/zqhxuyuan/2016/06/30/Hello-Storm/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/06/30/Hello-Storm/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/07/07/Cassandra-GC-CMS/">
+        Cassandra CMS GC
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/06/07/Cassandra-Code/">
+        Cassandra源码分析
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#缘起"><span class="toc-number">1.</span> <span class="toc-text">缘起</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#WordCountTopology_Default_Stream"><span class="toc-number">2.</span> <span class="toc-text">WordCountTopology Default Stream</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SingleStream"><span class="toc-number">3.</span> <span class="toc-text">SingleStream</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MultiStream"><span class="toc-number">4.</span> <span class="toc-text">MultiStream</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MultiGroup"><span class="toc-number">5.</span> <span class="toc-text">MultiGroup</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#最后一个Bolt"><span class="toc-number">6.</span> <span class="toc-text">最后一个Bolt</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/06/30/Hello-Storm/" data-title="用实例理解Storm的Stream概念" data-url="http://github.com/zqhxuyuan/2016/06/30/Hello-Storm/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/07/07/Cassandra-GC-CMS/" title="上一篇: Cassandra CMS GC">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/06/07/Cassandra-Code/" title="下一篇: Cassandra源码分析">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

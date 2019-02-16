@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>HBase性能优化方法总结 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="转载自大圆那些事:http://www.cnblogs.com/panfeng412/">
+<meta name="keywords" content="hbase">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HBase性能优化方法总结">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/12/16/2015-12-16-HBase-Optimize/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="转载自大圆那些事:http://www.cnblogs.com/panfeng412/">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.211Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HBase性能优化方法总结">
+<meta name="twitter:description" content="转载自大圆那些事:http://www.cnblogs.com/panfeng412/">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-12-16-HBase-Optimize" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/12/16/2015-12-16-HBase-Optimize/" class="article-date">
+  	<time datetime="2015-12-15T16:00:00.000Z" itemprop="datePublished">2015-12-16</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      HBase性能优化方法总结
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/bigdata/">bigdata</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hbase/">hbase</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>转载自大圆那些事:<a href="http://www.cnblogs.com/panfeng412/" target="_blank" rel="noopener">http://www.cnblogs.com/panfeng412/</a><br><a id="more"></a></p>
+<h2 id="表的设计">表的设计</h2><h3 id="Pre-Creating_Regions">Pre-Creating Regions</h3><p>默认情况下，在创建 HBase 表的时候会自动创建一个 region 分区，当导入数据的时候，所有的 HBase 客户端都向这一个 region 写数据，直到这个 region 足够大了才进行切分。一种可以加快批量写入速度的方法是通过预先创建一些空的 regions，这样当数据写入 HBase 时，会按照 region 分区情况，在集群内做数据的负载均衡。</p>
+<p>有关预分区，详情参见 <a href="http://hbase.apache.org/book.html#precreate.regions" target="_blank">Table Creation: Pre-Creating Regions</a>，下面是一个例子: </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">public static boolean createTable(HBaseAdmin admin, HTableDescriptor table, byte[][] splits) throws IOException &#123;</span><br><span class="line">    try &#123;</span><br><span class="line">        admin.createTable(table, splits);</span><br><span class="line">        return true;</span><br><span class="line">    &#125; catch (TableExistsException e) &#123;</span><br><span class="line">        logger.info(&quot;table &quot; + table.getNameAsString() + &quot; already exists&quot;);</span><br><span class="line">        // the table already exists...</span><br><span class="line">        return false;  </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public static byte[][] getHexSplits(String startKey, String endKey, int numRegions) &#123;</span><br><span class="line">    byte[][] splits = new byte[numRegions-1][];</span><br><span class="line">    BigInteger lowestKey = new BigInteger(startKey, 16);</span><br><span class="line">    BigInteger highestKey = new BigInteger(endKey, 16);</span><br><span class="line">    BigInteger range = highestKey.subtract(lowestKey);</span><br><span class="line">    BigInteger regionIncrement = range.divide(BigInteger.valueOf(numRegions));</span><br><span class="line">    lowestKey = lowestKey.add(regionIncrement);</span><br><span class="line">    for(int i=0; i &lt; numRegions-1;i++) &#123;</span><br><span class="line">        BigInteger key = lowestKey.add(regionIncrement.multiply(BigInteger.valueOf(i)));</span><br><span class="line">        byte[] b = String.format(&quot;%016x&quot;, key).getBytes();</span><br><span class="line">        splits[i] = b;</span><br><span class="line">    &#125;</span><br><span class="line">    return splits;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Row_Key">Row Key</h3><p>HBase 中 row key 用来检索表中的记录，支持以下三种方式:  </p>
+<ul>
+<li>通过单个 row key 访问：即按照某个 row key 键值进行 get 操作；</li>
+<li>通过 row key 的 range 进行 scan：即通过设置 startRowKey 和 endRowKey，在这个范围内进行扫描；</li>
+<li>全表扫描：即直接扫描整张表中所有行记录。</li>
+</ul>
+<p>在 HBase 中，row key 可以是任意字符串，最大长度 64KB，实际应用中一般为 10~100bytes，存为 byte[] 字节数组， <em>一般设计成定长的</em> 。</p>
+<p>row key 是按照 <em>字典序</em> 存储，因此设计 row key 时，要充分利用这个排序特点，将经常一起读取的数据存储到一块，将最近可能会被访问的数据放在一块。</p>
+<p>举个例子：如果最近写入 HBase 表中的数据是最可能被访问的，可以考虑将时间戳作为 row key 的一部分，由于是字典序排序，所以可以使用 Long.MAX_VALUE - timestamp 作为 row key，这样能保证新写入的数据在读取时可以被快速命中。</p>
+<h3 id="Column_Family">Column Family</h3><p><em>不要在一张表里定义太多的 column family</em> 。目前 Hbase 并不能很好的处理超过2~3个 column family 的表。因为某个 column family 在 flush 的时候，它邻近的 column family 也会因关联效应被触发 flush，最终导致系统产生更多的 I/O。感兴趣的同学可以对自己的 HBase 集群进行实际测试，从得到的测试结果数据验证一下。</p>
+<h3 id="In_Memory">In Memory</h3><p>创建表的时候，可以通过 HColumnDescriptor.setInMemory(true) 将表放到 RegionServer 的缓存中，保证在读取的时候被 cache 命中。</p>
+<h3 id="Max_Version">Max Version</h3><p>创建表的时候，可以通过 HColumnDescriptor.setMaxVersions(int maxVersions) 设置表中数据的最大版本，如果只需要保存最新版本的数据，那么可以设置 setMaxVersions(1)。</p>
+<h3 id="Time_To_Live">Time To Live</h3><p>创建表的时候，可以通过 HColumnDescriptor.setTimeToLive(int timeToLive) 设置表中数据的存储生命期，过期数据将自动被删除，例如如果只需要存储最近两天的数据，那么可以设置 setTimeToLive(2 <em> 24 </em> 60 * 60)。</p>
+<h3 id="Compact_&amp;_Split">Compact &amp; Split</h3><p>在 HBase 中，数据在更新时首先写入 WAL日志(HLog)和内存(MemStore)中，MemStore 中的数据是排序的，当 MemStore 累计到一定阈值时，就会创建一个新的 MemStore，并且将老的 MemStore 添加到 flush 队列，由单独的线程 flush 到磁盘上，成为一个 StoreFile。于此同时， 系统会在 zookeeper 中记录一个 redo point，表示这个时刻之前的变更已经持久化了(minor compact)。</p>
+<p>StoreFile 是只读的，一旦创建后就不可以再修改。因此 Hbase 的更新其实是不断追加的操作。当一个 Store 中的 StoreFile 达到一定的阈值后，就会进行一次合并(major compact)，将对同一个 key 的修改合并到一起，形成一个大的 StoreFile，当 StoreFile 的大小达到一定阈值后，又会对 StoreFile 进行分割(split)，等分为两个 StoreFile。</p>
+<p>由于对表的更新是不断追加的，处理读请求时，需要访问 Store 中全部的 StoreFile 和 MemStore，将它们按照 row key 进行合并，由于 StoreFile 和 MemStore 都是经过排序的，并且 StoreFile 带有内存中索引，通常合并过程还是比较快的。</p>
+<p>实际应用中，可以考虑必要时手动进行 major compact，将同一个 row key 的修改进行合并形成一个大的 StoreFile。同时，可以将 StoreFile 设置大些，减少 split 的发生。</p>
+<h2 id="写表操作">写表操作</h2><h3 id="多_HTable_并发写">多 HTable 并发写</h3><p>创建多个 HTable 客户端用于写操作，提高写数据的吞吐量，一个例子: </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">static final Configuration conf = HBaseConfiguration.create();</span><br><span class="line">static final String table_log_name = &quot;user_log&quot;;</span><br><span class="line">wTableLog = new HTable[tableN];</span><br><span class="line">for (int i = 0; i &lt; tableN; i++) &#123;</span><br><span class="line">    wTableLog[i] = new HTable(conf, table_log_name);</span><br><span class="line">    wTableLog[i].setWriteBufferSize(5 * 1024 * 1024); //5MB</span><br><span class="line">    wTableLog[i].setAutoFlush(false);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="HTable_参数设置">HTable 参数设置</h3><h4 id="Auto_Flush">Auto Flush</h4><p>通过调用 HTable.setAutoFlush(false) 方法可以将 HTable 写客户端的自动 flush 关闭，这样可以批量写入数据到 HBase，而不是有一条 put 就执行一次更新，只有当 put 填满客户端写缓存时，才实际向 HBase 服务端发起写请求。默认情况下 auto flush 是开启的。</p>
+<h4 id="Write_Buffer">Write Buffer</h4><p>通过调用 HTable.setWriteBufferSize(writeBufferSize) 方法可以设置 HTable 客户端的写 buffer 大小，如果新设置的 buffer 小于当前写 buffer 中的数据时，buffer 将会被 flush 到服务端。其中，writeBufferSize 的单位是 byte 字节数，可以根据实际写入数据量的多少来设置该值。</p>
+<h4 id="WAL_Flag">WAL Flag</h4><p>在 HBase 中，客户端向集群中的 RegionServer 提交数据时（Put/Delete操作），首先会先写 WAL（Write Ahead Log）日志（即 HLog，一个 RegionServer 上的所有 Region 共享一个 HLog），只有当 WAL 日志写成功后，再接着写 MemStore，然后客户端被通知提交数据成功；如果写 WAL 日志失败，客户端则被通知提交失败。这样做的好处是可以做到 RegionServer 宕机后的数据恢复。</p>
+<p>因此，对于相对不太重要的数据，可以在 Put/Delete 操作时，通过调用 Put.setWriteToWAL(false) 或 Delete.setWriteToWAL(false) 函数，放弃写 WAL 日志，从而提高数据写入的性能。</p>
+<p><em>谨慎选择关闭 WAL 日志，因为这样的话，一旦 RegionServer 宕机，Put/Delete 的数据将会无法根据 WAL 日志进行恢复。</em></p>
+<h3 id="批量写">批量写</h3><p>通过调用 HTable.put(Put) 方法可以将一个指定的 row key 记录写入 HBase，同样 HBase 提供了另一个方法：通过调用 HTable.put(List<put>) 方法可以将指定的 row key 列表，批量写入多行记录，这样做的好处是批量执行，只需要一次网络 I/O 开销，这对于对数据实时性要求高，网络传输 RTT 高的情景下可能带来明显的性能提升。</put></p>
+<h3 id="多线程并发写">多线程并发写</h3><p>在客户端开启多个 HTable 写线程，每个写线程负责一个 HTable 对象的 flush 操作，这样结合定时 flush 和写 buffer（writeBufferSize），可以既保证在数据量小的时候，数据可以在较短时间内被 flush（如1秒内），同时又保证在数据量大的时候，写 buffer 一满就及时进行 flush。下面给个具体的例子:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">for (int i = 0; i &lt; threadN; i++) &#123;</span><br><span class="line">    Thread th = new Thread() &#123;</span><br><span class="line">        public void run() &#123;</span><br><span class="line">            while (true) &#123;</span><br><span class="line">                try &#123;</span><br><span class="line">                    sleep(1000); //1 second</span><br><span class="line">                &#125; catch (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                synchronized (wTableLog[i]) &#123;</span><br><span class="line">                    try &#123;</span><br><span class="line">                        wTableLog[i].flushCommits();</span><br><span class="line">                    &#125; catch (IOException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">    th.setDaemon(true);</span><br><span class="line">    th.start();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="读表操作">读表操作</h2><h3 id="多_HTable_并发读">多 HTable 并发读</h3><p>创建多个 HTable 客户端用于读操作，提高读数据的吞吐量，一个例子: </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">static final Configuration conf = HBaseConfiguration.create();</span><br><span class="line">static final String table_log_name = “user_log”;</span><br><span class="line">rTableLog = new HTable[tableN];</span><br><span class="line">for (int i = 0; i &lt; tableN; i++) &#123;</span><br><span class="line">    rTableLog[i] = new HTable(conf, table_log_name);</span><br><span class="line">    rTableLog[i].setScannerCaching(50);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="HTable_参数设置-1">HTable 参数设置</h3><h4 id="Scanner_Caching">Scanner Caching</h4><p>hbase.client.scanner.caching 配置项可以设置 HBase scanner 一次从服务端抓取的数据条数，默认情况下一次一条。通过将其设置成一个合理的值，可以减少 scan 过程中 next() 的时间开销，代价是 scanner 需要通过客户端的内存来维持这些被 cache 的行记录。有三个地方可以进行配置（优先级递增）:</p>
+<ul>
+<li>在 HBase 的 conf 配置文件中进行配置；</li>
+<li>通过调用 HTable.setScannerCaching(int scannerCaching) 进行配置；</li>
+<li>通过调用 Scan.setCaching(int caching) 进行配置。</li>
+</ul>
+<h4 id="Scan_Attribute_Selection">Scan Attribute Selection</h4><p>scan 时指定需要的 Column Family，可以减少网络传输数据量，否则默认 scan 操作会返回整行所有 Column Family 的数据。</p>
+<h4 id="Close_ResultScanner">Close ResultScanner</h4><p>通过 scan 取完数据后，记得要关闭 ResultScanner，否则 RegionServer 可能会出现问题（对应的 Server 资源无法释放）。</p>
+<h3 id="批量读">批量读</h3><p>通过调用 HTable.get(Get) 方法可以根据一个指定的 row key 获取一行记录，同样 HBase 提供了另一个方法：通过调用 HTable.get(List<get>) 方法可以根据一个指定的 row key 列表，批量获取多行记录，这样做的好处是批量执行，只需要一次网络 I/O 开销，这对于对数据实时性要求高而且网络传输 RTT 高的情景下可能带来明显的性能提升。</get></p>
+<h3 id="多线程并发读">多线程并发读</h3><p>在客户端开启多个 HTable 读线程，每个读线程负责通过 HTable 对象进行 get 操作。下面是一个多线程并发读取 HBase，获取店铺一天内各分钟 PV 值的例子: </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br></pre></td><td class="code"><pre><span class="line">public class DataReaderServer &#123;</span><br><span class="line">    //获取店铺一天内各分钟PV值的入口函数</span><br><span class="line">    public static ConcurrentHashMap&lt;String, String&gt; getUnitMinutePV(long uid, long startStamp, long endStamp) &#123;</span><br><span class="line">        long min = startStamp;</span><br><span class="line">        int count = (int)((endStamp - startStamp) / (60*1000));</span><br><span class="line">        List&lt;String&gt; lst = new ArrayList&lt;String&gt;();</span><br><span class="line">        for (int i = 0; i &lt;= count; i++) &#123;</span><br><span class="line">            min = startStamp + i * 60 * 1000;</span><br><span class="line">            lst.add(uid + &quot;_&quot; + min);</span><br><span class="line">        &#125;</span><br><span class="line">        return parallelBatchMinutePV(lst);</span><br><span class="line">    &#125;</span><br><span class="line">      </span><br><span class="line">    //多线程并发查询，获取分钟PV值</span><br><span class="line">    private static ConcurrentHashMap&lt;String, String&gt; parallelBatchMinutePV(List&lt;String&gt; lstKeys) &#123;</span><br><span class="line">        ConcurrentHashMap&lt;String, String&gt; hashRet = new ConcurrentHashMap&lt;String, String&gt;();</span><br><span class="line">        int parallel = 3;</span><br><span class="line">        List&lt;List&lt;String&gt;&gt; lstBatchKeys  = null;</span><br><span class="line">        if (lstKeys.size() &lt; parallel) &#123;</span><br><span class="line">            lstBatchKeys  = new ArrayList&lt;List&lt;String&gt;&gt;(1);</span><br><span class="line">            lstBatchKeys.add(lstKeys);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            lstBatchKeys  = new ArrayList&lt;List&lt;String&gt;&gt;(parallel);</span><br><span class="line">            for(int i = 0; i &lt; parallel; i++)&#123;</span><br><span class="line">                List&lt;String&gt; lst = new ArrayList&lt;String&gt;();</span><br><span class="line">                lstBatchKeys.add(lst);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            for(int i = 0 ; i &lt; lstKeys.size(); i++) &#123;</span><br><span class="line">                lstBatchKeys.get(i%parallel).add(lstKeys.get(i));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        List&lt;Future&lt; ConcurrentHashMap&lt;String, String&gt; &gt;&gt; futures = new ArrayList&lt;Future&lt; ConcurrentHashMap&lt;String, String&gt; &gt;&gt;(5);</span><br><span class="line">        </span><br><span class="line">        ThreadFactoryBuilder builder = new ThreadFactoryBuilder();</span><br><span class="line">        builder.setNameFormat(&quot;ParallelBatchQuery&quot;);</span><br><span class="line">        ThreadFactory factory = builder.build();</span><br><span class="line">        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(lstBatchKeys.size(), factory);</span><br><span class="line">        </span><br><span class="line">        for(List&lt;String&gt; keys : lstBatchKeys) &#123;</span><br><span class="line">            Callable&lt; ConcurrentHashMap&lt;String, String&gt; &gt; callable = new BatchMinutePVCallable(keys);</span><br><span class="line">            FutureTask&lt; ConcurrentHashMap&lt;String, String&gt; &gt; future = (FutureTask&lt; ConcurrentHashMap&lt;String, String&gt; &gt;) executor.submit(callable);</span><br><span class="line">            futures.add(future);</span><br><span class="line">        &#125;</span><br><span class="line">        executor.shutdown();</span><br><span class="line">        </span><br><span class="line">        // Wait for all the tasks to finish</span><br><span class="line">        try &#123;</span><br><span class="line">            boolean stillRunning = !executor.awaitTermination(5000000, TimeUnit.MILLISECONDS);</span><br><span class="line">            if (stillRunning) &#123;</span><br><span class="line">                try &#123;</span><br><span class="line">                    executor.shutdownNow();</span><br><span class="line">                &#125; catch (Exception e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; catch (InterruptedException e) &#123;</span><br><span class="line">            try &#123;</span><br><span class="line">                Thread.currentThread().interrupt();</span><br><span class="line">            &#125; catch (Exception e1) &#123;</span><br><span class="line">                e1.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        // Look for any exception</span><br><span class="line">        for (Future f : futures) &#123;</span><br><span class="line">            try &#123;</span><br><span class="line">                if(f.get() != null) &#123;</span><br><span class="line">                    hashRet.putAll((ConcurrentHashMap&lt;String, String&gt;)f.get());</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; catch (InterruptedException e) &#123;</span><br><span class="line">                try &#123;</span><br><span class="line">                    Thread.currentThread().interrupt();</span><br><span class="line">                &#125; catch (Exception e1) &#123;</span><br><span class="line">                    e1.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; catch (ExecutionException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;    </span><br><span class="line">        return hashRet;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    //一个线程批量查询，获取分钟PV值</span><br><span class="line">    protected static ConcurrentHashMap&lt;String, String&gt; getBatchMinutePV(List&lt;String&gt; lstKeys) &#123;</span><br><span class="line">        ConcurrentHashMap&lt;String, String&gt; hashRet = null;</span><br><span class="line">        List&lt;Get&gt; lstGet = new ArrayList&lt;Get&gt;();</span><br><span class="line">        String[] splitValue = null;</span><br><span class="line">        for (String s : lstKeys) &#123;</span><br><span class="line">            splitValue = s.split(&quot;_&quot;);</span><br><span class="line">            long uid = Long.parseLong(splitValue[0]);</span><br><span class="line">            long min = Long.parseLong(splitValue[1]);</span><br><span class="line">            byte[] key = new byte[16];</span><br><span class="line">            Bytes.putLong(key, 0, uid);</span><br><span class="line">            Bytes.putLong(key, 8, min);</span><br><span class="line">            Get g = new Get(key);</span><br><span class="line">            g.addFamily(fp);</span><br><span class="line">            lstGet.add(g);</span><br><span class="line">        &#125;</span><br><span class="line">        Result[] res = null;</span><br><span class="line">        try &#123;</span><br><span class="line">            res = tableMinutePV[rand.nextInt(tableN)].get(lstGet);</span><br><span class="line">        &#125; catch (IOException e1) &#123;</span><br><span class="line">            logger.error(&quot;tableMinutePV exception, e=&quot; + e1.getStackTrace());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        if (res != null &amp;&amp; res.length &gt; 0) &#123;</span><br><span class="line">            hashRet = new ConcurrentHashMap&lt;String, String&gt;(res.length);</span><br><span class="line">            for (Result re : res) &#123;</span><br><span class="line">                if (re != null &amp;&amp; !re.isEmpty()) &#123;</span><br><span class="line">                    try &#123;</span><br><span class="line">                        byte[] key = re.getRow();</span><br><span class="line">                        byte[] value = re.getValue(fp, cp);</span><br><span class="line">                        if (key != null &amp;&amp; value != null) &#123;</span><br><span class="line">                            hashRet.put(String.valueOf(Bytes.toLong(key,</span><br><span class="line">                                    Bytes.SIZEOF_LONG)), String.valueOf(Bytes</span><br><span class="line">                                    .toLong(value)));</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125; catch (Exception e2) &#123;</span><br><span class="line">                        logger.error(e2.getStackTrace());</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        return hashRet;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//调用接口类，实现 Callable 接口</span><br><span class="line">class BatchMinutePVCallable implements Callable&lt;ConcurrentHashMap&lt;String, String&gt;&gt; &#123;</span><br><span class="line">     private List&lt;String&gt; keys;</span><br><span class="line"></span><br><span class="line">     public BatchMinutePVCallable(List&lt;String&gt; lstKeys) &#123;</span><br><span class="line">         this.keys = lstKeys;</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">     public ConcurrentHashMap&lt;String, String&gt; call() throws Exception &#123;</span><br><span class="line">         return DataReadServer.getBatchMinutePV(keys);</span><br><span class="line">     &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="缓存查询结果">缓存查询结果</h3><p>对于频繁查询 HBase 的应用场景，可以考虑在应用程序中做缓存，当有新的查询请求时，首先在缓存中查找，如果存在则直接返回，不再查询 HBase；否则对 HBase 发起读请求查询，然后在应用程序中将查询结果缓存起来。至于缓存的替换策略，可以考虑 LRU 等常用的策略。</p>
+<h3 id="Blockcache">Blockcache</h3><p>HBase 上 Regionserver 的内存分为两个部分，一部分作为 Memstore，主要用来写；另外一部分作为 BlockCache，主要用于读。</p>
+<ul>
+<li><p>写请求会先写入 Memstore，Regionserver 会给每个 region 提供一个 Memstore，当 Memstore 满64MB以后，会启动 flush 刷新到磁盘。当 Memstore 的总大小超过限制时（heapsize <em> hbase.regionserver.global.memstore.upperLimit </em> 0.9），会强行启动 flush 进程，从最大的 Memstore 开始 flush 直到低于限制。</p>
+</li>
+<li><p>读请求先到 Memstore 中查数据，查不到就到 BlockCache 中查，再查不到就会到磁盘上读，并把读的结果放入 BlockCache。由于 BlockCache 采用的是 LRU 策略，因此 BlockCache 达到上限（heapsize <em> hfile.block.cache.size </em> 0.85）后，会启动淘汰机制，淘汰掉最老的一批数据。</p>
+</li>
+</ul>
+<p>一个 Regionserver 上有一个 BlockCache 和 N 个 Memstore，它们的大小之和不能大于等于 heapsize * 0.8，否则 HBase 不能启动。默认 BlockCache 为 0.2，而 Memstore 为 0.4。对于注重读响应时间的系统，可以将 BlockCache 设大些，比如设置 BlockCache=0.4，Memstore=0.39，以加大缓存的命中率。</p>
+<p>有关 BlockCache 机制，请参考这里: <a href="http://punishzhou.iteye.com/blog/1277141" target="_blank">HBase 的 Block cache</a>，<a href="http://www.cnblogs.com/raymondshiquan/archive/2011/07/24/2115397.html" target="_blank">HBase 的 blockcache 机制</a>，<a href="http://koven2049.iteye.com/blog/1002135" target="_blank">hbase 中的缓存的计算与使用</a>。</p>
+<h2 id="数据计算">数据计算</h2><h3 id="服务端计算">服务端计算</h3><p><a href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/coprocessor/package-summary.html" target="_blank">Coprocessor</a> 运行于 HBase RegionServer 服务端，各个 Regions 保持对与其相关的 coprocessor 实现类的引用，coprocessor 类可以通过 RegionServer 上 classpath 中的本地 jar 或 HDFS 的 classloader 进行加载。</p>
+<p>目前，已提供有几种 coprocessor:</p>
+<ul>
+<li>Coprocessor: 提供对于 region 管理的钩子，例如 region 的 open/close/split/flush/compact 等；</li>
+<li>RegionObserver: 提供用于从客户端监控表相关操作的钩子，例如表的 get/put/scan/delete 等；</li>
+<li>Endpoint: 提供可以在 region 上执行任意函数的命令触发器。一个使用例子是 RegionServer 端的列聚合，这里有<a href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/coprocessor/package-summary.html#commandtarget" target="_blank">代码示例</a>。</li>
+</ul>
+<h3 id="写端计算">写端计算</h3><h4 id="计数">计数</h4><p>HBase 本身可以看作是一个可以水平扩展的 Key-Value 存储系统，但是其本身的计算能力有限（Coprocessor 可以提供一定的服务端计算），因此使用 HBase 时，往往需要从写端或者读端进行计算，然后将最终的计算结果返回给调用者。举两个简单的例子: </p>
+<ul>
+<li>PV 计算：通过在 HBase 写端内存中，累加计数，维护 PV 值的更新，同时为了做到持久化，定期（如1秒）将 PV 计算结果同步到 HBase 中，这样查询端最多会有1秒钟的延迟，能看到秒级延迟的 PV 结果。</li>
+<li>分钟 PV 计算：与上面提到的 PV 计算方法相结合，每分钟将当前的累计 PV 值，按照 rowkey + minute 作为新的 rowkey 写入 HBase 中，然后在查询端通过 scan 得到当天各个分钟以前的累计 PV 值，然后顺次将前后两分钟的累计 PV 值相减，就得到了当前一分钟内的 PV 值，从而最终也就得到当天各个分钟内的 PV 值。</li>
+</ul>
+<h4 id="去重">去重</h4><p>对于 UV 的计算，就是个去重计算的例子。分两种情况: </p>
+<ul>
+<li>如果内存可以容纳，那么可以在 Hash 表中维护所有已经存在的 UV 标识，每当新来一个标识时，通过快速查找 Hash 确定是否是一个新的 UV，若是则 UV 值加1，否则 UV 值不变。另外，为了做到持久化或提供给查询接口使用，可以定期（如1秒）将 UV 计算结果同步到 HBase 中。</li>
+<li>如果内存不能容纳，可以考虑采用 Bloom Filter 来实现，从而尽可能的减少内存的占用情况。除了 UV 的计算外，判断 URL 是否存在也是个典型的应用场景。</li>
+</ul>
+<h3 id="读端计算">读端计算</h3><p>如果对于响应时间要求比较苛刻的情况（如单次 http 请求要在毫秒级时间内返回），个人觉得读端不宜做过多复杂的计算逻辑，尽量做到读端功能单一化: 即从 HBase RegionServer 读到数据（scan 或 get 方式）后，按照数据格式进行简单的拼接，直接返回给前端使用。当然，如果对于响应时间要求一般，或者业务特点需要，也可以在读端进行一些计算逻辑。</p>
+<h2 id="总结">总结</h2><p>作为一个 Key-Value 存储系统，HBase 并不是万能的，它有自己独特的地方。因此，基于它来做应用时，我们往往需要从多方面进行优化改进（表设计、读表操作、写表操作、数据计算等），有时甚至还需要从系统级对 HBase 进行配置调优，更甚至可以对 HBase 本身进行优化。这属于不同的层次范畴。</p>
+<p>总之，概括来讲，对系统进行优化时，首先定位到影响你的程序运行性能的瓶颈之处，然后有的放矢进行针对行的优化。如果优化后满足你的期望，那么就可以停止优化；否则继续寻找新的瓶颈之处，开始新的优化，直到满足性能要求。</p>
+<p>HBase性能优化方法总结（一）：表的设计 : <a href="http://www.cnblogs.com/panfeng412/archive/2012/03/08/hbase-performance-tuning-section1.html" target="_blank" rel="noopener">http://www.cnblogs.com/panfeng412/archive/2012/03/08/hbase-performance-tuning-section1.html</a><br>HBase性能优化方法总结（二）：写表操作 : <a href="http://www.cnblogs.com/panfeng412/archive/2012/03/08/hbase-performance-tuning-section2.html" target="_blank" rel="noopener">http://www.cnblogs.com/panfeng412/archive/2012/03/08/hbase-performance-tuning-section2.html</a><br>HBase性能优化方法总结（三）：读表操作 : <a href="http://www.cnblogs.com/panfeng412/archive/2012/03/08/hbase-performance-tuning-section3.html" target="_blank" rel="noopener">http://www.cnblogs.com/panfeng412/archive/2012/03/08/hbase-performance-tuning-section3.html</a><br>HBase性能优化方法总结（四）：数据计算 : <a href="http://www.cnblogs.com/panfeng412/archive/2012/03/08/hbase-performance-tuning-section4.html" target="_blank" rel="noopener">http://www.cnblogs.com/panfeng412/archive/2012/03/08/hbase-performance-tuning-section4.html</a>  </p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/12/16/2015-12-16-HBase-Optimize/">HBase性能优化方法总结</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年12月16日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/12/16/2015-12-16-HBase-Optimize/" title="HBase性能优化方法总结">http://github.com/zqhxuyuan/2015/12/16/2015-12-16-HBase-Optimize/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/12/16/2015-12-16-HBase-Optimize/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/12/16/2015-12-16-Apache-HBase/">
+        Hello HBase
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/12/12/2015-12-12-Apache-Geode/">
+        Apache GEODE 一致性数据库
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#表的设计"><span class="toc-number">1.</span> <span class="toc-text">表的设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Pre-Creating_Regions"><span class="toc-number">1.1.</span> <span class="toc-text">Pre-Creating Regions</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Row_Key"><span class="toc-number">1.2.</span> <span class="toc-text">Row Key</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Column_Family"><span class="toc-number">1.3.</span> <span class="toc-text">Column Family</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#In_Memory"><span class="toc-number">1.4.</span> <span class="toc-text">In Memory</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Max_Version"><span class="toc-number">1.5.</span> <span class="toc-text">Max Version</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Time_To_Live"><span class="toc-number">1.6.</span> <span class="toc-text">Time To Live</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Compact_&_Split"><span class="toc-number">1.7.</span> <span class="toc-text">Compact &amp; Split</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#写表操作"><span class="toc-number">2.</span> <span class="toc-text">写表操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#多_HTable_并发写"><span class="toc-number">2.1.</span> <span class="toc-text">多 HTable 并发写</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HTable_参数设置"><span class="toc-number">2.2.</span> <span class="toc-text">HTable 参数设置</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Auto_Flush"><span class="toc-number">2.2.1.</span> <span class="toc-text">Auto Flush</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Write_Buffer"><span class="toc-number">2.2.2.</span> <span class="toc-text">Write Buffer</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#WAL_Flag"><span class="toc-number">2.2.3.</span> <span class="toc-text">WAL Flag</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#批量写"><span class="toc-number">2.3.</span> <span class="toc-text">批量写</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#多线程并发写"><span class="toc-number">2.4.</span> <span class="toc-text">多线程并发写</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#读表操作"><span class="toc-number">3.</span> <span class="toc-text">读表操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#多_HTable_并发读"><span class="toc-number">3.1.</span> <span class="toc-text">多 HTable 并发读</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HTable_参数设置-1"><span class="toc-number">3.2.</span> <span class="toc-text">HTable 参数设置</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Scanner_Caching"><span class="toc-number">3.2.1.</span> <span class="toc-text">Scanner Caching</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Scan_Attribute_Selection"><span class="toc-number">3.2.2.</span> <span class="toc-text">Scan Attribute Selection</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Close_ResultScanner"><span class="toc-number">3.2.3.</span> <span class="toc-text">Close ResultScanner</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#批量读"><span class="toc-number">3.3.</span> <span class="toc-text">批量读</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#多线程并发读"><span class="toc-number">3.4.</span> <span class="toc-text">多线程并发读</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#缓存查询结果"><span class="toc-number">3.5.</span> <span class="toc-text">缓存查询结果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Blockcache"><span class="toc-number">3.6.</span> <span class="toc-text">Blockcache</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据计算"><span class="toc-number">4.</span> <span class="toc-text">数据计算</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#服务端计算"><span class="toc-number">4.1.</span> <span class="toc-text">服务端计算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#写端计算"><span class="toc-number">4.2.</span> <span class="toc-text">写端计算</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#计数"><span class="toc-number">4.2.1.</span> <span class="toc-text">计数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#去重"><span class="toc-number">4.2.2.</span> <span class="toc-text">去重</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#读端计算"><span class="toc-number">4.3.</span> <span class="toc-text">读端计算</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-number">5.</span> <span class="toc-text">总结</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/12/16/2015-12-16-HBase-Optimize/" data-title="HBase性能优化方法总结" data-url="http://github.com/zqhxuyuan/2015/12/16/2015-12-16-HBase-Optimize/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/12/16/2015-12-16-Apache-HBase/" title="上一篇: Hello HBase">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/12/12/2015-12-12-Apache-Geode/" title="下一篇: Apache GEODE 一致性数据库">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>日志监控系统 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Collectd: gather statistics on performance, processes, and overall status of the systemGraphite: Store numeric time-series data &amp;amp; Render graphs of this data on demandGrafana: visualization and das">
+<meta name="keywords" content="ops">
+<meta property="og:type" content="article">
+<meta property="og:title" content="日志监控系统">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/05/25/Log-Monitor/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Collectd: gather statistics on performance, processes, and overall status of the systemGraphite: Store numeric time-series data &amp;amp; Render graphs of this data on demandGrafana: visualization and das">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160525153304893">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160525131644727">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160525131752805">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160527153959336">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160526130848142">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160526131046286">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160526131856367">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160526132344504">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160526132357292">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160527154442764">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160527154043133">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160527154056015">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160527154112009">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160527154122415">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160527154132421">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160527154141213">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160608133914616">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160608133929398">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160608133940882">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160608133951070">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160613075620723">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160620142827224">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160620155100081">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160620155113852">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160620155438244">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160620155129977">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160620155140805">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160620155155727">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.366Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="日志监控系统">
+<meta name="twitter:description" content="Collectd: gather statistics on performance, processes, and overall status of the systemGraphite: Store numeric time-series data &amp;amp; Render graphs of this data on demandGrafana: visualization and das">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160525153304893">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Log-Monitor" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/05/25/Log-Monitor/" class="article-date">
+  	<time datetime="2016-05-24T16:00:00.000Z" itemprop="datePublished">2016-05-25</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      日志监控系统
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/work/">work</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ops/">ops</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Collectd: gather statistics on performance, processes, and overall status of the system<br>Graphite: Store numeric time-series data &amp; Render graphs of this data on demand<br>Grafana: visualization and dashboarding tool for time series data  </p>
+<a id="more"></a>
+<p>一个日志监控系统包括：日志收集，日志存储，日志可视化。<br>分别对应Collectd，Graphite（不用graphite本身的web工具），Grafana。<br>时间序列数据库的替代方案有：elasticSearch，influxdb。<br>而logstash可以认为是日志收集和日志存储之间的桥梁，因为它提供了I/O配置方便地在不同系统中进行数据传输。<br>如果没有logstash作为桥梁，日志收集后怎么放到存储中是个问题，需要自己调用客户端API。  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160525153304893" alt="log systems"></p>
+<p>那么这些系统之间如何通信，如何组织？  </p>
+<ol>
+<li>collectd负责收集数据，并通过network可以发送到logstash的指定端口</li>
+<li>logstash的输入是监听步骤1的端口，输出可以写到存储系统中，比如es,influxdb</li>
+<li>grafana通过配置数据源的方式，获取存储系统中的数据，进行可视化展现</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Software</th>
+<th>Version</th>
+<th>安装节点</th>
+<th>软件说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>elasticSearch</td>
+<td>2.3.3</td>
+<td>192.168.6.52</td>
+<td>索引数据库</td>
+</tr>
+<tr>
+<td>logstash</td>
+<td>2.3.2</td>
+<td>本机</td>
+<td>有Input/Outout，因此可以连接各种管道</td>
+</tr>
+<tr>
+<td>collectd</td>
+<td></td>
+<td>192.168.6.52</td>
+<td>收集机器的信息，性能，进程等</td>
+</tr>
+<tr>
+<td>Grafana</td>
+<td></td>
+<td>192.168.6.52</td>
+<td>可视化，可以接入不同的数据源es和influxdb</td>
+</tr>
+<tr>
+<td>influxdb</td>
+<td>0.13</td>
+<td>192.168.6.52</td>
+<td>时间序列数据库</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ELK">ELK</h2><h3 id="LogStash">LogStash</h3><h4 id="标准I/O">标准I/O</h4><p>命令行输入输出，通过脚本执行，codec指定如何解码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">$ cd logstash-2.3.2</span><br><span class="line">$ bin/logstash -e &quot;input &#123;stdin&#123;&#125;&#125; output &#123;stdout&#123;&#125;&#125;&quot; &lt;&lt;&lt; &apos;Hello World&apos;</span><br><span class="line">Settings: Default pipeline workers: 4</span><br><span class="line">Pipeline main started</span><br><span class="line">2016-05-25T04:00:29.531Z zqhmac Hello World</span><br><span class="line">Pipeline main has been shutdown</span><br><span class="line">stopping pipeline &#123;:id=&gt;&quot;main&quot;&#125;</span><br><span class="line"></span><br><span class="line">$ bin/logstash -e &apos;input&#123;stdin&#123;&#125;&#125;output&#123;stdout&#123;codec=&gt;rubydebug&#125;&#125;&apos; &lt;&lt;&lt; &apos;Hello World&apos;</span><br><span class="line">&#123;</span><br><span class="line">       &quot;message&quot; =&gt; &quot;Hello World&quot;,</span><br><span class="line">      &quot;@version&quot; =&gt; &quot;1&quot;,</span><br><span class="line">    &quot;@timestamp&quot; =&gt; &quot;2016-05-25T04:01:09.095Z&quot;,</span><br><span class="line">          &quot;host&quot; =&gt; &quot;zqhmac&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$ vi logstash-simple.conf </span><br><span class="line">input &#123; stdin &#123;&#125; &#125;</span><br><span class="line">output &#123;</span><br><span class="line">   stdout &#123; codec=&gt; rubydebug &#125;</span><br><span class="line">&#125;</span><br><span class="line">$ bin/logstash agent -f logstash-simple.conf --verbose</span><br></pre></td></tr></table></figure>
+<h3 id="File_Input">File Input</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ bin/logstash agent -f logstash-file.conf  --verbose</span><br><span class="line">input &#123;</span><br><span class="line">    file &#123;</span><br><span class="line">        path =&gt; &quot;/usr/install/cassandra/logs/system.log&quot;</span><br><span class="line">        start_position =&gt; beginning</span><br><span class="line">        type =&gt; &quot;cassandra&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">output &#123;</span><br><span class="line">   stdout &#123; codec=&gt; rubydebug &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>日志文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 logstash-1.5.0]$ head /usr/install/cassandra/logs/system.log</span><br><span class="line">ERROR [metrics-graphite-reporter-thread-1] 2016-06-13 18:30:39,502 GraphiteReporter.java:281 - Error sending to Graphite:</span><br><span class="line">java.net.SocketException: 断开的管道</span><br><span class="line">  at java.net.SocketOutputStream.socketWrite0(Native Method) ~[na:1.7.0_51]</span><br><span class="line">  at java.net.SocketOutputStream.socketWrite(SocketOutputStream.java:113) ~[na:1.7.0_51]</span><br><span class="line">  at java.net.SocketOutputStream.write(SocketOutputStream.java:159) ~[na:1.7.0_51]</span><br><span class="line">  at sun.nio.cs.StreamEncoder.writeBytes(StreamEncoder.java:221) ~[na:1.7.0_51]</span><br><span class="line">  at sun.nio.cs.StreamEncoder.implWrite(StreamEncoder.java:282) ~[na:1.7.0_51]</span><br><span class="line">  at sun.nio.cs.StreamEncoder.write(StreamEncoder.java:125) ~[na:1.7.0_51]</span><br><span class="line">  at java.io.OutputStreamWriter.write(OutputStreamWriter.java:207) ~[na:1.7.0_51]</span><br><span class="line">  at java.io.BufferedWriter.flushBuffer(BufferedWriter.java:129) ~[na:1.7.0_51]</span><br></pre></td></tr></table></figure>
+<p>默认一行一个事件，对于有异常的日志文件来说，不经过任何处理肯定是不行的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">Using version 0.1.x input plugin &apos;file&apos;. This plugin isn&apos;t well supported by the community and likely has no maintainer. &#123;:level=&gt;:info&#125;</span><br><span class="line">Using version 0.1.x codec plugin &apos;plain&apos;. This plugin isn&apos;t well supported by the community and likely has no maintainer. &#123;:level=&gt;:info&#125;</span><br><span class="line">Using version 0.1.x output plugin &apos;stdout&apos;. This plugin isn&apos;t well supported by the community and likely has no maintainer. &#123;:level=&gt;:info&#125;</span><br><span class="line">Using version 0.1.x codec plugin &apos;rubydebug&apos;. This plugin isn&apos;t well supported by the community and likely has no maintainer. &#123;:level=&gt;:info&#125;</span><br><span class="line">Registering file input &#123;:path=&gt;[&quot;/usr/install/cassandra/logs/system.log&quot;], :level=&gt;:info&#125;</span><br><span class="line">No sincedb_path set, generating one based on the file path &#123;:sincedb_path=&gt;&quot;/home/qihuang.zheng/.sincedb_261f7476b9c9830f1fa5a51db2793e1e&quot;, :path=&gt;[&quot;/usr/install/cassandra/logs/system.log&quot;], :level=&gt;:info&#125;</span><br><span class="line">Pipeline started &#123;:level=&gt;:info&#125;</span><br><span class="line">Logstash startup completed</span><br><span class="line">&#123;</span><br><span class="line">       &quot;message&quot; =&gt; &quot;ERROR [metrics-graphite-reporter-thread-1] 2016-06-13 18:30:39,502 GraphiteReporter.java:281 - Error sending to Graphite:&quot;,</span><br><span class="line">      &quot;@version&quot; =&gt; &quot;1&quot;,</span><br><span class="line">    &quot;@timestamp&quot; =&gt; &quot;2016-06-20T08:42:35.543Z&quot;,</span><br><span class="line">          &quot;type&quot; =&gt; &quot;cassandra&quot;,</span><br><span class="line">          &quot;host&quot; =&gt; &quot;dp0652&quot;,</span><br><span class="line">          &quot;path&quot; =&gt; &quot;/usr/install/cassandra/logs/system.log&quot;</span><br><span class="line">&#125;</span><br><span class="line">&#123;</span><br><span class="line">       &quot;message&quot; =&gt; &quot;java.net.SocketException: 断开的管道&quot;,</span><br><span class="line">      &quot;@version&quot; =&gt; &quot;1&quot;,</span><br><span class="line">    &quot;@timestamp&quot; =&gt; &quot;2016-06-20T08:42:35.544Z&quot;,</span><br><span class="line">          &quot;type&quot; =&gt; &quot;cassandra&quot;,</span><br><span class="line">          &quot;host&quot; =&gt; &quot;dp0652&quot;,</span><br><span class="line">          &quot;path&quot; =&gt; &quot;/usr/install/cassandra/logs/system.log&quot;</span><br><span class="line">&#125;</span><br><span class="line">&#123;</span><br><span class="line">       &quot;message&quot; =&gt; &quot;\tat java.net.SocketOutputStream.socketWrite0(Native Method) ~[na:1.7.0_51]&quot;,</span><br><span class="line">      &quot;@version&quot; =&gt; &quot;1&quot;,</span><br><span class="line">    &quot;@timestamp&quot; =&gt; &quot;2016-06-20T08:42:35.544Z&quot;,</span><br><span class="line">          &quot;type&quot; =&gt; &quot;cassandra&quot;,</span><br><span class="line">          &quot;host&quot; =&gt; &quot;dp0652&quot;,</span><br><span class="line">          &quot;path&quot; =&gt; &quot;/usr/install/cassandra/logs/system.log&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>添加多行支持</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">    file &#123;</span><br><span class="line">        path =&gt; &quot;/usr/install/cassandra/logs/system.log&quot;</span><br><span class="line">        start_position =&gt; beginning</span><br><span class="line">        type =&gt; &quot;cassandra&quot;</span><br><span class="line">        codec =&gt; multiline &#123;</span><br><span class="line">          pattern =&gt; &quot;^\s&quot;</span><br><span class="line">          what =&gt; &quot;previous&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>将任何以空白开始的行与上一行合并，但是这种方式还是不够理想。实际上下面两条记录应该属于一条</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;@timestamp&quot; =&gt; &quot;2016-06-20T08:49:54.521Z&quot;,</span><br><span class="line">       &quot;message&quot; =&gt; &quot;ERROR [metrics-graphite-reporter-thread-1] 2016-06-13 18:30:39,850 GraphiteReporter.java:281 - Error sending to Graphite:&quot;,</span><br><span class="line">      &quot;@version&quot; =&gt; &quot;1&quot;,</span><br><span class="line">          &quot;type&quot; =&gt; &quot;cassandra&quot;,</span><br><span class="line">          &quot;host&quot; =&gt; &quot;dp0652&quot;,</span><br><span class="line">          &quot;path&quot; =&gt; &quot;/usr/install/cassandra/logs/system.log&quot;</span><br><span class="line">&#125;</span><br><span class="line">&#123;</span><br><span class="line">    &quot;@timestamp&quot; =&gt; &quot;2016-06-20T08:49:54.521Z&quot;,</span><br><span class="line">       &quot;message&quot; =&gt; &quot;java.net.SocketException: 断开的管道\n\tat java.net.SocketOutputStream.socketWrite0(Native Method) ~[na:1.7.0_51]\n\tat java.net.SocketOutputStream.socketWrite(SocketOutputStream.java:113) ~[na:1.7.0_51]\n\tat java.net.SocketOutputStream.write(SocketOutputStream.java:159) ~[na:1.7.0_51]\n\tat sun.nio.cs.StreamEncoder.writeBytes(StreamEncoder.java:221) ~[na:1.7.0_51]\n\tat sun.nio.cs.StreamEncoder.implWrite(StreamEncoder.java:282) ~[na:1.7.0_51]\n\tat sun.nio.cs.StreamEncoder.write(StreamEncoder.java:125) ~[na:1.7.0_51]\n\tat java.io.OutputStreamWriter.write(OutputStreamWriter.java:207) ~[na:1.7.0_51]\n\tat java.io.BufferedWriter.flushBuffer(BufferedWriter.java:129) ~[na:1.7.0_51]\n\tat java.io.BufferedWriter.write(BufferedWriter.java:230) ~[na:1.7.0_51]\n\tat java.io.Writer.write(Writer.java:157) ~[na:1.7.0_51]\n\tat com.yammer.metrics.reporting.GraphiteReporter.sendToGraphite(GraphiteReporter.java:271) [metrics-graphite-2.2.0.jar:na]\n\tat com.yammer.metrics.reporting.GraphiteReporter.sendObjToGraphite(GraphiteReporter.java:265) [metrics-graphite-2.2.0.jar:na]\n\tat com.yammer.metrics.reporting.GraphiteReporter.processGauge(GraphiteReporter.java:304) [metrics-graphite-2.2.0.jar:na]\n\tat com.yammer.metrics.reporting.GraphiteReporter.processGauge(GraphiteReporter.java:26) [metrics-graphite-2.2.0.jar:na]\n\tat com.yammer.metrics.core.Gauge.processWith(Gauge.java:28) [metrics-core-2.2.0.jar:na]\n\tat com.yammer.metrics.reporting.GraphiteReporter.printRegularMetrics(GraphiteReporter.java:247) [metrics-graphite-2.2.0.jar:na]\n\tat com.yammer.metrics.reporting.GraphiteReporter.run(GraphiteReporter.java:213) [metrics-graphite-2.2.0.jar:na]\n\tat java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:471) [na:1.7.0_51]\n\tat java.util.concurrent.FutureTask.runAndReset(FutureTask.java:304) [na:1.7.0_51]\n\tat java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$301(ScheduledThreadPoolExecutor.java:178) [na:1.7.0_51]\n\tat java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:293) [na:1.7.0_51]\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145) [na:1.7.0_51]\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615) [na:1.7.0_51]\n\tat java.lang.Thread.run(Thread.java:744) [na:1.7.0_51]&quot;,</span><br><span class="line">      &quot;@version&quot; =&gt; &quot;1&quot;,</span><br><span class="line">          &quot;tags&quot; =&gt; [</span><br><span class="line">        [0] &quot;multiline&quot;</span><br><span class="line">    ],</span><br><span class="line">          &quot;type&quot; =&gt; &quot;cassandra&quot;,</span><br><span class="line">          &quot;host&quot; =&gt; &quot;dp0652&quot;,</span><br><span class="line">          &quot;path&quot; =&gt; &quot;/usr/install/cassandra/logs/system.log&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>网上找到的一个Cassandra日志文件的配置：<a href="https://github.com/rustyrazorblade/dotfiles/blob/master/logstash.conf">https://github.com/rustyrazorblade/dotfiles/blob/master/logstash.conf</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">output &#123;</span><br><span class="line">    elasticsearch &#123;</span><br><span class="line">        hosts =&gt; [&quot;192.168.6.52:9200&quot;]</span><br><span class="line">        index =&gt; &quot;logstash-%&#123;type&#125;-%&#123;+YYYY.MM.dd&#125;&quot;</span><br><span class="line">        document_type =&gt; &quot;%&#123;type&#125;&quot;</span><br><span class="line">        workers =&gt; 2</span><br><span class="line">        flush_size =&gt; 1000</span><br><span class="line">        idle_flush_time =&gt; 5</span><br><span class="line">        template_overwrite =&gt; true</span><br><span class="line">    &#125;  </span><br><span class="line">    stdout &#123; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">input &#123;</span><br><span class="line">    file &#123;</span><br><span class="line">        path =&gt; &quot;/usr/install/cassandra/logs/system.log&quot;       </span><br><span class="line">        start_position =&gt; beginning</span><br><span class="line">        type =&gt; cassandra_system</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">filter &#123;</span><br><span class="line">    if [type] == &quot;cassandra&quot; &#123;</span><br><span class="line">        grok &#123;</span><br><span class="line">            match =&gt; &#123;&quot;message&quot; =&gt; &quot;%&#123;LOGLEVEL:level&#125;  \[%&#123;WORD:class&#125;:%&#123;NUMBER:line&#125;\] %&#123;TIMESTAMP_ISO8601:timestamp&#125; %&#123;WORD:file&#125;\.java:%&#123;NUMBER:line2&#125; - %&#123;GREEDYDATA:msg&#125;&quot;&#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="性能测试">性能测试</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">input &#123; </span><br><span class="line">  generator &#123; </span><br><span class="line">    count =&gt; 30000000 </span><br><span class="line">  &#125; </span><br><span class="line">&#125; </span><br><span class="line">output &#123; </span><br><span class="line">  stdout &#123; </span><br><span class="line">    codec =&gt; dots </span><br><span class="line">  &#125; </span><br><span class="line">  kafka &#123; </span><br><span class="line">    broker_list =&gt; &quot;localhost:9092&quot; </span><br><span class="line">    topic_id =&gt; &quot;test&quot; </span><br><span class="line">    compression_codec =&gt; &quot;snappy&quot; </span><br><span class="line">  &#125; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>bin/logstash agent -f out.conf | pv -Wbart &gt; /dev/null</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">topic_id =&gt; &quot;test&quot; </span><br><span class="line">compression_codec =&gt; &quot;snappy&quot; </span><br><span class="line">request_required_acks =&gt; 1 </span><br><span class="line">serializer_class =&gt; &quot;kafka.serializer.StringEncoder&quot; </span><br><span class="line">request_timeout_ms =&gt; 10000 </span><br><span class="line">producer_type =&gt; &apos;async&apos; </span><br><span class="line">message_send_max_retries =&gt; 5 </span><br><span class="line">retry_backoff_ms =&gt; 100 </span><br><span class="line">queue_buffering_max_ms =&gt; 5000 </span><br><span class="line">queue_buffering_max_messages =&gt; 10000 </span><br><span class="line">queue_enqueue_timeout_ms =&gt; -1 </span><br><span class="line">batch_num_messages =&gt; 1000</span><br></pre></td></tr></table></figure>
+<h4 id="Collectd">Collectd</h4><p>在52上安装collectd，network插件表示要将当前机器的信息发送到远程服务器10.57.2.26的25856端口</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">$ sudo yum install collectd</span><br><span class="line">$ sudo mv /etc/collectd.conf /etc/collectd_backup.conf</span><br><span class="line">$ sudo vi /etc/collectd.conf</span><br><span class="line">Hostname &quot;dp0652&quot;</span><br><span class="line">FQDNLookup   true</span><br><span class="line">LoadPlugin interface</span><br><span class="line">LoadPlugin cpu</span><br><span class="line">LoadPlugin memory</span><br><span class="line">LoadPlugin network</span><br><span class="line">LoadPlugin df</span><br><span class="line">LoadPlugin disk</span><br><span class="line">&lt;Plugin interface&gt;</span><br><span class="line">    Interface &quot;eth0&quot;</span><br><span class="line">    IgnoreSelected false</span><br><span class="line">&lt;/Plugin&gt;</span><br><span class="line">&lt;Plugin network&gt;</span><br><span class="line">    Server &quot;10.57.2.26&quot; &quot;25826&quot;</span><br><span class="line">&lt;/Plugin&gt;</span><br><span class="line">Include &quot;/etc/collectd.d&quot;</span><br><span class="line">$ sudo service collectd start</span><br><span class="line">Starting collectd:                                         [  OK  ]</span><br><span class="line">$ sudo service collectd status</span><br><span class="line">collectd (pid  9295) is running...</span><br></pre></td></tr></table></figure>
+<p>开发机器地址是10.57.2.26，监听25826端口，收集来自于collectd发送的信息。  </p>
+<p>即流程是：在192.168.6.52通过collectd收集系统信息，发送到10.57.2.26的logstash上</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">$ bin/plugin list | grep collect</span><br><span class="line">logstash-codec-collectd</span><br><span class="line"></span><br><span class="line">$ vi collectd.conf</span><br><span class="line">input &#123;</span><br><span class="line">  udp &#123;</span><br><span class="line">    port =&gt; 25826</span><br><span class="line">    buffer_size =&gt; 1452</span><br><span class="line">    codec =&gt; collectd &#123; &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">output &#123;</span><br><span class="line">  stdout &#123;</span><br><span class="line">    codec =&gt; rubydebug </span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">$ bin/logstash -f collectd.conf</span><br><span class="line">Settings: Default pipeline workers: 4</span><br><span class="line">Pipeline main started</span><br><span class="line">&#123;</span><br><span class="line">               &quot;host&quot; =&gt; &quot;dp0652&quot;,</span><br><span class="line">         &quot;@timestamp&quot; =&gt; &quot;2016-05-25T03:49:52.000Z&quot;,</span><br><span class="line">             &quot;plugin&quot; =&gt; &quot;cpu&quot;,</span><br><span class="line">    &quot;plugin_instance&quot; =&gt; &quot;21&quot;,</span><br><span class="line">      &quot;collectd_type&quot; =&gt; &quot;cpu&quot;,</span><br><span class="line">      &quot;type_instance&quot; =&gt; &quot;system&quot;,</span><br><span class="line">              &quot;value&quot; =&gt; 1220568,</span><br><span class="line">           &quot;@version&quot; =&gt; &quot;1&quot;</span><br><span class="line">&#125;....</span><br></pre></td></tr></table></figure>
+<h3 id="ElasticSearch">ElasticSearch</h3><p>启动ES</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ cd elasticsearch-2.3.3</span><br><span class="line">$ vi config/elasticsearch.yml</span><br><span class="line">cluster.name: es52</span><br><span class="line">network.host: 192.168.6.52</span><br><span class="line">#discovery.zen.ping.multicast.enabled: false</span><br><span class="line">#http.cors.allow-origin: &quot;/.*/&quot;</span><br><span class="line">#http.cors.enabled: true</span><br><span class="line"></span><br><span class="line">$ bin/elasticsearch -d</span><br><span class="line">$ curl http://192.168.6.52:9200/</span><br></pre></td></tr></table></figure>
+<h3 id="LogStash+CollectD+ElasticSearch">LogStash+CollectD+ElasticSearch</h3><p>上面把从collectd搜集到的数据打印到控制台，修改out转存到elasticsearch中。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">$ vi elastic.conf</span><br><span class="line">input &#123;</span><br><span class="line">  udp &#123;</span><br><span class="line">    port =&gt; 25826</span><br><span class="line">    buffer_size =&gt; 1452</span><br><span class="line">    codec =&gt; collectd &#123; &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">output &#123;</span><br><span class="line">    elasticsearch &#123;</span><br><span class="line">        hosts =&gt; [&quot;192.168.6.52:9200&quot;]</span><br><span class="line">        index =&gt; &quot;logstash-%&#123;type&#125;-%&#123;+YYYY.MM.dd&#125;&quot;</span><br><span class="line">        document_type =&gt; &quot;%&#123;type&#125;&quot;</span><br><span class="line">        workers =&gt; 2</span><br><span class="line">        flush_size =&gt; 1000</span><br><span class="line">        idle_flush_time =&gt; 5</span><br><span class="line">        template_overwrite =&gt; true</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$ bin/logstash -f elastic.conf</span><br><span class="line"></span><br><span class="line">$ curl http://192.168.6.52:9200/_search?pretty</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">  &quot;took&quot; : 4,</span><br><span class="line">  &quot;timed_out&quot; : false,</span><br><span class="line">  &quot;_shards&quot; : &#123;</span><br><span class="line">    &quot;total&quot; : 5,</span><br><span class="line">    &quot;successful&quot; : 5,</span><br><span class="line">    &quot;failed&quot; : 0</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;hits&quot; : &#123;</span><br><span class="line">    &quot;total&quot; : 613,</span><br><span class="line">    &quot;max_score&quot; : 1.0,</span><br><span class="line">    &quot;hits&quot; : [ &#123;</span><br><span class="line">      &quot;_index&quot; : &quot;logstash-%&#123;type&#125;-2016.05.25&quot;,</span><br><span class="line">      &quot;_type&quot; : &quot;%&#123;type&#125;&quot;,</span><br><span class="line">      &quot;_id&quot; : &quot;AVTmTRv8ihrmowv7fKbo&quot;,</span><br><span class="line">      &quot;_score&quot; : 1.0,</span><br><span class="line">      &quot;_source&quot; : &#123;</span><br><span class="line">        &quot;host&quot; : &quot;dp0652&quot;,</span><br><span class="line">        &quot;@timestamp&quot; : &quot;2016-05-25T05:04:42.000Z&quot;,</span><br><span class="line">        &quot;plugin&quot; : &quot;cpu&quot;,</span><br><span class="line">        &quot;plugin_instance&quot; : &quot;22&quot;,</span><br><span class="line">        &quot;collectd_type&quot; : &quot;cpu&quot;,</span><br><span class="line">        &quot;type_instance&quot; : &quot;steal&quot;,</span><br><span class="line">        &quot;value&quot; : 0,</span><br><span class="line">        &quot;@version&quot; : &quot;1&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;, ......]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最终的网络拓扑流程图如下：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160525131644727" alt="collectd logstash es"></p>
+<p>实际上collectd是不同的服务器节点（比如Nginx服务器），而logstash和es只需要一台机器即可：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160525131752805" alt="logstash"></p>
+<h3 id="Kiabana">Kiabana</h3><p>下载后如果ElasticSearch安装在本机，默认直接启动bin/kibana即可  </p>
+<p><a href="https://www.elastic.co/guide/en/kibana/current/getting-started.html" target="_blank" rel="noopener">https://www.elastic.co/guide/en/kibana/current/getting-started.html</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line">wget -c https://www.elastic.co/guide/en/kibana/3.0/snippets/shakespeare.json</span><br><span class="line">wget -c https://github.com/bly2k/files/blob/master/accounts.zip?raw=true</span><br><span class="line">wget -c https://download.elastic.co/demos/kibana/gettingstarted/logs.jsonl.gz</span><br><span class="line">unzip accounts.zip</span><br><span class="line">gunzip logs.jsonl.gz</span><br><span class="line"></span><br><span class="line">shakespeare表结构</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    &quot;line_id&quot;: INT,</span><br><span class="line">    &quot;play_name&quot;: &quot;String&quot;,</span><br><span class="line">    &quot;speech_number&quot;: INT,</span><br><span class="line">    &quot;line_number&quot;: &quot;String&quot;,</span><br><span class="line">    &quot;speaker&quot;: &quot;String&quot;,</span><br><span class="line">    &quot;text_entry&quot;: &quot;String&quot;,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">建立mapping表结构</span><br><span class="line"></span><br><span class="line">curl -XPUT http://192.168.6.52:9200/shakespeare -d &apos;</span><br><span class="line">&#123;</span><br><span class="line"> &quot;mappings&quot; : &#123;</span><br><span class="line">  &quot;_default_&quot; : &#123;</span><br><span class="line">   &quot;properties&quot; : &#123;</span><br><span class="line">    &quot;speaker&quot; : &#123;&quot;type&quot;: &quot;string&quot;, &quot;index&quot; : &quot;not_analyzed&quot; &#125;,</span><br><span class="line">    &quot;play_name&quot; : &#123;&quot;type&quot;: &quot;string&quot;, &quot;index&quot; : &quot;not_analyzed&quot; &#125;,</span><br><span class="line">    &quot;line_id&quot; : &#123; &quot;type&quot; : &quot;integer&quot; &#125;,</span><br><span class="line">    &quot;speech_number&quot; : &#123; &quot;type&quot; : &quot;integer&quot; &#125;</span><br><span class="line">   &#125;</span><br><span class="line">  &#125;</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br><span class="line">&apos;;</span><br><span class="line"></span><br><span class="line">bank表结构</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    &quot;account_number&quot;: INT,</span><br><span class="line">    &quot;balance&quot;: INT,</span><br><span class="line">    &quot;firstname&quot;: &quot;String&quot;,</span><br><span class="line">    &quot;lastname&quot;: &quot;String&quot;,</span><br><span class="line">    &quot;age&quot;: INT,</span><br><span class="line">    &quot;gender&quot;: &quot;M or F&quot;,</span><br><span class="line">    &quot;address&quot;: &quot;String&quot;,</span><br><span class="line">    &quot;employer&quot;: &quot;String&quot;,</span><br><span class="line">    &quot;email&quot;: &quot;String&quot;,</span><br><span class="line">    &quot;city&quot;: &quot;String&quot;,</span><br><span class="line">    &quot;state&quot;: &quot;String&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">//logstash-2015.05.18, logstash-2015.05.19, logstash-2015.05.20都要修改</span><br><span class="line">curl -XPUT http://192.168.6.52:9200/logstash-2015.05.20 -d &apos;</span><br><span class="line">&#123;</span><br><span class="line">  &quot;mappings&quot;: &#123;</span><br><span class="line">    &quot;log&quot;: &#123;</span><br><span class="line">      &quot;properties&quot;: &#123;</span><br><span class="line">        &quot;geo&quot;: &#123;</span><br><span class="line">          &quot;properties&quot;: &#123;</span><br><span class="line">            &quot;coordinates&quot;: &#123;</span><br><span class="line">              &quot;type&quot;: &quot;geo_point&quot;</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">&apos;;</span><br><span class="line"></span><br><span class="line">curl -XPOST &apos;192.168.6.52:9200/bank/account/_bulk?pretty&apos; --data-binary @accounts.json</span><br><span class="line">curl -XPOST &apos;192.168.6.52:9200/shakespeare/_bulk?pretty&apos; --data-binary @shakespeare.json</span><br><span class="line">curl -XPOST &apos;192.168.6.52:9200/_bulk?pretty&apos; --data-binary @logs.jsonl</span><br><span class="line"></span><br><span class="line">curl &apos;192.168.6.52:9200/_cat/indices?v&apos;</span><br><span class="line"></span><br><span class="line">[qihuang.zheng@dp0652 ~]$ curl &apos;192.168.6.52:9200/_cat/indices?v&apos;</span><br><span class="line">health status index                                pri rep docs.count docs.deleted store.size pri.store.size</span><br><span class="line">yellow open   logstash-%&#123;type&#125;-2016.05.25            5   1      12762            0      1.5mb          1.5mb</span><br><span class="line">yellow open   logstash-cassandra_system-2016.06.20   5   1      17125            0      3.9mb          3.9mb</span><br><span class="line">yellow open   logstash-cassandra_system-2016.06.21   5   1        262            0    233.7kb        233.7kb</span><br><span class="line">yellow open   bank                                   5   1       1000            0    442.2kb        442.2kb</span><br><span class="line">yellow open   .kibana                                1   1          5            0     23.3kb         23.3kb</span><br><span class="line">yellow open   shakespeare                            5   1     111396            0     18.4mb         18.4mb</span><br><span class="line">green  open   graylog_0                              1   0       8123            0      2.3mb          2.3mb</span><br><span class="line">yellow open   logstash-2015.05.20                    5   1       4750            0     28.7mb         28.7mb</span><br><span class="line">yellow open   logstash-2015.05.18                    5   1       4631            0     27.4mb         27.4mb</span><br><span class="line">yellow open   logstash-cassandra_system-2016.06.22   5   1         42            0    146.5kb        146.5kb</span><br><span class="line">yellow open   logstash-2015.05.19                    5   1       4624            0     27.8mb         27.8mb</span><br></pre></td></tr></table></figure>
+<h2 id="InfluxDB">InfluxDB</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget -c https://dl.influxdata.com/influxdb/releases/influxdb-0.13.0_linux_amd64.tar.gz</span><br><span class="line">wget -c https://dl.influxdata.com/telegraf/releases/telegraf-0.13.1_linux_i386.tar.gz</span><br><span class="line">wget -c https://dl.influxdata.com/chronograf/releases/chronograf-0.13.0-1.x86_64.rpm</span><br><span class="line">wget -c https://dl.influxdata.com/kapacitor/releases/kapacitor-0.13.1_linux_amd64.tar.gz</span><br><span class="line">sudo yum localinstall chronograf-0.13.0-1.x86_64.rpm</span><br></pre></td></tr></table></figure>
+<p>生成配置文件，启动时指定配置文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ cd influxdb-0.13.0-1</span><br><span class="line">$ usr/bin/influxd config &gt; influxdb.generated.conf</span><br><span class="line">$ nohup usr/bin/influxd -config influxdb.generated.conf &amp;</span><br></pre></td></tr></table></figure>
+<p><a href="http://192.168.6.52:8083/" target="_blank" rel="noopener">http://192.168.6.52:8083/</a></p>
+<p>用命令行客户端创建数据库，插入数据，查询数据</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ usr/bin/influx</span><br><span class="line">Connected to http://localhost:8086 version 0.13.x</span><br><span class="line">InfluxDB shell 0.13.x</span><br><span class="line">&gt; CREATE DATABASE mydb</span><br><span class="line">&gt; USE mydb</span><br><span class="line">&gt; INSERT cpu,host=serverA,region=us_west value=0.64</span><br><span class="line">&gt; INSERT cpu,host=serverA,region=us_east value=0.45</span><br><span class="line">&gt; INSERT temperature,machine=unit42,type=assembly external=25,internal=37</span><br><span class="line">&gt; SELECT host, region, value FROM cpu</span><br><span class="line">&gt; SELECT * FROM temperature</span><br><span class="line">&gt; SELECT * FROM /.*/ LIMIT 1</span><br></pre></td></tr></table></figure>
+<p>在web页面也可以添加数据：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160527153959336" alt="influxdb write"></p>
+<h2 id="Grafana">Grafana</h2><h3 id="grafana-1-9-1">grafana-1.9.1</h3><p>由于Grafana是存静态的，你只需要下载源代码解压，将它部署在Nginx上面就可以了，或者可以用Python的SimpleHTTPServer来跑</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ wget http://grafanarel.s3.amazonaws.com/grafana-1.9.1.tar.gz</span><br><span class="line">$ cd grafana-1.9.1</span><br><span class="line">$ python -m SimpleHTTPServer 8383</span><br></pre></td></tr></table></figure>
+<p><a href="http://192.168.6.52:8383" target="_blank" rel="noopener">http://192.168.6.52:8383</a></p>
+<p>没有任何数据源时，页面是空白的：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160526130848142" alt="grafana1"></p>
+<p>添加了数据源后比如influxdb</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ cp config.sample.js config.js</span><br><span class="line">$ vi config.js</span><br><span class="line">datasources: &#123;</span><br><span class="line">  influxdb: &#123;</span><br><span class="line">    type: &apos;influxdb&apos;,</span><br><span class="line">    url: &quot;http://192.168.6.52:8086/db/cassandra-metrics&quot;,</span><br><span class="line">    username: &apos;admin&apos;,</span><br><span class="line">    password: &apos;admin&apos;,</span><br><span class="line">  &#125;,</span><br><span class="line">  grafana: &#123;</span><br><span class="line">    type: &apos;influxdb&apos;,</span><br><span class="line">    url: &quot;http://192.168.6.52:8086/db/grafana&quot;,</span><br><span class="line">    username: &apos;admin&apos;,</span><br><span class="line">    password: &apos;admin&apos;,</span><br><span class="line">    grafanaDB: true</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>重启python进程后，可以看到多了点东西（如果influxdb没有添加admin用户，上面的username和password可以去掉），  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160526131046286" alt="grafana2"></p>
+<p>但是就是看不到配置相关的按钮，难道是没有权限？而且这个版本进来后，根本没有login页面。  </p>
+<h3 id="grafana-2-x">grafana-2.x</h3><p><a href="https://grafanarel.s3.amazonaws.com/builds/grafana-3.0.3-1463994644.linux-x64.tar.gz" target="_blank" rel="noopener">https://grafanarel.s3.amazonaws.com/builds/grafana-3.0.3-1463994644.linux-x64.tar.gz</a></p>
+<p>如果用2.5以上的版本包括3.0，和1.9的目录结构相比发生很大变化</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 grafana-1.9.1]$ tree -L 1</span><br><span class="line">.</span><br><span class="line">├── app</span><br><span class="line">├── build.txt</span><br><span class="line">├── config.js</span><br><span class="line">├── config.sample.js</span><br><span class="line">├── css</span><br><span class="line">├── font</span><br><span class="line">├── img</span><br><span class="line">├── index.html</span><br><span class="line">├── LICENSE.md</span><br><span class="line">├── NOTICE.md</span><br><span class="line">├── plugins</span><br><span class="line">├── README.md</span><br><span class="line">├── test</span><br><span class="line">└── vendor</span><br><span class="line"></span><br><span class="line">[qihuang.zheng@dp0652 grafana-3.0.3-1463994644]$ tree -L 2</span><br><span class="line">.</span><br><span class="line">├── bin</span><br><span class="line">│   ├── grafana-cli</span><br><span class="line">│   ├── grafana-cli.md5</span><br><span class="line">│   ├── grafana-server</span><br><span class="line">│   └── grafana-server.md5</span><br><span class="line">├── conf</span><br><span class="line">│   ├── defaults.ini</span><br><span class="line">│   └── sample.ini</span><br><span class="line">├── LICENSE.md</span><br><span class="line">├── NOTICE.md</span><br><span class="line">├── public</span><br><span class="line">│   ├── app</span><br><span class="line">│   ├── css</span><br><span class="line">│   ├── dashboards</span><br><span class="line">│   ├── emails</span><br><span class="line">│   ├── fonts</span><br><span class="line">│   ├── img</span><br><span class="line">│   ├── robots.txt</span><br><span class="line">│   ├── sass</span><br><span class="line">│   ├── test</span><br><span class="line">│   ├── vendor</span><br><span class="line">│   └── views</span><br><span class="line">├── README.md</span><br><span class="line">└── vendor</span><br><span class="line">    └── phantomjs</span><br></pre></td></tr></table></figure>
+<p>如果也是用<code>python -m SimpleHTTPServer 8383</code>打开，浏览器不会显示任何东西</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160526131856367" alt="grafana3"></p>
+<p>参照官方的安装指南分分钟搞定，而且貌似并没有依赖Web服务器之类的。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ sudo yum install https://grafanarel.s3.amazonaws.com/builds/grafana-3.0.4-1464167696.x86_64.rpm</span><br><span class="line">$ sudo service grafana-server start</span><br><span class="line">Starting Grafana Server: .... FAILED</span><br><span class="line">$ ps -ef|grep grafana</span><br><span class="line">grafana  16078     1  0 13:19 ?        00:00:00 /usr/sbin/grafana-server </span><br><span class="line">--pidfile=/var/run/grafana-server.pid --config=/etc/grafana/grafana.ini </span><br><span class="line">cfg:default.paths.data=/var/lib/grafana cfg:default.paths.logs=/var/log/grafana cfg:default.paths.plugins=/var/lib/grafana/plugins</span><br><span class="line">$ vi /var/log/grafana/grafana.log</span><br><span class="line">$ sudo service grafana-server status</span><br><span class="line">grafana-server (pid  16078) is running...</span><br></pre></td></tr></table></figure>
+<p>虽然看似失败了，不过日志文件中没有什么错误信息,打开：<a href="http://192.168.6.52:3000/" target="_blank" rel="noopener">http://192.168.6.52:3000/</a><br>出现了登陆页面，admin/admin</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160526132344504" alt="grafana4"></p>
+<p>而且grafana的图标是可以点的，也有数据源。首先添加influxdb的数据源</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160526132357292" alt="grafana5"></p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160527154442764" alt="influx-grafana"></p>
+<p>添加一个dashboards①，然后添加一个panel②，在数据源中选择influxdb</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160527154043133" alt="grafana6"></p>
+<p>默认的查询语句：<code>SELECT mean(&quot;value&quot;) FROM &quot;measurement&quot; WHERE $timeFilter GROUP BY time($interval) fill(null)</code></p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160527154056015" alt="grafana7"></p>
+<p>更改为：<code>SELECT mean(&quot;value&quot;) FROM &quot;cpu&quot; WHERE &quot;host&quot; = &quot;serverA&quot; AND $timeFilter GROUP BY time($interval)</code></p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160527154112009" alt="grafana8"></p>
+<p>这时候上方会出现图，点击关闭，退出编辑状态。 注意不要点击眼睛，一旦变成灰色，表示不发送查询语句<br>正常q的内容是查询语句：<code>curl -GET &#39;http://localhost:8086/query?pretty=true&#39; --data-urlencode &quot;db=mydb&quot; --data-urlencode &quot;q=SELECT value FROM cpu_load_short WHERE region=&#39;us-west&#39;&quot;</code></p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160527154122415" alt="grafana9"></p>
+<p>往influxdb中插入几条数据：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cpu,host=serverA,region=us_west value=0.36</span><br><span class="line">cpu,host=serverA,region=us_west value=0.85</span><br></pre></td></tr></table></figure>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160527154132421" alt="grafana10"></p>
+<p>在右上角可以选择时间范围，如果时间超过了，没有数据，出现N/A。</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160527154141213" alt="grafana11"></p>
+<h2 id="Cassandra+InfluxDB+Grafana">Cassandra+InfluxDB+Grafana</h2><p>使用Grafana监控Cassandra有两个步骤：</p>
+<ol>
+<li>将Cassandra监控指标数据收集到InfluxDB中</li>
+<li>在Grafana中配置InfluxDB的数据源，展现Cassandra指标数据</li>
+</ol>
+<p>参考文档：<br><a href="http://www.datastax.com/dev/blog/pluggable-metrics-reporting-in-cassandra-2-0-2" target="_blank" rel="noopener">http://www.datastax.com/dev/blog/pluggable-metrics-reporting-in-cassandra-2-0-2</a><br><a href="https://www.pythian.com/blog/monitoring-cassandra-grafana-influx-db/" target="_blank" rel="noopener">https://www.pythian.com/blog/monitoring-cassandra-grafana-influx-db/</a></p>
+<p>其中步骤1有多种方案：</p>
+<ol>
+<li>使用Graphite收集数据，发送到InfluxDB中</li>
+<li>使用InfluxDB的telegraf输入插件收集数据</li>
+</ol>
+<h3 id="Graphite">Graphite</h3><p>1）下载metrics-graphite.jar放到Cassandra的lib目录下</p>
+<p>2）修改<strong>influxdb的配置文件</strong>，其中database要对应influxdb中的数据库名称，这里为cassandra-metrics（要在influxdb中手动创建这个数据库）</p>
+<p>参考文档中配置文件是config.toml，在新版本中启动influxdb时生成了一个配置文件，实际上是一样的。<br>旧版本的输入配置项是：[input_plugins.graphite]，新版本的配置项为：[[graphite]]。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 influxdb-0.13.0-1]$ vi influxdb.generated.conf</span><br><span class="line">[[graphite]]</span><br><span class="line">  enabled = true</span><br><span class="line">  bind-address = &quot;:2003&quot;</span><br><span class="line">  protocol = &quot;tcp&quot;</span><br><span class="line">  batch-size = 5000</span><br><span class="line">  batch-pending = 10</span><br><span class="line">  batch-timeout = &quot;1s&quot;</span><br><span class="line">  consistency-level = &quot;one&quot;</span><br><span class="line">  separator = &quot;.&quot;</span><br><span class="line">  udp-read-buffer = 0</span><br><span class="line">  # database = &quot;graphite&quot;</span><br><span class="line">  database = &quot;cassandra-metrics&quot;</span><br><span class="line">  udp_enabled = true</span><br></pre></td></tr></table></figure>
+<p>上面的配置文件表示，InfluxDB将打开2003端口，接收graphite类型的指标数据</p>
+<p>3）重启influxdb，使配置文件生效</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ service influxdb reload  # 通过RPM方式安装时，不需要重启</span><br><span class="line">$ influxdb -config influxdb.generated.conf reload</span><br></pre></td></tr></table></figure>
+<p>4）在<strong>cassandra的conf</strong>目录下创建influx的配置文件，其中host指的是influxdb的服务端地址，端口对应上面influxdb.generated.conf的2003端口。<br>如果influxdb安装在不同节点上，下面的host要指向influxdb的地址。 prefix通常设置为当前机器的IP地址。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 conf]$ vi /usr/install/cassandra/conf/influx-reporting.yaml</span><br><span class="line">graphite:</span><br><span class="line">-</span><br><span class="line">  period: 60</span><br><span class="line">  timeunit: &apos;SECONDS&apos;</span><br><span class="line">  prefix: &apos;Node1&apos;</span><br><span class="line">  hosts:</span><br><span class="line">  - host: &apos;192.168.6.52&apos;</span><br><span class="line">    port: 2003</span><br><span class="line">  predicate:</span><br><span class="line">    color: &quot;white&quot;</span><br><span class="line">    useQualifiedName: true</span><br><span class="line">    patterns:</span><br><span class="line">    - &quot;.*&quot;</span><br></pre></td></tr></table></figure>
+<p>上面的配置文件表示：当前Cassandra节点的每个指标前缀是Node1，都会发送到地址为52的2003端口，即把Cassandra的指标数据发送给InfluxDB。<br>这里也可以看出指标数据发送的机器只是指定了地址和端口，所以目标地址可以是任何可以接收graphite类型的数据库，不一定是InfluxDB。  </p>
+<p>5）安装grafana，不需要配置config.js，在web页面也可以添加数据源</p>
+<p>6）给cassandra-env.sh添加-D启动选项</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 conf]$ vi /usr/install/cassandra/conf/cassandra-env.sh</span><br><span class="line">JVM_OPTS=&quot;$JVM_OPTS -Dcassandra.metricsReporterConfigFile=influx-reporting.yaml&quot;</span><br></pre></td></tr></table></figure>
+<p>7）重启cassandra</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">INFO [main] YYYY-MM-DD HH:MM:SS,SSS CassandraDaemon.java:353 - Trying to load metrics-reporter-config from file: influx-reporting.yaml</span><br><span class="line">INFO [main] YYYY-MM-DD HH:MM:SS,SSS GraphiteReporterConfig.java:68 - Enabling GraphiteReporter to 192.168.6.52:2003</span><br></pre></td></tr></table></figure>
+<p>8）验证Cassandra指标数据通过metrics-graphite.jar被收集到influxdb中</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160608133914616" alt="cass influxd1"></p>
+<p>选择一个measurement，验证有数据被写入：<code>select * FROM &quot;Node1.jvm.daemon_thread_count&quot;</code></p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160608133929398" alt="cass influxd2"></p>
+<p>9）在grafana中配置influxdb的数据源，把数据库名称改成cassandra-metrics</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160608133940882" alt="cass influxd3"></p>
+<p>配置监控图，修改measurement</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160608133951070" alt="cass influxd4"></p>
+<p>10）总结下通过Graphite+InfluxDB收集Cassandra指标数据的步骤流程图：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160613075620723" alt="graphite-cass-influxdb"></p>
+<p>用正则表达式可以聚合多个节点的指标</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">select mean(value) from /.*org.apache.cassandra.metrics.ClientRequest.Read/</span><br><span class="line">select mean(value) from &quot;192.168.6.53.org.apache.cassandra.metrics.ClientRequest.Read.Latency.15MinuteRate&quot;</span><br></pre></td></tr></table></figure>
+<h3 id="Telegraph">Telegraph</h3><h2 id="Hekad">Hekad</h2><p><a href="http://hekad.readthedocs.io/en/v0.10.0/index.html" target="_blank" rel="noopener">http://hekad.readthedocs.io/en/v0.10.0/index.html</a></p>
+<h2 id="Atlas">Atlas</h2><p><a href="https://github.com/Netflix/atlas">https://github.com/Netflix/atlas</a></p>
+<h2 id="Graylog">Graylog</h2><p><a href="http://www.cnblogs.com/wjoyxt/p/4961262.html" target="_blank" rel="noopener">http://www.cnblogs.com/wjoyxt/p/4961262.html</a><br><a href="http://docs.graylog.org/en/2.0/pages/installation/manual_setup.html" target="_blank" rel="noopener">http://docs.graylog.org/en/2.0/pages/installation/manual_setup.html</a></p>
+<p>准备工作：mongodb安装和启动</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /home/qihuang.zheng/data/mongodb</span><br><span class="line">curl -O https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.2.7.tgz</span><br><span class="line">tar zxf mongodb-linux-x86_64-3.2.7.tgz</span><br><span class="line">nohup mongodb-linux-x86_64-3.2.7/bin/mongod --dbpath /home/qihuang.zheng/data/mongodb &amp; </span><br><span class="line"></span><br><span class="line">sudo rpm -ivh pwgen-2.07-1.el6.x86_64.rpm &amp;&amp; sudo yum install perl-Digest-SHA</span><br><span class="line">[qihuang.zheng@dp0652 ~]$ pwgen -N 1 -s 96</span><br><span class="line">XNamqyHbxtV46AHXNMlMAvVeV2dutp2pQaeY9IaOSf9XnwgyYGXqN97SSCQ2OLyR2HR41BtCpxwSMH4kFnr1VHmRNUQvYyic</span><br><span class="line">[qihuang.zheng@dp0652 ~]$ echo -n XNamqyHbxtV46AHXNMlMAvVeV2dutp2pQaeY9IaOSf9XnwgyYGXqN97SSCQ2OLyR2HR41BtCpxwSMH4kFnr1VHmRNUQvYyic | shasum -a 256</span><br><span class="line">cb535aa3ff35e81f69f9014005bcf1ad032048cc123dad735bbf87970eb2cacb  -</span><br><span class="line">[qihuang.zheng@dp0652 ~]$ echo -n admin | shasum -a 256</span><br><span class="line">8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918  -</span><br></pre></td></tr></table></figure>
+<p>graylog的配置文件中默认的配置项，单机情况可以不用修改任何配置，不过最好把localhost改成本机IP</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$ wget https://fossies.org/linux/misc/graylog-2.0.2.tgz</span><br><span class="line">$ tar zxf graylog-VERSION.tgz &amp;&amp; cd graylog</span><br><span class="line">$ vi graylog.conf.example</span><br><span class="line">is_master = true</span><br><span class="line">node_id_file = /etc/graylog/server/node-id</span><br><span class="line">password_secret =</span><br><span class="line">root_password_sha2 =</span><br><span class="line">rest_listen_uri = http://127.0.0.1:12900/</span><br><span class="line">#elasticsearch_cluster_name = graylog</span><br><span class="line">#elasticsearch_discovery_zen_ping_unicast_hosts = 127.0.0.1:9300, 127.0.0.2:9500</span><br><span class="line">elasticsearch_shards = 4</span><br><span class="line">elasticsearch_replicas = 0</span><br><span class="line">elasticsearch_index_prefix = graylog</span><br><span class="line">mongodb_uri = mongodb://localhost/graylog</span><br></pre></td></tr></table></figure>
+<p>配置文件的路径<code>/etc/graylog/server/server.conf</code>写死在<code>bin/graylogctl</code>脚本中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ sudo mkdir -p /etc/graylog/server/</span><br><span class="line">$ sudo cp graylog.conf.example /etc/graylog/server/server.conf</span><br><span class="line">$ cat /etc/graylog/server/server.conf |grep -v grep|grep -v ^#|grep -v ^$</span><br><span class="line"></span><br><span class="line">password_secret=XNamqyHbxtV46AHXNMlMAvVeV2dutp2pQaeY9IaOSf9XnwgyYGXqN97SSCQ2OLyR2HR41BtCpxwSMH4kFnr1VHmRNUQvYyic</span><br><span class="line">password=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918</span><br><span class="line">cluster=`cat ~/elasticsearch-2.3.3/config/elasticsearch.yml |grep cluster.name | awk &apos;&#123;print $2&#125;&apos;`</span><br><span class="line">sed -i -e &quot;s#password_secret =#password_secret = $password_secret#g&quot; server.conf</span><br><span class="line">sed -i -e &quot;s#root_password_sha2 =#root_password_sha2 = $password#g&quot; server.conf</span><br><span class="line">sed -i -e &quot;s#127.0.0.1#192.168.6.52#g&quot; server.conf</span><br><span class="line">sed -i -e &quot;s#localhost#192.168.6.52#g&quot; server.conf</span><br><span class="line">sed -i -e &quot;s#elasticsearch_shards = 4#elasticsearch_shards = 1#g&quot; server.conf</span><br><span class="line">sed -i -e &quot;s#web_listen_uri = http://127.0.0.1:9000/#web_listen_uri = http://192.168.6.52:9999/#g&quot; server.conf</span><br><span class="line">######################################</span><br><span class="line">elasticsearch_cluster_name = $cluster</span><br><span class="line">elasticsearch_discovery_zen_ping_unicast_hosts = 192.168.6.52:9300</span><br></pre></td></tr></table></figure>
+<p>graylog的启动脚本在bin/graylogctl，实际上启动命令是<code>java -jar graylog.jar</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 graylog-2.0.2]$ ll</span><br><span class="line">drwxr-xr-x 2 qihuang.zheng users     4096 6月  20 13:37 bin</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users    35147 5月  26 23:31 COPYING</span><br><span class="line">drwxr-xr-x 4 qihuang.zheng users     4096 6月  20 12:58 data</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users    23310 5月  26 23:31 graylog.conf.example</span><br><span class="line">-rw-r--r-- 1 qihuang.zheng users 80950701 5月  26 23:34 graylog.jar    ⬅️</span><br><span class="line">drwxr-xr-x 3 qihuang.zheng users     4096 6月  20 11:55 lib</span><br><span class="line">drwxr-xr-x 2 qihuang.zheng users     4096 6月  20 13:02 log</span><br><span class="line">drwxr-xr-x 2 qihuang.zheng users     4096 5月  26 23:33 plugin</span><br></pre></td></tr></table></figure>
+<p>如果要自定义log配置，修改bin/graylogctl的start部分在-jar前添加配置文件路径</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-Dlog4j.configurationFile=file:///home/qihuang.zheng/graylog-2.0.2/log4j2.xml -jar &quot;$&#123;GRAYLOG_SERVER_JAR&#125;&quot; server</span><br></pre></td></tr></table></figure>
+<p>启动graylog，同时会启动web服务，默认端口是9000，不过和HDFS重了，所以上面把web_listen_uri修改成9999</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 ~]$ sudo graylog-2.0.2/bin/graylogctl start</span><br><span class="line">Starting graylog-server ...</span><br><span class="line">[qihuang.zheng@dp0652 ~]$ sudo graylog-2.0.2/bin/graylogctl status</span><br><span class="line">graylog-server running with PID 8600</span><br><span class="line">[qihuang.zheng@dp0652 ~]$ ll /etc/graylog/server/</span><br><span class="line">-rw-r--r-- 1 root root    36 6月  20 12:58 node-id</span><br><span class="line">-rw-r--r-- 1 root root 23496 6月  20 12:57 server.conf</span><br><span class="line">[qihuang.zheng@dp0652 ~]$ cat /etc/graylog/server/node-id</span><br><span class="line">eb943e44-3464-47be-9c07-2a554de71428</span><br><span class="line">[qihuang.zheng@dp0652 graylog-2.0.2]$ ps -ef|grep graylog</span><br><span class="line">root     33748     1 48 14:17 pts/0    00:01:20 /home/qihuang.zheng/jdk1.8.0_91/bin/java -Djava.library.path=bin/../lib/sigar -Xms1g -Xmx1g -XX:NewRatio=1 -server -XX:+ResizeTLAB -XX:+UseConcMarkSweepGC -XX:+CMSConcurrentMTEnabled -XX:+CMSClassUnloadingEnabled -XX:+UseParNewGC -XX:-OmitStackTraceInFastThrow -jar graylog.jar server -f /etc/graylog/server/server.conf -p /tmp/graylog.pid</span><br><span class="line">506      38283 29183  0 14:20 pts/0    00:00:00 grep graylog</span><br><span class="line">[qihuang.zheng@dp0652 graylog-2.0.2]$ cat /tmp/graylog.pid</span><br><span class="line">33748</span><br></pre></td></tr></table></figure>
+<p>日志文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 graylog-2.0.2]$ cat log/graylog-server.log</span><br><span class="line">2016-06-20 14:17:46,602 INFO : kafka.log.LogManager - Loading logs.</span><br><span class="line">2016-06-20 14:17:46,662 INFO : kafka.log.LogManager - Logs loading complete.</span><br><span class="line">2016-06-20 14:17:46,662 INFO : org.graylog2.shared.journal.KafkaJournal - Initialized Kafka based journal at data/journal</span><br><span class="line">2016-06-20 14:17:46,676 INFO : org.graylog2.shared.buffers.InputBufferImpl - Initialized InputBufferImpl with ring size &lt;65536&gt; and wait strategy &lt;BlockingWaitStrategy&gt;, running 2 parallel message handlers.</span><br><span class="line">2016-06-20 14:17:46,706 INFO : org.mongodb.driver.cluster - Cluster created with settings &#123;hosts=[192.168.6.52:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout=&apos;30000 ms&apos;, maxWaitQueueSize=5000&#125;</span><br><span class="line">2016-06-20 14:17:46,731 INFO : org.mongodb.driver.cluster - No server chosen by ReadPreferenceServerSelector&#123;readPreference=primary&#125; from cluster description ClusterDescription&#123;type=UNKNOWN, connectionMode=SINGLE, all=[ServerDescription&#123;address=192.168.6.52:27017, type=UNKNOWN, state=CONNECTING&#125;]&#125;. Waiting for 30000 ms before timing out</span><br><span class="line">2016-06-20 14:17:46,752 INFO : org.mongodb.driver.connection - Opened connection [connectionId&#123;localValue:1, serverValue:40&#125;] to 192.168.6.52:27017</span><br><span class="line">2016-06-20 14:17:46,753 INFO : org.mongodb.driver.cluster - Monitor thread successfully connected to server with description ServerDescription&#123;address=192.168.6.52:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion&#123;versionList=[3, 2, 7]&#125;, minWireVersion=0, maxWireVersion=4, maxDocumentSize=16777216, roundTripTimeNanos=512946&#125;</span><br><span class="line">2016-06-20 14:17:46,758 INFO : org.mongodb.driver.connection - Opened connection [connectionId&#123;localValue:2, serverValue:41&#125;] to 192.168.6.52:27017</span><br><span class="line">2016-06-20 14:17:46,929 INFO : org.graylog2.plugin.system.NodeId - Node ID: eb943e44-3464-47be-9c07-2a554de71428</span><br><span class="line">2016-06-20 14:17:46,978 INFO : org.elasticsearch.node - [graylog-eb943e44-3464-47be-9c07-2a554de71428] version[2.3.2], pid[33748], build[b9e4a6a/2016-04-21T16:03:47Z]</span><br><span class="line">2016-06-20 14:17:46,978 INFO : org.elasticsearch.node - [graylog-eb943e44-3464-47be-9c07-2a554de71428] initializing ...</span><br><span class="line">2016-06-20 14:17:46,984 INFO : org.elasticsearch.plugins - [graylog-eb943e44-3464-47be-9c07-2a554de71428] modules [], plugins [graylog-monitor], sites []</span><br><span class="line">2016-06-20 14:17:48,243 INFO : org.elasticsearch.node - [graylog-eb943e44-3464-47be-9c07-2a554de71428] initialized</span><br><span class="line">2016-06-20 14:17:48,304 INFO : org.hibernate.validator.internal.util.Version - HV000001: Hibernate Validator 5.2.4.Final</span><br><span class="line">2016-06-20 14:17:48,419 INFO : org.graylog2.shared.buffers.ProcessBuffer - Initialized ProcessBuffer with ring size &lt;65536&gt; and wait strategy &lt;BlockingWaitStrategy&gt;.</span><br><span class="line">2016-06-20 14:17:49,918 INFO : org.graylog2.bindings.providers.RulesEngineProvider - No static rules file loaded.</span><br><span class="line">2016-06-20 14:17:50,510 INFO : org.graylog2.bootstrap.ServerBootstrap - Graylog server 2.0.2 (4da1379) starting up</span><br><span class="line">2016-06-20 14:17:50,514 WARN : org.graylog2.shared.events.DeadEventLoggingListener - Received unhandled event of type &lt;org.graylog2.plugin.lifecycles.Lifecycle&gt; from event bus &lt;AsyncEventBus&#123;graylog-eventbus&#125;&gt;</span><br><span class="line">2016-06-20 14:17:50,532 INFO : org.graylog2.shared.initializers.PeriodicalsService - Starting 24 periodicals ...</span><br><span class="line">2016-06-20 14:17:50,538 INFO : org.elasticsearch.node - [graylog-eb943e44-3464-47be-9c07-2a554de71428] starting ...</span><br><span class="line">2016-06-20 14:17:50,544 INFO : org.graylog2.periodical.IndexRetentionThread - Elasticsearch cluster not available, skipping index retention checks.</span><br><span class="line">2016-06-20 14:17:50,546 INFO : org.mongodb.driver.connection - Opened connection [connectionId&#123;localValue:4, serverValue:43&#125;] to 192.168.6.52:27017</span><br><span class="line">2016-06-20 14:17:50,546 INFO : org.mongodb.driver.connection - Opened connection [connectionId&#123;localValue:3, serverValue:42&#125;] to 192.168.6.52:27017</span><br><span class="line">2016-06-20 14:17:50,553 INFO : org.graylog2.periodical.IndexerClusterCheckerThread - Indexer not fully initialized yet. Skipping periodic cluster check.</span><br><span class="line">2016-06-20 14:17:50,573 INFO : org.graylog2.shared.initializers.PeriodicalsService - Not starting [org.graylog2.periodical.UserPermissionMigrationPeriodical] periodical. Not configured to run on this node.</span><br><span class="line">2016-06-20 14:17:50,648 INFO : org.elasticsearch.transport - [graylog-eb943e44-3464-47be-9c07-2a554de71428] publish_address &#123;127.0.0.1:9350&#125;, bound_addresses &#123;[::1]:9350&#125;, &#123;127.0.0.1:9350&#125;</span><br><span class="line">2016-06-20 14:17:50,654 INFO : org.elasticsearch.discovery - [graylog-eb943e44-3464-47be-9c07-2a554de71428] es52/rWpoduohQ1CXcyoAuwzNtg</span><br><span class="line">2016-06-20 14:17:53,239 INFO : org.glassfish.grizzly.http.server.NetworkListener - Started listener bound to [192.168.6.52:9999]</span><br><span class="line">2016-06-20 14:17:53,241 INFO : org.glassfish.grizzly.http.server.HttpServer - [HttpServer] Started.</span><br><span class="line">2016-06-20 14:17:53,242 INFO : org.graylog2.initializers.WebInterfaceService - Started Web Interface at &lt;http://192.168.6.52:9999/&gt;</span><br><span class="line">2016-06-20 14:17:53,657 WARN : org.elasticsearch.discovery - [graylog-eb943e44-3464-47be-9c07-2a554de71428] waited for 3s and no initial state was set by the discovery</span><br><span class="line">2016-06-20 14:17:53,657 INFO : org.elasticsearch.node - [graylog-eb943e44-3464-47be-9c07-2a554de71428] started</span><br><span class="line">2016-06-20 14:17:53,730 INFO : org.elasticsearch.cluster.service - [graylog-eb943e44-3464-47be-9c07-2a554de71428] detected_master &#123;Daisy Johnson&#125;&#123;ZVzCrnWoRsKVnRryYLE6BQ&#125;&#123;192.168.6.52&#125;&#123;192.168.6.52:9300&#125;, added &#123;&#123;Daisy Johnson&#125;&#123;ZVzCrnWoRsKVnRryYLE6BQ&#125;&#123;192.168.6.52&#125;&#123;192.168.6.52:9300&#125;,&#125;, reason: zen-disco-receive(from master [&#123;Daisy Johnson&#125;&#123;ZVzCrnWoRsKVnRryYLE6BQ&#125;&#123;192.168.6.52&#125;&#123;192.168.6.52:9300&#125;])</span><br><span class="line">2016-06-20 14:17:56,443 INFO : org.glassfish.grizzly.http.server.NetworkListener - Started listener bound to [192.168.6.52:12900]</span><br><span class="line">2016-06-20 14:17:56,443 INFO : org.glassfish.grizzly.http.server.HttpServer - [HttpServer-1] Started.</span><br><span class="line">2016-06-20 14:17:56,444 INFO : org.graylog2.shared.initializers.RestApiService - Started REST API at &lt;http://192.168.6.52:12900/&gt;</span><br><span class="line">2016-06-20 14:17:56,445 INFO : org.graylog2.shared.initializers.ServiceManagerListener - Services are healthy</span><br><span class="line">2016-06-20 14:17:56,446 INFO : org.graylog2.shared.initializers.InputSetupService - Triggering launching persisted inputs, node transitioned from Uninitialized [LB:DEAD] to Running [LB:ALIVE]</span><br><span class="line">2016-06-20 14:17:56,446 INFO : org.graylog2.bootstrap.ServerBootstrap - Services started, startup times in ms: &#123;JournalReader [RUNNING]=1, BufferSynchronizerService [RUNNING]=1, OutputSetupService [RUNNING]=1, InputSetupService [RUNNING]=2, MetricsReporterService [RUNNING]=2, KafkaJournal [RUNNING]=4, PeriodicalsService [RUNNING]=51, WebInterfaceService [RUNNING]=2705, IndexerSetupService [RUNNING]=3211, RestApiService [RUNNING]=5912&#125;</span><br><span class="line">2016-06-20 14:17:56,451 INFO : org.graylog2.bootstrap.ServerBootstrap - Graylog server up and running.</span><br><span class="line">2016-06-20 14:18:00,548 INFO : org.graylog2.indexer.Deflector - Did not find an deflector alias. Setting one up now.</span><br><span class="line">2016-06-20 14:18:00,552 INFO : org.graylog2.indexer.Deflector - There is no index target to point to. Creating one now.</span><br><span class="line">2016-06-20 14:18:00,554 INFO : org.graylog2.indexer.Deflector - Cycling deflector to next index now.</span><br><span class="line">2016-06-20 14:18:00,555 INFO : org.graylog2.indexer.Deflector - Cycling from &lt;none&gt; to &lt;graylog_0&gt;</span><br><span class="line">2016-06-20 14:18:00,555 INFO : org.graylog2.indexer.Deflector - Creating index target &lt;graylog_0&gt;...</span><br><span class="line">2016-06-20 14:18:00,614 INFO : org.graylog2.indexer.indices.Indices - Created Graylog index template &quot;graylog-internal&quot; in Elasticsearch.</span><br><span class="line">2016-06-20 14:18:00,698 INFO : org.graylog2.indexer.Deflector - Waiting for index allocation of &lt;graylog_0&gt;</span><br><span class="line">2016-06-20 14:18:00,800 INFO : org.graylog2.indexer.Deflector - Done!</span><br><span class="line">2016-06-20 14:18:00,800 INFO : org.graylog2.indexer.Deflector - Pointing deflector to new target index....</span><br><span class="line">2016-06-20 14:18:00,845 INFO : org.graylog2.system.jobs.SystemJobManager - Submitted SystemJob &lt;bd3c64c0-36ae-11e6-bcbc-02423384d6ab&gt; [org.graylog2.indexer.ranges.CreateNewSingleIndexRangeJob]</span><br><span class="line">2016-06-20 14:18:00,845 INFO : org.graylog2.indexer.Deflector - Done!</span><br><span class="line">2016-06-20 14:18:00,845 INFO : org.graylog2.indexer.ranges.CreateNewSingleIndexRangeJob - Calculating ranges for index graylog_0.</span><br><span class="line">2016-06-20 14:18:00,964 INFO : org.graylog2.indexer.ranges.MongoIndexRangeService - Calculated range of [graylog_0] in [117ms].</span><br><span class="line">2016-06-20 14:18:00,973 INFO : org.graylog2.indexer.ranges.CreateNewSingleIndexRangeJob - Created ranges for index graylog_0.</span><br><span class="line">2016-06-20 14:18:00,973 INFO : org.graylog2.system.jobs.SystemJobManager - SystemJob &lt;bd3c64c0-36ae-11e6-bcbc-02423384d6ab&gt; [org.graylog2.indexer.ranges.CreateNewSingleIndexRangeJob] finished in 128ms.</span><br></pre></td></tr></table></figure>
+<p>查看ES是否创建索引</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 graylog-2.0.2]$ curl http://192.168.6.52:9200/_cat/indices</span><br><span class="line">yellow open logstash-%&#123;type&#125;-2016.05.25 5 1 12762 0 1.5mb 1.5mb</span><br><span class="line">green  open graylog_0                   1 0     0 0  159b  159b</span><br></pre></td></tr></table></figure>
+<p>查看MongoDB是否创建数据库</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 graylog-2.0.2]$ ~/mongodb-linux-x86_64-3.2.7/bin/mongo</span><br><span class="line">MongoDB shell version: 3.2.7</span><br><span class="line">connecting to: test</span><br><span class="line">&gt; show dbs;</span><br><span class="line">graylog  0.001GB</span><br><span class="line">local    0.000GB</span><br><span class="line">test     0.000GB</span><br><span class="line">&gt; show collections</span><br><span class="line">cluster_config</span><br><span class="line">cluster_events</span><br><span class="line">collectors</span><br><span class="line">content_packs</span><br><span class="line">grok_patterns</span><br><span class="line">index_failures</span><br><span class="line">index_ranges</span><br><span class="line">nodes</span><br><span class="line">notifications</span><br><span class="line">pipeline_processor_pipelines</span><br><span class="line">pipeline_processor_pipelines_streams</span><br><span class="line">pipeline_processor_rules</span><br><span class="line">roles</span><br><span class="line">sessions</span><br><span class="line">system_messages</span><br><span class="line">users</span><br><span class="line">&gt; db.nodes.count()</span><br><span class="line">1</span><br><span class="line">&gt; db.cluster_config.count()</span><br><span class="line">11</span><br><span class="line">&gt; db.nodes.find()</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;5767780ab01412219843147b&quot;), &quot;is_master&quot; : true, &quot;hostname&quot; : &quot;dp0652&quot;, &quot;last_seen&quot; : 1466404508, &quot;transport_address&quot; : &quot;http://192.168.6.52:12900/&quot;, &quot;type&quot; : &quot;SERVER&quot;, &quot;node_id&quot; : &quot;eb943e44-3464-47be-9c07-2a554de71428&quot; &#125;</span><br><span class="line">&gt; db.cluster_config.distinct(&quot;type&quot;)</span><br><span class="line">[</span><br><span class="line">  &quot;org.graylog2.bundles.ContentPackLoaderConfig&quot;,</span><br><span class="line">  &quot;org.graylog2.cluster.UserPermissionMigrationState&quot;,</span><br><span class="line">  &quot;org.graylog2.indexer.management.IndexManagementConfig&quot;,</span><br><span class="line">  &quot;org.graylog2.indexer.retention.strategies.ClosingRetentionStrategyConfig&quot;,</span><br><span class="line">  &quot;org.graylog2.indexer.retention.strategies.DeletionRetentionStrategyConfig&quot;,</span><br><span class="line">  &quot;org.graylog2.indexer.rotation.strategies.MessageCountRotationStrategyConfig&quot;,</span><br><span class="line">  &quot;org.graylog2.indexer.rotation.strategies.SizeBasedRotationStrategyConfig&quot;,</span><br><span class="line">  &quot;org.graylog2.indexer.rotation.strategies.TimeBasedRotationStrategyConfig&quot;,</span><br><span class="line">  &quot;org.graylog2.indexer.searches.SearchesClusterConfig&quot;,</span><br><span class="line">  &quot;org.graylog2.periodical.IndexRangesMigrationPeriodical.MongoIndexRangesMigrationComplete&quot;,</span><br><span class="line">  &quot;org.graylog2.plugin.cluster.ClusterId&quot;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>注意必须修改server.conf的<code>elasticsearch_cluster_name</code>配置项和已经安装的elasticsearch的名称一样，否则会报错：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">2016-06-20 14:06:47,920 ERROR: org.graylog2.shared.rest.exceptionmappers.AnyExceptionClassMapper - Unhandled exception in REST resource</span><br><span class="line">org.elasticsearch.discovery.MasterNotDiscoveredException</span><br><span class="line">        at org.elasticsearch.action.support.master.TransportMasterNodeAction$AsyncSingleAction$5.onTimeout(TransportMasterNodeAction.java:226) ~[graylog.jar:?]</span><br><span class="line">        at org.elasticsearch.cluster.ClusterStateObserver$ObserverClusterStateListener.onTimeout(ClusterStateObserver.java:236) ~[graylog.jar:?]</span><br><span class="line">        at org.elasticsearch.cluster.service.InternalClusterService$NotifyTimeout.run(InternalClusterService.java:804) ~[graylog.jar:?]</span><br><span class="line">        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142) [?:1.8.0_91]</span><br><span class="line">        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617) [?:1.8.0_91]</span><br><span class="line">        at java.lang.Thread.run(Thread.java:745) [?:1.8.0_91]</span><br></pre></td></tr></table></figure>
+<p>用admin/admin登陆：<a href="http://192.168.6.52:9999" target="_blank" rel="noopener">http://192.168.6.52:9999</a>，密码是<code>echo -n admin | shasum -a 256</code>中的admin</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160620142827224" alt="graylog-overview"></p>
+<h3 id="发送数据到gralog">发送数据到gralog</h3><h4 id="UDP">UDP</h4><p>1.在web页面的System/Inputs添加一个RAW UDP文本</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160620155100081" alt="gray-inputs"></p>
+<p>2.模拟向端口输入数据</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 graylog-2.0.2]$ echo &quot;Hello Graylog, let&apos;s be friends.&quot; | nc -w 1 -u 127.0.0.1 5555</span><br></pre></td></tr></table></figure>
+<p>3.在Search可以查询到这条消息</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160620155113852" alt="gray-udp"></p>
+<h4 id="GELF">GELF</h4><p>1.配置gelf</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160620155438244" alt="gray-gelf"></p>
+<p>2.发送gelf数据</p>
+<p>curl -XPOST <a href="http://192.168.6.52:12201/gelf" target="_blank" rel="noopener">http://192.168.6.52:12201/gelf</a> -p0 -d ‘{“short_message”:”Hello there”, “host”:”example.org”, “facility”:”test”, “_foo”:”bar”}’</p>
+<h4 id="Logstash">Logstash</h4><p>Input配置为GELF UDP，端口为12202，和GELF HTTP的12201区分开来</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">➜  logstash-2.3.2 bin/logstash -e &apos;input &#123; stdin &#123;&#125; &#125; output &#123; gelf &#123;host =&gt; &quot;192.168.6.52&quot; port =&gt; 12202 &#125; &#125;&apos;</span><br><span class="line">logstash message</span><br></pre></td></tr></table></figure>
+<h4 id="syslog">syslog</h4><p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160620155129977" alt="gray-syslog"></p>
+<h4 id="kafka">kafka</h4><p>1.创建topic</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">bin/kafka-topics.sh --create --zookeeper 192.168.6.55:2181,192.168.6.56:2181,192.168.6.57:2181 --replication-factor 1 --partitions 1 --topic graylog-test</span><br><span class="line">bin/kafka-console-producer.sh --broker-list 192.168.6.55:9092,192.168.6.56:9092,192.168.6.57:9092 --topic graylog-test</span><br><span class="line">hello msg from kafka</span><br></pre></td></tr></table></figure>
+<p>2.配置kafka输入</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160620155140805" alt="gray-kafka"></p>
+<p>3.查看收集的日志</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160620155155727" alt="gray-kafka-msg"></p>
+<h3 id="Graylog-Cassandra">Graylog-Cassandra</h3><p><a href="https://github.com/Graylog2/graylog-plugin-metrics-reporter">https://github.com/Graylog2/graylog-plugin-metrics-reporter</a></p>
+<h2 id="Ref">Ref</h2><p><a href="http://www.cnblogs.com/kylinlin/p/4692073.html" target="_blank" rel="noopener">http://www.cnblogs.com/kylinlin/p/4692073.html</a><br><a href="http://rmoff.net/2016/05/12/monitoring-logstash-ingest-rates-with-influxdb-and-grafana/" target="_blank" rel="noopener">http://rmoff.net/2016/05/12/monitoring-logstash-ingest-rates-with-influxdb-and-grafana/</a></p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/05/25/Log-Monitor/">日志监控系统</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年05月25日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/05/25/Log-Monitor/" title="日志监控系统">http://github.com/zqhxuyuan/2016/05/25/Log-Monitor/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/05/25/Log-Monitor/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/05/26/2016-05-13-Kafka-Book-Sample/">
+        Kafka技术内幕样章（初稿，非正式版）
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/05/18/Cassandra-NewFeature/">
+        Cassandra的新特性
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ELK"><span class="toc-number">1.</span> <span class="toc-text">ELK</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#LogStash"><span class="toc-number">1.1.</span> <span class="toc-text">LogStash</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#标准I/O"><span class="toc-number">1.1.1.</span> <span class="toc-text">标准I/O</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#File_Input"><span class="toc-number">1.2.</span> <span class="toc-text">File Input</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#性能测试"><span class="toc-number">1.2.1.</span> <span class="toc-text">性能测试</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Collectd"><span class="toc-number">1.2.2.</span> <span class="toc-text">Collectd</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ElasticSearch"><span class="toc-number">1.3.</span> <span class="toc-text">ElasticSearch</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LogStash+CollectD+ElasticSearch"><span class="toc-number">1.4.</span> <span class="toc-text">LogStash+CollectD+ElasticSearch</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Kiabana"><span class="toc-number">1.5.</span> <span class="toc-text">Kiabana</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#InfluxDB"><span class="toc-number">2.</span> <span class="toc-text">InfluxDB</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Grafana"><span class="toc-number">3.</span> <span class="toc-text">Grafana</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#grafana-1-9-1"><span class="toc-number">3.1.</span> <span class="toc-text">grafana-1.9.1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#grafana-2-x"><span class="toc-number">3.2.</span> <span class="toc-text">grafana-2.x</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Cassandra+InfluxDB+Grafana"><span class="toc-number">4.</span> <span class="toc-text">Cassandra+InfluxDB+Grafana</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Graphite"><span class="toc-number">4.1.</span> <span class="toc-text">Graphite</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Telegraph"><span class="toc-number">4.2.</span> <span class="toc-text">Telegraph</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Hekad"><span class="toc-number">5.</span> <span class="toc-text">Hekad</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Atlas"><span class="toc-number">6.</span> <span class="toc-text">Atlas</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Graylog"><span class="toc-number">7.</span> <span class="toc-text">Graylog</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#发送数据到gralog"><span class="toc-number">7.1.</span> <span class="toc-text">发送数据到gralog</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#UDP"><span class="toc-number">7.1.1.</span> <span class="toc-text">UDP</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#GELF"><span class="toc-number">7.1.2.</span> <span class="toc-text">GELF</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Logstash"><span class="toc-number">7.1.3.</span> <span class="toc-text">Logstash</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#syslog"><span class="toc-number">7.1.4.</span> <span class="toc-text">syslog</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#kafka"><span class="toc-number">7.1.5.</span> <span class="toc-text">kafka</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Graylog-Cassandra"><span class="toc-number">7.2.</span> <span class="toc-text">Graylog-Cassandra</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ref"><span class="toc-number">8.</span> <span class="toc-text">Ref</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/05/25/Log-Monitor/" data-title="日志监控系统" data-url="http://github.com/zqhxuyuan/2016/05/25/Log-Monitor/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/05/26/2016-05-13-Kafka-Book-Sample/" title="上一篇: Kafka技术内幕样章（初稿，非正式版）">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/05/18/Cassandra-NewFeature/" title="下一篇: Cassandra的新特性">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

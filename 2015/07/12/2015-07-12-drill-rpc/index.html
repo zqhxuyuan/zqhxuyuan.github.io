@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Apache Drill源码阅读(2) 分析一次查询过程以及RPC | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="大数据源码阅读系列之ApacheDrill: Apache Drill的RPC流程">
+<meta name="keywords" content="drill">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Apache Drill源码阅读(2) 分析一次查询过程以及RPC">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/07/12/2015-07-12-drill-rpc/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="大数据源码阅读系列之ApacheDrill: Apache Drill的RPC流程">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill6.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill10.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill11.png">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.175Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Apache Drill源码阅读(2) 分析一次查询过程以及RPC">
+<meta name="twitter:description" content="大数据源码阅读系列之ApacheDrill: Apache Drill的RPC流程">
+<meta name="twitter:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill6.png">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-07-12-drill-rpc" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/07/12/2015-07-12-drill-rpc/" class="article-date">
+  	<time datetime="2015-07-11T16:00:00.000Z" itemprop="datePublished">2015-07-12</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Apache Drill源码阅读(2) 分析一次查询过程以及RPC
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Source/">Source</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/drill/">drill</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>大数据源码阅读系列之ApacheDrill: Apache Drill的RPC流程</p>
+<a id="more"></a>
+<h2 id="一次Query的生命周期">一次Query的生命周期</h2><p>Foreman线程的run方法中的queryRequest是org.apache.drill.exec.proto.UserProtos的RunQuery<br>可以认为就是用户输入的查询语句,只不过由于是分布式,客户端输入的查询,会通过RPC在Foreman上执行<br>protobuffer文件的定义在drill-protocol/src/main/protobuf下,比如User.proto对应了UserProtos</p>
+<p>关键看下run()上面的注释. 什么时候被调用: 在查询建立起来的时候<br>以什么样的方式调用: 执行线程池. 功能是什么: 完成远程执行<br>注意这个方法的结束并不代表查询生命周期的Foreman角色的结束.  </p>
+<blockquote>
+<p>Called by execution pool to do query setup, and kick off remote execution.<br>Note that completion of this function is not the end of the Foreman’s role in the query’s lifecycle.</p>
+</blockquote>
+<p><a href="https://tnachen.wordpress.com/2013/11/05/lifetime-of-a-query-in-drill-alpha-release/" target="_blank" rel="noopener">https://tnachen.wordpress.com/2013/11/05/lifetime-of-a-query-in-drill-alpha-release/</a><br><a href="http://yangyoupeng-cn-fujitsu-com.iteye.com/blog/1974556" target="_blank" rel="noopener">http://yangyoupeng-cn-fujitsu-com.iteye.com/blog/1974556</a></p>
+<h3 id="Client">Client</h3><p>The SELECT statement in particular is querying a HDFS data file, with a specific WHERE clause filtering based on the expression clause.</p>
+<p>From the client, it submits this statement into Sqlline, which is a simple Java-based console that is able to talk to a JDBC driver, passes the SELECT statement into Optiq.</p>
+<p>Optiq is a library that Drill utilizes for query parsing and planning, which it provides pluggable transformation rules that can map a SQL token into any specific object you want. Optiq also embeds a cost-based query optimizer, which we utilize for it for choosing the best order of SQL operators in the statement without any other statistics. We implemented custom Optiq rules that maps specific SQL operators (WHERE, LIMIT, etc) and each rule converts its operator into our specific Logical Operator syntax that Drill understands.</p>
+<p>This collection of Logical operators with its own configurations forms a Drill Logical plan. Drill’s logical plan sole purpose is to describe logically what work Drill needs to perform to produce the Query results, without any optimizations or distribution.</p>
+<p>Once the client generates this logical plan, it looks up one of the DrillBit host/port information and passes the logical plan to that DrillBit.</p>
+<blockquote>
+<p>Drill logical plan的唯一的目标就是Drill的数据流的工作流程，而没有做任何的优化，和分布式计算的分发等工作<br>一旦client产生了logical plan，那么他会查询其中一个已经配置好的DrillBit的host/port的信息，<br>然后将logical plan传递给DrillBit(这个接收查询的DrillBit就是Foreman)  </p>
+</blockquote>
+<h3 id="Running_Logical_Plan">Running Logical Plan</h3><p>Any DrillBit in the cluster can initiate a query, and that DrillBit becomes the Drill process that is responsible for sending back the results back to the client.</p>
+<blockquote>
+<p>在集群中任何一个DrillBit都能运行一个查询，而执行查询的DrillBit要负责将查询结果返回给client  </p>
+</blockquote>
+<p>Once the UserServer that is listening to the User submission gets the logical plan, it passes it through Foreman that is responsible for turning this plan into an actual execution plan and submits the plan information for execution.</p>
+<blockquote>
+<p>UserServer会监听客户端提交的查询任务,一旦获取到逻辑计划,它会把逻辑计划传给Foreman.<br>Foreman会调优该plan，并且转换为实际执行的计划，并提交该计划的信息用于后面的执行.</p>
+</blockquote>
+<p>Inside of Foreman, the first operation it does is to transform the logical plan into a physical plan via Drill’s Optimizer. Drill’s current version of Optimizer is very basic, which simply transforms each logical operator directly into one or more phyiscal operators without much optimization rules looking into the association of other operators.</p>
+<p>The physical plan is simple a DAG of physical operators, and each child/parent relationship implies how data flows through the graph. As we are inspired by Google’s Dremel paper, the take away we saw that implemented which is a MPP style multi-level execution tree, where in this execution tree each node represents a different DrillBit process and they each depend on each other results for computation.</p>
+<blockquote>
+<p>物理计划是physical operators的有向无环图.每一子节点或者父节点之间的关系都指明了数据如何在DAG图中流动<br>在这个执行树中，每一个节点都代表一个不同的DrillBit计算过程，他们相互依赖彼此的计算结果</p>
+</blockquote>
+<p>As we want to break this physical plan into a multi-level execution tree that involves multiple DrillBits, we first need to collect information about each physical operator. Each physical operator with the given operator configuration can return estimated stats about Network/Cpu/Memory/Disk and Row size and count. It also can return a list of preferred DrillBits that it wants to get executed on, which we call endpoint affinities.</p>
+<blockquote>
+<p>将物理计划分解成多个DrillBits参与的多层级的执行树，首先要搜集每一个physical operators的信息<br>根据给定的操作符的配置信息,每个physical operators会返回预估的统计信息,RowSize行的大小,Count数量<br><strong>它也能够返回一个将要执行该operator的DrilBit列表,称作距离最近/最优的端点</strong></p>
+<p>类似HDFS中的读操作,读取HDFS块时,NN会返回这个块的DN列表,客户端读取离自己最近的DN的数据块</p>
+</blockquote>
+<p>One example Endpoint affinity is where a Parquet Scan opreator will want to initiate this query closet to where the Parquet file is stored, and it can look up the Parquet file’s Metadata information that stores the HDFS data node host and return that as a preferred endpoint if we have a DrillBit running there.</p>
+<blockquote>
+<p>比如一个Parquet扫描操作符会在离保存着Parquet文件最近的DrillBit上面发起查询<br>他可以查询Parquet文件的元数据信息: 元数据保存了HDFS的DN节点，并返回一个最优的endpoint  </p>
+<p>Parquet文件是类似JSON那样有者self-describe格式的文件,即文件本身含有schema,尽管schema是free的.<br>由于Parquet保存在HDFS上,HDFS上的文件是有副本的. 而Scan操作符是要访问文件的,<br>所以Scan操作符会选择离自己这个操作符最近的DN上的Parquet文件副本时,是最优的情况.<br>当然对于最优的端点的前提是这个节点安装了DrillBit服务. 因为Drill是操作符的载体.  </p>
+<p>也就是说,集群的DrillBit服务可以执行一个物理计划分解出来的physical operators<br>physical operators可以被集群的多个Drillbit执行.<br>通常DrillBit计算节点上也运行着DN这样的数据存储节点,而操作符需要存储的数据资源<br>所以操作符会选择离存储资源最近的Drillbit,这样的Drillbit是最优的endpoint.  </p>
+</blockquote>
+<p>With the physical plan, all the stats and endpoint affinities, the Parallellizer in Foreman transforms this plan into a number of fragments. Each fragment is simply a self contained Physical plan that is designed to run on each DrillBit node. In any given Physical plan, there will be only one Root Fragment that is going to run in the initiating DrillBit, possibly one or more Leaf fragments and possibly one or more intermediate fragments.</p>
+<blockquote>
+<p>有了物理计划,所有的统计信息,最优端点,Foreman中的Parallellizer会将物理计划转换为多个fragments.<br>每一个Fragment自身也是一个物理计划, 它们同样会被分配到DrillBit节点上面运行.<br>任何一个物理计划(经过Foreman转换后的每一个Fragment)只有一个RootFragment,多个中间或Leaf Fragment.</p>
+</blockquote>
+<h3 id="Running_Fragments">Running Fragments</h3><p>The Root fragment will be submitted to the Worker manager in its current DrillBit, the intermediate fragments will be stored in the HazelCast distributed cache, and all the leaf fragments will be sent directly to the DrillBits assigned via our BitCom through our RPC layer with Protobuf messages.</p>
+<blockquote>
+<p>Rootfragment会被提交给它所在的当前DrillBit上的WorkerManager.中间fragment保存在Hazelcast分布式缓存,<br>所有的leaf fragment会直接通过BitCom(RPC层次的东西，协议是Protobuf)发送给其他DrillBits  </p>
+<p>在WEB页面可以看到的是Major和MinorFragment.那么这里的Root,Intermediate,Leaf Fragment是怎么YY出来的?</p>
+</blockquote>
+<p>The Worker Manager once receives this Root Fragment starts running this plan, which always contains a Screen Operator that blocks and wait for Records to be returned. If a plan also has multiple Drillbits involved, then it will also contain a exchange operator that sets up a Receiver that waits for incoming Records from the wire.</p>
+<blockquote>
+<p>Worker Manager一旦接受到Root Fragment就会运行这个plan,并且总是会包含一个Screen Operator,用来阻塞并且等待返回的数据.<br>如果该plan需要另外多个DrillBit参与,这些DrillBit组成一个wire，Worker Manager也同时会包含一个exchange operator，该exchange operator启动了一个Receiver用以等待wire中的数据</p>
+<p>wire类似HDFS中DN组成的pipeline.当客户端写数据时,参与存储的DN形成一个管道,数据包在管道中流动.<br>只有所有的DN节点返回ack应答给客户端时,才认为数据写入成功. 这里参与计算的DrillBit节点也一样.<br>Exchange操作符类似于客户端,只有wire中的DrillBit数据获取完毕,返回给Receiver,才认为计算完成.  </p>
+</blockquote>
+<p>The Leaf fragments that are sent via the wire will be executed as soon as they arrive. The fragment will be parsed into a DAG with Physical operators, and setups the execution/data flow. Each Physical operator imposes a Pull style messaging, where starting from the bottom of the tree it pulls it’s parent for Records and the parent will return an Outcome status. The operators is designed to handle each possible outcome status, which can be STOP, OK, OK_WITH_NEW_SCHEMA, NONE. Since Drill supports flexible schema, which in other words can tolerate schema changes in the same dataset, the operators needs to handle what happens when there is a new schema for this set of records. Seeing the benefits of columnar storage:<a href="http://the-paper-trail.org/blog/columnar-storage/" target="_blank" rel="noopener">http://the-paper-trail.org/blog/columnar-storage/</a>. Drill also implemented its own in memory columnar format which we called ValueVectors. A ValueVector is simply a collection of bytes that represent a run of values within the same column. Each pull of messages in each Physical operator returns a RecordBatch that can contain one or more ValueVectors per column with schema.</p>
+<blockquote>
+<p>通过wire被发送的叶子Fragment一旦到达目的DrillBit就会被立即执行.叶子Fragment会被解析为由物理操作符组成的DAG.<br>每一个物理操作符都会利用一个Pull类型的消息机制，从树的底部开始，operator会从他的parent operator中拉取Records，<br>而他的parent operator则返回一个Outcome status消息. operators被设计为能处理每一种可能的结果状态.<br>因为Drill支持动态schema，也就是说Drill允许在同一个数据集中schema发生变化，所以Drill要能够处理当schema发生变化的情况  </p>
+<p>Drill同时实现了他自己的列式内存数据结构:ValueVector，它是一个bytes集合，代表了一个column内的数据.<br>在每一个Physical operator pull的消息中会返回一个RecordBatch: 对于每个列都会包含一个或者多个ValueVector</p>
+</blockquote>
+<p>At the very tip of the Leaf fragment in my slideshow example is the Scan operator, which is configured to look up a Parquet file and run it through the Parquet Storage Engine. The Storage engine is simply responsible for pulling in data from the data source, and converting them into ValueVectors and passes that back to its child as a RecordBatch.</p>
+<blockquote>
+<p>从数据源中拉取数据，把数据转换为ValueVectors，然后将这些ValueVector作为RecordBatch传递回他的child</p>
+<p>FragmentTree从底到上, 底部是Parent, 越往上就是Child. child会拉取parent的记录.<br>而从上到下来看,Fragment分解为RootFragment-&gt;Intermediate-&gt;LeafFragment.<br>这似乎有点矛盾,leaf是parent,往上则是child. 而最上面又是root fragment.  </p>
+<p>扫描操作符的步骤:<br>1.Leaf Fragment拉取数据源的数据<br>2.将数据转换为ValueVectors<br>3.组装成RecordBatch<br>4.传递给它的孩子,即上一层</p>
+</blockquote>
+<p>Eventually the Leaf fragment will take this batch, and through the Sender operator send it to the Intermediate DrillBit.</p>
+<blockquote>
+<p>最终，所有的Leaf fragment将会接管这些batch数据，通过Sender operator发送给中间DrillBit<br>对于数据源,它们只暴露给物理计划形成的所有Leaf Fragment.这些Leaf Fragment负责读取数据.  </p>
+</blockquote>
+<p>The Intermediate DrillBit once receives a RecordBatch for the first time, will lookup the fragment from HazelCast by its fragment id from RecordBatch, and setup the Receiver and Physical opreators necessary for processing in this DrillBit.</p>
+<blockquote>
+<p>中间fragment一旦第一次接受到一个RecordBatch，会从HazleCast中通过RecordBatch中保留的fragment id<br>查询相应的fragment，并且设置Receiver以及必要的physical operator来继续在DrillBit中进行处理计算</p>
+</blockquote>
+<p>The intermediate fragment contains a Filtering operator, and inside this operator once it receives a RecordBatch it looks up the new schema and passes that to our CodeGeneration with the specified filter expression and type information, and generate a specific code that does the filtering. This is designed to avoid casting, run tight loops and leverage prefetching as we can eliminate function calls. This is a very common approach looking at the Hive’s new vectorized query engine via Stinger initiative or in Impala.</p>
+<blockquote>
+<p><strong>中间Fragment包含一个Filtering operator，在这个Filtering operator内部，一旦他接收到一个RecordBatch，他就会查找新的schema，并且将schema传递给CodeGeneration,同时还会传递一个特殊定义的filter expression，type information，借此产生一段特殊的code来完成filter 操作。通过设计成避免casting，运行轻量级的loop，以及进行prefetching，来减少方法的调用，这种方式在Hive的新vectoried query engine（通过Stinger initiative）以及impala中很普遍</strong></p>
+</blockquote>
+<p>The intermediate fragment eventually streams a batch at a time as soon as it is available to the Root DrillBit, which the Screen operator receives and returns it to the Client.</p>
+<blockquote>
+<p>中间fragment最终会议batch为单元，一次发送一个batch给Root DrillBit(就是Foreman),<br>在Root DrillBit中会由Screen operator来接收相关数据，并且返回给client(接收查询的也负责返回查询结果    )</p>
+</blockquote>
+<p>DrillClient that receives the RecordBatch, simply transforms our own columnar ValueVectors into Rows and shows the result to the client.</p>
+<blockquote>
+<p>DrillClient接收RecordBatch，简单将ValueVector转换成Rows并且显示给client</p>
+</blockquote>
+<p>This is overall what the flow looks like in our Drill alpha release, and we will be continuing to validate this architecture through diagnostic and benchmarking, and also provide more operators and storage engine so we can do much more interesting data analysis.</p>
+<h2 id="Physical_Operator">Physical Operator</h2><p>前面有逻辑操作符LogicalOperator接口,同样也有物理操作符PhysicalOperator接口  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill6.png" alt></p>
+<p>我们先看下HasAffinity有最优节点,方法getOperatorAffinity返回最优的EndPoint列表<br>描述了一个物理操作符对一些特定的DrillBit节点有亲和性的, 用于分配决策.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//Describes a physical operator that has affinity to particular nodes. Used for assignment decisions.</span><br><span class="line">public interface HasAffinity extends PhysicalOperator &#123;</span><br><span class="line">  public List&lt;EndpointAffinity&gt; getOperatorAffinity();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public class EndpointAffinity &#123;</span><br><span class="line">  private final DrillbitEndpoint endpoint;</span><br><span class="line">  private double affinity = 0.0d;</span><br></pre></td></tr></table></figure>
+<p>EndpointAffinity captures affinity value for a given single Drillbit endpoint.<br>EndpointAffinity有DrillbitEndpoint的引用, 注释中提到affinity value,所以是不是够亲和是可以计算出来的.<br>初始时这个值是0,调用addAffinity()可以给Drillbit endpoint添加一个亲和力的值.  </p>
+<p>DrillBit Endpoint对象被定义为protobuf,在Coordination.proto中:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">message DrillbitEndpoint&#123;</span><br><span class="line">  optional string address = 1;</span><br><span class="line">  optional int32 user_port = 2;</span><br><span class="line">  optional int32 control_port = 3;</span><br><span class="line">  optional int32 data_port = 4;</span><br><span class="line">  optional Roles roles = 5;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Drillbit可以认为是Drill的计算节点. 在bin下的drillbit.sh start启动一个Drill服务.  </p>
+<p>LogicalPlan有一定的格式:head,storageengine,query. 同样PyhsicalPlan也有,它们的head是相同的.<br>PhysicalPlan的构造函数是一系列的物理操作符,而LogicalPlan的构造函数是逻辑操作符集合.目的都是构造一张DAG图.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@JsonPropertyOrder(&#123; &quot;head&quot;, &quot;graph&quot; &#125;)</span><br><span class="line">public class PhysicalPlan &#123;</span><br><span class="line">  static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(PhysicalPlan.class);</span><br><span class="line"></span><br><span class="line">  PlanProperties properties;</span><br><span class="line">  Graph&lt;PhysicalOperator, Root, Leaf&gt; graph;</span><br><span class="line"></span><br><span class="line">  @JsonCreator</span><br><span class="line">  public PhysicalPlan(@JsonProperty(&quot;head&quot;) PlanProperties properties, @JsonProperty(&quot;graph&quot;) List&lt;PhysicalOperator&gt; operators)&#123;</span><br><span class="line">    this.properties = properties;</span><br><span class="line">    this.graph = Graph.newGraph(operators, Root.class, Leaf.class);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="查询过程分析">查询过程分析</h2><p>在官方的设计文档中<a href="http://drill.apache.org/docs/rpc-overview/" target="_blank" rel="noopener">http://drill.apache.org/docs/rpc-overview/</a>对RPC只是寥寥数语,还有待补充.  </p>
+<h3 id="客户端提交查询">客户端提交查询</h3><p>我们根据上面的Query流程一步步分析, 首先是客户端提交一个查询, 经过Optiq生成逻辑计划后会交给DrillClient运行:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * Submits a Logical plan for direct execution (bypasses parsing) 提交一个逻辑计划,直接执行</span><br><span class="line"> * @param plan the plan to execute</span><br><span class="line"> * @return a handle for the query result</span><br><span class="line"> */</span><br><span class="line">public List&lt;QueryDataBatch&gt; runQuery(QueryType type, String plan) throws RpcException &#123;</span><br><span class="line">  UserProtos.RunQuery query = newBuilder().setResultsMode(STREAM_FULL).setType(type).setPlan(plan).build();</span><br><span class="line">  ListHoldingResultsListener listener = new ListHoldingResultsListener(query);</span><br><span class="line">  client.submitQuery(listener, query);  //这个client是UserClient,而不是DrillClient了</span><br><span class="line">  return listener.getResults();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>逻辑计划封装成RunQuery协议,监听器ListHoldingResultsListener用于当获取到结果后通知客户端可以获取数据了.<br>监听器用Future来封装查询的结果集合,如果结果还没有出来,调用future.get()会被阻塞,这是Java的Future语法本身的特性.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">private class ListHoldingResultsListener implements UserResultsListener &#123;</span><br><span class="line">  private Vector&lt;QueryDataBatch&gt; results = new Vector&lt;&gt;();</span><br><span class="line">  private SettableFuture&lt;List&lt;QueryDataBatch&gt;&gt; future = SettableFuture.create();</span><br><span class="line">  private UserProtos.RunQuery query ;  //提交失败时, 在重新连接后, 由客户端重新连接</span><br><span class="line"></span><br><span class="line">  public void queryCompleted(QueryState state) &#123;</span><br><span class="line">    future.set(results);</span><br><span class="line">  &#125;</span><br><span class="line">  public void dataArrived(QueryDataBatch result, ConnectionThrottle throttle) &#123;</span><br><span class="line">    results.add(result);</span><br><span class="line">  &#125;</span><br><span class="line">  public List&lt;QueryDataBatch&gt; getResults() throws RpcException&#123;</span><br><span class="line">      return future.get();</span><br><span class="line">  &#125;   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>UserClient作为用户的客户端,会向DrillBit发送一个RUN_QUERY的请求, 发送内容在RunQuery query对象里.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public class UserClient extends BasicClientWithConnection&lt;RpcType, UserToBitHandshake, BitToUserHandshake&gt; &#123;</span><br><span class="line">  private final QueryResultHandler queryResultHandler = new QueryResultHandler();</span><br><span class="line"></span><br><span class="line">  public void submitQuery(UserResultsListener resultsListener, RunQuery query) &#123;</span><br><span class="line">    send(queryResultHandler.getWrappedListener(connection, resultsListener), RpcType.RUN_QUERY, query, QueryId.class);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>connection对象是客户端建立的到服务器端的连接, 在UserClient的父类BasicClient的构造方法中创建的.<br>这里用的是Netty, 客户端在创建过程还绑定了多个Handler: 协议的编解码,消息的编解码,<code>InboundHandler到达处理器</code>,客户端握手Handler.   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">public abstract class BasicClient&lt;T extends EnumLite, R extends RemoteConnection, HANDSHAKE_SEND extends MessageLite, HANDSHAKE_RESPONSE extends MessageLite&gt; extends RpcBus&lt;T, R&gt; &#123;</span><br><span class="line">  private final Bootstrap b;</span><br><span class="line">  protected R connection;</span><br><span class="line">  public BasicClient(...) &#123;  </span><br><span class="line">    b = new Bootstrap()  </span><br><span class="line">        .handler(new ChannelInitializer&lt;SocketChannel&gt;() &#123;</span><br><span class="line">          protected void initChannel(SocketChannel ch) throws Exception &#123;</span><br><span class="line">            connection = initRemoteConnection(ch);</span><br><span class="line">            ch.closeFuture().addListener(getCloseHandler(ch, connection));</span><br><span class="line">            final ChannelPipeline pipe = ch.pipeline();</span><br><span class="line">            pipe.addLast(&quot;protocol-decoder&quot;, getDecoder(connection.getAllocator()));</span><br><span class="line">            pipe.addLast(&quot;message-decoder&quot;, new RpcDecoder(&quot;c-&quot; + rpcConfig.getName()));</span><br><span class="line">            pipe.addLast(&quot;protocol-encoder&quot;, new RpcEncoder(&quot;c-&quot; + rpcConfig.getName()));</span><br><span class="line">            pipe.addLast(&quot;handshake-handler&quot;, new ClientHandshakeHandler());</span><br><span class="line">            pipe.addLast(&quot;message-handler&quot;, new InboundHandler(connection));</span><br><span class="line">            pipe.addLast(&quot;exception-handler&quot;, new RpcExceptionHandler(connection));</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;);    </span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>send()调用最终会调用RpcBus的同名send方法, 第一个参数listener是Rpc的输出监听器(相对Income到达)<br>其中发送内容RunQuery query是protobufBody, 最后一个参数dataBodies是可选的.   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// The Rpc Bus deals with incoming and outgoing communication and is used on both the server and the client side of a system.</span><br><span class="line">public abstract class RpcBus&lt;T extends EnumLite, C extends RemoteConnection&gt; implements Closeable &#123;</span><br><span class="line">  protected final CoordinationQueue queue = new CoordinationQueue(16, 16);</span><br><span class="line"></span><br><span class="line">  public &lt;SEND extends MessageLite, RECEIVE extends MessageLite&gt; void send(RpcOutcomeListener&lt;RECEIVE&gt; listener, C connection, T rpcType,</span><br><span class="line">      SEND protobufBody, Class&lt;RECEIVE&gt; clazz, boolean allowInEventLoop, ByteBuf... dataBodies) &#123;</span><br><span class="line">      ChannelListenerWithCoordinationId futureListener = queue.get(listener, clazz, connection);</span><br><span class="line">      OutboundRpcMessage m = new OutboundRpcMessage(RpcMode.REQUEST, rpcType, futureListener.getCoordinationId(), protobufBody, dataBodies);</span><br><span class="line">      ChannelFuture channelFuture = connection.getChannel().writeAndFlush(m);</span><br><span class="line">      channelFuture.addListener(futureListener);</span><br><span class="line">      channelFuture.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>客户端发起的一次查询是怎么提交到服务端上执行: <code>connection.getChannel().writeAndFlush(m)</code><br>客户端通过connection的通道往服务端写入一个Rpc消息,  Rpc消息分为到达Inboud和输出Outbound.<br>OutboundRpcMessage含有protobuf协议体,以及数据部分. 协议本身只是定义了数据的格式.  真正的数据也要一起发送出去.<br>虽然这里是客户端的查询请求, dataBodies本身是没有值的,因为在一开始调用的时候就没有传入这个参数.  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill10.png" alt></p>
+<p>到此为止, 客户端发起的一次查询请求已经完成了, 接下去的流程交给服务端处理这个请求了.<br>这里用到一个futureListener, 是为了能够监听服务器端是否已经把数据准备好了.<br>这里的queue会将CoordinationId和RpcListener放到map中, 并在接收到数据后从map中移除.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">public &lt;V&gt; ChannelListenerWithCoordinationId get(RpcOutcomeListener&lt;V&gt; handler, Class&lt;V&gt; clazz, RemoteConnection connection) &#123;</span><br><span class="line">  int i = circularInt.getNext();</span><br><span class="line">  RpcListener&lt;V&gt; future = new RpcListener&lt;V&gt;(handler, clazz, i, connection);</span><br><span class="line">  Object old = map.put(i, future);</span><br><span class="line">  return future;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="服务端处理Query请求">服务端处理Query请求</h3><p>服务端的启动方式和客户端一样都是通过Netty. 并且都注册了一个InboundHandler.<br>因为在上一步客户端发送REQUET请求, 所以服务器的InboundHandler能够接收到这个请求</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">protected class InboundHandler extends MessageToMessageDecoder&lt;InboundRpcMessage&gt; &#123;</span><br><span class="line">  private final C connection;</span><br><span class="line">  public InboundHandler(C connection) &#123;</span><br><span class="line">    this.connection = connection;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  protected void decode(final ChannelHandlerContext ctx, final InboundRpcMessage msg, final List&lt;Object&gt; output) throws Exception &#123;</span><br><span class="line">    final Channel channel = connection.getChannel();</span><br><span class="line">    final Stopwatch watch = new Stopwatch().start();</span><br><span class="line"></span><br><span class="line">      switch (msg.mode) &#123;</span><br><span class="line">      case REQUEST: &#123;</span><br><span class="line">          // handle message and ack.</span><br><span class="line">          ResponseSender sender = new ResponseSenderImpl(connection, msg.coordinationId);</span><br><span class="line">          handle(connection, msg.rpcType, msg.pBody, msg.dBody, sender);</span><br><span class="line">          break;</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure>
+<p>这里InboundHandler继承的是Netty的MessageToMessageDecoder抽象类,所以要在decode中重写接收的逻辑<br>如果是继承Netty的ChannelInboundHandlerAdapter, 则重写的方法是channelRead, 后面这种在netty的helloworld中比较常见.<br>为什么需要ResponseSender, 因为服务端接收客户端的查询请求, 在获取到结果后, 要负责将结果response发送send给客户端才算完成.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">protected void handle(C connection, int rpcType, ByteBuf pBody, ByteBuf dBody, ResponseSender sender) throws RpcException&#123;</span><br><span class="line">  sender.send(handle(connection, rpcType, pBody, dBody));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">protected abstract Response handle(C connection, int rpcType, ByteBuf pBody, ByteBuf dBody) throws RpcException;</span><br></pre></td></tr></table></figure>
+<p>handle是个抽象方法,  这里因为在Server中了, 所以选择UserServer的实现方法. 客户端传入的rpcType=RUN_QUERY等于下面的RUN_QUERY_VALUE</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill11.png" alt></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">public class UserServer extends BasicServer&lt;RpcType, UserServer.UserClientConnection&gt; &#123;</span><br><span class="line">  final UserWorker worker;</span><br><span class="line"></span><br><span class="line">  protected Response handle(UserClientConnection connection, int rpcType, ByteBuf pBody, ByteBuf dBody)&#123;</span><br><span class="line">    switch (rpcType) &#123;</span><br><span class="line">    case RpcType.RUN_QUERY_VALUE:</span><br><span class="line">        final RunQuery query = RunQuery.PARSER.parseFrom(new ByteBufInputStream(pBody));</span><br><span class="line">        final QueryId queryId = worker.submitWork(connection, query);</span><br><span class="line">        return new Response(RpcType.QUERY_HANDLE, queryId);</span><br></pre></td></tr></table></figure>
+<p>DrillClient将查询交给UserClient, UserServer则将具体的查询工作交给了UserWorker, 它的返回值也是一个QueryId协议.<br>最终的返回值是Response, 对应了RpcBus的sender.send(handle(…)) –&gt; sender.send(Response)  </p>
+<p>注意服务端接受到查询请求RUN_QUERY后, 交给worker处理, worker会立即返回这个查询对应的QueryId. 因此也不是立即返回结果的<br>看下服务端的ResponseSender的实现类, 定义在RpcBus中.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">private class ResponseSenderImpl implements ResponseSender &#123;</span><br><span class="line">  RemoteConnection connection;</span><br><span class="line">  int coordinationId;</span><br><span class="line"></span><br><span class="line">  public ResponseSenderImpl(RemoteConnection connection, int coordinationId) &#123;</span><br><span class="line">    super();</span><br><span class="line">    this.connection = connection;</span><br><span class="line">    this.coordinationId = coordinationId;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public void send(Response r) &#123;</span><br><span class="line">    OutboundRpcMessage outMessage = new OutboundRpcMessage(RpcMode.RESPONSE, r.rpcType, coordinationId, r.pBody, r.dBodies);</span><br><span class="line">    connection.getChannel().writeAndFlush(outMessage);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意这里的coordinationId是客户端放入queue队列中futureListener的一个编号.  而服务端返回的QueryId是r.pBody.<br>服务端也将OutboundRpcMessage通过connection通道写回去. 即写到客户端去, 因为服务端并没有将查询结果立即计算出来,<br>所以需要将QueryId返回给客户端, 并在适当的时候如果服务端获取到结果会通知客户端.  </p>
+<p>服务端发送的是Response, 所以现在服务端的流程已经走完了(虽然worker还没有完成,但是对于一次RPC来说是完成了), 轮到客户端接收响应.  </p>
+<h3 id="客户端获取查询结果">客户端获取查询结果</h3><p>还是在RpcBus的InboundHandler中.  只不过这次是客户端接受到服务端发送的响应请求:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">case RESPONSE:</span><br><span class="line">    MessageLite m = getResponseDefaultInstance(msg.rpcType);  //这里是QueryId</span><br><span class="line">    RpcOutcome&lt;?&gt; rpcFuture = queue.getFuture(msg.rpcType, msg.coordinationId, m.getClass());  //对应一开始的queue.get(...)</span><br><span class="line">    Parser&lt;?&gt; parser = m.getParserForType();</span><br><span class="line">    Object value = parser.parseFrom(new ByteBufInputStream(msg.pBody, msg.pBody.readableBytes()));  //pBody只是协议格式</span><br><span class="line">    rpcFuture.set(value, msg.dBody);  //dBody才是数据内容</span><br><span class="line">  break;</span><br></pre></td></tr></table></figure>
+<p>从队列中获取Future, 最后调用future的set方法, 将数据设置到value中, 这样future.get()就能获取到value.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public &lt;V&gt; RpcOutcome&lt;V&gt; getFuture(int rpcType, int coordinationId, Class&lt;V&gt; clazz) &#123;</span><br><span class="line">  RpcOutcome&lt;?&gt; rpc = map.remove(coordinationId);</span><br><span class="line">  return (RpcOutcome&lt;V&gt;) rpc;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Listener_&amp;_Handler">Listener &amp; Handler</h3><table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Operation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DrillClient.runQuery:</td>
+<td>ListHoldingResultsListener</td>
+</tr>
+<tr>
+<td>UserClient.submitQuery:</td>
+<td>通过QueryResultHandler将ListHoldingResultsListener&gt;&gt;UserResultsListener封装为SubmissionListener&gt;&gt;RpcOutcomeListener</td>
+</tr>
+<tr>
+<td>RpcBus.send:</td>
+<td>将RpcOutcomeListener封装为ChannelListenerWithCoordinationId&lt;<rpclistener>&gt;RpcOutcome</rpclistener></td>
+</tr>
+<tr>
+<td>InboundHandler.RESPONSE:</td>
+<td>从队列中获取RpcOutcome rpcFuture, 设置数据到value</td>
+</tr>
+<tr>
+<td>RpcListener.set:</td>
+<td>调用RpcOutcomeListener.success, 即SubmissionListener.success: 添加UserResultsListener负责监听结果</td>
+</tr>
+<tr>
+<td>ListHoldingResultsListener.getResults:</td>
+<td>从Future中获取结果</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Object</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ListHoldingResultsListener</td>
+<td>持有结果集的监听器, 所以负责最终结果的获取,当然获取操作不在这里, 它只管取数据</td>
+</tr>
+<tr>
+<td>SubmissionListener</td>
+<td>提交监听器, 作业提交后, 我负责执行, 但是执行的动作并不在这里哦</td>
+</tr>
+<tr>
+<td>UserResultsListener</td>
+<td>用户的结果集监听器, 这里应该是负责结果的产生, 不过它是个接口</td>
+</tr>
+<tr>
+<td>RpcListener</td>
+<td>RPC监听器,要和具体本次查询的coordinationId关联起来</td>
+</tr>
+</tbody>
+</table>
+<p>用户的结果集监听器的方法表示了查询的一个过程:<br>1.QueryId到达, 由服务端产生QueryId<br>2.数据到达, 并被监听器成功接收到<br>3.查询完毕, 监听器不会再收到任何数据</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">public interface UserResultsListener &#123;</span><br><span class="line">  /**</span><br><span class="line">   * QueryId is available. Called when a query is successfully submitted to the server.</span><br><span class="line">   * @param queryId sent by the server along &#123;@link org.apache.drill.exec.rpc.Acks.OK Acks.OK&#125;</span><br><span class="line">   */</span><br><span class="line">  void queryIdArrived(QueryId queryId);</span><br><span class="line"></span><br><span class="line">  void submissionFailed(UserException ex);</span><br><span class="line"></span><br><span class="line">  /**</span><br><span class="line">   * A &#123;@link org.apache.drill.exec.proto.beans.QueryData QueryData&#125; message was received</span><br><span class="line">   * @param result data batch received</span><br><span class="line">   */</span><br><span class="line">  void dataArrived(QueryDataBatch result, ConnectionThrottle throttle);</span><br><span class="line"></span><br><span class="line">  /**</span><br><span class="line">   * The query has completed (successsful completion or cancellation). The listener will not receive any other</span><br><span class="line">   * data or result message. Called when the server returns a terminal-non failing- state (COMPLETED or CANCELLED)</span><br><span class="line">   */</span><br><span class="line">  void queryCompleted(QueryState state);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/07/12/2015-07-12-drill-rpc/">Apache Drill源码阅读(2) 分析一次查询过程以及RPC</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年07月12日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/07/12/2015-07-12-drill-rpc/" title="Apache Drill源码阅读(2) 分析一次查询过程以及RPC">http://github.com/zqhxuyuan/2015/07/12/2015-07-12-drill-rpc/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/07/12/2015-07-12-drill-rpc/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/07/13/2015-07-13-drill-phyplan/">
+        Apache Drill源码阅读(3) 物理计划
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/07/10/2015-07-10-drill-log/">
+        Apache Drill源码阅读(1) 环境准备和查看日志
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#一次Query的生命周期"><span class="toc-number">1.</span> <span class="toc-text">一次Query的生命周期</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Client"><span class="toc-number">1.1.</span> <span class="toc-text">Client</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Running_Logical_Plan"><span class="toc-number">1.2.</span> <span class="toc-text">Running Logical Plan</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Running_Fragments"><span class="toc-number">1.3.</span> <span class="toc-text">Running Fragments</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Physical_Operator"><span class="toc-number">2.</span> <span class="toc-text">Physical Operator</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查询过程分析"><span class="toc-number">3.</span> <span class="toc-text">查询过程分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#客户端提交查询"><span class="toc-number">3.1.</span> <span class="toc-text">客户端提交查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#服务端处理Query请求"><span class="toc-number">3.2.</span> <span class="toc-text">服务端处理Query请求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#客户端获取查询结果"><span class="toc-number">3.3.</span> <span class="toc-text">客户端获取查询结果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Listener_&_Handler"><span class="toc-number">3.4.</span> <span class="toc-text">Listener &amp; Handler</span></a></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/07/12/2015-07-12-drill-rpc/" data-title="Apache Drill源码阅读(2) 分析一次查询过程以及RPC" data-url="http://github.com/zqhxuyuan/2015/07/12/2015-07-12-drill-rpc/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/07/13/2015-07-13-drill-phyplan/" title="上一篇: Apache Drill源码阅读(3) 物理计划">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/07/10/2015-07-10-drill-log/" title="下一篇: Apache Drill源码阅读(1) 环境准备和查看日志">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

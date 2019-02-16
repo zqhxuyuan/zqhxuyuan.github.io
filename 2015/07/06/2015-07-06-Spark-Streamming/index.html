@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Spark Stramming入门 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Apache Spark Streamming小白入门教程">
+<meta name="keywords" content="spark">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark Stramming入门">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/07/06/2015-07-06-Spark-Streamming/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Apache Spark Streamming小白入门教程">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/ss1.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/ss2.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/ss3.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/ss4.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/ss5.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/ss6.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/ss7.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/spark9.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/spark10.png">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.169Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spark Stramming入门">
+<meta name="twitter:description" content="Apache Spark Streamming小白入门教程">
+<meta name="twitter:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/ss1.png">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-07-06-Spark-Streamming" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/07/06/2015-07-06-Spark-Streamming/" class="article-date">
+  	<time datetime="2015-07-05T16:00:00.000Z" itemprop="datePublished">2015-07-06</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Spark Stramming入门
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/bigdata/">bigdata</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/spark/">spark</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Apache Spark Streamming小白入门教程</p>
+<a id="more"></a>
+<h2 id="NetworkWordCount">NetworkWordCount</h2><p>1.本机运行时,修改spark-env.sh(这一步不是必须的)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.7.0_79.jdk/Contents/Home</span><br><span class="line">export SCALA_HOME=/Users/zhengqh/Soft/scala-2.10.5</span><br><span class="line">export HADOOP_HOME=/Users/zhengqh/Soft/cdh542/hadoop-2.6.0-cdh5.4.2</span><br><span class="line">export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop</span><br><span class="line">export SPARK_MASTER_IP=localhost</span><br><span class="line">#export MASTER=spark://localhost:7077</span><br><span class="line">export SPARK_LOCAL_IP=localhost</span><br></pre></td></tr></table></figure>
+<p>2.开启netcat数据服务器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">➜  ~  nc -lk 9999</span><br><span class="line">hello world hello spark hello spark hello world</span><br></pre></td></tr></table></figure>
+<p>3.运行spark-streamming示例,当在nc终端输入text时,spark-streamming会实时统计过去一秒的wordcount</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">➜  spark-1.4.0-bin-hadoop2.6  bin/run-example org.apache.spark.examples.streaming.NetworkWordCount localhost 9999</span><br><span class="line">15/07/06 08:38:36 INFO dstream.SocketReceiver: Connected to localhost:9999</span><br><span class="line">15/07/06 08:38:37 INFO scheduler.ReceiverTracker: Registered receiver for stream 0 from 127.0.0.1:50018</span><br><span class="line">15/07/06 08:38:37 INFO scheduler.JobScheduler: Added jobs for time 1436143117000 ms</span><br><span class="line">...</span><br><span class="line">15/07/06 08:38:37 INFO scheduler.DAGScheduler: Job 2 finished: print at NetworkWordCount.scala:55, took 0.066998 s</span><br><span class="line">-------------------------------------------</span><br><span class="line">Time: 1436143116000 ms</span><br><span class="line">-------------------------------------------</span><br><span class="line"></span><br><span class="line">15/07/06 08:38:37 INFO scheduler.JobScheduler: Finished job streaming job 1436143116000 ms.0 from job set of time 1436143116000 ms</span><br><span class="line">15/07/06 08:38:37 INFO scheduler.JobScheduler: Total delay: 1.204 s for time 1436143116000 ms (execution: 1.118 s)</span><br><span class="line">15/07/06 08:38:40 INFO scheduler.DAGScheduler: Job 10 finished: print at NetworkWordCount.scala:55, took 0.048230 s</span><br><span class="line">-------------------------------------------</span><br><span class="line">Time: 1436143120000 ms</span><br><span class="line">-------------------------------------------</span><br><span class="line">(spark,2)</span><br><span class="line">(hello,4)</span><br><span class="line">(world,2)</span><br><span class="line"></span><br><span class="line">15/07/06 08:38:40 INFO scheduler.JobScheduler: Finished job streaming job 1436143120000 ms.0 from job set of time 1436143120000 ms</span><br><span class="line">15/07/06 08:38:40 INFO rdd.ShuffledRDD: Removing RDD 16 from persistence list</span><br><span class="line">15/07/06 08:38:40 INFO scheduler.JobScheduler: Total delay: 0.356 s for time 1436143120000 ms (execution: 0.335 s)</span><br><span class="line">15/07/06 08:38:40 INFO rdd.MapPartitionsRDD: Removing RDD 15 from persistence list</span><br><span class="line">15/07/06 08:38:40 INFO storage.BlockManager: Removing RDD 16</span><br></pre></td></tr></table></figure>
+<p>4.在<a href="localhost:4040/streaming" target="_blank" rel="noopener">localhost:4040/streaming</a>可以观察streaming的统计信息, 其中在InputRate向上凸出的是产生数据的速度  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/ss1.png" alt></p>
+<p>5.IDEA本地运行</p>
+<p>给SparkConf添加.setMaster(), 在<code>Program Arguments</code>中添加<code>localhost 9999 local[2]</code>, 然后运行</p>
+<p>否则会报错:<code>org.apache.spark.SparkException: A master URL must be set in your configuration</code>  </p>
+<p>example-code: spark-streamming实时读取socker流,统计过去5秒的wordcount</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// Create the context with a 1 second batch size</span><br><span class="line">val sparkConf = new SparkConf().setAppName(&quot;NetworkWordCount&quot;).setMaster(args(2))</span><br><span class="line">val ssc = new StreamingContext(sparkConf, Seconds(5))</span><br><span class="line"></span><br><span class="line">// Create a socket stream on target ip:port and count the</span><br><span class="line">// words in input stream of \n delimited text (eg. generated by &apos;nc&apos;)</span><br><span class="line">// Note that no duplication in storage level only for running locally.</span><br><span class="line">// Replication necessary in distributed scenario for fault tolerance.</span><br><span class="line">val lines = ssc.socketTextStream(args(0), args(1).toInt, StorageLevel.MEMORY_AND_DISK_SER)</span><br><span class="line">val words = lines.flatMap(_.split(&quot; &quot;))</span><br><span class="line">val wordCounts = words.map(x =&gt; (x, 1)).reduceByKey(_ + _)</span><br><span class="line">wordCounts.print()</span><br><span class="line">ssc.start()</span><br><span class="line">ssc.awaitTermination()</span><br></pre></td></tr></table></figure>
+<p>6.打包本地运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">➜  spark-1.4.0-bin-hadoop2.6  bin/spark-submit --class com.tongdun.bigdata.spark.intro.NetworkWordCount --jars /Users/zhengqh/IdeaProjects/bigdata/out/artifacts/spark_intro/spark-intro.jar /Users/zhengqh/IdeaProjects/bigdata/out/artifacts/spark_intro/spark-intro.jar localhost 9999 &quot;local[2]&quot;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>PS: –jars xx.jar可以省略</p>
+</blockquote>
+<p>7.打包集群运行. 程序的最后一个参数可以指定为local[2]或者spark://dp0652:7077</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">➜  spark-1.4.0-bin-hadoop2.6  bin/spark-submit --class com.tongdun.bigdata.spark.intro.NetworkWordCount /home/qihuang.zheng/spark-intro.jar localhost 9999 &quot;local[2]&quot;</span><br><span class="line"></span><br><span class="line">➜  spark-1.4.0-bin-hadoop2.6  bin/spark-submit --class com.tongdun.bigdata.spark.intro.NetworkWordCount /home/qihuang.zheng/spark-intro.jar localhost 9999 spark://dp0652:7077</span><br></pre></td></tr></table></figure>
+<p>8.一般在集群中运行,我们使用–master而不是在代码中设置setMaster(),所以把代码中的setMaster去掉重新打包</p>
+<p>先在本地实验, 👌 👉 不指定–master可以成功运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin/spark-submit --class com.tongdun.bigdata.spark.intro.NetworkWordCount /Users/zhengqh/spark-intro.jar localhost 9999</span><br></pre></td></tr></table></figure>
+<p>然后集群实验, 👌 👉 指定–master或不指定都可以成功运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">bin/spark-submit --class com.tongdun.bigdata.spark.intro.NetworkWordCount /home/qihuang.zheng/spark-intro.jar 192.168.6.52 9999</span><br><span class="line"></span><br><span class="line">bin/spark-submit --master spark://dp0652:7077 --class com.tongdun.bigdata.spark.intro.NetworkWordCount /home/qihuang.zheng/spark-intro.jar 192.168.6.52 9999</span><br></pre></td></tr></table></figure>
+<p><strong>关于本地和集群的运行方式</strong></p>
+<p>下面是在本地和集群中运行NetworkWordCount几种方式的结果, ✅表示能正常统计,🙅表示没显示结果.</p>
+<p>localhost(没有更改spark-env.sh)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">✅ bin/run-example org.apache.spark.examples.streaming.NetworkWordCount localhost 9999</span><br><span class="line"></span><br><span class="line">🙅 bin/spark-submit --class org.apache.spark.examples.streaming.NetworkWordCount --master &quot;local[2]&quot; --jars lib/spark-examples-1.4.0-hadoop2.6.0.jar lib/spark-examples-1.4.0-hadoop2.6.0.jar localhost 9999</span><br><span class="line"></span><br><span class="line">🙅 bin/spark-submit --class org.apache.spark.examples.streaming.NetworkWordCount --master local\[2\] --jars lib/spark-examples-1.4.0-hadoop2.6.0.jar lib/spark-examples-1.4.0-hadoop2.6.0.jar localhost 9999</span><br><span class="line"></span><br><span class="line">✅ bin/spark-submit --class org.apache.spark.examples.streaming.NetworkWordCount --master &quot;local[*]&quot; --jars lib/spark-examples-1.4.0-hadoop2.6.0.jar lib/spark-examples-1.4.0-hadoop2.6.0.jar localhost 9999</span><br></pre></td></tr></table></figure>
+<p>cluster:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">🙅 bin/run-example org.apache.spark.examples.streaming.NetworkWordCount localhost 9999</span><br><span class="line"></span><br><span class="line">✅ bin/spark-submit --class org.apache.spark.examples.streaming.NetworkWordCount --master &quot;local[2]&quot;  lib/spark-examples-1.4.0-hadoop2.6.0.jar localhost 9999</span><br><span class="line"></span><br><span class="line">✅ bin/spark-submit --class org.apache.spark.examples.streaming.NetworkWordCount --master local\[2\] lib/spark-examples-1.4.0-hadoop2.6.0.jar localhost 9999</span><br><span class="line"></span><br><span class="line">✅ bin/spark-submit --class org.apache.spark.examples.streaming.NetworkWordCount --master &quot;local[*]&quot; lib/spark-examples-1.4.0-hadoop2.6.0.jar localhost 9999</span><br><span class="line"></span><br><span class="line">🙅 bin/spark-submit --class org.apache.spark.examples.streaming.NetworkWordCount --master spark://dp0652:7077 lib/spark-examples-1.4.0-hadoop2.6.0.jar localhost 9999</span><br></pre></td></tr></table></figure>
+<h2 id="Kafka-SparkStreamming">Kafka-SparkStreamming</h2><p>如果是本地IDEA运行, 分别启动zookeeper,kafka,然后运行KafkaWordCountProducer,KafkaWordCount.<br>下面是在集群中的运行步骤:  </p>
+<p>1.首先在kafka中创建一个topic:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0656 kafka]$ bin/kafka-topics.sh --zookeeper localhost:2181 --create --topic kafka-spark-test --replication-factor 2 --partitions 2</span><br><span class="line">Created topic &quot;kafka-spark-test&quot;.</span><br><span class="line">[qihuang.zheng@dp0656 kafka]$ bin/kafka-topics.sh --zookeeper localhost:2181 --list</span><br><span class="line">kafka-spark-test</span><br><span class="line">[qihuang.zheng@dp0656 kafka]$ bin/kafka-topics.sh --zookeeper localhost:2181 --describe kafka-spark-test</span><br><span class="line">Topic:kafka-spark-test	PartitionCount:2	ReplicationFactor:2	Configs:</span><br><span class="line">	Topic: kafka-spark-test	Partition: 0	Leader: 0	Replicas: 0,1	Isr: 0,1</span><br><span class="line">	Topic: kafka-spark-test	Partition: 1	Leader: 1	Replicas: 1,2	Isr: 1,2</span><br></pre></td></tr></table></figure>
+<p>2.运行kafka生产者模拟程序: 下面模拟了往kafka-spark-test队列中每秒发送2000个消息,每条消息的长度是70个数字.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 spark-1.4.0-bin-hadoop2.6]$ bin/spark-submit --class org.apache.spark.examples.streaming.KafkaWordCountProducer /home/qihuang.zheng/spark-intro.jar 192.168.6.55:9092,192.168.6.56:9092,192.168.6.57:9092 kafka-spark-test 2000 70</span><br><span class="line">Exception in thread &quot;main&quot; java.lang.NoClassDefFoundError: org/apache/kafka/clients/producer/KafkaProducer</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>这是因为我们打包的方式没有把依赖包放进来. 用依赖包的方式就可以正常地在控制台输出kafka的模拟消息:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 spark-1.4.0-bin-hadoop2.6]$ bin/spark-submit --class org.apache.spark.examples.streaming.KafkaWordCountProducer /home/qihuang.zheng/spark-intro-1.0-SNAPSHOT-jar-with-dependencies.jar 192.168.6.55:9092,192.168.6.56:9092,192.168.6.57:9092 kafka-spark-test 2000 70</span><br></pre></td></tr></table></figure>
+<p>3.运行KafkaWordCount实时流分析程序</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 spark-1.4.0-bin-hadoop2.6]$ bin/spark-submit --class org.apache.spark.examples.streaming.KafkaWordCount /home/qihuang.zheng/spark-intro-1.0-SNAPSHOT-jar-with-dependencies.jar 192.168.6.55:2181,192.168.6.56:2181,192.168.6.57:2181 my-consumer-group kafka-spark-test 5</span><br></pre></td></tr></table></figure>
+<p>报错: 没有找到Kafka-SparkStreamming的相关jar包,因为我们在pom.xml中把<code>spark-streaming-kafka_2.10-1.4.0</code>也设置为了provided  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Exception in thread &quot;main&quot; java.lang.NoClassDefFoundError: org/apache/spark/streaming/kafka/KafkaUtils$</span><br><span class="line">	at org.apache.spark.examples.streaming.KafkaWordCount$.main(KafkaWordCount.scala:59)</span><br><span class="line">	at org.apache.spark.examples.streaming.KafkaWordCount.main(KafkaWordCount.scala)</span><br></pre></td></tr></table></figure>
+<p>当然也可以把<code>spark-streaming-kafka_2.10-1.4.0</code>的scope去掉,然后重新编译. 不过还有一种办法:<br>下载<code>spark-streaming-kafka_2.10-1.4.0.jar</code>,在spark-submit中添加–jars选项把<code>spark-streaming-kafka_2.10-1.4.0.jar</code>加进来  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 spark-1.4.0-bin-hadoop2.6]$ bin/spark-submit --master spark://dp0652:7077 --class org.apache.spark.examples.streaming.KafkaWordCount --jars /home/qihuang.zheng/spark-streaming-kafka_2.10-1.4.0.jar /home/qihuang.zheng/spark-intro-1.0-SNAPSHOT-jar-with-dependencies.jar 192.168.6.55:2181,192.168.6.56:2181,192.168.6.57:2181 my-consumer-group kafka-spark-test 5</span><br></pre></td></tr></table></figure>
+<p>4.KafkaWordCount的输出日志:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">15/07/07 09:40:11 WARN BlockManager: Block input-0-1436233210800 replicated to only 0 peer(s) instead of 1 peers</span><br><span class="line">15/07/07 09:40:11 WARN BlockManager: Block input-0-1436233211000 replicated to only 0 peer(s) instead of 1 peers</span><br><span class="line">15/07/07 09:40:12 WARN BlockManager: Block input-0-1436233212000 replicated to only 0 peer(s) instead of 1 peers</span><br><span class="line">-------------------------------------------</span><br><span class="line">Time: 1436233212000 ms</span><br><span class="line">-------------------------------------------</span><br><span class="line">(4,139354)</span><br><span class="line">(8,140225)</span><br><span class="line">(6,140124)</span><br><span class="line">(0,140515)</span><br><span class="line">(2,139827)</span><br><span class="line">(7,140151)</span><br><span class="line">(5,139425)</span><br><span class="line">(9,140219)</span><br><span class="line">(3,140248)</span><br><span class="line">(1,139912)</span><br></pre></td></tr></table></figure>
+<p>5.Streaming-WebUI</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/ss2.png" alt></p>
+<p>因为每秒2000条消息,每隔2秒统计一次,所以每次job的输入大小InputSize大概为2000*2=4000</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/ss3.png" alt></p>
+<h2 id="关于打包">关于打包</h2><h3 id="IDEA打包">IDEA打包</h3><p>Project Structures | Artifacts | + | Jar | Empty | 填写jar包名称: spark-intro |<br>在Available Elements中选择项目名称下的’spark-intro’ compile output | 双击 | 就会到左侧的jar包下<br>Build | Build Artifacts | 选择刚刚填写的Artifact: spark-intro | Rebuild</p>
+<h3 id="Maven打包">Maven打包</h3><p>因为是maven工程, 所以可以在工程下直接mvn package. 但是注意如果不配置maven的插件.则不会把依赖包打进去.<br>如果要把依赖包添加进去, 则要添加<code>maven-assembly-plugin</code>插件:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&lt;plugin&gt;</span><br><span class="line">    &lt;artifactId&gt;maven-assembly-plugin&lt;/artifactId&gt;</span><br><span class="line">    &lt;configuration&gt;</span><br><span class="line">        &lt;descriptorRefs&gt;</span><br><span class="line">            &lt;descriptorRef&gt;jar-with-dependencies&lt;/descriptorRef&gt;</span><br><span class="line">        &lt;/descriptorRefs&gt;</span><br><span class="line">        &lt;archive&gt;</span><br><span class="line">            &lt;manifest&gt;</span><br><span class="line">                &lt;mainClass&gt;&lt;/mainClass&gt;</span><br><span class="line">            &lt;/manifest&gt;</span><br><span class="line">        &lt;/archive&gt;</span><br><span class="line">    &lt;/configuration&gt;</span><br><span class="line">    &lt;executions&gt;</span><br><span class="line">        &lt;execution&gt;</span><br><span class="line">            &lt;id&gt;make-assembly&lt;/id&gt;</span><br><span class="line">            &lt;phase&gt;package&lt;/phase&gt;</span><br><span class="line">            &lt;goals&gt;</span><br><span class="line">                &lt;goal&gt;single&lt;/goal&gt;</span><br><span class="line">            &lt;/goals&gt;</span><br><span class="line">        &lt;/execution&gt;</span><br><span class="line">    &lt;/executions&gt;</span><br><span class="line">&lt;/plugin&gt;</span><br></pre></td></tr></table></figure>
+<p>注意: 对于spark的相关jar依赖设置scope=provided</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.apache.spark&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spark-core_$&#123;scala.bin.version&#125;&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;$&#123;spark.version&#125;&lt;/version&gt;</span><br><span class="line">    &lt;scope&gt;provided&lt;/scope&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.apache.spark&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spark-streaming_$&#123;scala.bin.version&#125;&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;$&#123;spark.version&#125;&lt;/version&gt;</span><br><span class="line">    &lt;scope&gt;provided&lt;/scope&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>然后在工程的根目录执行<code>mvn package</code>, 编译成功后会在target下生成2个文件.一个是有依赖的,一个是没有任何依赖的.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">➜  spark-intro git:(master) ✗ ll target</span><br><span class="line">-rw-r--r--   1 zhengqh  staff    16M  7  7 09:22 spark-intro-1.0-SNAPSHOT-jar-with-dependencies.jar</span><br><span class="line">-rw-r--r--   1 zhengqh  staff   466K  7  7 09:22 spark-intro-1.0-SNAPSHOT.jar</span><br></pre></td></tr></table></figure>
+<p>我们把有依赖的jar包拷贝到spark集群中运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">➜  target git:(master) ✗ scp spark-intro-1.0-SNAPSHOT-jar-with-dependencies.jar qihuang.zheng@192.168.6.52:~/</span><br></pre></td></tr></table></figure>
+<h2 id="Kafka-SparkStreamming-Redis">Kafka-SparkStreamming-Redis</h2><p>在192.168.6.52上启动redis, 注意要以后台方式启动, 并且用admin用户, 否则shutdown时会报错:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/install/redis-3.0.2</span><br><span class="line">sudo -u admin src/redis-server &amp;</span><br></pre></td></tr></table></figure>
+<p>启动kafka生产者模拟程序</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin/spark-submit --class com.tongdun.bigdata.spark.intro.KafkaEventProducer /home/qihuang.zheng/spark-intro-1.0-SNAPSHOT-jar-with-dependencies.jar 192.168.6.55:9092,192.168.6.56:9092,192.168.6.57:9092</span><br></pre></td></tr></table></figure>
+<p>启动用户点击次数实时流统计,最终写到Redis中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">bin/spark-submit --master spark://dp0652:7077 --class com.tongdun.bigdata.spark.intro.UserClickCountAnalytics --jars /home/qihuang.zheng/spark-streaming-kafka_2.10-1.4.0.jar /home/qihuang.zheng/spark-intro-1.0-SNAPSHOT-jar-with-dependencies.jar spark://dp0652:7077 192.168.6.55:9092,192.168.6.56:9092,192.168.6.57:9092</span><br><span class="line"></span><br><span class="line">bin/spark-submit --master spark://dp0652:7077 --class com.tongdun.bigdata.spark.intro.UserClickCountAnalytics2 --jars /home/qihuang.zheng/spark-streaming-kafka_2.10-1.4.0.jar /home/qihuang.zheng/spark-intro-1.0-SNAPSHOT-jar-with-dependencies.jar spark://dp0652:7077 user_events 192.168.6.55:9092,192.168.6.56:9092,192.168.6.57:9092 192.168.6.52</span><br></pre></td></tr></table></figure>
+<p>使用客户端在本机中验证数据:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">src/redis-cli -h 192.168.6.52</span><br><span class="line">192.168.6.52:6379&gt; select 1</span><br><span class="line">192.168.6.52:6379[1]&gt; HGETALL app::users::click</span><br><span class="line"> 1) &quot;d7f141563005d1b5d0d3dd30138f3f62&quot;</span><br><span class="line"> 2) &quot;1891&quot;</span><br><span class="line"> 3) &quot;97edfc08311c70143401745a03a50706&quot;</span><br><span class="line"> 4) &quot;1814&quot;</span><br><span class="line"> 5) &quot;4A4D769EB9679C054DE81B973ED5D768&quot;</span><br><span class="line"> 6) &quot;1845&quot;</span><br><span class="line"> 7) &quot;a95f22eabc4fd4b580c011a3161a9d9d&quot;</span><br><span class="line"> 8) &quot;1835&quot;</span><br><span class="line"> 9) &quot;8dfeb5aaafc027d89349ac9a20b3930f&quot;</span><br><span class="line">10) &quot;1821&quot;</span><br><span class="line">11) &quot;6b67c8c700427dee7552f81f3228c927&quot;</span><br><span class="line">12) &quot;1842&quot;</span><br><span class="line">13) &quot;011BBF43B89BFBF266C865DF0397AA71&quot;</span><br><span class="line">14) &quot;1819&quot;</span><br><span class="line">15) &quot;f2a8474bf7bd94f0aabbd4cdd2c06dcf&quot;</span><br><span class="line">16) &quot;1909&quot;</span><br><span class="line">17) &quot;c8ee90aade1671a21336c721512b817a&quot;</span><br><span class="line">18) &quot;1843&quot;</span><br><span class="line">19) &quot;068b746ed4620d25e26055a9f804385f&quot;</span><br><span class="line">20) &quot;1955&quot;</span><br></pre></td></tr></table></figure>
+<p>假设我们同时启动了两个UserClickCountAnalytics进程, 则第二个会进入等待状态. 只有当第一个进程杀掉后, 第二个进程才会开始运行.  </p>
+<p>下图是处于等待的进程,除了InputRate有图像,其他三个都没有</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/ss4.png" alt></p>
+<p>可以看到status为queued</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/ss5.png" alt></p>
+<p>在等待进程的那个终端也可以看到如下输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[Stage 0:&gt;                                                          (0 + 0) / 2]15/07/07 12:05:25 WARN TaskSchedulerImpl: Initial job has not accepted any resources; check your cluster UI to ensure that workers are registered and have sufficient resources</span><br><span class="line">15/07/07 12:05:40 WARN TaskSchedulerImpl: Initial job has not accepted any resources; check your cluster UI to ensure that workers are registered and have sufficient resources</span><br><span class="line">15/07/07 12:05:55 WARN TaskSchedulerImpl: Initial job has not accepted any resources; check your cluster UI to ensure that workers are registered and have sufficient resources</span><br></pre></td></tr></table></figure>
+<p>第一个正在运行的进程</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/ss6.png" alt></p>
+<p>当我们把正在运行的杀掉, 这时候等待运行的就会接着执行</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/ss7.png" alt></p>
+<h2 id="SparkHA-Streamming">SparkHA-Streamming</h2><p>如果线上的SparkStreamming程序一直在运行, 而Master发生了切换, 验证下SparkStreamming还能不能正常运行.<br>这个实验的基础是在Spark-Streamming这一节的基础上.  </p>
+<p>还是先启动KafkaProducer[在52上]</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 spark-1.4.0-bin-hadoop2.6]$ bin/spark-submit --class org.apache.spark.examples.streaming.KafkaWordCountProducer /home/qihuang.zheng/spark-intro-1.0-SNAPSHOT-jar-with-dependencies.jar 192.168.6.55:9092,192.168.6.56:9092,192.168.6.57:9092 kafka-spark-test 2000 70</span><br></pre></td></tr></table></figure>
+<p>然后启动Spark-Streamming程序[也在52上], 注意–master的值  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 spark-1.4.0-bin-hadoop2.6]$ bin/spark-submit --master spark://dp0652:7077,dp0653:7077 --class org.apache.spark.examples.streaming.KafkaWordCount --jars /home/qihuang.zheng/spark-streaming-kafka_2.10-1.4.0.jar /home/qihuang.zheng/spark-intro-1.0-SNAPSHOT-jar-with-dependencies.jar 192.168.6.55:2181,192.168.6.56:2181,192.168.6.57:2181 my-consumer-group kafka-spark-test 5</span><br></pre></td></tr></table></figure>
+<p>当前的master是53,我们把53的停掉: <code>sbin/stop-master.sh</code></p>
+<p>可以发现Spark-Streamming的程序并没有受到影响.  也就是说master的变化并不会影响driver程序.<br><strong>只要你的driver指定–master为HA,而不是单点!</strong>  </p>
+<blockquote>
+<p>如果Driver程序比如spark-streamming程序挂掉了怎么办(比如要升级应用程序),那么再起一个streamming程序,这个程序会一直被阻塞住<br>直到旧的程序关掉了, 新的streamming程序就会立马接管过来.  这在<a href="http://zqhxuyuan.github.io/2015/06/28/Spark-Streamming/" target="_blank" rel="noopener">http://zqhxuyuan.github.io/2015/06/28/Spark-Streamming/</a>中已经做过了  </p>
+</blockquote>
+<p>注意: 不管是dp0652还是dp0653,都无法看到正在运行中的SparkStreamming程序.<br>SparkStreamming程序类似于Driver, 你在那台机器执行,就再这台机器的4040端口查看.<br>比如上面的实验,我们在dp0652上运行了Spark-Streamming程序, 所以在<a href="http://192.168.6.52:4040/streaming/" target="_blank" rel="noopener">http://192.168.6.52:4040/streaming/</a>查看StreamingUI<br>至于Master的8082端口,则只有主master才可以看到worker, 但是都看不到Running Applications</p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/spark9.png" alt="spark-master"></p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/spark10.png" alt="spark-stream"></p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/07/06/2015-07-06-Spark-Streamming/">Spark Stramming入门</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年07月06日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/07/06/2015-07-06-Spark-Streamming/" title="Spark Stramming入门">http://github.com/zqhxuyuan/2015/07/06/2015-07-06-Spark-Streamming/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/07/06/2015-07-06-Spark-Streamming/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/07/07/2015-07-07-Spark-on-YARN/">
+        Spark on YARN
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/06/20/2015-06-20-Apache-Spark/">
+        Apache Spark入门
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#NetworkWordCount"><span class="toc-number">1.</span> <span class="toc-text">NetworkWordCount</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kafka-SparkStreamming"><span class="toc-number">2.</span> <span class="toc-text">Kafka-SparkStreamming</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#关于打包"><span class="toc-number">3.</span> <span class="toc-text">关于打包</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#IDEA打包"><span class="toc-number">3.1.</span> <span class="toc-text">IDEA打包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Maven打包"><span class="toc-number">3.2.</span> <span class="toc-text">Maven打包</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kafka-SparkStreamming-Redis"><span class="toc-number">4.</span> <span class="toc-text">Kafka-SparkStreamming-Redis</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SparkHA-Streamming"><span class="toc-number">5.</span> <span class="toc-text">SparkHA-Streamming</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/07/06/2015-07-06-Spark-Streamming/" data-title="Spark Stramming入门" data-url="http://github.com/zqhxuyuan/2015/07/06/2015-07-06-Spark-Streamming/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/07/07/2015-07-07-Spark-on-YARN/" title="上一篇: Spark on YARN">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/06/20/2015-06-20-Apache-Spark/" title="下一篇: Apache Spark入门">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

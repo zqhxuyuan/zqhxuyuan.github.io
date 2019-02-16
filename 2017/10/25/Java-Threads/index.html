@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>图解Java多线程 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="图解Java多线程笔记：http://tutorials.jenkov.com/java-concurrency/java-memory-model.html">
+<meta name="keywords" content="java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="图解Java多线程">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2017/10/25/Java-Threads/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="图解Java多线程笔记：http://tutorials.jenkov.com/java-concurrency/java-memory-model.html">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223259352">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223319776">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223335612">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223349934">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223405659">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223425575">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223439855">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223505856">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223526228">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223540422">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223553349">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223606644">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223619840">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223635898">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223648548">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223702928">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223715760">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223729652">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223744977">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223805363">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223821970">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223835313">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223847929">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223900285">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223915171">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223931103">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223943618">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223957776">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025224010374">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.333Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="图解Java多线程">
+<meta name="twitter:description" content="图解Java多线程笔记：http://tutorials.jenkov.com/java-concurrency/java-memory-model.html">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223259352">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Java-Threads" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2017/10/25/Java-Threads/" class="article-date">
+  	<time datetime="2017-10-24T16:00:00.000Z" itemprop="datePublished">2017-10-25</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      图解Java多线程
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/java/">java</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/">java</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>图解Java多线程笔记：<a href="http://tutorials.jenkov.com/java-concurrency/java-memory-model.html" target="_blank" rel="noopener">http://tutorials.jenkov.com/java-concurrency/java-memory-model.html</a><br><a id="more"></a></p>
+<p>Java内存模型（JMM）定义了：how and when <strong>different threads</strong> can see<br>values written to <strong>shared variables</strong> by other threads,<br>and how to <strong>synchronize access</strong> to shared variables when necessary.</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223259352" alt="1"></p>
+<p>Java堆和栈中的对象存储位置：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223319776" alt="2"></p>
+<p>Java内存模型与硬件模型：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223335612" alt="3"></p>
+<p>线程读取主内存的数据到CPU缓冲中，当数据放在不同位置时，会有两个问题：可见性与静态条件</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223349934" alt="4"></p>
+<p>A synchronized block in Java is synchronized on some object.<br>All synchronized blocks synchronized on the same object can only<br>have one thread executing inside them at the same time.<br>All other threads attempting to enter the synchronized block are blocked<br>until the thread inside the synchronized block exits the block.</p>
+<p>The synchronized keyword can be used to mark four different types of blocks:</p>
+<ol>
+<li>Instance methods -&gt; on the instance (object) owning the method</li>
+<li>Static methods -&gt; on the class object of the class belongs to …</li>
+<li>Code blocks inside instance methods</li>
+<li>Code blocks inside static methods</li>
+</ol>
+<p>Synchronized Instance methods（实例方法的同步）：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223405659" alt="5"></p>
+<p>静态方法的同步：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223425575" alt="6"></p>
+<p>代码块的同步：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223439855" alt="7"></p>
+<p>用jstack查看，同一个监视器对象只允许有一个线程访问：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223505856" alt="d"></p>
+<p>实例方法的同步加上代码块this的同步，仍然针对同一个实例对象：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223526228" alt="e"></p>
+<p>自定义监视器对象：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223540422" alt="f"></p>
+<p>同一个实例对象的加锁：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223553349" alt="g"></p>
+<p>不同实例对象的加锁：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223606644" alt="17"></p>
+<p>Volatile keyword guarantees visibility of changes to variables across threads.</p>
+<blockquote>
+<p>every read of a volatile variable will be<br>read from the computer’s main memory,<br>and not from the CPU cache.</p>
+</blockquote>
+<blockquote>
+<p>every write to a volatile variable will be<br>written to main memory,<br>and not just to the CPU cache.</p>
+</blockquote>
+<p>If Thread A writes to a volatile variable and Thread B subsequently reads the same volatile variable, then all variables visible to Thread A before writing the volatile variable, will also be visible to Thread B after it has read the volatile variable. </p>
+<p>The reading and writing instructions of volatile variables cannot be reordered by the JVM. Instructions before and after can be reordered, but the volatile read or write cannot be mixed with these instructions. Whatever instructions follow a read or write of a volatile variable are guaranteed to happen after the read or write.</p>
+<p>volatile变量不保证事务：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223619840" alt="56"></p>
+<p>volatile变量仍然会存在竞态条件：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223635898" alt="27"></p>
+<p>volatile变量会禁止重排序：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223648548" alt="49"></p>
+<p>如果变量在volatile变量更新之后，不保证写到主存：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223702928" alt="11"></p>
+<p>为了保证可见性，不需要为每个变量都定义为volatile类型：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223715760" alt="36"></p>
+<p>volatile变量是个内存屏障，在这之前和之后的指令可以重排序：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223729652" alt="56"></p>
+<p>本地线程的示例：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223744977" alt="15"></p>
+<p>下面的上图没有使用本地线程，下图使用了本地线程：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223805363" alt="29"></p>
+<p>线程的信号量实现方式–busy waiting：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223821970" alt="53"></p>
+<p>或者可以用volatile变量：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223835313" alt="16"></p>
+<p>wait和notify的示例：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223847929" alt="34"></p>
+<p>notify与notifyAll的示例：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223900285" alt="51"></p>
+<p>等待线程有可能意外被唤醒，需要用while循环继续判断是否被唤醒线程notify：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223915171" alt="05"></p>
+<p>一次唤醒所有线程，或者每次一个个地唤醒：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223931103" alt="21"></p>
+<p>不同线程之间采用字符串作为监视器锁，会唤醒别的线程：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223943618" alt="43"></p>
+<p>不同线程之间的信号没有共享，等待线程被唤醒后继续进入wait状态：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025223957776" alt="03"></p>
+<p>不同线程的等待与唤醒示例：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171025224010374" alt="18"></p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2017/10/25/Java-Threads/">图解Java多线程</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2017年10月25日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2017/10/25/Java-Threads/" title="图解Java多线程">http://github.com/zqhxuyuan/2017/10/25/Java-Threads/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2017/10/25/Java-Threads/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2017/12/31/Kafka-Book-Appendix/">
+        Kafka技术内幕附录
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2017/10/22/BookNote-DDIA/">
+        读书笔记-Design Data Intensive Applications
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2017/10/25/Java-Threads/" data-title="图解Java多线程" data-url="http://github.com/zqhxuyuan/2017/10/25/Java-Threads/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2017/12/31/Kafka-Book-Appendix/" title="上一篇: Kafka技术内幕附录">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2017/10/22/BookNote-DDIA/" title="下一篇: 读书笔记-Design Data Intensive Applications">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

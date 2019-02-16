@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>StreamCQL源码阅读(4) 应用程序执行 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="StreamCQL应用程序执行流程">
+<meta name="keywords" content="storm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="StreamCQL源码阅读(4) 应用程序执行">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/11/29/2015-11-29-StreamCQL-application/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="StreamCQL应用程序执行流程">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151130093405880">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151201165952194">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151130172800418">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.197Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="StreamCQL源码阅读(4) 应用程序执行">
+<meta name="twitter:description" content="StreamCQL应用程序执行流程">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151130093405880">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-11-29-StreamCQL-application" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/11/29/2015-11-29-StreamCQL-application/" class="article-date">
+  	<time datetime="2015-11-28T16:00:00.000Z" itemprop="datePublished">2015-11-29</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      StreamCQL源码阅读(4) 应用程序执行
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Source/">Source</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/storm/">storm</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>StreamCQL应用程序执行流程</p>
+<a id="more"></a>
+<h2 id="前戏:_CQL代码结构">前戏: CQL代码结构</h2><p>之前我们并没有梳理CQL部分的代码结构, 在分析了差不多的代码之后, 来看看每个部分都一一对应:  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151130093405880" alt="cql"></p>
+<p>还没有涉及的包括: PhysicalPlan,物理计划/逻辑计划优化器,executors执行器.    </p>
+<h2 id="正文:_submitApplication">正文: submitApplication</h2><p>历经千辛万苦, 终于回到SubmitTask的submitApplication, 创建物理计划Executor,并执行Application.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">submitApplication</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">new</span> PhysicalPlanExecutor().execute(context.getApp());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="api-Application_-&gt;_application-Application">api.Application -&gt; application.Application</h3><p>api的Application是流处理执行计划应用程序, 封装的是CQL语句构建而成的应用程序:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Application</span> </span>&#123;                      </span><br><span class="line">    <span class="keyword">private</span> String applicationId = <span class="keyword">null</span>;                    <span class="comment">//应用id</span></span><br><span class="line">    <span class="keyword">private</span> String applicationName = <span class="keyword">null</span>;                  <span class="comment">//应用名称</span></span><br><span class="line">    <span class="keyword">private</span> TreeMap&lt;String, String&gt; confs;                  <span class="comment">//整个应用程序中用到的配置属性,也包含用户自定义的配置属性</span></span><br><span class="line">    <span class="keyword">private</span> String[] userFiles;                             <span class="comment">//用户自定义添加的一些文件</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;UserFunction&gt; userFunctions;               <span class="comment">//用户自定义的函数,udf和udaf都在这个里面</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;Schema&gt; schemas = <span class="keyword">new</span> ArrayList&lt;Schema&gt;(); <span class="comment">//执行计划中的所有的schema</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;Operator&gt; operators = <span class="keyword">null</span>;                <span class="comment">//执行计划中所有的操作,包含输入、输出和计算操作      </span></span><br><span class="line">    <span class="keyword">private</span> List&lt;OperatorTransition&gt; opTransition = <span class="keyword">null</span>;   <span class="comment">//整个执行计划中所有的连接线，定义了operator之间的连接关系</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>还记得上一篇中在buildApplication时,由SplitContext拆分算子,组合算子会把operators和transitions都设置到Application里吗?  </p>
+</blockquote>
+<p>application.Application针对Schema和Operator采用Manager管理类(实际上底层的存储结构都是Map)来操作:  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Application</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String appName;                 <span class="comment">//应用程序名称</span></span><br><span class="line">    <span class="keyword">private</span> EventTypeMng streamSchema;      <span class="comment">//所有Schema集合</span></span><br><span class="line">    <span class="keyword">private</span> OperatorMng operatorManager;    <span class="comment">//算子集合</span></span><br><span class="line">    <span class="keyword">private</span> StreamingConfig conf;           <span class="comment">//系统级别的配置属性</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Application在<code>API</code>和<code>物理计划</code>是不同的对象, 同样API阶段的<code>Operator</code>在物理计划中对应的是<code>IRichOperator</code>.  </p>
+<h4 id="IRichOperator">IRichOperator</h4><p>OperatorMng管理的算子包括输入算子(addInputStream),输出算子(addOutputStream),功能算子(addFunctionStream).  </p>
+<blockquote>
+<p>虽然两个Operator处于不同的阶段, 但是总的来说都可以分为输入,输出和Function.  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">① application ⬇️                                            ② api ⬇️</span><br><span class="line">IRichOperator (com.huawei.streaming.operator)               Operator (com.huawei.streaming.api.opereators)</span><br><span class="line">    |-- AbsOperator                                             |-- FunctionStreamOperator</span><br><span class="line">        |-- FunctionOperator                                    |-- InnerOutputSourceOperator      </span><br><span class="line">            |-- JoinFunctionOp                                  |-- SplitterOperator</span><br><span class="line">                |-- DataSourceFunctionOp                        |-- OutputStreamOperator</span><br><span class="line">            |-- AggFunctionOp                                   |-- InputStreamOperator</span><br><span class="line">            |-- SplitOp                                         |-- InnerInputSourceOperator</span><br><span class="line">            |-- UnionFunctionOp                                 |-- InnerFunctionOperator</span><br><span class="line">            |-- SelfJoinFunctionOp                                      |-- FunctorOperator</span><br><span class="line">            |-- FunctorOp                                               |-- UnionOperator</span><br><span class="line">            |-- FilterFunctionOp                                        |-- FilterOperator</span><br><span class="line">        |-- OutputOperator                                              |-- BasicAggFunctionOperator</span><br><span class="line">        |-- FunctionStreamOperator                                              |-- JoinFunctionOperator</span><br><span class="line">        |-- InputOperator                                                       |-- AggregateOperator</span><br><span class="line">                                                                                |-- BaseDataSourceOperator</span><br></pre></td></tr></table></figure>
+<p><code>IRichOperator流处理算子</code>基本接口: 所有的流处理相关的算子实现，都来源于这个算子, 所有的外部Storm实现均依赖于这个接口  </p>
+<p>正常的CQL insert语句只有一个输出,所以在前面的SplitContext中会有一个outputStreamName和一系列的operators和transitions.<br>但是这里对于IRichOperator流算子, 它是构成Storm的Topology组件,就必须考虑算子之间数据的流动,一个Bolt可能有多个输入和输出.    </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151201165952194" alt="stream_inout"></p>
+<blockquote>
+<p>对于一个算子而言,输入数据可以有多个.但是输出是只有一个! 这就好比最终的select只会有一个输出schema: select输出的数据作为算子的输出.<br>所以IRichOperator的输入getInputStream和getInputSchema都是集合, 而输出的getOutputStream和getOutputSchema都是单一的.<br>Update: 输入输出这里其实看流，反正是一个流一个名称。都是允许多输入多输出的。一个算子就是一个流，一个算子的多个实例都属于一个流。  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">IRichOperator</span> <span class="keyword">extends</span> <span class="title">IOperator</span>, <span class="title">Configurable</span></span>&#123;     <span class="comment">//① 流处理算子基本接口</span></span><br><span class="line">    <span class="function">String <span class="title">getOperatorId</span><span class="params">()</span></span>;                     <span class="comment">//获取算子id</span></span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">getParallelNumber</span><span class="params">()</span></span>;                    <span class="comment">//获取算子并发度</span></span><br><span class="line">    <span class="function">List&lt;String&gt; <span class="title">getInputStream</span><span class="params">()</span></span>;              <span class="comment">//获取输入流名称, 多个输入流</span></span><br><span class="line">    <span class="function">String <span class="title">getOutputStream</span><span class="params">()</span></span>;                   <span class="comment">//获取输出流名称</span></span><br><span class="line">    <span class="function">Map&lt;String, IEventType&gt; <span class="title">getInputSchema</span><span class="params">()</span></span>;   <span class="comment">//获取输入schema  ⬅️ &lt;key是输入流名称,IEventType是输入流的Schema&gt;</span></span><br><span class="line">    <span class="function">IEventType <span class="title">getOutputSchema</span><span class="params">()</span></span>;               <span class="comment">//获取输出schema  ⬅️ </span></span><br><span class="line">    <span class="function">Map&lt;String, GroupInfo&gt; <span class="title">getGroupInfo</span><span class="params">()</span></span>;      <span class="comment">//获取分组信息</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Operator</span> </span>&#123;                         <span class="comment">// ② 每个计算单元成为一个Operator,定义了各类操作.分为Source和InnerFunction</span></span><br><span class="line">    <span class="keyword">private</span> String id;                          <span class="comment">//算子ID</span></span><br><span class="line">    <span class="keyword">private</span> String name;                        <span class="comment">//算子名称</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> parallelNumber;                 <span class="comment">//并行度</span></span><br><span class="line">    <span class="keyword">private</span> TreeMap&lt;String, String&gt; args;       <span class="comment">//每个operator的参数</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OperatorTransition</span> </span>&#123;               <span class="comment">// ③ 各种Operator的连接关系,定义了从一个operator到另外一个operator的连接</span></span><br><span class="line">    <span class="keyword">private</span> String id;                          <span class="comment">//当前连接的id</span></span><br><span class="line">    <span class="keyword">private</span> String streamName;                  <span class="comment">//流名称</span></span><br><span class="line">    <span class="keyword">private</span> String fromOperatorId;              <span class="comment">//发起连接的Operator id</span></span><br><span class="line">    <span class="keyword">private</span> String toOperatorId;                <span class="comment">//接收连接的Operator id</span></span><br><span class="line">    <span class="keyword">private</span> DistributeType distributedType;     <span class="comment">//数据获取类型,仅仅在非sourceOperator中存在</span></span><br><span class="line">    <span class="keyword">private</span> String distributedFields;           <span class="comment">//数据分发字段, 仅在distributedType为field的时候生效</span></span><br><span class="line">    <span class="keyword">private</span> String schemaName;                  <span class="comment">//流上进行数据传输的时候的schema名称</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>还记得上一章在创建Transition时会指定分组字段和分组策略吗? 和这里的GroupBy应该是会有点血缘关系的. 当然算子还少不了输入输出Schema.   </p>
+</blockquote>
+<h4 id="PhysicalPlanExecutor_-&gt;_ExecutorPlanGenerator">PhysicalPlanExecutor -&gt; ExecutorPlanGenerator</h4><p>PhysicalPlanExecutor.execute传入的是API的Application, 而submit(app)的app是application.Application.<br>怎么转换: 通过ExecutorPlanGenerator物理计划生成器生成可执行的计划. 可执行指的是可以运行在Storm引擎.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Application apiApplication)</span> </span>&#123;</span><br><span class="line">    LOG.info(<span class="string">"start to execute application &#123;&#125;"</span>, apiApplication.getApplicationId());        </span><br><span class="line">    parseUserDefineds(apiApplication, isStartFromDriver);   <span class="comment">//① 准备工作</span></span><br><span class="line">    com.huawei.streaming.application.Application app = generatorPlan(apiApplication);   <span class="comment">// ⬅️ API.App-&gt;application.App</span></span><br><span class="line">    submit(app);                    <span class="comment">//④ 提交Application</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//由物理执行计划api.Application生成可执行计划application.Application(最终生成的，可以提交的应用程序)</span></span><br><span class="line"><span class="keyword">private</span> com.huawei.streaming.application.<span class="function">Application <span class="title">generatorPlan</span><span class="params">(Application apiApplication)</span> </span>&#123;</span><br><span class="line">    preExecute(apiApplication);     <span class="comment">//执行器执行之前的钩子</span></span><br><span class="line">    <span class="keyword">new</span> PhysicPlanChecker().check(apiApplication);</span><br><span class="line">    <span class="comment">//② 用户自定义的处理: 执行计划的组装, 构建application, 表达式的解析被延迟到这里来实现</span></span><br><span class="line">    com.huawei.streaming.application.Application app = generator.generate(apiApplication);  </span><br><span class="line">    preSubmit(app);                 <span class="comment">//提交执行计划之前的钩子</span></span><br><span class="line">    executorChecker.check(app);     <span class="comment">//③ 执行计划检查</span></span><br><span class="line">    <span class="keyword">return</span> app;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>①准备工作<code>parseUserDefineds</code>: 注册jar包,注册函数,打包等(类似storm中需要上传jar包).    </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">2015-11-25 02:32:24 | INFO  | [main] | 👉 start to execute application example | com.huawei.streaming.cql.executor.PhysicalPlanExecutor (PhysicalPlanExecutor.java:127)</span><br><span class="line">2015-11-25 02:32:25 | INFO  | [main] | start to unzip jar stream-storm-1.0-jar-with-dependencies.jar | com.huawei.streaming.cql.executor.mergeuserdefinds.JarExpander (JarExpander.java:79)</span><br><span class="line">2015-11-25 02:32:25 | INFO  | [main] | unzip jar /private/var/folders/xc/x0b8crk9667ddh1zhfs29_zr0000gn/T/da6d53114b1f49458c0e6329553b1ff9/stream-storm-1.0-jar-with-dependencies.jar to /private/var/folders/xc/x0b8crk9667ddh1zhfs29_zr0000gn/T/da6d53114b1f49458c0e6329553b1ff9/jartmp | com.huawei.streaming.cql.executor.mergeuserdefinds.JarExpander (JarExpander.java:91)</span><br><span class="line">2015-11-25 02:32:30 | INFO  | [main] | finished to unzip jar to dir | com.huawei.streaming.cql.executor.mergeuserdefinds.JarExpander (JarExpander.java:84)</span><br><span class="line">2015-11-25 02:32:30 | INFO  | [main] | start to copy ch | com.huawei.streaming.cql.executor.mergeuserdefinds.JarFilesMerger (JarFilesMerger.java:82)</span><br><span class="line">...</span><br><span class="line">2015-11-25 02:32:38 | INFO  | [main] | finished to package jar | com.huawei.streaming.cql.executor.mergeuserdefinds.JarPacker (JarPacker.java:68)</span><br><span class="line"></span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | 👉 start to generator executor application for app example | com.huawei.streaming.cql.executor.ExecutorPlanGenerator (ExecutorPlanGenerator.java:102)</span><br></pre></td></tr></table></figure>
+<p>生成的可执行计划会: ①设置系统配置参数, 解析Application中的②<code>Schema</code>和③<code>Operators</code>, 最终返回的是可执行的Application.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> com.huawei.streaming.application.<span class="function">Application <span class="title">generate</span><span class="params">(Application vap)</span> </span>&#123;</span><br><span class="line">    LOG.info(<span class="string">"start to generator executor application for app "</span> + vap.getApplicationId());</span><br><span class="line">    apiApplication = vap;           <span class="comment">//这个是API的Application</span></span><br><span class="line">    createEmptyApplication(vap.getApplicationId());</span><br><span class="line">    parseUserDefineds(vap);         <span class="comment">//① 用户自定义的处理(系统配置参数)</span></span><br><span class="line">    parseSchemas();                 <span class="comment">//② 解析所有的Schema，构建schema信息</span></span><br><span class="line">    parseOperators();               <span class="comment">//③ 解析所有的Operator,构建OperatorInfo. 整理Operator中的上下级关系</span></span><br><span class="line">    <span class="keyword">return</span> executorApp;             <span class="comment">//返回的是可执行的Application</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="parseSchemas:_Schema_-&gt;_TupleEventType">parseSchemas: Schema -&gt; TupleEventType</h3><p>在第一篇中Topology的CQL语句:  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">INPUT</span> STREAM s(<span class="keyword">id</span> <span class="built_in">INT</span>, <span class="keyword">name</span> <span class="keyword">STRING</span>, <span class="keyword">type</span> <span class="built_in">INT</span>) <span class="keyword">SOURCE</span> randomgen PROPERTIES ( timeUnit = <span class="string">"SECONDS"</span>, <span class="keyword">period</span> = <span class="string">"1"</span>, eventNumPerperiod = <span class="string">"1"</span>, isSchedule = <span class="string">"true"</span> );</span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">OUTPUT</span> STREAM rs(<span class="keyword">type</span> <span class="built_in">INT</span>, cc <span class="built_in">INT</span>) SINK consoleOutput;</span><br><span class="line"></span><br><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> STREAM rs               <span class="comment">#INSERT STATEMENT</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="keyword">type</span>, <span class="keyword">COUNT</span>(<span class="keyword">id</span>) <span class="keyword">as</span> cc        <span class="comment">#SELECT STATEMENT      </span></span><br><span class="line"><span class="keyword">FROM</span> s[<span class="keyword">RANGE</span> <span class="number">20</span> <span class="keyword">SECONDS</span> BATCH]      <span class="comment">#FROM CLAUSE</span></span><br><span class="line"><span class="keyword">WHERE</span> <span class="keyword">id</span> &gt; <span class="number">5</span> <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="keyword">type</span>;         <span class="comment">#WHERE CLAUSE/GROUPBY CLAUSE</span></span><br></pre></td></tr></table></figure>
+<p>上面有两个流,分别是输入流s, 输出流rs. 因此会将这两个Schema添加到可执行Application中.       </p>
+<blockquote>
+<p>对于输入输出而言,最重要的就是Schema了, 在输入和输出这一对双胞胎眼中,数据进来和出去的格式非常重要.<br>因为外部数据进来,和暴露数据给外部,最重要的是格式. 你中间不管怎么处理,它们都不管. Only Schema! Give Me the Data!  </p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2015-11-25 02:32:39 | INFO  | [main] | AddEventType enter, the eventtypeName is:s. | com.huawei.streaming.event.EventTypeMng (EventTypeMng.java:73)</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | AddEventType enter, the eventtypeName is:rs. | com.huawei.streaming.event.EventTypeMng (EventTypeMng.java:73)</span><br></pre></td></tr></table></figure>
+<p>parseSchemaToIEvent会将API的Application中所有的Schema都转换为IEvent事件:TupleEventType.<br>Schema中的Column对应TupleEventType的Attribute. Schema的streamName/id对应了下面的name/事件类型.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TupleEventType</span> <span class="keyword">implements</span> <span class="title">IEventType</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;                                <span class="comment">//schemaName,表名</span></span><br><span class="line">    <span class="keyword">private</span> Attribute[] schema;                         <span class="comment">//schemas, 所有列</span></span><br><span class="line">    <span class="keyword">private</span> String[] attNames;                          <span class="comment">//所有列的列名</span></span><br><span class="line">    <span class="keyword">private</span> Class&lt; ? &gt;[] attTypes;                      <span class="comment">//所有列的列类型</span></span><br><span class="line">    <span class="keyword">private</span> HashMap&lt;String, Integer&gt; attid;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Schema的管理类用Map结构保存schemaName/eventTypeName和对应的Schema/TupleEventType: 表名-&gt;表结构.   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EventTypeMng</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Map&lt;String, IEventType&gt; schemas;            <span class="comment">//MAP: 数据类型名称 =&gt; 具体数据类型</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addEventType</span><span class="params">(IEventType schema)</span> </span>&#123;       <span class="comment">//⬅️ executorApp.addEventSchema(tupleEventType)</span></span><br><span class="line">        schemas.put(schema.getEventTypeName(), schema); <span class="comment">//数据类型|事件类型|表名schemaName|streamName流名称</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="parseOperators:_算子解析">parseOperators: 算子解析</h3><blockquote>
+<p>前面第一篇的时候submit之前每条CQL语句都有start to parse cql过一次了,这里为什么还会再次parse?<br>答: 前面只是LazyTask懒解析,其实还是没有开始的. 那为什么要在这里才开始? 因为解析完schema后, 就该轮到operator的解析了.<br>不过有一点不同的是, 最开始的parse是对整个CQL语句, 这里只解析了部分, 比如表达式,groupby,聚合.  <code>WHYYY?</code></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">解析算子: 1)解析二元表达式(属性值表达式) id &gt; 5</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | start to parse cql : (s.id &gt; 5) | com.huawei.streaming.cql.semanticanalyzer.parser.ApplicationParser (ApplicationParser.java:44)</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | Parse Completed | com.huawei.streaming.cql.semanticanalyzer.parser.ApplicationParser (ApplicationParser.java:69)</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | start to create binary Expressions. | com.huawei.streaming.cql.executor.expressioncreater.PropertyValueExpressionCreator (BinaryExpressionCreator.java:54)  ⬅️</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | Parse Completed, cql : s.type,  count( s.id )  | com.huawei.streaming.cql.semanticanalyzer.parser.SelectClauseParser (SelectClauseParser.java:68)</span><br><span class="line"></span><br><span class="line">2)解析 group by</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | start to parse cql : s.type | com.huawei.streaming.cql.semanticanalyzer.parser.GroupbyClauseParser (GroupbyClauseParser.java:45)   ⬅️</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | Parse Completed | com.huawei.streaming.cql.semanticanalyzer.parser.GroupbyClauseParser (GroupbyClauseParser.java:68)</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | start to parse cql : s.type | com.huawei.streaming.cql.semanticanalyzer.parser.GroupbyClauseParser (GroupbyClauseParser.java:45)</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | Parse Completed | com.huawei.streaming.cql.semanticanalyzer.parser.GroupbyClauseParser (GroupbyClauseParser.java:68)</span><br><span class="line"></span><br><span class="line">3)聚合算子 count(id)</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | start to create aggregate service | com.huawei.streaming.cql.executor.operatorviewscreater.AggregateServiceViewCreator (AggregateServiceViewCreator.java:89)  ⬅️</span><br></pre></td></tr></table></figure>
+<p>不仅仅是Driver.run调用了ApplicationParser.parse. 从调用树还能看到有XXXInfoCreator,ViewCreator.(<code>还记得聚合也是一种查询吗</code>)</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151130172800418" alt="stream-opinfo"></p>
+<p>算子解析: 这里的解析是为了使得输入和输出算子统一，避免用户自定义和系统内置的算子对外表现不一致处理起来的麻烦<br>由于输入和输出算子中存在特例，即针对文件，tcp，kafka等编写了特例, 所以需要①首先将他们抽象化，之后再来处理  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseOperators</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Map&lt;String, Operator&gt; opts = formatOperators();                     <span class="comment">//① 输入输出算子抽象化</span></span><br><span class="line">    Map&lt;String, AbsOperator&gt; opMappings = createOperatorInfos(opts);    <span class="comment">//② 算子解析 ⬅️  Operator -&gt; AbsOperator</span></span><br><span class="line">    combineOperators(opMappings);                                       <span class="comment">//③ 整理算子顺序</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (Entry&lt;String, AbsOperator&gt; et : opMappings.entrySet())&#123;        <span class="comment">//④ 添加算子到Application</span></span><br><span class="line">        IRichOperator operator = et.getValue();</span><br><span class="line">        <span class="comment">//如果没有输入，也算是input</span></span><br><span class="line">        <span class="keyword">if</span> (operator <span class="keyword">instanceof</span> InputOperator)&#123;</span><br><span class="line">            executorApp.addInputStream(operator);</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//如果没有输出，也算是output</span></span><br><span class="line">        <span class="keyword">if</span> (operator <span class="keyword">instanceof</span> OutputOperator)&#123;</span><br><span class="line">            executorApp.addOutputStream(operator);</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//不是输入输出,就是功能算子</span></span><br><span class="line">        executorApp.addFunctionStream(operator);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>② Operator是算子, AbsOperator则是流处理算子(继承IRichOperator).它们的转换由createOperatorInfos-&gt;OperatorInfoCreatorFactory完成.<br>④ 和Schema的管理一样,算子的管理类OperatorMng用三个Map分别管理输入,输出,功能算子. Map的key是operatorId,value是Operator算子本身.   </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OperatorMng</span></span>&#123;    </span><br><span class="line">    <span class="keyword">private</span> List&lt;IRichOperator&gt; sortedFunctions;        <span class="comment">//DFG排序后的功能算子列表，作为创建Storm拓扑顺序的基础(输出和功能算子组成--&gt;Bolt)</span></span><br><span class="line">    <span class="keyword">private</span> Map&lt;String, IRichOperator&gt; inputs;          <span class="comment">//输入算子 --&gt; Spout</span></span><br><span class="line">    <span class="keyword">private</span> Map&lt;String, IRichOperator&gt; functions;       <span class="comment">//功能算子 --&gt; Bolt</span></span><br><span class="line">    <span class="keyword">private</span> Map&lt;String, IRichOperator&gt; outputs;         <span class="comment">//输出算子 --&gt; Bolt</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>上面parseOperators的两个Map:opts和opMapping以及OperatorMng的三个Map的Key,Value都是operatorID-&gt;AbsOperator实例.  </p>
+</blockquote>
+<h4 id="createOperatorInfos">createOperatorInfos</h4><p>operators是API中的算子, 要转换为可执行计划对应的算子, 通过OperatorInfoCreatorFactory工厂类根据operator上的注解<br>先取得OperatorInfoCreator的具体实现类,再调用createInstance, 在具体的OperatorInfoCreator实现类中才完成转换.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> Map&lt;String, AbsOperator&gt; <span class="title">createOperatorInfos</span><span class="params">(Map&lt;String, Operator&gt; operators)</span> </span>&#123;</span><br><span class="line">    Map&lt;String, AbsOperator&gt; opMappings = Maps.newHashMap();</span><br><span class="line">    <span class="keyword">for</span> (Operator op : operators.values()) &#123;</span><br><span class="line">        AbsOperator opinfo = createOperatorInfo(op);</span><br><span class="line">        opMappings.put(opinfo.getOperatorId(), opinfo);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> opMappings;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> AbsOperator <span class="title">createOperatorInfo</span><span class="params">(Operator operator)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> OperatorInfoCreatorFactory.createOperatorInfo(apiApplication, operator, executorApp.getStreamSchema(), <span class="keyword">this</span>.systemConfig);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>假设Operator是AggregateOperator,它的注解是AggregaterInfoCreator.所以最终调用的是AggregaterInfoCreator.createInstance创建AggFunctionOp.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@OperatorInfoCreatorAnnotation(AggregaterInfoCreator.class)</span><br><span class="line">public class AggregateOperator extends BasicAggFunctionOperator</span><br></pre></td></tr></table></figure>
+<p>接口OperatorInfoCreator创建每个算子的实例, createInstance参数分别是: 执行计划信息,xml执行计划中的算子信息(哪里的xml?),schema信息,系统配置信息.<br>下图是OperatorInfoCreator的实现类, 创建的算子实例除了FunctionOperator,还有InputOperator,OutputOperator,FunctionStreamOperator.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">OperatorInfoCreator (c.h.s.c.e.operatorinfocreater)     创建的算子实例               父类</span><br><span class="line">    |-- AggregaterInfoCreator                           AggFunctionOp           &gt;&gt; FunctionOperator</span><br><span class="line">    |-- DataSourceInfoOperatorCreator                   FunctionOperator        -- FunctionOperator</span><br><span class="line">    |-- FunctorInfoCreator                              FunctorOp               &gt;&gt; FunctionOperator</span><br><span class="line">    |-- FilterInfoCreator                               FilterFunctionOp        &gt;&gt; FunctionOperator     </span><br><span class="line">    |-- InputInfoCreator                                                           InputOperator</span><br><span class="line">    |-- UnionInfoCreator                                UnionFunctionOp         &gt;&gt; FunctionOperator</span><br><span class="line">    |-- OutputInfoCreator                                                          OutputOperator</span><br><span class="line">    |-- SplitterInfoCreator                             SplitOp                 &gt;&gt; FunctionOperator</span><br><span class="line">    |-- JoinInfoOperatorCreator                         JoinFunctionOp          &gt;&gt; FunctionOperator</span><br><span class="line">    |-- FunctionStreamInfoCreator                                                  FunctionStreamOperator</span><br></pre></td></tr></table></figure>
+<p>以AggregaterInfoCreator将<code>AggregateOperator</code>转换为<code>AggFunctionOp</code>为例: 由于AggregateOperator本身包含了Window对象<br>以及filterBeforeAggregate,filterAfterAggregate等字符串, 所以根据这些数据构造相应的对象,并最终构造出AggFunctionOp.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> AbsOperator <span class="title">createInstance</span><span class="params">(Application vapp, Operator operator, EventTypeMng streamschema, Map&lt;String, String&gt; systemConfig)</span> </span>&#123;</span><br><span class="line">    LOG.debug(<span class="string">"start to create aggregate operator"</span>);        <span class="comment">//LOG</span></span><br><span class="line">    prepare(vapp, operator, systemConfig);</span><br><span class="line">    <span class="comment">//窗口,过滤,表达式     </span></span><br><span class="line">    WindowViewCreator creater = <span class="keyword">new</span> WindowViewCreator();</span><br><span class="line">    IWindow window = creater.create(inputSchemas, aggOperator.getWindow(), <span class="keyword">this</span>.applicationConfig);</span><br><span class="line">    FilterView filterView = createFilterView();</span><br><span class="line">    IExpression bexpr = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">if</span> (filterView != <span class="keyword">null</span>) bexpr = filterView.getBoolexpr();</span><br><span class="line">    <span class="comment">//聚合结果合并     </span></span><br><span class="line">    AggResultSetParameters pars = createResultSetMergeParmeters(streamschema, window, bexpr);</span><br><span class="line">    IAggResultSetMerge resultSetMerge = <span class="keyword">new</span> AggResultSetMergeViewCreator(pars).create();        <span class="comment">// ⬅️ </span></span><br><span class="line">    <span class="comment">//聚合算子</span></span><br><span class="line">    AggFunctionOp aggFunctionOp = <span class="keyword">new</span> AggFunctionOp(window, filterView, resultSetMerge, OutputTypeAnalyzer.createOutputType(aggOperator.getWindow()));</span><br><span class="line">    <span class="comment">//系统参数</span></span><br><span class="line">    StreamingConfig config = <span class="keyword">new</span> StreamingConfig();</span><br><span class="line">    <span class="keyword">if</span> (operator.getArgs() != <span class="keyword">null</span>) config.putAll(operator.getArgs());</span><br><span class="line">    config.putAll(<span class="keyword">this</span>.applicationConfig);</span><br><span class="line">    aggFunctionOp.setConfig(config);</span><br><span class="line">    <span class="comment">//设置并行度和ID,完成流算子的构建</span></span><br><span class="line">    <span class="keyword">return</span> OperatorInfoCreatorFactory.buildStreamOperator(operator, aggFunctionOp);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面生成AggFunctionOp动用了WindowViewCreator创建Window,FilterView,AggResultSetMergeViewCreator创建IAggResultSetMerge. 最后组装成AggFunctionOp.   </p>
+<blockquote>
+<p>上一章AggregateSplitter拆分算子的时候解析From子句时就创建了FilterBeforeWindow的FilterOperator和AggregateOperator,<br>这里也有Window和Filter,不过是FilterBeforeAggregate. 这两个对象分别对应了AggregateOperator的Window对象和filterBeforeAggregate字符串.<br>这是因为拆分算子的时候创建的FilterOperator是FilterBeforeWindow, 创建的AggregateOperator本身包含了FilterBeforeAggregate和Window.   </p>
+</blockquote>
+<blockquote>
+<p>IAggResultSetMerge表示聚合结果合并. 将IAggResultSetMerge设置给AggFunctionOp, 后面初始化Op的时候会用到这个对象来创建处理视图.<br>A.结合前面的代码阅读体验, 比如第一章创建完Task和SemanticAnalyzer都会初始化.这里创建完Op也会初始化流计算算子.<br>B.实际上对象创建完不就是被使用嘛! 如果有依赖的对象,可以设置到构造函数中,在实际使用对象的时候获取依赖对象进行必要计算,充分体现JAVA的面向对象思想.<br>C.数据的传递:从语法解析结果到语义解析结果到拆分的算子再到这里的流计算算子. 数据都是层层传递并不断更新或添加新的数据结构满足不同阶段的对象构建.     </p>
+</blockquote>
+<blockquote>
+<p>那么话说AbsOperator比如AggFunctionOp是在什么时候初始化的? 答案是: 在StormSpout/StormBolt的prepare中初始化.  </p>
+</blockquote>
+<h4 id="combineOperators">combineOperators</h4><p>上一篇重点介绍了拆分算子SplitContext(Operator)和组合算子OperatorCombiner(连线). 这里也不例外,在创建完具体的AbsOperator算子后,也需要组合.<br>这里的组合不再需要创建Transition了. 因为OperatorTransition是针对Operator. 而AbsOperator是没有Transition的.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">combineOperators</span><span class="params">(Map&lt;String, AbsOperator&gt; operatorInfos)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//算子之间的连接, 获取算子通过apiApplication.getOperators(), 获取连线也是通过apiApplication</span></span><br><span class="line">    <span class="keyword">for</span> (OperatorTransition ot : apiApplication.getOpTransition()) &#123;</span><br><span class="line">        <span class="comment">//获取连接的入口和出口算子</span></span><br><span class="line">        String fromOpId = ot.getFromOperatorId();</span><br><span class="line">        String toOpId = ot.getToOperatorId();</span><br><span class="line">        String streamName = ot.getStreamName();</span><br><span class="line">        DistributeType distributedType = ot.getDistributedType();</span><br><span class="line">        String distributedFields = ot.getDistributedFields();</span><br><span class="line">        <span class="comment">//连接的Schema, 对于From和To都是使用相同的Schema</span></span><br><span class="line">        String outputSchemaName = ot.getSchemaName();</span><br><span class="line">        distributedFields = ExecutorUtils.removeStreamName(distributedFields);            </span><br><span class="line">        TupleEventType outputSchema = (TupleEventType)(executorApp.getEventType(outputSchemaName));</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//operatorInfos是所有的算子集合, 根据传入的fromOpId或者toOpId,从集合中找出对应的算子</span></span><br><span class="line">        combineFromTransition(operatorInfos, fromOpId, streamName, outputSchema);</span><br><span class="line">        combineToTransition(operatorInfos, toOpId, streamName, distributedType, distributedFields, outputSchema);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>FromTransition: 连线的from算子的输出是outputSchema<br>ToTransition: 连线的to算子的输入是outputSchema. <code>这里outputSchema命名为schema似乎更好</code>  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">combineFromTransition</span><span class="params">(Map&lt;String, AbsOperator&gt; operatorInfos, String fromOpId, String streamName, TupleEventType outputSchema)</span></span>&#123;</span><br><span class="line">    AbsOperator sopInfo = operatorInfos.get(fromOpId);</span><br><span class="line">    StreamingConfig sConfig = sopInfo.getConfig();</span><br><span class="line">    sConfig = (sConfig == <span class="keyword">null</span> ? <span class="keyword">new</span> StreamingConfig() : sConfig);</span><br><span class="line">    sConfig.put(StreamingConfig.STREAMING_INNER_OUTPUT_SCHEMA, outputSchema);</span><br><span class="line">    sConfig.put(StreamingConfig.STREAMING_INNER_OUTPUT_STREAM_NAME, streamName);</span><br><span class="line">    sopInfo.setConfig(sConfig);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">combineToTransition</span><span class="params">(Map&lt;String, AbsOperator&gt; operatorInfos, String toOpId, String streamName,</span></span></span><br><span class="line"><span class="function"><span class="params">    DistributeType distributedType, String distributedFields, TupleEventType outputSchema)</span> </span>&#123;</span><br><span class="line">    AbsOperator fopInfo = operatorInfos.get(toOpId);</span><br><span class="line">    <span class="keyword">if</span> (!StringUtils.isEmpty(distributedFields)) &#123;</span><br><span class="line">        fopInfo.setGroupInfo(streamName, distributedType, distributedFields.split(<span class="string">","</span>));</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        fopInfo.setGroupInfo(streamName, distributedType, <span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    StreamingConfig sConfig = fopInfo.getConfig();</span><br><span class="line">    sConfig = (sConfig == <span class="keyword">null</span> ? <span class="keyword">new</span> StreamingConfig() : sConfig);</span><br><span class="line">    sConfig.put(StreamingConfig.STREAMING_INNER_INPUT_STREAM_NAME, streamName);</span><br><span class="line">    sConfig.put(StreamingConfig.STREAMING_INNER_INPUT_SCHEMA, outputSchema);</span><br><span class="line">    fopInfo.setConfig(sConfig);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>类似于Graph中的顶点A -&gt; 边 -&gt; 顶点B. Transition就类似于边, 连接着左右两边的算子, 分别是From算子和To算子.  </p>
+<h2 id="StormApplication">StormApplication</h2><p>SubmitTask.submitApplication -&gt; PhysicalPlanExecutor.execute -&gt; PhysicalPlanExecutor.submit(application.Application) -&gt;<br>StormApplication.launch -&gt; createTopology 创建拓扑, 对于Storm的程序而言, 构成拓扑的组件包括Spouts和Bolts.<br>这些数据都来自于Application的输入,输出和功能算子. 由于Storm只有两种组件Spout和Bolt, 所以输入算子归于Spout,输出和功能算子都属于Bolt.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">createSpouts</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    List&lt; ? extends IRichOperator&gt; sources = getInputStreams(); <span class="comment">//获得所有源算子信息: OperatorMng.inputs ⬅️</span></span><br><span class="line">    checkInputStreams(sources);</span><br><span class="line">    <span class="keyword">for</span> (IRichOperator input : sources) &#123;</span><br><span class="line">        StormSpout spout = <span class="keyword">new</span> StormSpout();                    <span class="comment">//将算子设置到为StormSpout中</span></span><br><span class="line">        spout.setOperator(input);                               <span class="comment">//Spout接收数据时,将使用设置的算子开始处理</span></span><br><span class="line">        builder.setSpout(input.getOperatorId(), spout, input.getParallelNumber());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">createBolts</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    List&lt;IRichOperator&gt; orderedFunOp = genFunctionOpsOrder();   <span class="comment">//获取已经排好序的功能算子,包含output算子  ⬅️</span></span><br><span class="line">    <span class="keyword">for</span> (IRichOperator operator : orderedFunOp) &#123;</span><br><span class="line">        setOperatorGrouping(operator);                          <span class="comment">//设置Bolt的分组策略  ⬅️</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>哪些Operator算子会作为Bolt, OutpoutBolt, Spout都是由OperatorMng管理的比如getInputStreams,genFunctionOpsOrder<br>这样创建的Bolt会直接依赖于对应的Operator, 在处理Bolt时,就不需要再判断是哪一种类型的Operator了.<br>所以正是由于对算子的种类进行了分离(输入,输出,功能)才使得处理Storm的component时变得容易.<br>一旦根据算子创建并组织完构成Topology的Spouts和Bolts, 就可以提交拓扑给Storm集群执行了. DONE😄  </p>
+</blockquote>
+<h3 id="Bolt_Grouping">Bolt Grouping</h3><p>在开发Storm应用程序时, 一般是在Storm的Topology代码中创建Bolt并直接设置Bolt的分组策略.<br>假设有这样的Topology, Bolt1输出到Bolt3和Bolt4, Bolt2输出到Bolt3(一个Bolt可以有多个输出,也可以由多个输入).    </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">             |------ |Bolt4|</span><br><span class="line">|Bolt1| -----|</span><br><span class="line">             |------ |Bolt3|</span><br><span class="line">|Bolt2| -----|</span><br><span class="line"></span><br><span class="line"><span class="comment">//Bolt1有两个输出流, 输出字段都是一样的, 两个输出流的名称stream-id不一样</span></span><br><span class="line">builder.setBolt(<span class="string">"bolt1"</span>, <span class="keyword">new</span> Bolt1(), <span class="number">2</span>)        </span><br><span class="line">            declarer.declareStream(<span class="string">"streamA"</span>, <span class="keyword">new</span> Fields(<span class="string">"f1"</span>,<span class="string">"f2"</span>))</span><br><span class="line">            declarer.declareStream(<span class="string">"streamB"</span>, <span class="keyword">new</span> Fields(<span class="string">"f1"</span>,<span class="string">"f2"</span>))</span><br><span class="line"><span class="comment">//Bolt2只有一个输出流</span></span><br><span class="line">builder.setBolt(<span class="string">"bolt2"</span>, <span class="keyword">new</span> Bolt2(), <span class="number">2</span>)</span><br><span class="line">            declarer.declareStream(<span class="string">"streamC"</span>, <span class="keyword">new</span> Fields(<span class="string">"f1"</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment">//Bolt3接收Bolt1的streamA流使用字段分组, 接收Bolt2的streamC流使用shuffle分组</span></span><br><span class="line">builder.setBolt(<span class="string">"bolt3"</span>, <span class="keyword">new</span> Bolt3(), <span class="number">4</span>)</span><br><span class="line">        .fieldsGrouping(<span class="string">"bolt1"</span>, <span class="string">"streamA"</span>, <span class="keyword">new</span> Field(<span class="string">"f1"</span>))</span><br><span class="line">        .shuffleGrouping(<span class="string">"bolt2"</span>, <span class="string">"streamC"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">//Bolt4接收Bolt1的streamB流使用字段分组, 分组字段是Bolt1产生的f2字段.  </span></span><br><span class="line">builder.setBolt(<span class="string">"bolt4"</span>, <span class="keyword">new</span> Bolt4(), <span class="number">3</span>)</span><br><span class="line">        .fieldsGrouping(<span class="string">"bolt1"</span>, <span class="string">"streamB"</span>, , <span class="keyword">new</span> Field(<span class="string">"f2"</span>))</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>setBolt时设置的componentId/operatorId都是自己Bolt, 分组时的componentId则是输入的componentId/operatorId.  </p>
+</blockquote>
+<p>通过解析CQL的分组以及算子/组件之间的连接, 现在就不需要在Topology写死了. 因此需要框架能够动态地构建Topology.  </p>
+<blockquote>
+<p>为什么IRichOperator的getInputStream()和getOutputStream()表示的是输入流和输出流的名称, 而不是输入流对象和输出流对象(比如算子本身).<br>这是因为Operator算子会用于Topology的Spout/Bolt, 创建完Spout/Bolt之后, 用于构建Topology其他必要的信息除了分组外,<br>还有Storm的component-id对应算子的id 和 Storm的stream-id对应算子的输入/输出流名称  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setOperatorGrouping</span><span class="params">(IRichOperator operator)</span> </span>&#123;</span><br><span class="line">    BoltDeclarer bolt = createBoltDeclarer(operator);</span><br><span class="line">    <span class="comment">//一个Bolt可能有多个输入即多个InputStream, 同时输出也可能有多个: 设置不同的Grouping策略</span></span><br><span class="line">    <span class="comment">//注意: Bolt设置分组时的componentId是其输入源的ComponentId,而不是自己的componentId, 自己是在builder.setBolt时设置的</span></span><br><span class="line">    <span class="keyword">for</span> (String strname : operator.getInputStream()) &#123;              <span class="comment">//strname是当前算子的输入流名称</span></span><br><span class="line">        GroupInfo groupInfo = operator.getGroupInfo().get(strname); <span class="comment">//算子的分组信息</span></span><br><span class="line">        setBoltGrouping(bolt, strname, groupInfo);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setBoltGrouping</span><span class="params">(BoltDeclarer bolt, String strname, GroupInfo groupInfo)</span> </span>&#123;        </span><br><span class="line">    DistributeType distribute = groupInfo.getDitributeType();</span><br><span class="line">    <span class="keyword">switch</span> (distribute) &#123;</span><br><span class="line">        <span class="keyword">case</span> FIELDS:</span><br><span class="line">            Fields fields = <span class="keyword">new</span> Fields(groupInfo.getFields());</span><br><span class="line">            <span class="comment">//根据输入流的名称, 获取这个输入流是个什么算子, 为的是获得这个输入算子的operatorId,作为分组策略的第一个参数</span></span><br><span class="line">            IRichOperator operator = getOperatorByOutputStreamName(strname);</span><br><span class="line">            <span class="comment">//字段分组三个参数分别表示: componentId, streamId, fields. 这里的componentId表示从哪个数据源接入数据,而不是当前算子的operatorId</span></span><br><span class="line">            bolt.fieldsGrouping(operator.getOperatorId(), strname, fields);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="comment">//... 其他分组类型 ...   </span></span><br><span class="line">        <span class="keyword">default</span>:               </span><br><span class="line">            setDefaultBoltGrouping(bolt, strname);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">setDefaultBoltGrouping</span><span class="params">(BoltDeclarer bolt, String strname)</span> </span>&#123;</span><br><span class="line">    IRichOperator operator = getOperatorByOutputStreamName(strname);</span><br><span class="line">    <span class="comment">//shuffle分组两个参数分别表示: 输入流的operatorId/componentId, streamId</span></span><br><span class="line">    bolt.shuffleGrouping(operator.getOperatorId(), strname);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>Operator算子的id会作为Storm中Spout/Bolt的component-id, 而Operator的输入流/输出流名称是作为Spout/Bolt的stream-id.<br>component-id只是用于区别不同的组件,或者用于从哪个输入组件获取数据. 而stream-id则可以作为分流/多流/合并流等.  </p>
+</blockquote>
+<h3 id="Bolt_Creation">Bolt Creation</h3><p>createBolts设置Operator的分组策略, 首先创建IRichBolt,并返回Bolt的声明BoltDeclarer,以便后续操作可以在BoltDeclarer继续进行(比如上面的分组策略).  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> BoltDeclarer <span class="title">createBoltDeclarer</span><span class="params">(IRichOperator operator)</span></span>&#123;</span><br><span class="line">    IRichBolt bolt;</span><br><span class="line">    <span class="keyword">if</span> ((operator <span class="keyword">instanceof</span> FunctionOperator) || (operator <span class="keyword">instanceof</span> FunctionStreamOperator)) &#123;</span><br><span class="line">        bolt = createStormBolt(operator);</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        bolt = createOutputStormBolt(operator);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> builder.setBolt(operator.getOperatorId(), bolt, operator.getParallelNumber());</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">private</span> IRichBolt <span class="title">createOutputStormBolt</span><span class="params">(IRichOperator f)</span></span>&#123;</span><br><span class="line">    StormOutputBolt outputbolt = <span class="keyword">new</span> StormOutputBolt();     </span><br><span class="line">    outputbolt.setOperator(f);          <span class="comment">//类似于StormSpout将算子赋值,真正执行时会使用算子进行操作</span></span><br><span class="line">    <span class="keyword">return</span> outputbolt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>StormSpout,StormBolt,StormOutputBolt都是对Storm的组件的封装. 除了继承各自的IRichSpout和IRichBolt外,还要实现StreamAdapter接口的setOperator方法.<br>流处理算子适配接口: 依靠这个接口，将流处理的算子注入到具体的Storm的Spout/Bolt中. <code>创建Bolt为啥不用构造函数一句话的事儿: new StormBolt(operator)</code>  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StormSpout</span> <span class="keyword">implements</span> <span class="title">IRichSpout</span>, <span class="title">StreamAdapter</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> IRichOperator input;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setOperator</span><span class="params">(IRichOperator operator)</span></span>&#123;</span><br><span class="line">        input = operator;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StormOutputBolt</span> <span class="keyword">implements</span> <span class="title">IRichBolt</span>, <span class="title">StreamAdapter</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> OutputCollector outputCollector;</span><br><span class="line">    <span class="keyword">private</span> OutputOperator output;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setOperator</span><span class="params">(IRichOperator operator)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.output = (OutputOperator)operator;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>StormBolt的execute方法  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(Tuple input)</span> </span>&#123;</span><br><span class="line">    String sourceStreamName = input.getSourceStreamId();        <span class="comment">//获取Tuple的输入流stream-id</span></span><br><span class="line">    List&lt;String&gt; inStreams = functionStream.getInputStream();   <span class="comment">//输入流名称列表,因为一个Bolt可以有多个输入流</span></span><br><span class="line">    <span class="keyword">for</span> (String streamName : inStreams) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!sourceStreamName.equals(streamName)) <span class="keyword">continue</span>;     <span class="comment">//只有Tuple的输入流stream-id和IRichOperator的输入流名称相同时,才处理这个Tuple</span></span><br><span class="line">        TupleEvent event = TupleTransform.tupeToEvent(input, functionStream.getInputSchema().get(streamName));</span><br><span class="line">        functionStream.execute(streamName, event);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">2015-11-25 02:32:39 | INFO  | [main] | start to submit application example | com.huawei.streaming.cql.executor.PhysicalPlanExecutor (PhysicalPlanExecutor.java:201)</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | reset submit jar to /private/var/folders/xc/x0b8crk9667ddh1zhfs29_zr0000gn/T/example.5f8ed0baaeb243a49308fd75144cf715.jar | com.huawei.streaming.storm.StormApplication (StormApplication.java:314)</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | Using defaults.yaml from resources | backtype.storm.utils.Utils (Utils.java:253)</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | The baseSleepTimeMs [2000] the maxSleepTimeMs [60000] the maxRetries [5] | backtype.storm.utils.StormBoundedExponentialBackoffRetry (StormBoundedExponentialBackoffRetry.java:47)</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | Using defaults.yaml from resources | backtype.storm.utils.Utils (Utils.java:253)</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | GenFunctionOpsOrder enter. | com.huawei.streaming.application.OperatorMng (OperatorMng.java:205)</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | Using defaults.yaml from resources | backtype.storm.utils.Utils (Utils.java:253)</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | Generated ZooKeeper secret payload for MD5-digest: -5668598407594625313:-5703359794945963404 | backtype.storm.StormSubmitter (StormSubmitter.java:82)</span><br><span class="line">2015-11-25 02:32:39 | INFO  | [main] | Uploading topology jar /private/var/folders/xc/x0b8crk9667ddh1zhfs29_zr0000gn/T/example.5f8ed0baaeb243a49308fd75144cf715.jar to assigned location: storm-local/nimbus/inbox/stormjar-a5b95134-e3f2-431d-b675-924d8c468cf3.jar | backtype.storm.StormSubmitter (StormSubmitter.java:371)</span><br><span class="line">2015-11-25 02:32:40 | INFO  | [main] | Successfully uploaded topology jar to assigned location: storm-local/nimbus/inbox/stormjar-a5b95134-e3f2-431d-b675-924d8c468cf3.jar | backtype.storm.StormSubmitter (StormSubmitter.java:396)</span><br><span class="line">2015-11-25 02:32:40 | INFO  | [main] | Finished submitting topology: example | backtype.storm.StormSubmitter (StormSubmitter.java:248)</span><br><span class="line">2015-11-25 02:32:40 | INFO  | [main] | delete user packed jar after submit | com.huawei.streaming.cql.executor.PhysicalPlanExecutor (PhysicalPlanExecutor.java:156)</span><br><span class="line">2015-11-25 02:32:40 | INFO  | [main] | unRegister jars from class loader. | com.huawei.streaming.cql.DriverContext (DriverContext.java:427)</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/11/29/2015-11-29-StreamCQL-application/">StreamCQL源码阅读(4) 应用程序执行</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年11月29日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/11/29/2015-11-29-StreamCQL-application/" title="StreamCQL源码阅读(4) 应用程序执行">http://github.com/zqhxuyuan/2015/11/29/2015-11-29-StreamCQL-application/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/11/29/2015-11-29-StreamCQL-application/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/12/02/2015-12-02-Hello-Druid/">
+        Druid 分布式OLAP入门
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/11/27/2015-11-27-StreamCQL-operator/">
+        StreamCQL源码阅读(3) 拆分组合算子
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前戏:_CQL代码结构"><span class="toc-number">1.</span> <span class="toc-text">前戏: CQL代码结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#正文:_submitApplication"><span class="toc-number">2.</span> <span class="toc-text">正文: submitApplication</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#api-Application_->_application-Application"><span class="toc-number">2.1.</span> <span class="toc-text">api.Application -&gt; application.Application</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#IRichOperator"><span class="toc-number">2.1.1.</span> <span class="toc-text">IRichOperator</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#PhysicalPlanExecutor_->_ExecutorPlanGenerator"><span class="toc-number">2.1.2.</span> <span class="toc-text">PhysicalPlanExecutor -&gt; ExecutorPlanGenerator</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#parseSchemas:_Schema_->_TupleEventType"><span class="toc-number">2.2.</span> <span class="toc-text">parseSchemas: Schema -&gt; TupleEventType</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#parseOperators:_算子解析"><span class="toc-number">2.3.</span> <span class="toc-text">parseOperators: 算子解析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#createOperatorInfos"><span class="toc-number">2.3.1.</span> <span class="toc-text">createOperatorInfos</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#combineOperators"><span class="toc-number">2.3.2.</span> <span class="toc-text">combineOperators</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#StormApplication"><span class="toc-number">3.</span> <span class="toc-text">StormApplication</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Bolt_Grouping"><span class="toc-number">3.1.</span> <span class="toc-text">Bolt Grouping</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bolt_Creation"><span class="toc-number">3.2.</span> <span class="toc-text">Bolt Creation</span></a></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/11/29/2015-11-29-StreamCQL-application/" data-title="StreamCQL源码阅读(4) 应用程序执行" data-url="http://github.com/zqhxuyuan/2015/11/29/2015-11-29-StreamCQL-application/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/12/02/2015-12-02-Hello-Druid/" title="上一篇: Druid 分布式OLAP入门">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/11/27/2015-11-27-StreamCQL-operator/" title="下一篇: StreamCQL源码阅读(3) 拆分组合算子">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

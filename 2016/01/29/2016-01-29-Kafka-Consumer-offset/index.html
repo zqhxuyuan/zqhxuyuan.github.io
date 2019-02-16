@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Kafka源码分析 Consumer(3) offset | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Kafka Consumer offset">
+<meta name="keywords" content="kafka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka源码分析 Consumer(3) offset">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/01/29/2016-01-29-Kafka-Consumer-offset/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Kafka Consumer offset">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160204105829951">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160201163657458">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160201163716865">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160203150313087">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160203180358157">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160203181844107">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160129111243884">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160201164235150">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160219101110012">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160219101125419">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160219140343212">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.244Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kafka源码分析 Consumer(3) offset">
+<meta name="twitter:description" content="Kafka Consumer offset">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160204105829951">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2016-01-29-Kafka-Consumer-offset" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/01/29/2016-01-29-Kafka-Consumer-offset/" class="article-date">
+  	<time datetime="2016-01-28T16:00:00.000Z" itemprop="datePublished">2016-01-29</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kafka源码分析 Consumer(3) offset
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Source/">Source</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/">kafka</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Kafka Consumer offset<br><a id="more"></a></p>
+<h2 id="导读">导读</h2><p>前面我们分析了Consumer的Fetcher抓取数据流程,不过抓取数据之前要先获取到fetchOffset.这样Fetcher<br>才能知道这一次抓取要从Partition的哪个fetchOffset开始抓取数据.同时消费者会定时地commitOffsets.<br>本节包含了consumer的以下内容(这里我们的分析步骤是consumer之后直接跟上对应的服务端处理逻辑):  </p>
+<ul>
+<li>创建<code>OffsetManager</code>即<code>GroupCoordinator</code>节点的<code>offsetChannel</code>,发送的请求是GroupCoordinatorRequest</li>
+<li>消费者的<code>commitOffsets</code>利用上一步的offsetsChannel,发送OffsetCommitRequest请求,保存offset</li>
+<li>消费者抓取数据时通过<code>fetchOffsets</code>也是利用offsetsChannel,发送OffsetFetchRequest请求,获取offset</li>
+</ul>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160204105829951" alt="k_consumer_offsets"></p>
+<p><code>OffsetChannel</code>对应的<code>OffsetManager</code>是<code>协调节点</code>,负责管理消费组中的消费者.<br>而消费者会和协调节点通信. 通信协议就包括fetchOffset和commitOffset.  </p>
+<blockquote>
+<p>消费者的fetch和commit offset都是和<code>GroupCoordinator</code>节点进行通信的. 为什么需要一个GroupCoordinator?<br>GroupCoordinator实际上是Consumer Group Coordinator. 每个协调节点会管理集群中的一部分消费组.  </p>
+</blockquote>
+<h2 id="OffsetManager">OffsetManager</h2><p>在创建ZookeeperConsumerConnector时确保OffsetManager管理的通道(offsetsChannel)被创建出来.  </p>
+<blockquote>
+<p>offset可以存储在ZK中,或者以topic普通消息的形式存储于kafka中.如果存储在kafka的topic中,<br>则需要使用offsetChannel,这种情况和普通的topic消息类似,因此需要建立到Broker的连接.<br>而如果存储在ZK上,是不需要使用Socket连接走TCP流的,直接使用ZKUtils获取数据就可以了.  </p>
+</blockquote>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160201163657458" alt="k_offsetStorage"></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Blocks until the offset manager is located and a channel is established to it.</span></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">ensureOffsetManagerConnected</span></span>() &#123;</span><br><span class="line">  <span class="keyword">if</span> (config.offsetsStorage == <span class="string">"kafka"</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (offsetsChannel == <span class="literal">null</span> || !offsetsChannel.isConnected)</span><br><span class="line">      offsetsChannel = <span class="type">ClientUtils</span>.channelToOffsetManager(config.groupId, zkUtils, ..)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="channelToOffsetManager(consumer)">channelToOffsetManager(consumer)</h3><p>生产者请求将消息发送给Partition的Leader Broker.消费者抓取数据也通过LeaderFinderThread找到leaderBroker.<br>但这里的offset请求却是任意一个Broker(为什么可以这么做?).而我们要的是coordinator,即OffsetManager所在的节点.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">channelToAnyBroker</span></span>(zkUtils: <span class="type">ZkUtils</span>, socketTimeoutMs: <span class="type">Int</span> = <span class="number">3000</span>) : <span class="type">BlockingChannel</span> = &#123;</span><br><span class="line">  <span class="keyword">var</span> channel: <span class="type">BlockingChannel</span> = <span class="literal">null</span></span><br><span class="line">  <span class="keyword">var</span> connected = <span class="literal">false</span></span><br><span class="line">  <span class="keyword">while</span> (!connected) &#123;</span><br><span class="line">    <span class="keyword">val</span> allBrokers = zkUtils.getAllBrokerEndPointsForChannel(<span class="type">SecurityProtocol</span>.<span class="type">PLAINTEXT</span>)</span><br><span class="line">    <span class="type">Random</span>.shuffle(allBrokers).find &#123; broker =&gt;</span><br><span class="line">        channel = <span class="keyword">new</span> <span class="type">BlockingChannel</span>(broker.host, broker.port, ..)</span><br><span class="line">        channel.connect()</span><br><span class="line">        <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">    connected = <span class="keyword">if</span> (channel == <span class="literal">null</span>) <span class="literal">false</span> <span class="keyword">else</span> <span class="literal">true</span></span><br><span class="line">  &#125;</span><br><span class="line">  channel</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的queryChannel只是一个临时的连接通道而已,GroupCoordinatorRequest请求发送给queryChannel,<br>会返回OffsetManager协调节点的真正位置,offsetsChannel应该是GroupCoordinatorResponse的节点.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160201163716865" alt="k_channelToOffsetManager"></p>
+<blockquote>
+<p>注意这里并没有当前consumer的信息,即offset是以组为级别的,而不是由每个consumer自己维护各自的offset.<br>这么做的目的是: Broker的Partition记录的offset是针对消费组,而不是消费者.因为offset记录在消费组上,<br>即使某个消费者挂掉,Partition的offset并不会出错,平衡器可以将Partition调度给同一个消费组的其他消费者.  </p>
+</blockquote>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">channelToOffsetManager</span></span>(group: <span class="type">String</span>, zkUtils: <span class="type">ZkUtils</span>, socketTimeoutMs: <span class="type">Int</span> = <span class="number">3000</span>, retryBackOffMs: <span class="type">Int</span> = <span class="number">1000</span>) = &#123;</span><br><span class="line">  <span class="keyword">var</span> queryChannel = channelToAnyBroker(zkUtils)</span><br><span class="line">  <span class="keyword">var</span> offsetManagerChannelOpt: <span class="type">Option</span>[<span class="type">BlockingChannel</span>] = <span class="type">None</span></span><br><span class="line">  <span class="keyword">while</span> (!offsetManagerChannelOpt.isDefined) &#123;</span><br><span class="line">    <span class="keyword">var</span> coordinatorOpt: <span class="type">Option</span>[<span class="type">BrokerEndPoint</span>] = <span class="type">None</span></span><br><span class="line">    <span class="keyword">while</span> (!coordinatorOpt.isDefined) &#123;</span><br><span class="line">        <span class="comment">// 如果上一步没有准备好queryChannel,则再随机选一个Broker</span></span><br><span class="line">        <span class="keyword">if</span> (!queryChannel.isConnected) queryChannel = channelToAnyBroker(zkUtils)</span><br><span class="line">        <span class="comment">// 根据消费组名称, 发送消费组的协调者请求. 一个消费组对应一个协调者</span></span><br><span class="line">        queryChannel.send(<span class="type">GroupCoordinatorRequest</span>(group))</span><br><span class="line">        <span class="comment">// 返回的是消费者的元数据,结果数据应当包含协调者是谁</span></span><br><span class="line">        <span class="keyword">val</span> response = queryChannel.receive()</span><br><span class="line">        <span class="keyword">val</span> consumerMetadataResponse =  <span class="type">GroupCoordinatorResponse</span>.readFrom(response.payload())</span><br><span class="line">        <span class="keyword">if</span> (consumerMetadataResponse.errorCode == <span class="type">Errors</span>.<span class="type">NONE</span>.code) coordinatorOpt = consumerMetadataResponse.coordinatorOpt</span><br><span class="line">        <span class="keyword">else</span> <span class="type">Thread</span>.sleep(retryBackOffMs)  <span class="comment">// 如果出错了,继续发送请求,直到成功找到一个协调者</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">val</span> coordinator = coordinatorOpt.get</span><br><span class="line">    <span class="comment">// 如果协调者就在queryChannel上, 就可以直接使用之前随机选择的通道,因为我们最终是要连接到协调者</span></span><br><span class="line">    <span class="keyword">if</span> (coordinator.host == queryChannel.host &amp;&amp; coordinator.port == queryChannel.port) &#123;</span><br><span class="line">      offsetManagerChannelOpt = <span class="type">Some</span>(queryChannel)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">       <span class="comment">// 如果协调者不是之前建立的, 那么就建立到协调者的连接,并关闭之前建立的随机通道</span></span><br><span class="line">       <span class="keyword">var</span> offsetManagerChannel = <span class="keyword">new</span> <span class="type">BlockingChannel</span>(coordinator.host, coordinator.port, ..)</span><br><span class="line">       offsetManagerChannel.connect()</span><br><span class="line">       offsetManagerChannelOpt = <span class="type">Some</span>(offsetManagerChannel)</span><br><span class="line">       queryChannel.disconnect()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  offsetManagerChannelOpt.get</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>GroupCoordinatorRequest请求通过Socket方式发送到KafkaServer端,在KafkaApis被处理:<br>将coordinator节点信息封装到response中,返回给客户端,然后让客户端再去连接这个coordinator.  </p>
+<blockquote>
+<p>GroupCoordinator和ReplicaManager一样,一个KafkaServer都只有一个这样的对象.都会传递给KafkaApis.  </p>
+</blockquote>
+<h3 id="handleGroupCoordinatorRequest(server)">handleGroupCoordinatorRequest(server)</h3><p>GroupCoordinator为什么既能当做Coordinator,也能当做OffsetManager呢?<br>消费组会管理组内的消费者(充当协调者),同时offset是针对消费组级别的,所以也是Offset的管理者.<br>每个KafkaServer只有一个GroupCoordinator,但是它会管理多个消费组,因为一个Broker可以注册多个消费组.  </p>
+<p>每个GroupCoordinatorRequest代表的是一个消费组的协调者角色.即使客户端连接的是不同的coordinator(随机),<br>通过partitionFor得到的partition也都是一样的.而topicMetadata也是固定的,这就可以根据partitionFor的<br>返回值去topicMetadata的partitionsMetadata中找到对应Partition的Leader Replica.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160203150313087" alt="k_handleGroupCoordinatorRequest"></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">handleGroupCoordinatorRequest</span></span>(request: <span class="type">RequestChannel</span>.<span class="type">Request</span>) &#123;</span><br><span class="line">  <span class="keyword">val</span> groupCoordinatorRequest = request.body.asInstanceOf[<span class="type">GroupCoordinatorRequest</span>]</span><br><span class="line">  <span class="keyword">val</span> responseHeader = <span class="keyword">new</span> <span class="type">ResponseHeader</span>(request.header.correlationId)</span><br><span class="line">  <span class="comment">// 这个coordinator是GroupCoordinator,包括了Offset和GroupMetadata.</span></span><br><span class="line">  <span class="keyword">val</span> partition = coordinator.partitionFor(groupCoordinatorRequest.groupId)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// get metadata (and create the topic if necessary) 从metadataCache中获取,那么什么地方放入cache中呢?</span></span><br><span class="line">  <span class="keyword">val</span> offsetsTopicMetadata = getTopicMetadata(<span class="type">Set</span>(<span class="type">GroupCoordinator</span>.<span class="type">GroupMetadataTopicName</span>), request.securityProtocol).head</span><br><span class="line">  <span class="comment">// topicMetadata由多个partitionMetadata组成</span></span><br><span class="line">  <span class="keyword">val</span> coordinatorEndpoint = offsetsTopicMetadata.partitionsMetadata.find(_.partitionId == partition).flatMap &#123;</span><br><span class="line">      <span class="comment">// partition有Leader, 对应的就是我们要找的协调节点</span></span><br><span class="line">      partitionMetadata =&gt; partitionMetadata.leader</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">val</span> responseBody = coordinatorEndpoint <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="type">Some</span>(endpoint) =&gt; <span class="keyword">new</span> <span class="type">GroupCoordinatorResponse</span>(<span class="type">Errors</span>.<span class="type">NONE</span>.code, <span class="keyword">new</span> <span class="type">Node</span>(endpoint.id, endpoint.host, endpoint.port))</span><br><span class="line">  &#125;</span><br><span class="line">  requestChannel.sendResponse(<span class="keyword">new</span> <span class="type">RequestChannel</span>.<span class="type">Response</span>(request, <span class="keyword">new</span> <span class="type">ResponseSend</span>(request.connectionId, responseHeader, responseBody)))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>TopicMetadata是从metadataCache共享缓存map中获得.集群中的每个Broker都维护了相同的缓存,所以前面发送请求时可以选择任何一个Broker!  </p>
+<blockquote>
+<p>A cache for the state (e.g., current leader) of each partition. This cache is updated through<br>UpdateMetadataRequest from the controller. Every broker maintains the same cache, asynchronously.    </p>
+</blockquote>
+<h3 id="MetadataCache">MetadataCache</h3><p>MetadataCache保存的是topic-partition-PartitionStateInfo,其中get方法根据topic,获取对应的PartitionsMetadata.<br>所以PartitionStateInfo和PartitionMetadata是有一定联系的.比如都有AR,leader,ISR等.    </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>[server] <span class="class"><span class="keyword">class</span> <span class="title">MetadataCache</span>(<span class="params">brokerId: <span class="type">Int</span></span>) <span class="keyword">extends</span> <span class="title">Logging</span> </span>&#123;</span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">val</span> cache = <span class="keyword">new</span> mutable.<span class="type">HashMap</span>[<span class="type">String</span>, mutable.<span class="type">Map</span>[<span class="type">Int</span>, <span class="type">PartitionStateInfo</span>]]()</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">getTopicMetadata</span></span>(topics: <span class="type">Set</span>[<span class="type">String</span>], protocol: <span class="type">SecurityProtocol</span>) = &#123;</span><br><span class="line">    <span class="keyword">val</span> topicResponses: mutable.<span class="type">ListBuffer</span>[<span class="type">TopicMetadata</span>] = <span class="keyword">new</span> mutable.<span class="type">ListBuffer</span>[<span class="type">TopicMetadata</span>]</span><br><span class="line">    <span class="keyword">for</span> (topic &lt;- topicsRequested) &#123;</span><br><span class="line">        <span class="keyword">val</span> partitionStateInfos = cache(topic)</span><br><span class="line">        <span class="comment">// 将partitionStateInfos中的每个元素都转换成PartitionMetadata,最后再放到TopicMetadata中</span></span><br><span class="line">        <span class="keyword">val</span> partitionMetadata = partitionStateInfos.map &#123;</span><br><span class="line">            <span class="keyword">case</span> (partitionId, partitionState) =&gt;</span><br><span class="line">              <span class="keyword">val</span> replicaInfo: <span class="type">Seq</span>[<span class="type">BrokerEndPoint</span>] = partitionState.allReplicas.map(aliveBrokers.getOrElse(_, <span class="literal">null</span>))</span><br><span class="line">                .filter(_ != <span class="literal">null</span>).toSeq.map(_.getBrokerEndPoint(protocol))</span><br><span class="line">              <span class="keyword">val</span> leader = partitionState.leaderIsrAndControllerEpoch.leaderAndIsr.leader</span><br><span class="line">              <span class="keyword">val</span> isr = partitionState.leaderIsrAndControllerEpoch.leaderAndIsr.isr</span><br><span class="line">              <span class="keyword">var</span> leaderBrokerInfo: <span class="type">Option</span>[<span class="type">Broker</span>] = aliveBrokers.get(leader)</span><br><span class="line">              <span class="keyword">var</span> leaderInfo: <span class="type">Option</span>[<span class="type">BrokerEndPoint</span>] = <span class="type">Some</span>(leaderBrokerInfo.get.getBrokerEndPoint(protocol))</span><br><span class="line">              <span class="keyword">var</span> isrInfo: <span class="type">Seq</span>[<span class="type">BrokerEndPoint</span>] = isr.map(aliveBrokers.getOrElse(_, <span class="literal">null</span>)).filter(_ != <span class="literal">null</span>).map(_.getBrokerEndPoint(protocol))</span><br><span class="line">              <span class="keyword">new</span> <span class="type">PartitionMetadata</span>(partitionId, leaderInfo, replicaInfo, isrInfo, <span class="type">Errors</span>.<span class="type">NONE</span>.code)</span><br><span class="line">        &#125;</span><br><span class="line">        topicResponses += <span class="keyword">new</span> <span class="type">TopicMetadata</span>(topic, partitionMetadata.toSeq)</span><br><span class="line">    &#125;</span><br><span class="line">    topicResponses</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>不过我们更关心updateCache的调用时机: <code>ControllerChannelManager.sendRequestsToBrokers</code>发送了<code>UPDATE_METADATA_KEY</code>,<br><code>KafkaApis.handleUpdateMetadataRequest</code>-&gt;<code>replicaManager.maybeUpdateMetadataCache</code>-&gt;<code>metadataCache.updateCache</code>  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">addOrUpdatePartitionInfo</span></span>(topic: <span class="type">String</span>, partitionId: <span class="type">Int</span>, stateInfo: <span class="type">PartitionStateInfo</span>) &#123;</span><br><span class="line">    cache.get(topic) <span class="keyword">match</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="type">Some</span>(infos) =&gt; infos.put(partitionId, stateInfo)</span><br><span class="line">        <span class="keyword">case</span> <span class="type">None</span> =&gt; &#123;</span><br><span class="line">          <span class="keyword">val</span> newInfos: mutable.<span class="type">Map</span>[<span class="type">Int</span>, <span class="type">PartitionStateInfo</span>] = <span class="keyword">new</span> mutable.<span class="type">HashMap</span>[<span class="type">Int</span>, <span class="type">PartitionStateInfo</span>]</span><br><span class="line">          cache.put(topic, newInfos)</span><br><span class="line">          newInfos.put(partitionId, stateInfo)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">updateCache</span></span>(updateMetadataRequest: <span class="type">UpdateMetadataRequest</span>, brokerId: <span class="type">Int</span>, stateChangeLogger: <span class="type">StateChangeLogger</span>) &#123;</span><br><span class="line">      aliveBrokers = updateMetadataRequest.aliveBrokers.map(b =&gt; (b.id, b)).toMap</span><br><span class="line">      updateMetadataRequest.partitionStateInfos.foreach &#123; <span class="keyword">case</span>(tp, info) =&gt;</span><br><span class="line">        <span class="keyword">if</span> (info.leaderIsrAndControllerEpoch.leaderAndIsr.leader == <span class="type">LeaderAndIsr</span>.<span class="type">LeaderDuringDelete</span>) &#123;</span><br><span class="line">          removePartitionInfo(tp.topic, tp.partition)</span><br><span class="line">        &#125; <span class="keyword">else</span> addOrUpdatePartitionInfo(tp.topic, tp.partition, info)</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>虽然MetadataCache的类变量brokerId以及updateCache也有brokerId,不过它们都没有被用到.<br>这里的MetadataCache只是为了找出group对应的partition的Leader节点(元数据),即协调节点.  </p>
+</blockquote>
+<p>下面总结了生产,消费,协调,更新元数据的请求和响应,以及附带的数据结构:  </p>
+<table>
+<thead>
+<tr>
+<th>request</th>
+<th>data</th>
+<th>response</th>
+<th>result</th>
+<th>meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ProduceRequest</td>
+<td>partitionRecords</td>
+<td>ProduceResponse</td>
+<td>PartitionResponse.baseOffset</td>
+<td>生产者提供消息,返回在Log中的offset</td>
+</tr>
+<tr>
+<td>FetchRequest</td>
+<td>PartitionFetchInfo(offset,fetchSize)</td>
+<td>FetchResponse</td>
+<td>FetchResponsePartitionData.messages</td>
+<td>拉取消息提供起始和大小,返回消息集</td>
+</tr>
+<tr>
+<td>GroupCoordinatorRequest</td>
+<td>groupId</td>
+<td>GroupCoordinatorRespnse</td>
+<td>coordinatorOpt</td>
+<td>获取消费组的协调节点,提供消费组id,返回协调节点</td>
+</tr>
+<tr>
+<td>UpdateMetadataRequest</td>
+<td>PartitionStateInfos(leader,isr,ar)</td>
+<td>UpdateMetadataResponse</td>
+<td>-</td>
+<td>更新元数据,提供Partition的元数据,保存到MetadataCache中</td>
+</tr>
+</tbody>
+</table>
+<h2 id="commitOffsets(consumer)">commitOffsets(consumer)</h2><p>在初始化ZooKeeperConsumerConnector时剩下最后一步autoCommit了,自动提交offset.<br>要提交哪些partition取自于<code>topicRegistry</code>,它是在rebalance中为该consumer分配的partition.<br>消费者要提交offset,使用协调节点的offsetsChannel,发送<code>TopicAndPartition-&gt;offset</code>给Kafka.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">commitOffsets</span></span>(isAutoCommit: <span class="type">Boolean</span>) &#123;</span><br><span class="line">  <span class="keyword">val</span> offsetsToCommit = immutable.<span class="type">Map</span>(topicRegistry.flatMap &#123; </span><br><span class="line">      <span class="keyword">case</span> (topic, partitionTopicInfos) =&gt; partitionTopicInfos.map &#123; </span><br><span class="line">          <span class="keyword">case</span> (partition, info) =&gt; <span class="type">TopicAndPartition</span>(info.topic, info.partitionId) -&gt; <span class="type">OffsetAndMetadata</span>(info.getConsumeOffset())</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;.toSeq: _*)</span><br><span class="line">  commitOffsets(offsetsToCommit, isAutoCommit)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">commitOffsets</span></span>(offsetsToCommit: immutable.<span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">OffsetAndMetadata</span>], isAutoCommit: <span class="type">Boolean</span>) &#123;</span><br><span class="line">  <span class="keyword">if</span> (config.offsetsStorage == <span class="string">"zookeeper"</span>) &#123;</span><br><span class="line">      offsetsToCommit.foreach &#123; </span><br><span class="line">          <span class="keyword">case</span> (topicAndPartition, offsetAndMetadata) =&gt;  commitOffsetToZooKeeper(topicAndPartition, offsetAndMetadata.offset) </span><br><span class="line">      &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">val</span> offsetCommitRequest = <span class="type">OffsetCommitRequest</span>(config.groupId, offsetsToCommit, clientId = config.clientId)</span><br><span class="line">      ensureOffsetManagerConnected()</span><br><span class="line">      offsetsChannel.send(offsetCommitRequest)</span><br><span class="line">      <span class="keyword">val</span> offsetCommitResponse = <span class="type">OffsetCommitResponse</span>.readFrom(offsetsChannel.receive().payload())</span><br><span class="line">      offsetCommitResponse.commitStatus.foldLeft(<span class="literal">false</span>, <span class="literal">false</span>, <span class="literal">false</span>, <span class="number">0</span>) &#123; <span class="keyword">case</span> (folded, (topicPartition, errorCode)) =&gt;</span><br><span class="line">          <span class="keyword">val</span> offset = offsetsToCommit(topicPartition).offset</span><br><span class="line">          commitOffsetToZooKeeper(topicPartition, offset)</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果offset的存储介质是ZK,则写到<code>group-topic-partition</code>对应的节点,值就是offset,表示这个partition的当前offset.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">commitOffsetToZooKeeper</span></span>(topicPartition: <span class="type">TopicAndPartition</span>, offset: <span class="type">Long</span>) &#123;</span><br><span class="line">  <span class="comment">// 如果checkpointedZkOffsets中的offset和要提交的相同,则不需要再写了,因为已经写过了</span></span><br><span class="line">  <span class="keyword">if</span> (checkpointedZkOffsets.get(topicPartition) != offset) &#123;</span><br><span class="line">    <span class="keyword">val</span> topicDirs = <span class="keyword">new</span> <span class="type">ZKGroupTopicDirs</span>(config.groupId, topicPartition.topic)</span><br><span class="line">    zkUtils.updatePersistentPath(topicDirs.consumerOffsetDir + <span class="string">"/"</span> + topicPartition.partition, offset.toString)</span><br><span class="line">    <span class="comment">//checkpointedZkOffsets在addPartitionTopicInfo中被放入.如果提交时刻值发生了变化,则以现在为准.</span></span><br><span class="line">    checkpointedZkOffsets.put(topicPartition, offset)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果存储介质是kafka,则发送OffsetCommitRequest请求给Kafka服务端处理.  </p>
+<h3 id="handleOffsetCommitRequest(server)">handleOffsetCommitRequest(server)</h3><p>KafkaApis.handleOffsetCommitRequest会交给GroupCoordinator处理,包括准备和store.<br>注意至始至终<code>OffsetCommitRequest</code>中最重要的是<code>OffsetAndMetadata</code>,即offset的值.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160203180358157" alt="k_handleOffsetCommitRequest"></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">handleCommitOffsets</span></span>(groupId: <span class="type">String</span>, memberId: <span class="type">String</span>, generationId: <span class="type">Int</span>, offsetMetadata: immutable.<span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">OffsetAndMetadata</span>], responseCallback: immutable.<span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">Short</span>] =&gt; <span class="type">Unit</span>) &#123;</span><br><span class="line">  <span class="keyword">var</span> delayedOffsetStore: <span class="type">Option</span>[<span class="type">DelayedStore</span>] = <span class="type">Some</span>(</span><br><span class="line">    groupManager.prepareStoreOffsets(groupId, memberId, generationId, offsetMetadata, responseCallback))</span><br><span class="line">  delayedOffsetStore.foreach(groupManager.store)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>和fetchOffsets不同,commitOffsets有可能是个延迟的操作DelayedStore. 只有成功提交offset才会添加到offsetsCache.<br>所以<code>GroupMetadataManager.putOffset</code>是作为putCacheCallback的,只有执行成功后才会调用这个回调函数.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">prepareStoreOffsets</span></span>(groupId: <span class="type">String</span>, consumerId: <span class="type">String</span>, generationId: <span class="type">Int</span>,</span><br><span class="line">                        offsetMetadata: immutable.<span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">OffsetAndMetadata</span>],</span><br><span class="line">                        responseCallback: immutable.<span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">Short</span>] =&gt; <span class="type">Unit</span>): <span class="type">DelayedStore</span> = &#123;</span><br><span class="line">  <span class="comment">// construct the message set to append</span></span><br><span class="line">  <span class="keyword">val</span> messages = offsetMetadata.map &#123; <span class="keyword">case</span> (topicAndPartition, offsetAndMetadata) =&gt; <span class="keyword">new</span> <span class="type">Message</span>(</span><br><span class="line">    key = offsetCommitKey(groupId, topicAndPartition.topic, topicAndPartition.partition), <span class="comment">//Group-Topic-Partition</span></span><br><span class="line">    bytes = offsetCommitValue(offsetAndMetadata)  <span class="comment">//offset</span></span><br><span class="line">  )&#125;.toSeq</span><br><span class="line">  <span class="keyword">val</span> offsetTopicPartition = <span class="keyword">new</span> <span class="type">TopicPartition</span>(<span class="type">GroupCoordinator</span>.<span class="type">GroupMetadataTopicName</span>, partitionFor(groupId)) <span class="comment">//Topic-Partition</span></span><br><span class="line">  <span class="keyword">val</span> offsetsAndMetadataMessageSet = <span class="type">Map</span>(offsetTopicPartition -&gt; <span class="keyword">new</span> <span class="type">ByteBufferMessageSet</span>(config.offsetsTopicCompressionCodec, messages:_*))</span><br><span class="line"></span><br><span class="line">  <span class="comment">// set the callback function to insert offsets into cache after log append completed</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">putCacheCallback</span></span>(responseStatus: <span class="type">Map</span>[<span class="type">TopicPartition</span>, <span class="type">PartitionResponse</span>]) &#123;</span><br><span class="line">    <span class="comment">// construct the commit response status and insert the offset and metadata to cache if the append status has no error</span></span><br><span class="line">    <span class="keyword">val</span> status = responseStatus(offsetTopicPartition)</span><br><span class="line">    offsetMetadata.foreach &#123; <span class="keyword">case</span> (topicAndPartition, offsetAndMetadata) =&gt; </span><br><span class="line">      putOffset(<span class="type">GroupTopicPartition</span>(groupId, topicAndPartition), offsetAndMetadata) </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// compute the final error codes for the commit response</span></span><br><span class="line">    <span class="keyword">val</span> commitStatus = offsetMetadata.map &#123; <span class="keyword">case</span> (topicAndPartition, offsetAndMetadata) =&gt; (topicAndPartition, <span class="type">Errors</span>.<span class="type">NONE</span>.code) &#125;</span><br><span class="line">    responseCallback(commitStatus)  <span class="comment">// finally trigger the callback logic passed from the API layer</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="type">DelayedStore</span>(offsetsAndMetadataMessageSet, putCacheCallback)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Store offsets by appending it to the replicated log and then inserting to cache</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">store</span></span>(delayedAppend: <span class="type">DelayedStore</span>) &#123;</span><br><span class="line">  replicaManager.appendMessages(config.offsetCommitTimeoutMs.toLong, config.offsetCommitRequiredAcks, <span class="literal">true</span>, </span><br><span class="line">      delayedAppend.messageSet, delayedAppend.callback)  <span class="comment">// 传递需要保存的消息集,以及callback回调函数</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这里的DelayedStore和DelayedProducer,DelayedFetch类似,不同的是它并不交给Purgatory管理.<br>另一个相同点是都把responseCallback作为其中的一个高阶函数,在操作完成后,才调用这个回调函数.  </p>
+</blockquote>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160203181844107" alt="k_storeOffsets"></p>
+<p>这里的代码类似于handleProducerRequest.正常的responseCallback是直接传递给ReplicaManager.apendMessages,<br>不过这里由于添加了缓存的操作,所以在这之前会先操作缓存(putOffset),然后把新的callback传给appendMessages.  </p>
+<ul>
+<li>② prepareStoreOffsets获取offsetsAndMetadataMessageSet</li>
+<li>④ replicaManager.appendMessages(messageSet)</li>
+<li>⑤ 保存offset到log中</li>
+<li>⑥ 回调putCacheCallback, ⑦ 先putOffset加入到offsetsCache</li>
+<li>⑧ 回调responseCallback</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>handle</th>
+<th>outer-callback</th>
+<th>inner-callback</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>KafkaApis.handleProducerRequest</td>
+<td>sendResponseCallback</td>
+<td>produceResponseCallback</td>
+</tr>
+<tr>
+<td>KafkaApis.handleOffsetCommitRequest</td>
+<td>sendResponseCallback</td>
+</tr>
+<tr>
+<td>GroupMetadataManager.prepareStoreOffsets</td>
+<td>putCacheCallback</td>
+<td>responseCallback</td>
+</tr>
+</tbody>
+</table>
+<h2 id="fetchOffsets(consumer)">fetchOffsets(consumer)</h2><p>offset是如何与抓取动作互相结合起来的? 是在ZKRebalancerListener进行rebalance时,根据分配的<br>PartitionAssignment获取partition的offset,用于构建PartitionTopicInfo,形成topicRegistry(也用于commit).  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">rebalance</span></span>(cluster: <span class="type">Cluster</span>): <span class="type">Boolean</span> = &#123;</span><br><span class="line">    <span class="keyword">val</span> offsetFetchResponseOpt = fetchOffsets(topicPartitions)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>offset代表了Consumer在这个Partition上已经抓取到的最新数据偏移量,给定offset之后,Consumer就知道这次FetchRequest<br>应该从Partition的什么位置开始抓取数据.抓取数据的流程交给了FetcherThread去完成(offset是给fetcher做准备的).  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160129111243884" alt="k_offset_fetcher"></p>
+<p>通过Channel发送请求获取响应的流程都是一样的.请求发送到Channel,然后从Channel中接收数据.<br>由于在发送请求后要立即得到结果,所以这个Channel是阻塞类型的通道,如果结果没有返回,就阻塞等待.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160201164235150" alt="k_req_resp_chann_server"></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">fetchOffsets</span></span>(partitions: <span class="type">Seq</span>[<span class="type">TopicAndPartition</span>]) = &#123;</span><br><span class="line">  <span class="keyword">if</span> (config.offsetsStorage == <span class="string">"zookeeper"</span>) &#123;</span><br><span class="line">    <span class="keyword">val</span> offsets = partitions.map(fetchOffsetFromZooKeeper)</span><br><span class="line">    <span class="type">Some</span>(<span class="type">OffsetFetchResponse</span>(immutable.<span class="type">Map</span>(offsets:_*)))</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">val</span> offsetFetchRequest = <span class="type">OffsetFetchRequest</span>(groupId = config.groupId, requestInfo = partitions, clientId = config.clientId)</span><br><span class="line">    <span class="keyword">var</span> offsetFetchResponseOpt: <span class="type">Option</span>[<span class="type">OffsetFetchResponse</span>] = <span class="type">None</span></span><br><span class="line">    <span class="keyword">while</span> (!isShuttingDown.get &amp;&amp; !offsetFetchResponseOpt.isDefined) &#123;</span><br><span class="line">      offsetFetchResponseOpt = offsetsChannelLock synchronized &#123;</span><br><span class="line">          ensureOffsetManagerConnected()</span><br><span class="line">          offsetsChannel.send(offsetFetchRequest)</span><br><span class="line">          <span class="keyword">val</span> offsetFetchResponse = <span class="type">OffsetFetchResponse</span>.readFrom(offsetsChannel.receive().payload())</span><br><span class="line">          <span class="type">Some</span>(offsetFetchResponse) </span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (offsetFetchResponseOpt.isEmpty) <span class="type">Thread</span>.sleep(config.offsetsChannelBackoffMs)</span><br><span class="line">    &#125;</span><br><span class="line">    offsetFetchResponseOpt</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果offset存储在zk中,则读取group-topic-partition的节点值,否则发送OffsetFetchRequest到offsetChannel获取offset响应结果.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">fetchOffsetFromZooKeeper</span></span>(topicPartition: <span class="type">TopicAndPartition</span>) = &#123;</span><br><span class="line">  <span class="keyword">val</span> dirs = <span class="keyword">new</span> <span class="type">ZKGroupTopicDirs</span>(config.groupId, topicPartition.topic)</span><br><span class="line">  <span class="comment">// 获取ZK中/consumers/[group_id]/offsets/[topic]/[partition_id]的offset值</span></span><br><span class="line">  <span class="keyword">val</span> offsetString = zkUtils.readDataMaybeNull(dirs.consumerOffsetDir + <span class="string">"/"</span> + topicPartition.partition)._1</span><br><span class="line">  offsetString <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">Some</span>(offsetStr) =&gt; (topicPartition, <span class="type">OffsetMetadataAndError</span>(offsetStr.toLong))</span><br><span class="line">    <span class="keyword">case</span> <span class="type">None</span> =&gt; (topicPartition, <span class="type">OffsetMetadataAndError</span>.<span class="type">NoOffset</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="handleOffsetFetchRequest(server)">handleOffsetFetchRequest(server)</h3><p>ConsumerConnector是向offsetsChannel发送FetchRequest请求,而offsetsChannel会连接到消费组的coordinator节点.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">handleOffsetFetchRequest</span></span>(request: <span class="type">RequestChannel</span>.<span class="type">Request</span>) &#123;</span><br><span class="line">  <span class="keyword">val</span> offsetFetchRequest = request.requestObj.asInstanceOf[<span class="type">OffsetFetchRequest</span>]</span><br><span class="line">  <span class="keyword">val</span> (authorizedTopicPartitions, unauthorizedTopicPartitions) = offsetFetchRequest.requestInfo.partition &#123; topicAndPartition =&gt;</span><br><span class="line">    authorize(request.session, <span class="type">Describe</span>, <span class="keyword">new</span> <span class="type">Resource</span>(<span class="type">Topic</span>, topicAndPartition.topic))</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">val</span> authorizationError = <span class="type">OffsetMetadataAndError</span>(<span class="type">OffsetMetadata</span>.<span class="type">InvalidOffsetMetadata</span>, <span class="type">Errors</span>.<span class="type">TOPIC_AUTHORIZATION_FAILED</span>.code)</span><br><span class="line">  <span class="keyword">val</span> unauthorizedStatus = unauthorizedTopicPartitions.map(topicAndPartition =&gt; (topicAndPartition, authorizationError)).toMap</span><br><span class="line">  <span class="keyword">val</span> offsets = coordinator.handleFetchOffsets(offsetFetchRequest.groupId, authorizedTopicPartitions).toMap</span><br><span class="line">  <span class="keyword">val</span> response = <span class="type">OffsetFetchResponse</span>(offsets ++ unauthorizedStatus, offsetFetchRequest.correlationId)</span><br><span class="line">  requestChannel.sendResponse(<span class="keyword">new</span> <span class="type">RequestChannel</span>.<span class="type">Response</span>(request, <span class="keyword">new</span> <span class="type">RequestOrResponseSend</span>(request.connectionId, response)))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>GroupCoordinator根据group-topic-partition,返回topic-partition的offset.<br>GroupCoordinator.handleFetchOffsets交给GroupMetadataManager.getOfsets处理.<br>GroupMetadataManager会从offsetsCache获取对应的offsetAndMetadata.<br>而offsetsCache是在commitOffset时放入的.所以commit时放入cache,fetch时从cache获取.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Fetch the current offset for the given group/topic/partition from the underlying offsets storage.</span></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">getOffset</span></span>(key: <span class="type">GroupTopicPartition</span>) = &#123;</span><br><span class="line">  <span class="keyword">val</span> offsetAndMetadata = offsetsCache.get(key)</span><br><span class="line">  <span class="type">OffsetMetadataAndError</span>(offsetAndMetadata.offset, offsetAndMetadata.metadata, <span class="type">Errors</span>.<span class="type">NONE</span>.code)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>fetchOffsets和commitOffsets中用到的几个缓存数据结构:  </p>
+<table>
+<thead>
+<tr>
+<th>metadata</th>
+<th>data</th>
+<th>cache</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TopicMetadata</td>
+<td>topic,partitionsMetadata</td>
+<td>MetadataCache</td>
+</tr>
+<tr>
+<td>PartitionMetadata</td>
+<td>partition_id,isr,leader,ar</td>
+<td>-</td>
+</tr>
+<tr>
+<td>OffsetMetadata</td>
+<td>offset</td>
+<td>GroupMetadataManager.offsetsCache</td>
+</tr>
+<tr>
+<td>GroupMetadata</td>
+<td>group_id,members,state</td>
+<td>GroupMetadataManager.groupsCache</td>
+</tr>
+</tbody>
+</table>
+<h2 id="小结">小结</h2><p>下表是本节重点分析的三个方法,以及在KafkaServer端的处理步骤:  </p>
+<table>
+<thead>
+<tr>
+<th>ConsumerConnector</th>
+<th>Request</th>
+<th>KafkaApis</th>
+<th>GroupCoordinator</th>
+<th>GroupMetadataManager</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>channelToOffsetManager</td>
+<td>GroupCoordinatorRequest</td>
+<td>handleGroupCoordinatorRequest</td>
+</tr>
+<tr>
+<td>commitOffsets</td>
+<td>OffsetCommitRequest</td>
+<td>handleOffsetCommitRequest</td>
+<td>handleCommitOffsets</td>
+<td>store</td>
+</tr>
+<tr>
+<td>fetchOffsets</td>
+<td>OffsetFetchRequest</td>
+<td>handleOffsetFetchRequest</td>
+<td>handleFetchOffsets</td>
+<td>getOffsets</td>
+</tr>
+</tbody>
+</table>
+<p>虽然High-level Consumer不需要客户端应用程序自己管理offset,但由于Kafka的消费者会自己管理offset,<br>所以对于高级API的offset被Kafka抽象出来,对于客户端是透明的.客户端不需要管理,并不代表这个工作不需要做.  </p>
+<p>目前为止Consumer分成了三大部分. 首先介绍high-level,然后分别介绍了消费者的抓取线程和offset管理.<br>因为high-level也需要抓取数据和管理offset,只不过这部分工作是内置的.而low-level则需要客户端代码自己实现.<br>所以如果是low-level consumer,则客户端代码要实现抓取和offset的管理,以及故障处理(比如寻找Leader等).<br>参考: <a href="https://cwiki.apache.org/confluence/display/KAFKA/0.8.0+SimpleConsumer+Example" target="_blank" rel="noopener">https://cwiki.apache.org/confluence/display/KAFKA/0.8.0+SimpleConsumer+Example</a>  </p>
+<table>
+<thead>
+<tr>
+<th>consumer</th>
+<th>main</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>high level consumer</td>
+<td>ConsumerGroup</td>
+</tr>
+<tr>
+<td>low level consumer</td>
+<td>SimpleConsumer</td>
+</tr>
+</tbody>
+</table>
+<h2 id="SimpleConsumer">SimpleConsumer</h2><p>客户端代码使用Low Level Consumer的一般流程如下:  </p>
+<ul>
+<li>1) 查找到一个”活着”的Broker，并且找出每个Partition的Leader, 同时找出Follower(Replica Brokers)</li>
+<li>2) 定义好请求(OffsetRequest)，该请求应该能描述应用程序需要哪些数据</li>
+<li>3) Fetch数据, 这一步会串联起来其他的几个步骤</li>
+<li>4) 识别Leader的变化，并对之作出必要的响应</li>
+</ul>
+<h3 id="1)_找出Partition的Leader和Follower">1) 找出Partition的Leader和Follower</h3><p>根据topic和partition,向SimpleConsumer发送TopicMetadataRequest,返回信息是TopicMetadata.<br>而TopicMetadata包括了topic对应的所有Partition的PartitionMetadata.<br>PartitionMetadata是Partition的元数据,所以含有Partition的Leader信息.  </p>
+<p>这个过程和LeaderFinderThread中分析的fetchTopicMetadata一样,不过现在客户端代码要自己实现.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> PartitionMetadata <span class="title">findLeader</span><span class="params">(List&lt;String&gt; a_seedBrokers, <span class="keyword">int</span> a_port, String a_topic, <span class="keyword">int</span> a_partition)</span> </span>&#123;</span><br><span class="line">    PartitionMetadata returnMetaData = <span class="keyword">null</span>;</span><br><span class="line">    loop:</span><br><span class="line">    <span class="keyword">for</span> (String seed : a_seedBrokers) &#123;</span><br><span class="line">        SimpleConsumer consumer = <span class="keyword">new</span> SimpleConsumer(seed, a_port, <span class="number">100000</span>, <span class="number">64</span> * <span class="number">1024</span>, <span class="string">"leaderLookup"</span>);</span><br><span class="line">        List&lt;String&gt; topics = Collections.singletonList(a_topic);</span><br><span class="line">        TopicMetadataRequest req = <span class="keyword">new</span> TopicMetadataRequest(topics);</span><br><span class="line">        kafka.javaapi.TopicMetadataResponse resp = consumer.send(req);</span><br><span class="line">        List&lt;TopicMetadata&gt; metaData = resp.topicsMetadata();</span><br><span class="line">        <span class="keyword">for</span> (TopicMetadata item : metaData) &#123;</span><br><span class="line">            <span class="keyword">for</span> (PartitionMetadata part : item.partitionsMetadata()) &#123;</span><br><span class="line">                <span class="keyword">if</span> (part.partitionId() == a_partition) &#123;</span><br><span class="line">                    returnMetaData = part;</span><br><span class="line">                    <span class="keyword">break</span> loop;  <span class="comment">// 只要找到一个,就退出所有循环</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (returnMetaData != <span class="keyword">null</span>) &#123;</span><br><span class="line">        m_replicaBrokers.clear();</span><br><span class="line">        <span class="keyword">for</span> (kafka.cluster.Broker replica : returnMetaData.replicas()) &#123;</span><br><span class="line">            <span class="comment">// PartitionMetadata除了Partition的Leader,还有follower.  </span></span><br><span class="line">            m_replicaBrokers.add(replica.host());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> returnMetaData;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="2)_获取上次/最近读取的offset">2) 获取上次/最近读取的offset</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">long</span> <span class="title">getLastOffset</span><span class="params">(SimpleConsumer consumer, String topic, <span class="keyword">int</span> partition, <span class="keyword">long</span> whichTime, String clientName)</span> </span>&#123;</span><br><span class="line">    TopicAndPartition topicAndPartition = <span class="keyword">new</span> TopicAndPartition(topic, partition);</span><br><span class="line">    Map&lt;TopicAndPartition, PartitionOffsetRequestInfo&gt; requestInfo = <span class="keyword">new</span> HashMap&lt;TopicAndPartition, PartitionOffsetRequestInfo&gt;();</span><br><span class="line">    requestInfo.put(topicAndPartition, <span class="keyword">new</span> PartitionOffsetRequestInfo(whichTime, <span class="number">1</span>));</span><br><span class="line">    kafka.javaapi.OffsetRequest request = <span class="keyword">new</span> kafka.javaapi.OffsetRequest(requestInfo, kafka.api.OffsetRequest.CurrentVersion(),clientName);</span><br><span class="line">    OffsetResponse response = consumer.getOffsetsBefore(request);</span><br><span class="line">    <span class="keyword">long</span>[] offsets = response.offsets(topic, partition);</span><br><span class="line">    <span class="keyword">return</span> offsets[<span class="number">0</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>getOffsetsBefore类似于ZKRebalanceListener.rebalance的fetchOffsets,以及ConsumerFetcherThread.SimpleConsumer的fetch  </p>
+<table>
+<thead>
+<tr>
+<th>method</th>
+<th>invoker</th>
+<th>request</th>
+<th>response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>fetchOffsets</td>
+<td>ZKRebalanceListener.rebalance</td>
+<td>OffsetFetchRequest</td>
+<td>OffsetFetchResponse</td>
+</tr>
+<tr>
+<td>getOffsetsBefore</td>
+<td>getLastOffset</td>
+<td>OffsetRequest</td>
+<td>OffsetResponse</td>
+</tr>
+<tr>
+<td>fetch</td>
+<td>ConsumerFetcherThread</td>
+<td>FetchRequest</td>
+<td>FetchResponse</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getOffsetsBefore</span></span>(request: <span class="type">OffsetRequest</span>) = <span class="type">OffsetResponse</span>.readFrom(sendRequest(request).payload())</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fetchOffsets</span></span>(request: <span class="type">OffsetFetchRequest</span>) = <span class="type">OffsetFetchResponse</span>.readFrom(sendRequest(request).payload())</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fetch</span></span>(request: <span class="type">FetchRequest</span>): <span class="type">FetchResponse</span> = <span class="type">FetchResponse</span>.readFrom(sendRequest(request).payload(), request.versionId)</span><br></pre></td></tr></table></figure>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160219101110012" alt="k_offset_request"></p>
+<h3 id="3)_读取数据(fetch)">3) 读取数据(fetch)</h3><p>上面通过getLastOffset的返回值是fetch时的fetchOffset(代码中的readOffset),然后构建FetchRequest,<br>向consumer发起fetch动作.这也和ConsumerFetcherThread的buildFetchRequest,fetch两个步骤是一样的.  </p>
+<p>ConsumerFetcherThread对fetch的结果调用processPartitionData将消息放入队列被ConsumerIterator消费.<br>而这里根据fetchResponse.messageSet消息集直接获取消息内容payload,不需要其他的线程完成获取消息的工作.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160219101125419" alt="k_fetch_request"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// When calling FetchRequestBuilder, it's important NOT to call .replicaId(), which is meant for internal use only.</span></span><br><span class="line"><span class="comment">// Setting the replicaId incorrectly will cause the brokers to behave incorrectly.</span></span><br><span class="line">FetchRequest req = <span class="keyword">new</span> FetchRequestBuilder().clientId(clientName).addFetch(a_topic, a_partition, readOffset, <span class="number">100000</span>).build();</span><br><span class="line">FetchResponse fetchResponse = consumer.fetch(req);</span><br><span class="line"> </span><br><span class="line"><span class="keyword">if</span> (fetchResponse.hasError()) &#123; </span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">for</span> (MessageAndOffset messageAndOffset : fetchResponse.messageSet(a_topic, a_partition)) &#123;</span><br><span class="line">    <span class="keyword">long</span> currentOffset = messageAndOffset.offset();  </span><br><span class="line">    <span class="keyword">if</span> (currentOffset &lt; readOffset) &#123;  <span class="comment">// 申请的fetchOffset,返回结果中的消息集的offset应该也是大于fetchOffset的</span></span><br><span class="line">        System.out.println(<span class="string">"Found an old offset: "</span> + currentOffset + <span class="string">" Expecting: "</span> + readOffset);</span><br><span class="line">        <span class="keyword">continue</span>;  <span class="comment">// 旧的offset,则不执行下面的逻辑, 继续下一条消息</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 每消费一条消息,就重置readOffset,这样下次fetch时,readOffst就是上一次最近的</span></span><br><span class="line">    readOffset = messageAndOffset.nextOffset();</span><br><span class="line">    ByteBuffer payload = messageAndOffset.message().payload();</span><br><span class="line">    <span class="keyword">byte</span>[] bytes = <span class="keyword">new</span> <span class="keyword">byte</span>[payload.limit()];</span><br><span class="line">    payload.get(bytes);</span><br><span class="line">    System.out.println(String.valueOf(messageAndOffset.offset()) + <span class="string">": "</span> + <span class="keyword">new</span> String(bytes, <span class="string">"UTF-8"</span>));</span><br><span class="line">    a_maxReads--;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意readOffset会请求最近读取的消息(messageAndOffset),计算出下一个offset的值(nextOffset).<br>通过这种方式可以处理完一整块消息,并且在下次fetch的时候告诉Kafka应该从哪里开始抓取新的数据.  </p>
+<p>在代码中还显示检查了读取出来的消息的offset不应该比抓取请求的readOffset小.这种情况对于消息的压缩是必要的.<br>如果kafka将消息集进行了压缩,抓取请求会返回一个完整的压缩块,即使抓取请求的offset并不是压缩块的开始位置.<br>(比如readOffset=10,但压缩块的offset范围从5-20,则返回的完整的压缩块的开始offset会比readOffset要小)<br>因此对于比readOffset要小的这部分消息,需要跳过,否则就会出现之前读取过的消息又被重复读取的情况.  </p>
+<p>由于SimpleConsumer获取数据并没有处理Leader Broker发生故障的情况,客户端要自己写代码来完成这个工作.  </p>
+<h3 id="4)_错误处理">4) 错误处理</h3><p>ConsumerFetcherThread的抽象父类AbstractFetcherThread在processFetchRequest对返回结果responseData中<br>的每个Partition的错误码分成:Errors.NONE和Errors.OFFSET_OUT_OF_RANGE.这里也要处理OffsetOutOfRangeCode  </p>
+<p>AbstractFetcherThread对于offset超出范围的处理是根据重置策略传递earliest或Latest得到newOffset.<br>而这里则是调用2) getLastOffset获取<code>最近</code>读取成功的offset, 所以传递的时间是<code>Latest</code>(last=latest).  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (fetchResponse.hasError()) &#123;</span><br><span class="line">     numErrors++;</span><br><span class="line">     <span class="keyword">short</span> code = fetchResponse.errorCode(a_topic, a_partition);</span><br><span class="line">     <span class="keyword">if</span> (numErrors &gt; <span class="number">5</span>) <span class="keyword">break</span>;</span><br><span class="line"> </span><br><span class="line">     <span class="keyword">if</span> (code == ErrorMapping.OffsetOutOfRangeCode())  &#123;</span><br><span class="line">         <span class="comment">// We asked for an invalid offset. For simple case ask for the last element to reset</span></span><br><span class="line">         readOffset = getLastOffset(consumer,a_topic, a_partition, kafka.api.OffsetRequest.LatestTime(), clientName);</span><br><span class="line">         <span class="keyword">continue</span>;</span><br><span class="line">     &#125;</span><br><span class="line">     consumer.close();</span><br><span class="line">     consumer = <span class="keyword">null</span>;</span><br><span class="line">     leadBroker = findNewLeader(leadBroker, a_topic, a_partition, a_port);</span><br><span class="line">     <span class="keyword">continue</span>;</span><br><span class="line">&#125;</span><br><span class="line">numErrors = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<p>findNewLeader中也会调用findLeader,不过参数是m_replicaBrokers,说明findLeader会先调用一次,m_replicaBrokers才有值<br>之前调用过一次findLeader返回的leadBroker作为findNewLeader的参数,是a_oldLeader,findNewLeader返回新的Leader  </p>
+<p>因为fetch失败,说明是Leader Broker发生了故障,而Leader出错后,应该由Partition的follower Broker中的一个成为Leader.<br>所以在findNewLeader时,传递的是第一次findLeader得到的m_replicaBrokers.然后构造SimpleConsumer发送TopicMetadataRequest<br>如果在findNewLeader中无法连接包含当前Partition的任何一个replicaBrokers,就放弃并强制退出(抛出异常).  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"> <span class="function"><span class="keyword">private</span> String <span class="title">findNewLeader</span><span class="params">(String a_oldLeader, String a_topic, <span class="keyword">int</span> a_partition, <span class="keyword">int</span> a_port)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">        <span class="keyword">boolean</span> goToSleep = <span class="keyword">false</span>;</span><br><span class="line">        <span class="comment">// m_replicaBrokers表示的是Partition的follower brokers. 所以findLeader会先调用一次,这样m_replicaBrokers才有值</span></span><br><span class="line">        PartitionMetadata metadata = findLeader(m_replicaBrokers, a_port, a_topic, a_partition);</span><br><span class="line">        <span class="keyword">if</span> (metadata == <span class="keyword">null</span>) &#123;</span><br><span class="line">            goToSleep = <span class="keyword">true</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (metadata.leader() == <span class="keyword">null</span>) &#123;</span><br><span class="line">            goToSleep = <span class="keyword">true</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (a_oldLeader.equalsIgnoreCase(metadata.leader().host()) &amp;&amp; i == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">// first time(i=0) through if the leader hasn't changed give ZooKeeper a second to recover</span></span><br><span class="line">            <span class="comment">// second time(i=1), assume the broker did recover before failover, or it was a non-Broker issue</span></span><br><span class="line">            goToSleep = <span class="keyword">true</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> metadata.leader().host();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (goToSleep) Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"Unable to find new leader after Broker failure. Exiting"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>客户端代码使用SimpleConsumer完成low-level的消息消费的流程图:  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160219140343212" alt="k_simple_consumer"></p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/01/29/2016-01-29-Kafka-Consumer-offset/">Kafka源码分析 Consumer(3) offset</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年01月29日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/01/29/2016-01-29-Kafka-Consumer-offset/" title="Kafka源码分析 Consumer(3) offset">http://github.com/zqhxuyuan/2016/01/29/2016-01-29-Kafka-Consumer-offset/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/01/29/2016-01-29-Kafka-Consumer-offset/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/02/18/Kafka-Consumer-Offset-Manager/">
+        译：Kafka消费者的Offset管理
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/01/25/Redis-SortedSet/">
+        Redis SortedSet
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#导读"><span class="toc-number">1.</span> <span class="toc-text">导读</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OffsetManager"><span class="toc-number">2.</span> <span class="toc-text">OffsetManager</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#channelToOffsetManager(consumer)"><span class="toc-number">2.1.</span> <span class="toc-text">channelToOffsetManager(consumer)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#handleGroupCoordinatorRequest(server)"><span class="toc-number">2.2.</span> <span class="toc-text">handleGroupCoordinatorRequest(server)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MetadataCache"><span class="toc-number">2.3.</span> <span class="toc-text">MetadataCache</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#commitOffsets(consumer)"><span class="toc-number">3.</span> <span class="toc-text">commitOffsets(consumer)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#handleOffsetCommitRequest(server)"><span class="toc-number">3.1.</span> <span class="toc-text">handleOffsetCommitRequest(server)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fetchOffsets(consumer)"><span class="toc-number">4.</span> <span class="toc-text">fetchOffsets(consumer)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#handleOffsetFetchRequest(server)"><span class="toc-number">4.1.</span> <span class="toc-text">handleOffsetFetchRequest(server)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#小结"><span class="toc-number">5.</span> <span class="toc-text">小结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SimpleConsumer"><span class="toc-number">6.</span> <span class="toc-text">SimpleConsumer</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1)_找出Partition的Leader和Follower"><span class="toc-number">6.1.</span> <span class="toc-text">1) 找出Partition的Leader和Follower</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2)_获取上次/最近读取的offset"><span class="toc-number">6.2.</span> <span class="toc-text">2) 获取上次/最近读取的offset</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3)_读取数据(fetch)"><span class="toc-number">6.3.</span> <span class="toc-text">3) 读取数据(fetch)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4)_错误处理"><span class="toc-number">6.4.</span> <span class="toc-text">4) 错误处理</span></a></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/01/29/2016-01-29-Kafka-Consumer-offset/" data-title="Kafka源码分析 Consumer(3) offset" data-url="http://github.com/zqhxuyuan/2016/01/29/2016-01-29-Kafka-Consumer-offset/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/02/18/Kafka-Consumer-Offset-Manager/" title="上一篇: 译：Kafka消费者的Offset管理">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/01/25/Redis-SortedSet/" title="下一篇: Redis SortedSet">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

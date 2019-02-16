@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>译：使用Kafka Connect构建一个可扩展的ETL管道 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="How to Build a Scalable ETL Pipeline with Kafka Connecthttp://www.confluent.io/blog/how-to-build-a-scalable-etl-pipeline-with-kafka-connect">
+<meta name="keywords" content="kafka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="译：使用Kafka Connect构建一个可扩展的ETL管道">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/02/21/Kafka-Connect/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="How to Build a Scalable ETL Pipeline with Kafka Connecthttp://www.confluent.io/blog/how-to-build-a-scalable-etl-pipeline-with-kafka-connect">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.340Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="译：使用Kafka Connect构建一个可扩展的ETL管道">
+<meta name="twitter:description" content="How to Build a Scalable ETL Pipeline with Kafka Connecthttp://www.confluent.io/blog/how-to-build-a-scalable-etl-pipeline-with-kafka-connect">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Kafka-Connect" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/02/21/Kafka-Connect/" class="article-date">
+  	<time datetime="2016-02-20T16:00:00.000Z" itemprop="datePublished">2016-02-21</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      译：使用Kafka Connect构建一个可扩展的ETL管道
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/translate/">translate</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/">kafka</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>How to Build a Scalable ETL Pipeline with Kafka Connect<br><a href="http://www.confluent.io/blog/how-to-build-a-scalable-etl-pipeline-with-kafka-connect" target="_blank" rel="noopener">http://www.confluent.io/blog/how-to-build-a-scalable-etl-pipeline-with-kafka-connect</a><br><a id="more"></a></p>
+<p>Apache Kafka是一个高性能的分布式消息系统,现在已经被很多公司用来管理他们的实时数据.<br>他们使用Kafka用在很多地方,实时流处理,数据同步,消息处理等等.其中最重要的应用之一是ETL管道.<br>Kafka是构建数据流管道的理想工具,它是可靠的,可扩展的,并且是高效的.  </p>
+<p>直到最近,使用kafka构建管道都需要一些额外的工作,每个你想要连接到kafka的系统要么需要自定义的代码<br>或者针对不同的接入系统分别使用不同的工具,每种新的工具都使用不同的配置,比如不同的数据格式,还要用<br>不同的方式来管理和监控.用这些大杂烩构建出来的管道是很脆弱的,并且很难进行统一管理.  </p>
+<p>Kafka Connect被设计用来简化构建大规模,实时数据管道的构建.它标准化了数据和kafka之间输入输入的方式.<br>你可以使用kafka connectors从外部系统中读取数据或者写入外部系统,管理数据流,扩展系统,这一切都不需要写新的代码.<br>Kafka Connect管理了和其他系统连接的所有共同问题(扩展性,故障容忍,配置,管理),这样每个connector就可以专注于<br>怎么以最好的方式在目标系统和kafka之间拷贝数据. Kafka Connect可以获取整个数据库(的数据);<br>或者从你所有的应用服务器收集指标到kafka的topics中,使得数据可以被用于低延迟的流处理系统;<br>一个导出的connector会将数据从kafka的topics中发送到二级索引(ElasticSearch)或者批处理系统(Hadoop)用于离线分析.  </p>
+<p>Confluent平台(译注:开发kafka的背后公司)现在已经整合了Kafka Connect,包含了三种connectors:<br>移动文件的connector, 针对SQL数据库的JDBC connector, 针对Hadoop(包括Hive)的HDFS connector.<br>JDBC和HDFS connector都提供了有用的功能让你能够很容易地构建ETL管道.  </p>
+<p>JDBC connector允许你使用JDBC Driver就可以从任何的关系型数据库中导出数据到kafka.<br>通过使用JDBC,这个connector可以支持很多类型的数据库,而且不需要为每一种数据库都编写自定义的代码.    </p>
+<p>数据被加载的方式是定时地执行一个SQL查询,并在结果集中为每一行创建一个输出记录.<br>默认情况下,数据库中所有的表都会被拷贝,每张表都对应自己的输出topic,这样很容易获取整个数据库的数据到kafka中.<br>数据库会监控新创建和删除的表,并且自动地调整. 当从一张表中拷贝数据时,connector可以只加载新建或修改的行.<br>你只需要指定哪些列需要被用来检测改变(即发生改变的时候才拷贝数据到kafka中).  </p>
+<p>HDFS connector允许你将kafka topics的数据导入到HDFS文件中,文件格式可以有很多种,<br>并且可以和Hive集成, 数据注入到HDFS后,就可以使用HiveQL立即查询到.  </p>
+<p>HDFS connector持续地消费kafka的数据然后写到HDFS中. 每个Kafka topic的数据可以用不同的方式分区并且切分成块.<br>每一块数据代表了一个HDFS文件,对应了topic, kafka partition, 数据块在文件名中的开始和结束offsets.<br>如果没有指定分区方式,默认的分区器只会用kafka topic和partition简单地组织数据.<br>每个数据块的大小可以通过记录数量,写文件耗费的时间,schema的适配性等因素来决定.  </p>
+<p>HDFS connector可以选择和Hive集成,一旦启用这个功能,connector会为每个kafka topic<br>自动地创建一张Hive的外部分区表,并且会根据HDFS中可用的数据更新表.  </p>
+<p>这篇文章中我们模拟了怎么使用Kafka Connect,并结合使用JDBC和HDFS connectors来构建一个可扩展的数据管道.<br>我们还会模拟JDBC和HDFS connectors的一些有用的功能,比如数据库变更的捕获,数据结构的迁移,自定义的分区.  </p>
+<h2 id="在30分钟内构建一个可扩展的ETL管道">在30分钟内构建一个可扩展的ETL管道</h2><p>为了模拟Kafka Connect,我们构建了一个简单的数据管道,将一些常用的系统都连接在一起:<br>MySQL→Kafka→HDFS→Hive.这个管道会捕获数据库的数据变更,加载变更历史到数据仓库,即Hive.  </p>
+<p>在MySQL数据库中,有一张users表,保存了用户概要信息的当前状态,以及唯一的id列和modified列表示最近变更的时间撮.<br>我们通过更新users表中对应的条目来模拟用户概要的变更. JDBC connector会自动捕获这些用户信息的变更事件,<br>每一条变更记录都会作为一个事件写入到kafka中,然后HDFS connector会将这些事件写入到HDFS中.<br>最终存在于HDFS中的数据会是用户概要信息的编辑历史,你可以使用Hive或者Spark来分析这些数据.  </p>
+<p>为了你能够顺序启动所有需要的环境来完成这个例子,我们创建了一个虚拟机,以及源码仓库.包括了Confluent平台,Hadoop,Hive.<br>你可以使用预先构建好的虚拟机或者Vagrant来运行这个示例. </p>
+<h3 id="预编译虚拟机">预编译虚拟机</h3><p>在Virtualbox中,使用File-&gt;Import Appliance来导入预先构建好的虚拟机环境.<br>一旦虚拟机启动后,使用vagrant用户名和密码登陆到虚拟机中.  </p>
+<h3 id="Vagrant">Vagrant</h3><p>使用Vagrant可以简化虚拟机环境的搭建(因为Vagrant帮你把一些必要的环境都装好了)  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ git clone https://github.com/confluentinc/kafka-connect-blog</span><br><span class="line">$ cd kafka-connect-blog</span><br><span class="line">$ vagrant up</span><br><span class="line">$ vagrant ssh</span><br></pre></td></tr></table></figure>
+<h3 id="环境设置">环境设置</h3><p>在虚拟机中运行<code>./setup.sh</code>,会完成下面的操作:  </p>
+<p>1.下载和安装MySQL服务器,并启动MySQL服务器<br>2.下载MySQL的JDBC驱动. Hive的Metastore会使用它,Kafka的JDBC connector也会使用它<br>3.配置Hive的Metastore使用MySQL数据库</p>
+<p>然后启动必要的服务<code>./start.sh</code>,完成下面的操作:  </p>
+<p>1.启动Kafka Connect的必要服务.因为Kafka Connect使用Kafka来传输数据,所以需要启动Kafka.<br>由于写入到HDFS的数据格式是Avro,所以需要运行Schema Registry来为数据保存成Avro的schemas.<br>2.启动Hadoop,我们有一个单节点的HDFS集群: hdfs://localhost:9000<br>3.启动Hive的metastore. 使用MySQL作为Hive的元数据存储, thrift://localhost:9083</p>
+<h3 id="数据准备">数据准备</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$ mysql -u root --password=&quot;mypassword&quot;</span><br><span class="line">mysql&gt; CREATE DATABASE demo;</span><br><span class="line">mysql&gt; USE demo;</span><br><span class="line">mysql&gt; CREATE TABLE users (</span><br><span class="line">    -&gt;   id serial NOT NULL PRIMARY KEY,</span><br><span class="line">    -&gt;   name varchar(100),</span><br><span class="line">    -&gt;   email varchar(200),</span><br><span class="line">    -&gt;   department varchar(200),</span><br><span class="line">    -&gt;   modified timestamp default CURRENT_TIMESTAMP NOT NULL,</span><br><span class="line">    -&gt;   INDEX `modified_index` (`modified`)</span><br><span class="line">    -&gt; );</span><br><span class="line">mysql&gt; INSERT INTO users (name, email, department) VALUES (&apos;alice&apos;, &apos;alice@abc.com&apos;, &apos;engineering&apos;);</span><br><span class="line">mysql&gt; INSERT INTO users (name, email, department) VALUES (&apos;bob&apos;, &apos;bob@abc.com&apos;, &apos;sales&apos;);</span><br><span class="line">mysql&gt; exit;</span><br></pre></td></tr></table></figure>
+<h3 id="使用kafka_connect注入数据">使用kafka connect注入数据</h3><p>现在我们可以启动Kafka Connect将数据从MySQL注入到Kafka中,然后再到HDFS. 注意MySQL中的数据会保存在Kafka中<br>直到被注入到HDFS中,因此可以导入到其他的系统比如Cassandra,ElasticSearch.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ connect-standalone /mnt/etc/connect-avro-standalone.properties \</span><br><span class="line">    /mnt/etc/mysql.properties /mnt/etc/hdfs.properties &amp;</span><br></pre></td></tr></table></figure>
+<p>上面的命令启动了带有两个connectors的kafka connect,一个是JDBC connect用来导入MySQL数据到kafka中,<br>一个是HDFS connector用来从kafka中导出数据到HDFS. JDBC connector创建了一个test_jdbc_users topic,<br>HDFS connector从test_jdbc_users中读取数据,写入到/topics/test_jdbc_users,并且创建了一张外部的Hive表.  </p>
+<p>一旦connector完成数据注入到HDFS, 使用Hive检查数据存在于HDFS中:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ hive</span><br><span class="line">hive&gt; SHOW TABLES;</span><br><span class="line">OK</span><br><span class="line">test_jdbc_users</span><br><span class="line">hive&gt; SELECT * FROM test_jdbc_users;</span><br><span class="line">OK</span><br><span class="line">1 alice alice@abc.com engineering 1450305345000</span><br><span class="line">2 bob   bob@abc.com   sales       1450305346000</span><br></pre></td></tr></table></figure>
+<p>上面的示例中,我们使用了FieldPartitioner来配置HDFS connector.相关的配置项如下:  </p>
+<p>partitioner.class: 指定写入数据到HDFS的分区器.在本例中,使用FieldPartitioner,<br>将数据根据partition.field.name的值分区到不同的目录中<br>partition.field.name: 指定分区字段</p>
+<p>在本例中,我们使用department作为分区字段,检查HDFS的文件真的是以department分区的:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ hadoop fs -ls /topics/test_jdbc_users</span><br><span class="line">Found 2 items</span><br><span class="line">drwxr-xr-x   - vagrant supergroup          0 2015-12-16 22:45 /topics/test_jdbc_users/department=engineering</span><br><span class="line">drwxr-xr-x   - vagrant supergroup          0 2015-12-16 22:45 /topics/test_jdbc_users/department=sales</span><br></pre></td></tr></table></figure>
+<p>在/topics/test_jdbc_users目录下,有两个目录,每个目录的名字格式都是department=value. value部分根据users表中的department列决定.  </p>
+<h3 id="捕获数据库更新">捕获数据库更新</h3><p>下面我们模拟JDBC connector怎么捕获数据库的更新. 配置信息如下:  </p>
+<p>mode: 指定了怎么捕获数据库的变更.在本例中,我们结合了增量的列和时间撮列.这是最健壮和最精确的模式. 结合这两者,<br>只要时间撮是足够细粒度的,每个(id,timestamp)元组都能唯一表示一行记录的更新.即使一个更新在局部完成后失败了,<br>未处理的更新仍然会被准确地检测到,当系统恢复的时候,也会被发送出去.<br>incrementing.column.name: 指定增量的列,这里用id列<br>timestamp.column.name: 指定时间撮列,被JDBC connect用来捕获表中已经存在的行的变更</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt;UPDATE users SET email = &apos;alice@def.com&apos;, modified = CURRENT_TIMESTAMP WHERE name=&apos;alice&apos;;</span><br><span class="line">mysql&gt;UPDATE users SET email = &apos;bob@ghi.com&apos;, modified = CURRENT_TIMESTAMP WHERE name=&apos;bob&apos;;</span><br></pre></td></tr></table></figure>
+<p>JDBC connector会检测到users表中的数据发生了变化,因为modified列有更新的值. 所以它会从数据库中抓取修改的数据,<br>拷贝到Kafka,最终进入到HDFS. 为了验证修改后的数据存在HDFS中:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">hive&gt; SELECT * FROM test_jdbc_users;</span><br><span class="line">OK</span><br><span class="line">1 alice alice@abc.com engineering 1450305345000</span><br><span class="line">1 alice alice@def.com engineering 1450306396000</span><br><span class="line">2 bob   bob@abc.com   sales       1450305346000</span><br><span class="line">2 bob   bob@ghi.com   sales       1450306397000</span><br></pre></td></tr></table></figure>
+<p>注意hive外部表中新增了两条记录.新的两条记录对应了mysql中users标的最新的内容.  </p>
+<p>现在我们已经模拟了一个简单的从数据库到数据仓库的ETL数据管道. Hive中的数据是用户概要信息的全部编辑历史数据.  </p>
+<h3 id="表结构迁移">表结构迁移</h3><p>最后我们来模拟下HDFS connector如何处理表结构的迁移. connector支持表结构的进化以及数据的表结构变化的响应.<br>schema.compatibility可以设置为NONE,BACKWARD,FORWARD,FULL. 这里我们介绍最常用的BACKWARD.  </p>
+<p>如果表结构以backward的兼容性演化,我们可以总是使用最近的schema来统一查询数据. 比如移除字段是向后兼容的改变,<br>因为当我们遇到使用旧的schema的记录,对于包含删除的字段,我们可以直接忽略这些字段. 添加具有默认值的字段也是向后兼容.  </p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/02/21/Kafka-Connect/">译：使用Kafka Connect构建一个可扩展的ETL管道</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年02月21日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/02/21/Kafka-Connect/" title="译：使用Kafka Connect构建一个可扩展的ETL管道">http://github.com/zqhxuyuan/2016/02/21/Kafka-Connect/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/02/21/Kafka-Connect/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/02/22/2016-02-22-Kafka-Consumer-new/">
+        Kafka源码分析 KafkaConsumer（翻译和注释）
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/02/21/Kafka-connect-pipeline/">
+        译：使用Kafka Connect构建大规模低延迟的数据管道
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#在30分钟内构建一个可扩展的ETL管道"><span class="toc-number">1.</span> <span class="toc-text">在30分钟内构建一个可扩展的ETL管道</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#预编译虚拟机"><span class="toc-number">1.1.</span> <span class="toc-text">预编译虚拟机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Vagrant"><span class="toc-number">1.2.</span> <span class="toc-text">Vagrant</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#环境设置"><span class="toc-number">1.3.</span> <span class="toc-text">环境设置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#数据准备"><span class="toc-number">1.4.</span> <span class="toc-text">数据准备</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#使用kafka_connect注入数据"><span class="toc-number">1.5.</span> <span class="toc-text">使用kafka connect注入数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#捕获数据库更新"><span class="toc-number">1.6.</span> <span class="toc-text">捕获数据库更新</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#表结构迁移"><span class="toc-number">1.7.</span> <span class="toc-text">表结构迁移</span></a></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/02/21/Kafka-Connect/" data-title="译：使用Kafka Connect构建一个可扩展的ETL管道" data-url="http://github.com/zqhxuyuan/2016/02/21/Kafka-Connect/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/02/22/2016-02-22-Kafka-Consumer-new/" title="上一篇: Kafka源码分析 KafkaConsumer（翻译和注释）">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/02/21/Kafka-connect-pipeline/" title="下一篇: 译：使用Kafka Connect构建大规模低延迟的数据管道">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

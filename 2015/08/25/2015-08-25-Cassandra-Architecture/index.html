@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Apache Cassandra架构理解 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Cassandra的架构理解,关键概念,客户端请求,读写流程">
+<meta name="keywords" content="cassandra">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Apache Cassandra架构理解">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/08/25/2015-08-25-Cassandra-Architecture/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Cassandra的架构理解,关键概念,客户端请求,读写流程">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150829183000146">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830131517170">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830133258811">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830135418433">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150829184538135">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830123130980">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830123308292">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830130032129">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830142808484">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830143325616">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830142830995">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830142843701">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.183Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Apache Cassandra架构理解">
+<meta name="twitter:description" content="Cassandra的架构理解,关键概念,客户端请求,读写流程">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150829183000146">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-08-25-Cassandra-Architecture" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/08/25/2015-08-25-Cassandra-Architecture/" class="article-date">
+  	<time datetime="2015-08-24T16:00:00.000Z" itemprop="datePublished">2015-08-25</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Apache Cassandra架构理解
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/bigdata/">bigdata</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cassandra/">cassandra</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Cassandra的架构理解,关键概念,客户端请求,读写流程<br><a id="more"></a></p>
+<h2 id="架构">架构</h2><p>基本流程: 点对点分布式系统，集群中各节点平等，数据分布于集群中各节点，各节点间每秒交换一次信息。<br>每个节点的<code>commit log提交日志</code>捕获写操作来确保数据持久性。<br>数据先被写入<code>MemTable</code>(内存中的数据结构)，待MemTable满后数据被写入<code>SSTable</code>(硬盘的数据文件)。<br>所有的写内容被自动在集群中<code>partition分区</code>并<code>replicate复制</code>。  </p>
+<p>库表结构: Cassandra数据库面向行。用户可连接至集群的任意节点，通过类似SQL的CQL查询数据。<br>集群中，一个应用一般包含一个keyspace，一个keyspace中包含多个表。  </p>
+<p>读写请求: 客户端连接到某一节点发起读或写请求时，该节点充当<code>客户端应用</code>与<code>拥有相应数据的节点</code>间的<br><code>coordinator协调者</code>以根据集群配置确定<code>环(ring)中的哪个节点</code>应当获取这个请求。 </p>
+<blockquote>
+<p>CQL是客户端,Driver也是一种客户端. 使用CQL连接指定的<code>-h</code>节点就是协调节点.  </p>
+</blockquote>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150829183000146" alt="c_write-path">  </p>
+<blockquote>
+<p>图解: 协调节点(10)负责和客户端的交互.真正的数据在节点1,4,6上,分别表示数据的三个副本,最终只要节点1上的数据返回即可.  </p>
+</blockquote>
+<p><strong>关键词</strong></p>
+<table>
+<thead>
+<tr>
+<th>KeyWord</th>
+<th>Explain</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Gossip</code></td>
+<td>点对点通信协议，用以Cassandra集群中节点间交换位置和状态信息。  </td>
+</tr>
+<tr>
+<td><code>Partitioner</code></td>
+<td>决定如何在集群中的节点间分发数据，即在哪个节点放置数据的第一个replica。  </td>
+</tr>
+<tr>
+<td><code>Replica placement strategy</code></td>
+<td>决定在哪些节点放置每行数据的其他replica。Cassandra在集群中的多个节点存储数据的多份拷贝(replicas)来确保可靠和容错。  </td>
+</tr>
+<tr>
+<td><code>Snitch</code></td>
+<td>定义了复制策略用来放置replicas和路由请求所使用的拓扑信息  </td>
+</tr>
+<tr>
+<td><code>Virtual nodes</code></td>
+<td>虚拟节点, 指定数据与物理节点的所属关系   </td>
+</tr>
+<tr>
+<td><code>Token Ring</code></td>
+<td>令牌环</td>
+</tr>
+</tbody>
+</table>
+<h3 id="节点间通信gossip">节点间通信gossip</h3><p>Cassandra使用点对点通讯协议gossip在集群中的节点间交换位置和状态信息。<br>gossip进程<code>每秒</code>运行一次，与<code>至多3个</code>其他节点交换信息，这样所有节点可很快了解集群中的其他节点信息</p>
+<blockquote>
+<p>gossip协议的具体表现形式就是配置文件中的seeds种子节点. 一个注意点是同一个集群的所有节点的种子节点应该一致.<br>否则如果种子节点不一致, 有时候会出现集群分裂, 即会出现两个集群. 一般先启动种子节点,尽早发现集群中的其他节点.  </p>
+</blockquote>
+<blockquote>
+<p>每个节点都和其他节点交换信息, 由于随机和概率,一定会穷举出集群的所有节点.同时每个节点都会保存集群中的所有其他节点.<br>这样随便连到哪一个节点,都能知道集群中的所有其他节点. 比如cql随便连接集群的一个节点,都能获取集群所有节点的状态.<br>也就是说任何一个节点关于集群中的节点信息的状态都应该是一致的! </p>
+</blockquote>
+<h3 id="失败检测与恢复">失败检测与恢复</h3><ul>
+<li>gossip可检测其他节点是否正常以避免将请求路由至不可达或者性能差的节点（后者需配置为dynamic snitch方可）。  </li>
+<li>可通过配置phi_convict_threshold来调整失败检测的敏感度。  </li>
+<li>对于失败的节点，其他节点会通过gossip定期与之联系以查看是否恢复而非简单将之移除。若需强制添加或移除集群中节点需使用nodetool工具。  </li>
+<li>一旦某节点被标记为失败，其<code>错过的写操作</code>会有其他replicas存储一段时间. (需开启hinted handoff，若节点失败的时间超过了max_hint_window_in_ms，错过的写不再被存储). Down掉的节点经过一段时间恢复后需执行repair操作，一般在所有节点运行nodetool repair以确保数据一致。  </li>
+</ul>
+<blockquote>
+<p>dynamic snitch特性: 查询请求路由到某个节点,如果这个节点当掉或者响应慢,则应该能够查询其他节点上的副本<br>删除节点: 节点失败后,仍然在集群中,通过removenode可以将节点从集群中下线.区别就是status如果不存在就说明下线了. DN则仍然在集群中.<br>失败节点数据: 数据无法正常存储到失败的节点,所以会由其他节点暂时保存,等它恢复之后,再将错过的写补充上去.  </p>
+</blockquote>
+<h3 id="一致性哈希DHT">一致性哈希DHT</h3><p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830131517170" alt="hash">  </p>
+<blockquote>
+<p>图解: key的范围是0到2^32形成一个环, 叫做hash空间环, 即hash的值空间. 对集群的服务器(比如ip地址)进行hash,都能确定其在环空间上的位置.<br>定位数据访问到相应服务器的算法:将数据key使用相同的函数H计算出哈希值h，通根据h确定此数据在环上的位置，<br>从此位置沿环顺时针“行走”，第一台遇到的服务器就是其应该定位到的服务器   </p>
+</blockquote>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830133258811" alt="riak-ring">  </p>
+<blockquote>
+<p>图解: 由于一致性哈希算法在服务节点太少时，容易因为节点分部不均匀而造成数据倾斜问题,所以引入了虚拟节点:<br>把每台server分成v个虚拟节点，再把所有虚拟节点(n*v)随机分配到一致性哈希的圆环上，<br>这样所有的用户从自己圆环上的位置顺时针往下取到第一个vnode就是自己所属节点. 当此节点存在故障时，再顺时针取下一个作为替代节点.  </p>
+</blockquote>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830135418433" alt="riak-data-distribution">  </p>
+<blockquote>
+<p>图解: key经过hash会定位到hash环上的一个位置, 找到下一个vnode为数据的第一份存储节点. 接下来的两个vnode为另外两个副本.  </p>
+</blockquote>
+<h3 id="hash值空间&amp;token">hash值空间&amp;token</h3><p>上面在计算key存在在哪个节点上是使用往前游走的方式找到环上的第一个节点. 游走是一个计算的过程.<br>如果能够事先计算好集群中的节点(vnodes)在整个hash环的值空间, 这样对key进行hash后,可以看它是落在哪个hash值空间上,<br>而值空间和节点的关系已经知道了,所以可以直接定位到key落在哪个节点上了. 这就是<code>token</code>的作用.  </p>
+<p>C<em>表中每行数据由<code>primary key</code>标识，C</em>为每个primarykey分配一个<code>hash</code>值，<code>集群中每个节点(vnode)拥有一个或多个hash值区间</code>。<br>这样便可根据<code>primary key对应的hash值</code>将<code>该条数据</code>放在<code>包含该hash值</code>的<code>hash值区间</code>对应的节点(vnode)中</p>
+<h3 id="虚拟节点">虚拟节点</h3><p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150829184538135" alt="c_vn-token">  </p>
+<blockquote>
+<p>图解: 没有使用虚拟节点, Ring环的tokens数量=集群的机器数量. 比如上面一共有6个节点,所以token数=6.<br>因为副本因子=3,一条记录要在集群中的三个节点存在. 简单地方式是计算rowkey的hash值,落在环中的哪个token上,<br>第一份数据就在那个节点上, 剩余两个副本落在这个节点在token环上的后两个节点.<br>图中的A,B,C,D,E,F是key的范围,真实的值是hash环空间,比如0~2^32区间分成10份.每一段是2^32的1/10.<br>节点1包含A,F,E表示key范围在A,F,E的数据会存储到节点1上.以此类推.  </p>
+</blockquote>
+<p>若不使用虚拟节点则需手工为集群中每个节点<code>计算和分配一个token</code>。<br>每个token决定了<code>节点在环中的位置</code>以及<code>节点应当承担的一段连续的数据hash值的范围</code>。<br>如上图上半部分，每个节点分配了一个单独的token代表环中的一个位置，每个节点存储将row key映射为hash值之后<br>落在该节点应当承担的唯一的一段连续的hash值范围内的数据。每个节点也包含来自其他节点的row的副本。  </p>
+<p>而使用虚拟节点允许每个节点拥有多个较小的不连续的hash值范围。<br>如上图中下半部分，集群中的节点使用了虚拟节点，虚拟节点随机选择且不连续。<br>数据的存放位置也由row key映射而得的hash值确定，但是是落在更小的分区范围内  </p>
+<p>使用虚拟节点的好处  </p>
+<ul>
+<li>无需为每个节点计算、分配token  </li>
+<li>添加移除节点后无需重新平衡集群负载  </li>
+<li>重建死掉的节点更快  </li>
+<li>改善了在同一集群使用异种机器  </li>
+</ul>
+<h3 id="数据复制">数据复制</h3><p>当前有两种可用的复制策略：  </p>
+<ul>
+<li>SimpleStrategy：仅用于单数据中心，将第一个replica放在由partitioner确定的节点中，其余的replicas放在上述节点顺时针方向的后续节点中。  </li>
+<li>NetworkTopologyStrategy：可用于较复杂的多数据中心。可以指定在每个数据中心分别存储多少份replicas。  </li>
+</ul>
+<p>复制策略在创建keyspace时指定，如  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CREATE KEYSPACE Excelsior WITH REPLICATION = &#123; &apos;class&apos; : &apos;SimpleStrategy&apos;,&apos;replication_factor&apos; : 3 &#125;;  </span><br><span class="line">CREATE KEYSPACE Excalibur WITH REPLICATION = &#123;&apos;class&apos; :&apos;NetworkTopologyStrategy&apos;, &apos;dc1&apos; : 3, &apos;dc2&apos; : 2&#125;;</span><br></pre></td></tr></table></figure>
+<p>其中dc1、dc2这些数据中心名称要与snitch中配置的名称一致.上面的拓扑策略表示在dc1配置3个副本,在dc2配置2个副本</p>
+<h3 id="Partitioners">Partitioners</h3><p>在Cassandra中，table的每行由唯一的primarykey标识，<code>partitioner</code>实际上为<code>一hash函数</code>用以<code>计算primary key的token</code>。Cassandra依据这个token值在集群中放置对应的行<br>注意：若使用虚拟节点(vnodes)则无需手工计算tokens。若不使用虚拟节点则必须手工计算tokens将所得的值指派给cassandra.ymal主配置文件中的initial_token参数  </p>
+<h2 id="客户端请求">客户端请求</h2><p>client连接至节点并发出read/write请求时，该节点充当client端应用与包含请求数据的节点(或replica)之间的协调者，<br>它利用配置的partitioner和replicaplacement策略确定那个节点当获取请求。</p>
+<h3 id="写请求">写请求</h3><p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830123130980" alt="c_write_access">  </p>
+<ul>
+<li>协调者(coordinator)将write请求发送到拥有对应row的所有replica节点，只要节点可用便获取并执行写请求。  </li>
+<li>写一致性级别(write consistency level)确定要有多少个replica节点必须返回成功的确认信息。成功意味着数据被正确写入了commit log和memtable。  </li>
+<li>上例为单数据中心，11个节点(不是有12个吗?)，复制因子为3，写一致性等级为ONE的写情况(红色的箭头表示只要一个节点成功写入,便可立即返回给客户端)  </li>
+</ul>
+<blockquote>
+<p>写请求是如何保证一致性的?  </p>
+</blockquote>
+<h3 id="读请求">读请求</h3><ul>
+<li>[1] 直接读请求(Direct Read)  </li>
+<li>[2] 后台读修复请求(RR:Read Repair)  </li>
+</ul>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830123308292" alt="c_read-path">  </p>
+<p>与直接读请求[1]联系的replica数目由一致性级别确定(上图中请求了R1和R3两个节点).<br>后台读修复请求[2]被发送到没有收到直接读请求的replica(R2),以确保请求的row在所有replica上一致.  </p>
+<ul>
+<li>协调者首先与一致性级别确定的所有replica联系，被联系的节点返回请求的数据，  </li>
+<li>若多个节点被联系，则来自各replica的row会在内存中作比较，若不一致，则协调者使用含最新数据的replica向client返回结果。  </li>
+<li>协调者在后台联系和比较来自其余拥有对应row的replica的数据，若不一致，会向过时的replica发写请求用最新的数据进行更新:read repair。  </li>
+<li>上例为单数据中心，11个节点，复制因子为3，一致性级别为QUORUM(<code>3/2+1=2</code>)的读情况(<code>请求了两个节点,但最终返回给客户端的是最新的数据</code>)  </li>
+</ul>
+<blockquote>
+<p>读请求是如何保证数据一致性的? 直接读请求将查询请求发送到了2个副本所在的节点(1,7). 因为有两个副本,所以会比较这两个副本哪个是最新的.<br>比较操作是在协调节点,还是在各个副本节点? 当然应该是在协调节点上,因为在各个副本节点上是没办法知道其他节点的副本的.<br>那么比较操作是不是把这两个副本的数据都传送到协调节点. 不是的,只需要传递时间撮就可以,因为要比较的只是哪个副本数据是最新的.<br>怎么判断两个副本的数据不一致? 实际上是使用md5判断值不一样,说明两个副本的数据是不一样的.<br>因为没有必要在比较的时候就把两个副本的全部查询结果都传送给协调节点,所以在确定哪个是最新的后,那个副本需要把查询结果传送给协调节点<br>再由协调节点将数据返回给客户端. 即图中红色的部分为结果数据的流程. 而黑色的往返箭头只是传递时间撮用来比较哪个是最新数据.  </p>
+</blockquote>
+<h3 id="协调节点">协调节点</h3><p>问题:客户端连接的那个节点是怎么指定的? 是addContactPoint指定的节点吗? 但是ContactPoint一般设置为种子节点中的一个.  </p>
+<p>如果是CQL客户端连接C集群,则CQL连接的那个节点就是协调节点.<br>但是如果使用Driver API. 指定的ContactPoint并不是协调节点!  </p>
+<h2 id="读写流程">读写流程</h2><h3 id="写流程">写流程</h3><p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830130032129" alt="c_write">  </p>
+<blockquote>
+<p>图解: 上图表示写请求分别到MemTable和CommitLog, 并且MemTable的数据会刷写到磁盘上. 除了写数据,还有索引也会保存到磁盘上.  </p>
+</blockquote>
+<p>先将数据写进内存中的数据结构memtable，同时追加到磁盘中的commitlog中。<br>memtable内容超出指定容量后会被放进将被刷入磁盘的队列(memtable_flush_queue_size配置队列长度)。<br>若将被刷入磁盘的数据超出了队列长度，C会锁定写,并将内存数据刷进磁盘中的SSTable,之后commit log被清空。</p>
+<h3 id="读流程">读流程</h3><p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830142808484" alt="c_read-flow">  </p>
+<p>首先检查BloomFilter①,每个SSTable都有一个Bloomfilter,用以在任何磁盘IO前检查请求PK对应的数据在SSTable中是否存在<br>BF可能误判不会漏判:判断存在,但实际上可能不存在, 判断不存在,则一定不存在,则流程不会访问这个SSTable(红色).<br>若数据很可能存在②，则检查PartitionKey cache(索引的缓存)，之后根据索引条目是否在cache中找到而执行不同步骤：  </p>
+<p><strong>在索引缓存中找到</strong>  </p>
+<ul>
+<li>③从compression offset map中查找拥有对应数据的压缩快。  </li>
+<li>④从磁盘取出压缩的数据，返回结果集。  </li>
+</ul>
+<p><strong>没有在索引缓存中</strong> </p>
+<ul>
+<li>⑤搜索Partition summary（partition index的样本集）确定index条目在磁盘中的近似位置。  </li>
+<li>⑥从磁盘中SSTable内取出index条目。  </li>
+<li>⑦从compression offset map中查找拥有对应数据的压缩快。  </li>
+<li>从磁盘取出压缩的数据，返回结果集。  </li>
+</ul>
+<h3 id="示例">示例</h3><p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830143325616" alt="c_write-ex">  </p>
+<blockquote>
+<p>第一个SSTable文件是insert(左), 第二个SSTable是update的数据(右).  </p>
+</blockquote>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830142830995" alt="c_read-ex">  </p>
+<p>由insert/update过程可知，read请求到达某一节点后，必须结合所有包含请求的row中的column的SSTable以及memtable来产生请求的数据  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20150830142843701" alt="c_read-ex2">  </p>
+<p>例如，要更新包含用户数据的某个row中的email 列，cassandra并不重写整个row到新的数据文件，<br>而仅仅将新的email写进新的数据文件，username等仍处于旧的数据文件中。<br>上图中红线表示Cassandra需要整合的row的片段用以产生用户请求的结果。<br>为节省CPU和磁盘I/O，Cassandra会缓存合并后的结果，且可直接在该cache中更新row而不用重新合并</p>
+<h2 id="参考文档">参考文档</h2><p>一致性哈希算法及其在分布式系统中的应用: <a href="http://blog.codinglabs.org/articles/consistent-hashing.html" target="_blank" rel="noopener">http://blog.codinglabs.org/articles/consistent-hashing.html</a><br>Riak Clusters: <a href="http://docs.basho.com/riak/latest/theory/concepts/Clusters/" target="_blank" rel="noopener">http://docs.basho.com/riak/latest/theory/concepts/Clusters/</a>  </p>
+<p><a href="http://docs.datastax.com/en/cassandra/2.0/cassandra/architecture/architectureTOC.html" target="_blank" rel="noopener">http://docs.datastax.com/en/cassandra/2.0/cassandra/architecture/architectureTOC.html</a><br><a href="http://yikebocai.com/2014/06/cassandra-principle/" target="_blank" rel="noopener">http://yikebocai.com/2014/06/cassandra-principle/</a> </p>
+<p>Cassandra研究报告: <a href="http://blog.csdn.net/zyz511919766/article/details/38683219" target="_blank" rel="noopener">http://blog.csdn.net/zyz511919766/article/details/38683219</a><br>Cassandra 分布式数据库详解，第 1 部分：配置、启动与集群 <a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-cassandraxu1/" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/opensource/os-cn-cassandraxu1/</a><br>Cassandra 分布式数据库详解，第 2 部分：数据结构与数据读写 <a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-cassandraxu2/" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/opensource/os-cn-cassandraxu2/</a>  </p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/08/25/2015-08-25-Cassandra-Architecture/">Apache Cassandra架构理解</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年08月25日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/08/25/2015-08-25-Cassandra-Architecture/" title="Apache Cassandra架构理解">http://github.com/zqhxuyuan/2015/08/25/2015-08-25-Cassandra-Architecture/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/08/25/2015-08-25-Cassandra-Architecture/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/08/25/2015-08-25-Apache-Cassandra/">
+        Apache Cassandra入门
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/08/01/2015-08-01-ElasticSearch/">
+        ElasticSearch入门
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#架构"><span class="toc-number">1.</span> <span class="toc-text">架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#节点间通信gossip"><span class="toc-number">1.1.</span> <span class="toc-text">节点间通信gossip</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#失败检测与恢复"><span class="toc-number">1.2.</span> <span class="toc-text">失败检测与恢复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#一致性哈希DHT"><span class="toc-number">1.3.</span> <span class="toc-text">一致性哈希DHT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#hash值空间&token"><span class="toc-number">1.4.</span> <span class="toc-text">hash值空间&amp;token</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#虚拟节点"><span class="toc-number">1.5.</span> <span class="toc-text">虚拟节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#数据复制"><span class="toc-number">1.6.</span> <span class="toc-text">数据复制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Partitioners"><span class="toc-number">1.7.</span> <span class="toc-text">Partitioners</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#客户端请求"><span class="toc-number">2.</span> <span class="toc-text">客户端请求</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#写请求"><span class="toc-number">2.1.</span> <span class="toc-text">写请求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#读请求"><span class="toc-number">2.2.</span> <span class="toc-text">读请求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#协调节点"><span class="toc-number">2.3.</span> <span class="toc-text">协调节点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#读写流程"><span class="toc-number">3.</span> <span class="toc-text">读写流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#写流程"><span class="toc-number">3.1.</span> <span class="toc-text">写流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#读流程"><span class="toc-number">3.2.</span> <span class="toc-text">读流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#示例"><span class="toc-number">3.3.</span> <span class="toc-text">示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考文档"><span class="toc-number">4.</span> <span class="toc-text">参考文档</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/08/25/2015-08-25-Cassandra-Architecture/" data-title="Apache Cassandra架构理解" data-url="http://github.com/zqhxuyuan/2015/08/25/2015-08-25-Cassandra-Architecture/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/08/25/2015-08-25-Apache-Cassandra/" title="上一篇: Apache Cassandra入门">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/08/01/2015-08-01-ElasticSearch/" title="下一篇: ElasticSearch入门">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

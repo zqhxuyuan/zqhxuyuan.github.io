@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Apache Drill源码阅读(5) Fragment | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="大数据源码阅读系列之ApacheDrill: 什么是Fragment? 为什么要分成Fragment?">
+<meta name="keywords" content="drill">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Apache Drill源码阅读(5) Fragment">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/07/15/2015-07-15-drill-fragments/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="大数据源码阅读系列之ApacheDrill: 什么是Fragment? 为什么要分成Fragment?">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill-pop.png">
+<meta property="og:image" content="http://drill.apache.org/docs/img/execution-tree.PNG">
+<meta property="og:image" content="http://drill.apache.org/docs/img/ex-operator.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill24.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill26.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill25.png">
+<meta property="og:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill27.png">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.179Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Apache Drill源码阅读(5) Fragment">
+<meta name="twitter:description" content="大数据源码阅读系列之ApacheDrill: 什么是Fragment? 为什么要分成Fragment?">
+<meta name="twitter:image" content="http://7xjs7x.com1.z0.glb.clouddn.com/drill-pop.png">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-07-15-drill-fragments" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/07/15/2015-07-15-drill-fragments/" class="article-date">
+  	<time datetime="2015-07-14T16:00:00.000Z" itemprop="datePublished">2015-07-15</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Apache Drill源码阅读(5) Fragment
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Source/">Source</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/drill/">drill</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>大数据源码阅读系列之ApacheDrill: 什么是Fragment? 为什么要分成Fragment?  </p>
+<a id="more"></a>
+<h2 id="Foreman-runPhysicalPlan运行物理计划">Foreman.runPhysicalPlan运行物理计划</h2><p>在查询一节中说过: <code>有了物理计划,所有的统计信息,最优端点,Foreman中的Parallellizer会将物理计划转换为多个fragments</code><br>将物理计划转换为fragments是在Foreman中, 就是在runPhysicalPlan的第一步getQueryWorkUnit中  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">private QueryWorkUnit getQueryWorkUnit(final PhysicalPlan plan) throws ExecutionSetupException &#123;</span><br><span class="line">  final PhysicalOperator rootOperator = plan.getSortedOperators(false).iterator().next();   // 物理计划的根节点物理操作符为Screen</span><br><span class="line">  final Fragment rootFragment = rootOperator.accept(MakeFragmentsVisitor.INSTANCE, null);   // ①递归调用树入口,从上到下调用每个操作符的accept方法</span><br><span class="line"></span><br><span class="line">  final SimpleParallelizer parallelizer = new SimpleParallelizer(queryContext);   // 并行, 用来设置fragments的并行度</span><br><span class="line"></span><br><span class="line">  final QueryWorkUnit queryWorkUnit = parallelizer.getFragments(</span><br><span class="line">      queryContext.getOptions().getOptionList(), queryContext.getCurrentEndpoint(),</span><br><span class="line">      queryId, queryContext.getActiveEndpoints(), drillbitContext.getPlanReader(), rootFragment,</span><br><span class="line">      initiatingClient.getSession(), queryContext.getQueryContextInfo());</span><br><span class="line">  return queryWorkUnit;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在debug一节,我们知道DrillRel drel, Prel prel, PhysicalOperator pop, PhysicalPlan plan各个变量的值.<br>上面通过PhysicalPlan获得的rootOperator就是PhysicalOperator pop根节点, 即<code>rootOperator=Screen</code>.  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill-pop.png" alt></p>
+<p>rootOperator.accept后返回的是rootFragment.  然后通过root又开始递归遍历了(跟debug一节rootLOP.accept一样).<br>下面是MakeFragmentsVisitor访问器当访问到的是一个操作符时, 首先将当前操作符加入到Fragment中, 然后遍历其孩子节点.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public Fragment visitOp(PhysicalOperator op, Fragment value)  throws ForemanSetupException&#123;</span><br><span class="line">  value = ensureBuilder(value);</span><br><span class="line">  value.addOperator(op);</span><br><span class="line">  for (PhysicalOperator child : op) &#123;</span><br><span class="line">    child.accept(this, value);</span><br><span class="line">  &#125;</span><br><span class="line">  return value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面是Screen-&gt;..-&gt;Scan的递归调用示例树:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">rootOperator.accept(v,null)--&gt;Screen.accept(visitor, null)</span><br><span class="line">                          |--MakeFragmentsVisitor.visitOp</span><br><span class="line">                                        |--value=new Fragment </span><br><span class="line">                                        |--value.addOperator(Screen)</span><br><span class="line">                                        |--for child : [EasyGroupScan]--child.accept(visitor, value)    我们省略了中间的一些节点,假设Screen的下一个节点是Scan</span><br><span class="line">                                                     |--EasyGroupScan.accept(visitor, value)</span><br><span class="line">                                                                    |--MakeFragmentsVisitor.visitOp</span><br><span class="line">                                                                    |--value.addOperator(EasyGroupScan)</span><br><span class="line">                                                                    |--EasyGroupScan has no child</span><br><span class="line">                                                                    |--return value</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>递归调用树有点类似于设计模式中的访问者模式(Visitor Pattern).  </p>
+</blockquote>
+<p>返回值<code>Fragment rootFragment = rootOperator.accept(MakeFragmentsVisitor.INSTANCE, null);</code><br>因为参数是null, 所以第一次调用rootOperator.accept的时候就创建了新的Fragment. 接下来child.accept,<br>因为把value : Fragment传入, 所以不会再构造Fragment了(除非出现Exchange的时候才会new一个新的Fragment).<br>注意在每次递归调用child.accept之前, 把当前的物理操作符加入到Fragment中.<br>也就是说物理计划组成的DAG图的每个物理操作符都会加入到Fragment中, 这个Fragment并不代表DAG图中的某个节点(比如根节点), 而是包含了所有的操作符.<br>这和前面的DrillRel, Prel, PhysicalOperator, PhysicalPlan不一样:它们的值是DAG图的第一个节点,然后通过input或者child嵌套包含其他节点.  </p>
+<p>当然Fragment中要有根物理操作符, 这样把根拎出来, 其他所有的操作符也都能找到了.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">public class Fragment implements Iterable&lt;Fragment.ExchangeFragmentPair&gt; &#123;</span><br><span class="line">  private PhysicalOperator root;</span><br><span class="line">  private ExchangeFragmentPair sendingExchange;</span><br><span class="line">  private final List&lt;ExchangeFragmentPair&gt; receivingExchangePairs = Lists.newLinkedList();</span><br><span class="line"></span><br><span class="line">  // Set the given operator as root operator of this fragment. If root operator is already set, then this method call is a no-op.</span><br><span class="line">  public void addOperator(PhysicalOperator o) &#123;</span><br><span class="line">    if (root == null) &#123;</span><br><span class="line">      root = o;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;  </span><br><span class="line"></span><br><span class="line">   public void addSendExchange(Exchange e, Fragment sendingToFragment) throws ForemanSetupException&#123;</span><br><span class="line">      if (sendingExchange != null) &#123;</span><br><span class="line">         throw new ForemanSetupException(&quot;Fragment was trying to add a second SendExchange.  &quot;);</span><br><span class="line">      &#125;</span><br><span class="line">      addOperator(e);</span><br><span class="line">      sendingExchange = new ExchangeFragmentPair(e, sendingToFragment);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   public void addReceiveExchange(Exchange e, Fragment fragment) &#123;</span><br><span class="line">       this.receivingExchangePairs.add(new ExchangeFragmentPair(e, fragment));</span><br><span class="line">   &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>MakeFragmentsVisitor如果访问到的是一个Exchange操作符, Exchange会和Fragment组成一个ExchangeFragmentPair.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public Fragment visitExchange(Exchange exchange, Fragment value) throws ForemanSetupException &#123;</span><br><span class="line">  Fragment next = getNextBuilder();           // 总是会新建一个新的Fragment:next</span><br><span class="line">  value.addReceiveExchange(exchange, next);   // 将Exchange操作符和新的Fragment组成一个ExchangeFragmentPair, 添加到原来Fragment的list中</span><br><span class="line">  next.addSendExchange(exchange, value);      // Exchange操作符和原来的Fragment也会组成一个ExchangeFragmentPair,不过用于发送</span><br><span class="line">  exchange.getChild().accept(this, next);     // Exchange下面的孩子节点, 用的Fragment是新的那一个</span><br><span class="line">  return value;                               // 但是我们最后返回的, 仍然是第一次新建的那一个Fragment</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>调用这个方法时, value一定不为空: The simple fragmenter was called without a FragmentBuilder value.<br>This will only happen if the initial call to SimpleFragmenter  is by a Exchange node.<br>This should never happen since an Exchange node should never be the root node of a plan<br>一个Exchange节点永远不能是一个计划的根节点.  Exchange前是一个Major Fragment, Exchange后也是一个Major Fragment.  </p>
+<blockquote>
+<p>至于为什么先是Receiver,然后是Sender, 我们先看下官网中的概念,以及举个带有Exchange的例子: </p>
+</blockquote>
+<h2 id="fragments_theory">fragments theory</h2><blockquote>
+<p><a href="http://drill.apache.org/docs/drill-query-execution/" target="_blank" rel="noopener">http://drill.apache.org/docs/drill-query-execution/</a><br>A parallelizer in the Foreman transforms the physical plan into multiple phases, called major and minor fragments.<br>These fragments create a multi-level execution tree that rewrites the query and executes it in<br>parallel against the configured data sources, sending the results back to the client or application.</p>
+<p>并行化会将物理计划分成多个阶段. 什么时候需要并行? 任务是可以分解的时候, 任务之间没有关联, 比如Hadoop的MapReduce就是可并行化的.<br>这些阶段叫做major或者minor fragmens. 它们组成了一个多层的执行树, 重写查询, 并且能够并行地在数据源上执行.  </p>
+<p>以传统DAG图的方式, 只有前面的节点处理完后,后面的节点才会继续运行. 而用并行化的方式,每个节点运行完一部分数据,后面的节点就可以接着这些数据进行计算.</p>
+</blockquote>
+<p><img src="http://drill.apache.org/docs/img/execution-tree.PNG" alt></p>
+<h2 id="Major_Fragments">Major Fragments</h2><blockquote>
+<p>Drill separates major fragments by an exchange operator. An exchange is a change in data location and/or parallelization of the physical plan.<br>An exchange is composed of a sender and a receiver to allow data to move between nodes  </p>
+<p>Drill用交换操作符来分隔major fragments. 一个交换操作符是数据位置的交换, 或者物理计划并行度的变更.<br>一个交换操作符由一个发送器和一个接收器组成, 以运行数据在不同节点之间进行移动. </p>
+<p>Major fragments do not actually perform any query tasks. Each major fragment is divided into one or multiple minor fragments<br>that actually execute the operations required to complete the query and return results back to the client. </p>
+<p>Major Fragments不执行任何的查询任务, 每个major fragments会分成一个或多个minor fragments.<br>Minor Fragments会执行完成这个查询需要的操作, 并且返回结果给客户端.  </p>
+</blockquote>
+<p><img src="http://drill.apache.org/docs/img/ex-operator.png" alt></p>
+<p>那么什么时候会产生Major Fragments: 读取的是HDFS上的文件时(count(*)无条件查询即使是hdfs文件也没有exchange).  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- select count(*) from hdfs.`/user/hive/warehouse/test.db/koudai`</span><br><span class="line">+ select count(*) from hdfs.`/user/hive/warehouse/test.db/koudai` where sequence_id like &apos;%12%&apos;</span><br><span class="line">+ select t.event_result_map.map from hdfs.`/user/hive/warehouse/test.db/koudai` t where t.sequence_id=&apos;1433300095954-25887486&apos;</span><br><span class="line">+ select t.sequence_id from hdfs.`/user/hive/warehouse/test.db/koudai` t limit 1</span><br><span class="line">+ select * from hdfs.`/user/hive/warehouse/test.db/koudai` limit 1</span><br><span class="line"></span><br><span class="line">- select * from cp.`employee.json` limit 1</span><br><span class="line">- select * from dfs.`/Users/zhengqh/data/hive_alltypes.parquet` limit 1</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>为什么无条件的count(<em>)查询没有exchange. 观察Operator,发现count查询底层的scan是DIRECT_SUB_SCAN,<br>而parquet的其他查询(带条件的count,where,limit,</em>)用的是PARQUET_ROW_GROUP_SCAN. 后面的cp和本地查询则没有Exchange.    </p>
+</blockquote>
+<p>下图中白色的UnionExchange分隔了两个Major Fragments. totalFragments的个数指的是所有的minor framgnet.<br>对比DAG图和Operator Profiles. 可以看到Exchange对应的Operator是Receiver和Sender.  </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill24.png" alt> <img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill26.png" alt></p>
+<blockquote>
+<p>注意左侧的UnionExchange在右侧中被分成了Receiver和Sender.  </p>
+</blockquote>
+<p>第一个Major framgnet在UnionExchange的上方, 即Screen, 只有一个mior Fragment.<br>第二个Major framgnet包括了多个操作符, 有2个minor Fragments. </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill25.png" alt></p>
+<h2 id="Receiver+Sender">Receiver+Sender</h2><p>以上图中的Screen-&gt;UnionExchange-&gt;Project-&gt;…-&gt;Scan的顺序分析下UnionExchange:  </p>
+<p>在访问根操作符visitOp(Screen,null)时, MakeFragmentsVisitor会新建一个Fragment, 设置Fragment的root=Screen.<br>接着因为Screen的Child是UninonExchange,调用的是MakeFragmentsVisitor的visitExchange(UnionExchange,Fragment value).<br>第二个参数Fragment value是访问Screen时创建的第一个Fragment, 第一个Fragment value一定不为空, 因为不允许根节点是Exchange.  </p>
+<p>因为Exchange是用来分隔Major Fragment的, 所以在Exchange之前和之后都要有一个Major Fragment,之前就是第一个Fragment了.<br>重点看下visitExchange的下面的逻辑, 理清到底第一个Fragment value和下一个Fragment next分别添加的是什么组件.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">value.addReceiveExchange(exchange, next);   // first add Receiver from next</span><br><span class="line">next.addSendExchange(exchange, value);      // next add Sender to first</span><br></pre></td></tr></table></figure>
+<p>注意我们的DAG图从上到下,第一个节点是Screen,最下面的节点是Scan, 所以上面的是作为接收数据的一方,下面的是发送数据的一方.<br>而first Fragment即上面的value, 是在上方的,那么就是作为接收方Receiver的.<br>而且最后返回给客户端的也是上层的,客户端只需要知道和Screen相关的那个Fragment,即返回值是value.   </p>
+<p>第一个Fragment value添加一个Receive Exchange, 只是把新建的ExchangeFragmentPair加入到value的List<exchangefragmentpair> receivingExchangePairs中.<br>而第二个Fragment next我们已经知道了在visitExchange时创建了一个新的Fragment. 对于每一个全新的Fragment, 都要设置root节点操作符.    </exchangefragmentpair></p>
+<p>实际上观察前面的DAG图和Operator Profiles,你会发现UnionExchange的UNORDERED_RECEIVER的编号是00-xx-01,因此是属于第一个Fragment的.<br>而SINGLE_SENDER的编号是01-xx-00, 则是属于第二个Fragment. 因此第二个Fragment的root就是SINGLE_SENDER. </p>
+<p>上面两个value和next互相添加对方, 实际上是为了在上下文中都能找到对方. 否则如果只是value添加了next. 则在next时就无法找到value的.  </p>
+<table>
+<thead>
+<tr>
+<th>Fragment</th>
+<th>root</th>
+<th>sendingExchange</th>
+<th>receivingExchangePairs</th>
+<th>Explain</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>value</td>
+<td>Screen</td>
+<td>×</td>
+<td>ExchangeFragmentPair(e,next)</td>
+<td>value的接收者是next</td>
+<td>Reciever</td>
+</tr>
+<tr>
+<td>next</td>
+<td>SINGLE_SENDER</td>
+<td>ExchangeFragmentPair(e,value)</td>
+<td>×</td>
+<td>next要发送给value</td>
+<td>Sender</td>
+</tr>
+</tbody>
+</table>
+<p>看看UnionExchange的几个相关方法:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">public class UnionExchange extends AbstractExchange&#123;</span><br><span class="line">  // Ephemeral info for generating execution fragments. 这几个变量是AbstractExchange中的,为了阅读的方便放在这里</span><br><span class="line">  protected int senderMajorFragmentId;</span><br><span class="line">  protected int receiverMajorFragmentId;</span><br><span class="line">  protected List&lt;DrillbitEndpoint&gt; senderLocations;</span><br><span class="line">  protected List&lt;DrillbitEndpoint&gt; receiverLocations;</span><br><span class="line"></span><br><span class="line">  public void setupSenders(List&lt;DrillbitEndpoint&gt; senderLocations) &#123;</span><br><span class="line">    this.senderLocations = senderLocations;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  protected void setupReceivers(List&lt;DrillbitEndpoint&gt; receiverLocations) throws PhysicalOperatorSetupException &#123;</span><br><span class="line">    Preconditions.checkArgument(receiverLocations.size() == 1, &quot;Union Exchange only supports a single receiver endpoint.&quot;);</span><br><span class="line">    super.setupReceivers(receiverLocations);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public Sender getSender(int minorFragmentId, PhysicalOperator child) &#123;</span><br><span class="line">    return new SingleSender(receiverMajorFragmentId, child, receiverLocations.get(0));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public Receiver getReceiver(int minorFragmentId) &#123;</span><br><span class="line">    return new UnorderedReceiver(senderMajorFragmentId, PhysicalOperatorUtil.getIndexOrderedEndpoints(senderLocations), false);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面getSender和getReceiver的第一个参数是minorFragmentId. new一个Sender或者Receiver都要知道对方的MajorFragmentId.<br>比如SingleSender要知道Receiver的MajorFragmentId,以及接收者的一个Location. UnorderReceiver要知道Sender的MajorId,以及所有发送者的Locations.     </p>
+<p>SingleSender: <code>Sender that pushes all data to a single destination node.</code> 发送者会发送所有的数据到一个目标节点,那么当然要指定这个目标节点了.<br>这个目标节点应该是跟上表中的sendingExchange变量相关的, 可以看到这一行的root=SINGLE_SENDER. 当然目标节点指的应该是Drillbit级别,而不是Operator了.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public class SingleSender extends AbstractSender &#123;</span><br><span class="line">  /**</span><br><span class="line">   * Create a SingleSender which sends data to fragment identified by given MajorFragmentId and MinorFragmentId, and running at given endpoint</span><br><span class="line">   *</span><br><span class="line">   * @param oppositeMajorFragmentId MajorFragmentId of the receiver fragment.</span><br><span class="line">   * @param oppositeMinorFragmentId MinorFragmentId of the receiver fragment.</span><br><span class="line">   * @param child Child operator</span><br><span class="line">   * @param destination Drillbit endpoint where the receiver fragment is running.</span><br><span class="line">   */</span><br><span class="line">  @JsonCreator</span><br><span class="line">  public SingleSender(@JsonProperty(&quot;receiver-major-fragment&quot;) int oppositeMajorFragmentId,</span><br><span class="line">                      @JsonProperty(&quot;receiver-minor-fragment&quot;) int oppositeMinorFragmentId,</span><br><span class="line">                      @JsonProperty(&quot;child&quot;) PhysicalOperator child,</span><br><span class="line">                      @JsonProperty(&quot;destination&quot;) DrillbitEndpoint destination) &#123;</span><br><span class="line">    super(oppositeMajorFragmentId, child,</span><br><span class="line">        Collections.singletonList(new MinorFragmentEndpoint(oppositeMinorFragmentId, destination)));</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p><code>MinorFragmentEndpoint represents fragment&#39;s MinorFragmentId and Drillbit endpoint to which the fragment is assigned for execution.</code><br>DrillbitEndpoint是运行’Drillbit’服务的节点(集群的计算节点). MinorFragmentEndpoint是fragment要执行在哪个Drillbit节点,更细粒度(Container?).  </p>
+<p>对于Reciever而言, 它可以有多个Sender. </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public class UnorderedReceiver extends AbstractReceiver&#123;</span><br><span class="line">  @JsonCreator</span><br><span class="line">  public UnorderedReceiver(@JsonProperty(&quot;sender-major-fragment&quot;) int oppositeMajorFragmentId,</span><br><span class="line">                           @JsonProperty(&quot;senders&quot;) List&lt;MinorFragmentEndpoint&gt; senders,</span><br><span class="line">                           @JsonProperty(&quot;spooling&quot;) boolean spooling) &#123;</span><br><span class="line">    super(oppositeMajorFragmentId, senders, spooling);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>下面解释下FragmentLeaf这个接口下都有哪些实现类. </p>
+<p><img src="http://7xjs7x.com1.z0.glb.clouddn.com/drill27.png" alt></p>
+<p>FragmentLeaf是一个Fragment的叶子节点, Fragment和DAG图的叶子节点是有点差别呢的. 因为一个DAG图会包括多个Fragment.<br>1.接收者是一个Fragment的叶子, 因为Exchange会分隔Fragment. Fragment的上方是接收者,是上面一个Fragment的叶子节点.<br>2.整个DAG图的叶子节点通常是Scan,是组成DAG最下面的那个Fragment的叶子节点.   </p>
+<p>Fragment的Root是一个Fragment的根节点<br>1.发送者是一个Fragment的根节点, 即Exchange分隔的下面一个Fragment的根节点,而Fragment下发是一个Sender.<br>2.整个DAG图的根节点通常是Screen.  </p>
+<h2 id="QueryWorkUnit">QueryWorkUnit</h2><p>在运行物理计划的第一句是根据物理计划得到QueryWorkUnit:    </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">final QueryWorkUnit work = getQueryWorkUnit(plan);</span><br><span class="line">final List&lt;PlanFragment&gt; planFragments = work.getFragments();</span><br><span class="line">final PlanFragment rootPlanFragment = work.getRootFragment();</span><br></pre></td></tr></table></figure>
+<p>查询的工作单元包含了三个组件, 对于本地而言的根Fragment和根操作符.  这里的本地指的是Foreman.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public class QueryWorkUnit &#123;</span><br><span class="line">  private final PlanFragment rootFragment; // for local</span><br><span class="line">  private final FragmentRoot rootOperator; // for local</span><br><span class="line">  private final List&lt;PlanFragment&gt; fragments;  // Major+Minor Fragments</span><br></pre></td></tr></table></figure>
+<p>而PlanFragment既是Plan又是Fragment.  前面我们知道Fragment由Exchange分成了多个Major Fragment.<br>在遍历物理操作符时, 会将物理操作符加入到对应的Fragment中.  </p>
+<h3 id="Protobuf">Protobuf</h3><p>必须上Protobuf这道菜了. 对于理解不同组件之间的关系是有作用的.  其实前面RPC部分也是用到了protobuf.<br>PlanFragment的protobuf定义在BitControl.proto中. FragmentHandle在ExecutionProtos.proto中  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">message PlanFragment &#123;</span><br><span class="line">  optional FragmentHandle handle = 1;</span><br><span class="line">  optional float network_cost = 4;</span><br><span class="line">  optional float cpu_cost = 5;</span><br><span class="line">  optional float disk_cost = 6;</span><br><span class="line">  optional float memory_cost = 7;</span><br><span class="line">  optional string fragment_json = 8;</span><br><span class="line">  optional bool leaf_fragment = 9;</span><br><span class="line">  optional DrillbitEndpoint assignment = 10;</span><br><span class="line">  optional DrillbitEndpoint foreman = 11;</span><br><span class="line">  optional int64 mem_initial = 12 [default = 20000000]; // 20 megs</span><br><span class="line">  optional int64 mem_max = 13 [default = 2000000000]; // 20 gigs</span><br><span class="line">  optional exec.shared.UserCredentials credentials = 14;</span><br><span class="line">  optional string options_json = 15;</span><br><span class="line">  optional QueryContextInformation context = 16;</span><br><span class="line">  repeated Collector collector = 17;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">message FragmentHandle &#123;</span><br><span class="line">	optional exec.shared.QueryId query_id = 1;</span><br><span class="line">	optional int32 major_fragment_id = 2;</span><br><span class="line">	optional int32 minor_fragment_id = 3;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在日志一节, 其中Root Fragment(rootFragment对象)打印的信息如下, 可以看到正好对应了上面的PlanFragment的协议格式:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">handle &#123;				→ FragmentHandle</span><br><span class="line">  query_id &#123;</span><br><span class="line">    part1: 3053657859282349058</span><br><span class="line">    part2: -8863752500417580646</span><br><span class="line">  &#125;</span><br><span class="line">  major_fragment_id: 0</span><br><span class="line">  minor_fragment_id: 0</span><br><span class="line">&#125;</span><br><span class="line">fragment_json: &quot;&#123;		→ fragment_json</span><br><span class="line">  ...</span><br><span class="line">&#125;&quot;</span><br><span class="line">leaf_fragment: true</span><br><span class="line">assignment &#123;			→ DrillbitEndpoint</span><br><span class="line">  address: &quot;localhost&quot;</span><br><span class="line">  user_port: 31010</span><br><span class="line">  control_port: 31011</span><br><span class="line">  data_port: 31012</span><br><span class="line">&#125;</span><br><span class="line">foreman &#123;				→ DrillbitEndpoint</span><br><span class="line">  address: &quot;localhost&quot;</span><br><span class="line">  user_port: 31010</span><br><span class="line">  control_port: 31011</span><br><span class="line">  data_port: 31012</span><br><span class="line">&#125;</span><br><span class="line">context &#123;</span><br><span class="line">  query_start_time: 1436498522273</span><br><span class="line">  time_zone: 299</span><br><span class="line">  default_schema_name: &quot;&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="QueryContext_&amp;_DrillbitContext"><strong>QueryContext &amp; DrillbitContext</strong></h3><p>计算fragments要根据查询的上下文QueryContext,以及DrillbitContext.<br>queryContext.getCurrentEndpoint()表示Foreman节点, queryContext.getActiveEndpoints()表示参与计算的其他节点.<br>我们重点看下获取活动的Endpoints是怎么做得, 因为Drill是分布式的计算引擎,添加计算节点能够让计算能力提高.<br>那么它是怎么实现的, 通过ZK的Watcher机制, 如果有节点增加进来,获取可用的计算节点时就是动态实时的.   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">queryContext.getActiveEndpoints()</span><br><span class="line">            |</span><br><span class="line">            |--&gt;drillbitContext.getBits()</span><br><span class="line">                      |     </span><br><span class="line">                      |--&gt;ClusterCoordinator.getAvailableEndpoints()</span><br><span class="line">                                 |</span><br><span class="line">                                 |&lt;--ZKClusterCoordinator.endpoints</span><br><span class="line">                                               |</span><br><span class="line">                                               |&lt;--updateEndpoints()</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>我们知道了通过ZK实时获取动态的计算节点, 但是任务是怎么分配到计算节点上的. 我们能不能自定义转发规则??  </p>
+</blockquote>
+<h3 id="SimpleParallelizer">SimpleParallelizer</h3><p>由SimpleParallelizer获得Fragments, 参数activeEndpoints就是上面从上下文中得到的集群中可用的Drillbit计算节点.<br>rootFragment是rootOperator返回的Fragment, 物理计划的rootOperator一般是Screen. 这里的Fragment指的是由Exchange分割的Major Fragment.  </p>
+<p>该方法根据提供的Fragment树生成分配好的Fragments集合, 就是PlanFragment Protobuf对象集合, 会被分配到单独的节点.<br>返回的Fragments(注意是复数形式), 则是Major+Minor级别的Fragment了.  而Minor Fragments可以有多个, 是可以并行处理的.  </p>
+<blockquote>
+<p>什么是Fragment树?  就是文档中提到的将物理计划转成多个Fragments,这些Fragments组成了一棵树.  </p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">  final QueryWorkUnit queryWorkUnit = parallelizer.getFragments(</span><br><span class="line">      queryContext.getOptions().getOptionList(), queryContext.getCurrentEndpoint(),</span><br><span class="line">      queryId, queryContext.getActiveEndpoints(), drillbitContext.getPlanReader(), rootFragment,</span><br><span class="line">      initiatingClient.getSession(), queryContext.getQueryContextInfo());</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * Generate a set of assigned fragments based on the provided fragment tree. Do not allow parallelization stages to go beyond the global max width.</span><br><span class="line"> * @param foremanNode       The driving/foreman node for this query.  (this node) 本次查询的驱动节点/Foreman节点.</span><br><span class="line"> * @param activeEndpoints   The list of endpoints to consider for inclusion in planning this query. 要计划本次查询, 需要考虑包括在内的计算节点</span><br><span class="line"> * @param reader                  Tool used to read JSON plans 读取JSON格式的物理计划</span><br><span class="line"> * @param rootFragment      The root node of the PhysicalPlan that we will be parallelizing. 物理计划的根节点(对应的Fragment), 会并行处理. </span><br><span class="line"> * @return The list of generated PlanFragment protobuf objects to be assigned out to the individual nodes.</span><br><span class="line"> */</span><br><span class="line">public QueryWorkUnit getFragments(OptionList options, DrillbitEndpoint foremanNode, QueryId queryId, Collection&lt;DrillbitEndpoint&gt; activeEndpoints, </span><br><span class="line">    PhysicalPlanReader reader, Fragment rootFragment, UserSession session, QueryContextInformation queryContextInfo)  &#123;</span><br><span class="line">  final PlanningSet planningSet = new PlanningSet();</span><br><span class="line">  initFragmentWrappers(rootFragment, planningSet);</span><br><span class="line"></span><br><span class="line">  final Set&lt;Wrapper&gt; leafFragments = constructFragmentDependencyGraph(planningSet);</span><br><span class="line">  // Start parallelizing from leaf fragments</span><br><span class="line">  for (Wrapper wrapper : leafFragments) &#123;</span><br><span class="line">    parallelizeFragment(wrapper, planningSet, activeEndpoints);</span><br><span class="line">  &#125;</span><br><span class="line">  return generateWorkUnit(options, foremanNode, queryId, reader, rootFragment, planningSet, session, queryContextInfo);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们知道rootFragment只是代表了DAG图最顶上的那个Major Fragment, 在下面的迭代中,要给DAG图中的每个Major Fragment都添加到planningSet中.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// For every fragment, create a Wrapper in PlanningSet.</span><br><span class="line">public void initFragmentWrappers(Fragment rootFragment, PlanningSet planningSet) &#123;</span><br><span class="line">  planningSet.get(rootFragment);</span><br><span class="line">  for(ExchangeFragmentPair fragmentPair : rootFragment) &#123;</span><br><span class="line">    initFragmentWrappers(fragmentPair.getNode(), planningSet);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面我们再给出Fragment的迭代方法iterator.  for循环迭代的是receivingExchangePairs.<br>前面分析过上一个Fragment作为接收者接收下一个Fragment发送的数据: <code>value.addReceiveExchange(exchange, next);</code><br>那么ExchangeFragmentPair的Node就是next, 即下一个Major Fragment, 然后继续递归下去.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">public class Fragment implements Iterable&lt;Fragment.ExchangeFragmentPair&gt; &#123;</span><br><span class="line">  private final List&lt;ExchangeFragmentPair&gt; receivingExchangePairs = Lists.newLinkedList();</span><br><span class="line"></span><br><span class="line">  public void addReceiveExchange(Exchange e, Fragment fragment) &#123;</span><br><span class="line">    this.receivingExchangePairs.add(new ExchangeFragmentPair(e, fragment));</span><br><span class="line">  &#125;</span><br><span class="line">  public Iterator&lt;ExchangeFragmentPair&gt; iterator() &#123;</span><br><span class="line">    return this.receivingExchangePairs.iterator();</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="PlanningSet+Wrapper">PlanningSet+Wrapper</h3><p>既然用到了ReceiveExchange, 下面马上就用到了SendingExchange.  添加是在: <code>next.addSendExchange(exchange, value);</code><br>下面用的不是ExchangeFragmentPair的Fragment了, 而是Fragment的Exchange. 这里要做到的是设置MajorFragmentId.<br>因为由Exchange分割的Major Fragment, 它们的ID分别是00,01,02等等.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">public class PlanningSet implements Iterable&lt;Wrapper&gt; &#123;</span><br><span class="line">  private final Map&lt;Fragment, Wrapper&gt; fragmentMap = Maps.newHashMap();</span><br><span class="line">  private int majorFragmentIdIndex = 0;</span><br><span class="line"></span><br><span class="line">  public Wrapper get(Fragment node) &#123;</span><br><span class="line">    Wrapper wrapper = fragmentMap.get(node);</span><br><span class="line">    if (wrapper == null) &#123;</span><br><span class="line">      int majorFragmentId = 0;</span><br><span class="line">      // If there is a sending exchange, we need to number other than zero.</span><br><span class="line">      if (node.getSendingExchange() != null) &#123;</span><br><span class="line">        // assign the upper 16 bits as the major fragment id.</span><br><span class="line">        majorFragmentId = node.getSendingExchange().getChild().getOperatorId() &gt;&gt; 16;</span><br><span class="line">        // if they are not assigned, that means we mostly likely have an externally generated plan.  in this case, come up with a major fragmentid.</span><br><span class="line">        if (majorFragmentId == 0)   majorFragmentId = majorFragmentIdIndex;</span><br><span class="line">      &#125;</span><br><span class="line">      wrapper = new Wrapper(node, majorFragmentId);  // Wrapper由Fragment和major编号组成</span><br><span class="line">      fragmentMap.put(node, wrapper);</span><br><span class="line">      majorFragmentIdIndex++;  // 只有调用Major Fragment时, 每遇到新的Major, 索引编号+1</span><br><span class="line">    &#125;</span><br><span class="line">    return wrapper;  // planningSet.get并没有用返回值做什么事情. 其实主要是放到Map中, 由迭代器访问所有的Wrapper.  </span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  public Iterator&lt;Wrapper&gt; iterator() &#123;</span><br><span class="line">    return this.fragmentMap.values().iterator();</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>Wrapper: <code>A wrapping class that allows us to add additional information to each fragment node for planning purposes</code><br>它的构造函数创建对象是由PlanningSet指定MajorFragment和MajorFragmentId. 它的其余属性需要在下面中设置进来.  </p>
+<p>先来看下Exchange的并行依赖:  发送者和接收者是否相互依赖.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * Exchanges are fragment boundaries in physical operator tree. It is divided into two parts. First part is Sender</span><br><span class="line"> * which becomes part of the sending fragment. Second part is Receiver which becomes part of the fragment that receives the data.</span><br><span class="line"> * Exchange是物理操作符树的Fragment边界. 第一部分Sender,它是发送者Fragment的一部分, 第二部分Reciever是接收者Fragment的一部分. </span><br><span class="line"> * Assignment dependency describes whether sender fragments depend on receiver fragment&apos;s endpoint assignment for</span><br><span class="line"> * determining its parallelization and endpoint assignment and vice versa.</span><br><span class="line"> * 分配依赖描述了发送者Fragment是否依赖于接收者Fragment的节点分配任务, 以便于决定并行度和如何分配工作到节点上. 反过来一样.   </span><br><span class="line"> */</span><br><span class="line">public enum ParallelizationDependency &#123;</span><br><span class="line">  SENDER_DEPENDS_ON_RECEIVER, // Sending fragment depends on receiving fragment for parallelization</span><br><span class="line">  RECEIVER_DEPENDS_ON_SENDER, // Receiving fragment depends on sending fragment for parallelization (default value).</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>根据PlanningSet构造依赖图:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">  final Set&lt;Wrapper&gt; leafFragments = constructFragmentDependencyGraph(planningSet);</span><br><span class="line"></span><br><span class="line">/** 根据Exchange的亲密程序分割两个fragments, 并且设置fragment的依赖关系.  </span><br><span class="line"> * Based on the affinity of the Exchange that separates two fragments, setup fragment dependencies.</span><br><span class="line"> * @return Returns a list of leaf fragments in fragment dependency graph. */</span><br><span class="line">private static Set&lt;Wrapper&gt; constructFragmentDependencyGraph(PlanningSet planningSet) &#123;</span><br><span class="line">  // Set up dependency of fragments based on the affinity of exchange that separates the fragments.</span><br><span class="line">  for(Wrapper currentFragmentWrapper : planningSet) &#123;  // PlanningSet包含了所有的Major Fragment组成的Wrapper,循环每一个Wrapper</span><br><span class="line">    ExchangeFragmentPair sendingExchange = currentFragmentWrapper.getNode().getSendingExchangePair();  //每个MajorFragment要发送的目标</span><br><span class="line">    if (sendingExchange != null) &#123;  // SendingExchange不为空的, 比如next, 而不是DAG图的第一个Fragment. 因为只有next才是发送者</span><br><span class="line">      ParallelizationDependency dependency = sendingExchange.getExchange().getParallelizationDependency();  // 依赖关系记录在Exchange中, 而不是Fragment中</span><br><span class="line">      Wrapper receivingFragmentWrapper = planningSet.get(sendingExchange.getNode());  // 目标节点, 实际上就是接收者了</span><br><span class="line">      // 根据依赖关系, 判断要加到哪个Wrapper中, 实际上是哪个Fragment中. 因为Wrapper由MajorFragment组成.  </span><br><span class="line">      if (dependency == ParallelizationDependency.RECEIVER_DEPENDS_ON_SENDER) &#123;     // Receiver依赖Sender</span><br><span class="line">        receivingFragmentWrapper.addFragmentDependency(currentFragmentWrapper);   // Receiver的依赖关系图中有当前Major Fragment</span><br><span class="line">      &#125; else if (dependency == ParallelizationDependency.SENDER_DEPENDS_ON_RECEIVER) &#123;  // Sender依赖Reciever</span><br><span class="line">        currentFragmentWrapper.addFragmentDependency(receivingFragmentWrapper);   // 当前节点刚好是Sender, 所以它依赖了接收者</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  // 上面的添加Fragment依赖图, 下面的Wrapper才可以获得依赖图, 来判断是否是叶子节点.  </span><br><span class="line">  // Identify leaf fragments. Leaf fragments are fragments that have no other fragments depending on them for parallelization info. </span><br><span class="line">  // First assume all fragments are leaf fragments. Go through the fragments one by one and  remove the fragment on which the current fragment depends on.</span><br><span class="line">  final Set&lt;Wrapper&gt; roots = Sets.newHashSet();</span><br><span class="line">  for(Wrapper w : planningSet) &#123;</span><br><span class="line">    roots.add(w);  // 所有的Major Fragment</span><br><span class="line">  &#125;</span><br><span class="line">  for(Wrapper wrapper : planningSet) &#123;</span><br><span class="line">    final List&lt;Wrapper&gt; fragmentDependencies = wrapper.getFragmentDependencies();  // 每个Major Fragment的依赖图</span><br><span class="line">    if (fragmentDependencies != null &amp;&amp; fragmentDependencies.size() &gt; 0) </span><br><span class="line">      for(Wrapper dependency : fragmentDependencies)   // 它的所有依赖者</span><br><span class="line">        if (roots.contains(dependency)) </span><br><span class="line">          roots.remove(dependency);  // 从roots中移除</span><br><span class="line">  &#125; </span><br><span class="line">  return roots;  // 返回值是leaf fragments. </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的方法roots返回的是leaf fragments. 在这之前首先对每个Major Fragments都设置了依赖图. 然后把非叶子节点从所有的Major中删除.<br>叶子节点的定义是: 没有依赖其他任何一个节点. 一旦一个节点有依赖某一个节点, 它就不是叶子节点了.  </p>
+<p>获得叶子Fragment后, 对每一个叶子节点进行并行处理. 处理的时候先处理依赖的,然后才处理自己.所以也是递归的过程    </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">  // Start parallelizing from leaf fragments 从叶子节点开始并行处理</span><br><span class="line">  for (Wrapper wrapper : leafFragments) &#123;</span><br><span class="line">    parallelizeFragment(wrapper, planningSet, activeEndpoints);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">// Helper method for parallelizing a given fragment. Dependent fragments are parallelized first before  parallelizing the given fragment.</span><br><span class="line">private void parallelizeFragment(Wrapper fragmentWrapper, PlanningSet planningSet, Collection&lt;DrillbitEndpoint&gt; activeEndpoints)  &#123;</span><br><span class="line">  // First parallelize fragments on which this fragment depends on.</span><br><span class="line">  final List&lt;Wrapper&gt; fragmentDependencies = fragmentWrapper.getFragmentDependencies();</span><br><span class="line">  if (fragmentDependencies != null &amp;&amp; fragmentDependencies.size() &gt; 0) &#123;</span><br><span class="line">    for(Wrapper dependency : fragmentDependencies) &#123;</span><br><span class="line">      parallelizeFragment(dependency, planningSet, activeEndpoints);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  Fragment fragment = fragmentWrapper.getNode();</span><br><span class="line"></span><br><span class="line">  // Step 1: Find stats. Stats include various factors including cost of physical operators, parallelizability of work in physical operator and affinity of physical operator to certain nodes.</span><br><span class="line">  fragment.getRoot().accept(new StatsCollector(planningSet), fragmentWrapper);</span><br><span class="line"></span><br><span class="line">  // Step 2: Find the parallelization width of fragment</span><br><span class="line">  </span><br><span class="line">  List&lt;DrillbitEndpoint&gt; assignedEndpoints = findEndpoints(activeEndpoints, parallelizationInfo.getEndpointAffinityMap(), fragmentWrapper.getWidth());</span><br><span class="line">  fragmentWrapper.assignEndpoints(assignedEndpoints);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>找到要分配的DrillBit后,就为Fragment分配计算节点 . 一个Fragment的Sending只有最多一个,可以有多个Receiver.   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public void assignEndpoints(List&lt;DrillbitEndpoint&gt; assignedEndpoints)  &#123;</span><br><span class="line">  endpoints.addAll(assignedEndpoints);</span><br><span class="line"></span><br><span class="line">  // Set scan and store endpoints.</span><br><span class="line">  AssignEndpointsToScanAndStore visitor = new AssignEndpointsToScanAndStore();</span><br><span class="line">  node.getRoot().accept(visitor, endpoints);</span><br><span class="line"></span><br><span class="line">  // Set the endpoints for this (one at most) sending exchange.</span><br><span class="line">  if (node.getSendingExchange() != null) &#123;</span><br><span class="line">    node.getSendingExchange().setupSenders(majorFragmentId, endpoints);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  // Set the endpoints for each incoming exchange within this fragment.</span><br><span class="line">  for (ExchangeFragmentPair e : node.getReceivingExchangePairs()) &#123;</span><br><span class="line">    e.getExchange().setupReceivers(majorFragmentId, endpoints);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后基于上面的工作, 生成WorkUnit, QueryWorkUnit只是封装了rootOperator,rootFragment,fragments的对象.  注意下面是个双层循环,<br>外层的是对每个MajorFragment,内层则对每个MinorFragment. 如果不是根节点,则把创建的PlanFragment加入到fragments中.<br>PlanFragment一个重要的对象是FragmentHandle,顾名思义是Fragment的处理类, 它只封装了Major,Minor的FragmentID,以及查询ID.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">private QueryWorkUnit generateWorkUnit(OptionList options, DrillbitEndpoint foremanNode, QueryId queryId,</span><br><span class="line">    PhysicalPlanReader reader, Fragment rootNode, PlanningSet planningSet, UserSession session, QueryContextInformation queryContextInfo) &#123;</span><br><span class="line">  List&lt;PlanFragment&gt; fragments = Lists.newArrayList();</span><br><span class="line">  PlanFragment rootFragment = null;</span><br><span class="line">  FragmentRoot rootOperator = null;</span><br><span class="line"></span><br><span class="line">  // now we generate all the individual plan fragments and associated assignments. Note, we need all endpoints</span><br><span class="line">  // assigned before we can materialize, so we start a new loop here rather than utilizing the previous one.</span><br><span class="line">  for (Wrapper wrapper : planningSet) &#123;</span><br><span class="line">    Fragment node = wrapper.getNode();</span><br><span class="line">    final PhysicalOperator physicalOperatorRoot = node.getRoot();</span><br><span class="line">    boolean isRootNode = rootNode == node;</span><br><span class="line"></span><br><span class="line">    // a fragment is self driven if it doesn&apos;t rely on any other exchanges.</span><br><span class="line">    boolean isLeafFragment = node.getReceivingExchangePairs().size() == 0;</span><br><span class="line"></span><br><span class="line">    // Create a minorFragment for each major fragment.</span><br><span class="line">    for (int minorFragmentId = 0; minorFragmentId &lt; wrapper.getWidth(); minorFragmentId++) &#123;</span><br><span class="line">      IndexedFragmentNode iNode = new IndexedFragmentNode(minorFragmentId, wrapper);</span><br><span class="line">      wrapper.resetAllocation();</span><br><span class="line">      PhysicalOperator op = physicalOperatorRoot.accept(Materializer.INSTANCE, iNode);</span><br><span class="line">      FragmentRoot root = (FragmentRoot) op;</span><br><span class="line">      FragmentHandle handle = FragmentHandle.newBuilder() //</span><br><span class="line">          .setMajorFragmentId(wrapper.getMajorFragmentId()) //</span><br><span class="line">          .setMinorFragmentId(minorFragmentId) //</span><br><span class="line">          .setQueryId(queryId) //</span><br><span class="line">          .build();</span><br><span class="line">      PlanFragment fragment = PlanFragment.newBuilder() //</span><br><span class="line">          .setForeman(foremanNode) //</span><br><span class="line">          .setFragmentJson(reader.writeJson(root)) //</span><br><span class="line">          .setHandle(handle) //</span><br><span class="line">          .setAssignment(wrapper.getAssignedEndpoint(minorFragmentId)) //</span><br><span class="line">          .setLeafFragment(isLeafFragment) //</span><br><span class="line">          .setContext(queryContextInfo)</span><br><span class="line">          .setMemInitial(wrapper.getInitialAllocation())//</span><br><span class="line">          .setMemMax(wrapper.getMaxAllocation())</span><br><span class="line">          .setOptionsJson(reader.writeJson(options))</span><br><span class="line">          .setCredentials(session.getCredentials())</span><br><span class="line">          .addAllCollector(CountRequiredFragments.getCollectors(root))</span><br><span class="line">          .build();</span><br><span class="line"></span><br><span class="line">      if (isRootNode) &#123;</span><br><span class="line">        logger.debug(&quot;Root fragment:\n &#123;&#125;&quot;, DrillStringUtils.unescapeJava(fragment.toString()));</span><br><span class="line">        rootFragment = fragment;</span><br><span class="line">        rootOperator = root;</span><br><span class="line">      &#125; else &#123;</span><br><span class="line">        logger.debug(&quot;Remote fragment:\n &#123;&#125;&quot;, DrillStringUtils.unescapeJava(fragment.toString()));</span><br><span class="line">        fragments.add(fragment);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  return new QueryWorkUnit(rootOperator, rootFragment, fragments);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="提交并执行Fragments">提交并执行Fragments</h2><p>现在主线回到Foreman的runPhysicalPlan, 在提交Fragments执行前, 先添加了两个监听器到DrillbitContext对应的WorkBus和集群协调器.<br>然后设置RootFragment和非RootFragment. 设置根节点需要QueryWorkUnit的rootFragment和rootOperator.  非根节点只需要planFragments.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">private void runPhysicalPlan(final PhysicalPlan plan) throws ExecutionSetupException &#123;</span><br><span class="line">  final QueryWorkUnit work = getQueryWorkUnit(plan);</span><br><span class="line">  final List&lt;PlanFragment&gt; planFragments = work.getFragments();</span><br><span class="line">  final PlanFragment rootPlanFragment = work.getRootFragment();</span><br><span class="line"></span><br><span class="line">  drillbitContext.getWorkBus().addFragmentStatusListener(queryId, queryManager.getFragmentStatusListener());</span><br><span class="line">  drillbitContext.getClusterCoordinator().addDrillbitStatusListener(queryManager.getDrillbitStatusListener());</span><br><span class="line">  logger.debug(&quot;Submitting fragments to run.&quot;);</span><br><span class="line"></span><br><span class="line">  // set up the root fragment first so we&apos;ll have incoming buffers available.</span><br><span class="line">  setupRootFragment(rootPlanFragment, work.getRootOperator());</span><br><span class="line">  setupNonRootFragments(planFragments);</span><br><span class="line">  drillbitContext.getAllocator().resetFragmentLimits(); // TODO a global effect for this query?!?</span><br><span class="line"></span><br><span class="line">  moveToState(QueryState.RUNNING, null);</span><br><span class="line">  logger.debug(&quot;Fragments running.&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/07/15/2015-07-15-drill-fragments/">Apache Drill源码阅读(5) Fragment</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年07月15日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/07/15/2015-07-15-drill-fragments/" title="Apache Drill源码阅读(5) Fragment">http://github.com/zqhxuyuan/2015/07/15/2015-07-15-drill-fragments/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/07/15/2015-07-15-drill-fragments/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/07/26/2015-09-11-Flowmix-CEP/">
+        Storm的CEP框架 flowmix
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/07/14/2015-07-14-drill-logical/">
+        Apache Drill源码阅读(4) 逻辑计划
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Foreman-runPhysicalPlan运行物理计划"><span class="toc-number">1.</span> <span class="toc-text">Foreman.runPhysicalPlan运行物理计划</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fragments_theory"><span class="toc-number">2.</span> <span class="toc-text">fragments theory</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Major_Fragments"><span class="toc-number">3.</span> <span class="toc-text">Major Fragments</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Receiver+Sender"><span class="toc-number">4.</span> <span class="toc-text">Receiver+Sender</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#QueryWorkUnit"><span class="toc-number">5.</span> <span class="toc-text">QueryWorkUnit</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Protobuf"><span class="toc-number">5.1.</span> <span class="toc-text">Protobuf</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#QueryContext_&_DrillbitContext"><span class="toc-number">5.2.</span> <span class="toc-text">QueryContext &amp; DrillbitContext</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SimpleParallelizer"><span class="toc-number">5.3.</span> <span class="toc-text">SimpleParallelizer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#PlanningSet+Wrapper"><span class="toc-number">5.4.</span> <span class="toc-text">PlanningSet+Wrapper</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#提交并执行Fragments"><span class="toc-number">6.</span> <span class="toc-text">提交并执行Fragments</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/07/15/2015-07-15-drill-fragments/" data-title="Apache Drill源码阅读(5) Fragment" data-url="http://github.com/zqhxuyuan/2015/07/15/2015-07-15-drill-fragments/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/07/26/2015-09-11-Flowmix-CEP/" title="上一篇: Storm的CEP框架 flowmix">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/07/14/2015-07-14-drill-logical/" title="下一篇: Apache Drill源码阅读(4) 逻辑计划">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

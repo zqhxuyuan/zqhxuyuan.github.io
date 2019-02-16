@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Kafka源码分析 ISR和Replica | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="接Kafla_LogAppend,消息存储到Leader的Partition之后,ISR保证Partition的复制…">
+<meta name="keywords" content="kafka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kafka源码分析 ISR和Replica">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/01/14/2016-01-14-Kafka-ISR/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="接Kafla_LogAppend,消息存储到Leader的Partition之后,ISR保证Partition的复制…">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160114142830405">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160114145533803">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160114153213150">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160114163702208">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160114094002808">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160117162956999">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160117163023129">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.234Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kafka源码分析 ISR和Replica">
+<meta name="twitter:description" content="接Kafla_LogAppend,消息存储到Leader的Partition之后,ISR保证Partition的复制…">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160114142830405">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2016-01-14-Kafka-ISR" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/01/14/2016-01-14-Kafka-ISR/" class="article-date">
+  	<time datetime="2016-01-13T16:00:00.000Z" itemprop="datePublished">2016-01-14</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Kafka源码分析 ISR和Replica
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Source/">Source</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/">kafka</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>接Kafla_LogAppend,消息存储到Leader的Partition之后,ISR保证Partition的复制…<br><a id="more"></a></p>
+<h2 id="Partition_&amp;_Replica">Partition &amp; Replica</h2><p>首先来看Partition的Replication副本是个什么概念. 每个Partition都可以有多个Replication.<br>其中Leader副本负责读写, Follower副本负责从Leader拉取数据. Replica分布在不同的Broker上.<br>所以Replica只需要两个属性: Partition(分区), brokerid(所在的Kafka节点).  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160114142830405" alt="k_partition"></p>
+<p>一个Replication有两个重要的元数据: HighWatermark和LogEndOffset.  </p>
+<ul>
+<li>HighWatermark是用来确保消费者能获取到的消息的最高水位,超过这个水位的消息是不会被客户端看到的.</li>
+<li>由于Leader负责读写,所以HW只能由Leader更新,但是怎么时候更新,可能由follower在更新LEO时通知Leader修改.</li>
+<li>LogEndOffset是所有的Replica都会有的:Leader在消息追加后会更新,follower在从Leader抓取消息也也会更新.</li>
+</ul>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160114145533803" alt="k_update_leo"></p>
+<blockquote>
+<p>问:最后一个可选的Log是怎么用来判断是否是本地的Replica? Local和Remote又是针对什么而言?<br>答:一个Partition的所有Replicas都是保存在Leader节点的内存中的. 而不是让每个节点自己管理自己的信息,<br>如果这样的话,每个Kafka节点的信息就都是不一样的! 而分布式集群管理是要有一个中心来管理所有节点信息的.<br>因为现在是在Leader节点上,并且是由Leader管理所有的Replicas,Leader自己就是Local,其他Replics都是Remote!<br>即<code>Leader Replica = Local Replica</code>, <code>Follower Repicas = Remote Replicas</code>.  </p>
+</blockquote>
+<blockquote>
+<p>问:因为Partitions是分布在不同的Kafka节点,本身每个节点记录的Partitions就是不一样的了.<br>答:没错,分布式节点保存的信息是不一样的,但是同一个Partition的所有Replicas应该是交给Leader管理的.<br>而follower上的Replicas并不需要管理自己的状态,因为Leader替他们管理好了.  </p>
+</blockquote>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160114153213150" alt="k_local_remote"></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Replica</span>(<span class="params">val brokerId: <span class="type">Int</span>, val partition: <span class="type">Partition</span>, time: <span class="type">Time</span> = <span class="type">SystemTime</span>, initialHighWatermarkValue: <span class="type">Long</span> = 0L, val log: <span class="type">Option</span>[<span class="type">Log</span>] = <span class="type">None</span></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// the high watermark offset value, in non-leader replicas only its message offsets are kept</span></span><br><span class="line">  <span class="meta">@volatile</span> <span class="keyword">private</span>[<span class="keyword">this</span>] <span class="keyword">var</span> highWatermarkMetadata: <span class="type">LogOffsetMetadata</span> = <span class="keyword">new</span> <span class="type">LogOffsetMetadata</span>(initialHighWatermarkValue)</span><br><span class="line">  <span class="comment">// the log end offset value, kept in all replicas;</span></span><br><span class="line">  <span class="comment">// for local replica it is the log's end offset, for remote replicas its value is only updated by follower fetch</span></span><br><span class="line">  <span class="meta">@volatile</span> <span class="keyword">private</span>[<span class="keyword">this</span>] <span class="keyword">var</span> logEndOffsetMetadata: <span class="type">LogOffsetMetadata</span> = <span class="type">LogOffsetMetadata</span>.<span class="type">UnknownOffsetMetadata</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">isLocal</span></span>: <span class="type">Boolean</span> = log <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">Some</span>(l) =&gt; <span class="literal">true</span>    <span class="comment">// 创建Replica时指定Log时, 则表示是本地的Replication</span></span><br><span class="line">    <span class="keyword">case</span> <span class="type">None</span> =&gt; <span class="literal">false</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 设置LEO: 不应该在Local Replication的Partition上设置LEO. 对于Local Replica,它是由Log的EndOffset指定,而不能调用改update方法</span></span><br><span class="line">  <span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">logEndOffset_=</span></span>(newLogEndOffset: <span class="type">LogOffsetMetadata</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!isLocal) logEndOffsetMetadata = newLogEndOffset</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 获取LEO</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">logEndOffset</span> </span>= <span class="keyword">if</span> (isLocal) log.get.logEndOffsetMetadata <span class="keyword">else</span> logEndOffsetMetadata</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 设置HW: 不应该在非Local Replication的Partition上设置HW, 即只能在Local Replica上设置, Local Replica也是Leader Replica</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">highWatermark_=</span></span>(newHighWatermark: <span class="type">LogOffsetMetadata</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isLocal) highWatermarkMetadata = newHighWatermark</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 获取HW</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">highWatermark</span> </span>= highWatermarkMetadata</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在Partition中创建Replica,如果不在<code>assignedReplicaMap</code>中,根据是否是本地(Leader)来创建Replica实例.<br>Local的Replica比Remote的多了offset和Log. Replica的isLocal()会根据是否有Log判断是不是Local.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getOrCreateReplica</span></span>(replicaId: <span class="type">Int</span> = localBrokerId): <span class="type">Replica</span> = &#123;</span><br><span class="line">  <span class="keyword">val</span> replicaOpt = getReplica(replicaId)</span><br><span class="line">  replicaOpt <span class="keyword">match</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">Some</span>(replica) =&gt; replica</span><br><span class="line">    <span class="keyword">case</span> <span class="type">None</span> =&gt;</span><br><span class="line">      <span class="keyword">if</span> (isReplicaLocal(replicaId)) &#123;</span><br><span class="line">        <span class="keyword">val</span> config = <span class="type">LogConfig</span>.fromProps(logManager.defaultConfig.originals, <span class="type">AdminUtils</span>.fetchEntityConfig(zkUtils, <span class="type">ConfigType</span>.<span class="type">Topic</span>, topic))</span><br><span class="line">        <span class="comment">// TopicAndPartition的Log</span></span><br><span class="line">        <span class="keyword">val</span> log = logManager.createLog(<span class="type">TopicAndPartition</span>(topic, partitionId), config)</span><br><span class="line">        <span class="comment">// log.dirs是所有TopicAndPartition的父目录, 而checkpoints也是全局的</span></span><br><span class="line">        <span class="keyword">val</span> checkpoint = replicaManager.highWatermarkCheckpoints(log.dir.getParentFile.getAbsolutePath)</span><br><span class="line">        <span class="keyword">val</span> offsetMap = checkpoint.read</span><br><span class="line">        <span class="comment">// checkpoints中记录了所有Partition的offset信息, 所以可以根据TopicAndPartition找到对应的offset</span></span><br><span class="line">        <span class="keyword">if</span> (!offsetMap.contains(<span class="type">TopicAndPartition</span>(topic, partitionId))) info(<span class="string">"No checkpointed highwatermark is found for partition [%s,%d]"</span>.format(topic, partitionId))</span><br><span class="line">        <span class="keyword">val</span> offset = offsetMap.getOrElse(<span class="type">TopicAndPartition</span>(topic, partitionId), <span class="number">0</span>L).min(log.logEndOffset)</span><br><span class="line">        <span class="comment">// 本地的是Leader, 所以要给出offset和Log.</span></span><br><span class="line">        <span class="keyword">val</span> localReplica = <span class="keyword">new</span> <span class="type">Replica</span>(replicaId, <span class="keyword">this</span>, time, offset, <span class="type">Some</span>(log))</span><br><span class="line">        addReplicaIfNotExists(localReplica)</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 远程的是follower.</span></span><br><span class="line">        <span class="keyword">val</span> remoteReplica = <span class="keyword">new</span> <span class="type">Replica</span>(replicaId, <span class="keyword">this</span>, time)</span><br><span class="line">        addReplicaIfNotExists(remoteReplica)</span><br><span class="line">      &#125;</span><br><span class="line">      getReplica(replicaId).get</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意上面的<code>log.dir</code>是TopicAndPartition的目录(每个TopicAndPartition目录是唯一的).<br><code>log.dir.getParentFile</code>指的是配置文件中的<code>log.dirs</code>,而不是Partition的目录.<br>而<code>log.dirs</code>是server.properties的log.dirs配置项,它是所有TopicAndPartition的父目录.  </p>
+<blockquote>
+<p>getOrCreateReplica被调用的地方是在ReplicaManager.becomeLeaderOrFollower-&gt;makeFollowers</p>
+</blockquote>
+<h3 id="ReplicaManager-&gt;OffsetCheckpoint">ReplicaManager-&gt;OffsetCheckpoint</h3><p>Local Replica的offset来源于High watermark的checkpoint(因为HW很重要,所有需要做检查点).<br>ReplicaManager的highWatermarkCheckpoints是一个Map:日志目录(log.dirs)-&gt;OffsetCheckpoint.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> highWatermarkCheckpoints = config.logDirs.map(dir =&gt; </span><br><span class="line">  (<span class="keyword">new</span> <span class="type">File</span>(dir).getAbsolutePath, <span class="keyword">new</span> <span class="type">OffsetCheckpoint</span>(<span class="keyword">new</span> <span class="type">File</span>(dir, <span class="type">ReplicaManager</span>.<span class="type">HighWatermarkFilename</span>)))</span><br><span class="line">).toMap</span><br></pre></td></tr></table></figure>
+<p>下面的/data/kafka目录是server.properties中的log.dirs的配置项,会在这个目录下生成checkpoint文件.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">➜  kafka  ll                                                                        ⬅️ log.dirs目录</span><br><span class="line">-rw-r--r--  1 zhengqh  staff     0B  1 14 16:13 recovery-point-offset-checkpoint</span><br><span class="line">-rw-r--r--  1 zhengqh  staff    18B  1 14 16:13 replication-offset-checkpoint       ⬅️ offset-checkpoint文件</span><br><span class="line">drwxr-xr-x  4 zhengqh  staff   136B  1 14 16:13 wikipedia-0</span><br><span class="line">➜  kafka  ll wikipedia-0                                                            ⬅️ topic-partition目录         </span><br><span class="line">-rw-r--r--  1 zhengqh  staff    10M  1 14 16:13 00000000000000000000.index          ⬅️ Segment日志文件和索引文件</span><br><span class="line">-rw-r--r--  1 zhengqh  staff     0B  1 14 16:13 00000000000000000000.log</span><br></pre></td></tr></table></figure>
+<p>ReplicaManager是管理所有的Partition的,而checkpoints里记录的offsetMap是所有Partition共用的.<br>所以可以根据某个特定的TopicAndPartition找到它在checkpoints中对应的offset,用来创建Replica.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160114163702208" alt="k_offset_checkpoint"></p>
+<p>因为OffsetCheckpoint记录的是TopicAndPartition到offset的映射关系.所以这个类中只是文件的读写操作.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">OffsetCheckpoint</span>(<span class="params">val file: <span class="type">File</span></span>) <span class="keyword">extends</span> <span class="title">Logging</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">write</span></span>(offsets: <span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">Long</span>]) &#123;</span><br><span class="line">    <span class="comment">// write the current version and the number of entries, then the entries, finally flush to disk</span></span><br><span class="line">    offsets.foreach &#123; <span class="keyword">case</span> (topicPart, offset) =&gt;</span><br><span class="line">        writer.write(<span class="string">"%s %d %d"</span>.format(topicPart.topic, topicPart.partition, offset))</span><br><span class="line">        writer.newLine()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">read</span></span>(): <span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">Long</span>] = &#123;</span><br><span class="line">    <span class="keyword">var</span> offsets = <span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">Long</span>]()</span><br><span class="line">    line = reader.readLine()</span><br><span class="line">    <span class="keyword">while</span>(line != <span class="literal">null</span>) &#123;</span><br><span class="line">        <span class="keyword">val</span> pieces = line.split(<span class="string">"\\s+"</span>)              </span><br><span class="line">        <span class="keyword">val</span> topic = pieces(<span class="number">0</span>)</span><br><span class="line">        <span class="keyword">val</span> partition = pieces(<span class="number">1</span>).toInt</span><br><span class="line">        <span class="keyword">val</span> offset = pieces(<span class="number">2</span>).toLong</span><br><span class="line">        offsets += (<span class="type">TopicAndPartition</span>(topic, partition) -&gt; offset)</span><br><span class="line">        line = reader.readLine()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ReplicaManager是在<code>becomeLeaderOrFollower</code>调度Checkpoint的写入,这个线程是定时运行的,确保HW是最新的.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> highWatermarkCheckPointThreadStarted = <span class="keyword">new</span> <span class="type">AtomicBoolean</span>(<span class="literal">false</span>)   <span class="comment">// 原子变量,确保只有一个线程刷写checkpoint文件</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> allPartitions = <span class="keyword">new</span> <span class="type">Pool</span>[(<span class="type">String</span>, <span class="type">Int</span>), <span class="type">Partition</span>]                <span class="comment">// 所有的Partitions</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">startHighWaterMarksCheckPointThread</span></span>() = &#123;</span><br><span class="line">  <span class="keyword">if</span>(highWatermarkCheckPointThreadStarted.compareAndSet(<span class="literal">false</span>, <span class="literal">true</span>))</span><br><span class="line">    scheduler.schedule(<span class="string">"highwatermark-checkpoint"</span>, checkpointHighWatermarks, period = config.replicaHighWatermarkCheckpointIntervalMs, unit = <span class="type">TimeUnit</span>.<span class="type">MILLISECONDS</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Flushes the highwatermark value for all partitions to the highwatermark file 把所有Partitions的HW值刷写到文件中</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">checkpointHighWatermarks</span></span>() &#123;</span><br><span class="line">  <span class="keyword">val</span> replicas = allPartitions.values.map(_.getReplica(config.brokerId)).collect&#123;<span class="keyword">case</span> <span class="type">Some</span>(replica) =&gt; replica&#125;</span><br><span class="line">  <span class="keyword">val</span> replicasByDir = replicas.filter(_.log.isDefined).groupBy(_.log.get.dir.getParentFile.getAbsolutePath)</span><br><span class="line">  <span class="keyword">for</span>((dir, reps) &lt;- replicasByDir) &#123;</span><br><span class="line">    <span class="keyword">val</span> hwms = reps.map(r =&gt; (<span class="keyword">new</span> <span class="type">TopicAndPartition</span>(r) -&gt; r.highWatermark.messageOffset)).toMap</span><br><span class="line">    highWatermarkCheckpoints(dir).write(hwms)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如何根据Partition得到offset: Partition-&gt;Replica-&gt;LogOffsetMetadata-&gt;messageOffset.  </p>
+<ul>
+<li>找出所有的Partitions,获取其Replica,确保有Replica的Partition</li>
+<li>根据log.dirs重新分组(确保有Log), 每个log.dirs对应了replicas列表</li>
+<li>对每个log.dirs, 循环replicas, 转换成TopicAndPartition到HW的映射</li>
+<li>最终往每个log.dirs写入了属于这个dir的TopicAndPartition-&gt;offset信息</li>
+</ul>
+<blockquote>
+<p>问:HW是由Leader更新的,Broker节点存储的并不都是Leader Partitions,在做checkpoint时是只对Leader Partition做吗?<br>答:不是的,ReplicaManager是对所有Partitions做checkpoint的.虽然只有Leader更新HW,但是Leader也会将HW广播给follower的.<br>当follower向leader fetch request的时候,leader会把hw也传给follower,这样follower也有了hw信息. 这样同一个Partition的<br>所有Replica都有了hw信息.目的是即使Leader挂掉了,这个hw仍然会保留在其他Replica上,其他replica成为leader后,hw也不会丢失.  </p>
+</blockquote>
+<blockquote>
+<p>问:Replica的highWatermark_=方法不是只有Leader才能调用吗(isLocal),那么leader广播给follower的hw是如何被更新的?  </p>
+</blockquote>
+<h3 id="ReplicaManager-allPartitions">ReplicaManager.allPartitions</h3><p>allPartitions被放入也是在<code>becomeLeaderOrFollower</code>中.这说明一个Partition在Leader和follower转换时是要做很多工作的.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getOrCreatePartition</span></span>(topic: <span class="type">String</span>, partitionId: <span class="type">Int</span>): <span class="type">Partition</span> = &#123;</span><br><span class="line">  <span class="keyword">var</span> partition = allPartitions.get((topic, partitionId))</span><br><span class="line">  <span class="keyword">if</span> (partition == <span class="literal">null</span>) &#123;</span><br><span class="line">    allPartitions.putIfNotExists((topic, partitionId), <span class="keyword">new</span> <span class="type">Partition</span>(topic, partitionId, time, <span class="keyword">this</span>))</span><br><span class="line">    partition = allPartitions.get((topic, partitionId))</span><br><span class="line">  &#125;</span><br><span class="line">  partition</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>allPartitions记录的是当前节点的所有Partitions.这些Partitions并不都是Leader.    </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">getLeaderPartitions</span></span>() : <span class="type">List</span>[<span class="type">Partition</span>] = &#123;</span><br><span class="line">  allPartitions.values.filter(_.leaderReplicaIfLocal().isDefined).toList</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">maybeShrinkIsr</span></span>() &#123;</span><br><span class="line">  allPartitions.values.foreach(_.maybeShrinkIsr(config.replicaLagTimeMaxMs))  <span class="comment">//评估ISR,查看是否有replicas可以从中移除</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>留个坑: becomeLeaderOrFollower的调用以及ISR收缩时对HW的影响.  </p>
+</blockquote>
+<h2 id="ReplicaManager-appendMessages">ReplicaManager.appendMessages</h2><p>在Log.append之后,需要通知follower获取这些新的消息.因为现在Leader的LEO已经更新了,follower需要及时获取落后的消息<br>如果Partition的ISR只有1个,说明没有其他Replication,则Leader的LEO更新后,其HW也要也要一起更新(当然这是特殊情况)  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160114094002808" alt="k_hw_leo"></p>
+<p>为了更方便地查看在append之后的操作,我把相关的代码都列在一起了.之前分析过的就省略了.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//*****ReplicationManager.scala*****</span></span><br><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">appendToLocalLog</span></span>(internalTopicsAllowed: <span class="type">Boolean</span>,messagesPerPartition: <span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">MessageSet</span>], requiredAcks: <span class="type">Short</span>): <span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">LogAppendResult</span>] = &#123;</span><br><span class="line">  messagesPerPartition.map &#123; <span class="keyword">case</span> (topicAndPartition, messages) =&gt;</span><br><span class="line">    <span class="keyword">val</span> info = partition.appendMessagesToLeader(messages.asInstanceOf[<span class="type">ByteBufferMessageSet</span>], requiredAcks)</span><br><span class="line">    (topicAndPartition, <span class="type">LogAppendResult</span>(info))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//*****Partition.scala*****</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">appendMessagesToLeader</span></span>(messages: <span class="type">ByteBufferMessageSet</span>, requiredAcks: <span class="type">Int</span> = <span class="number">0</span>) = &#123;</span><br><span class="line">  <span class="keyword">val</span> (info, leaderHWIncremented) = inReadLock(leaderIsrUpdateLock) &#123;</span><br><span class="line">        <span class="comment">// ① 写到Partition的Leader的那个Log</span></span><br><span class="line">        <span class="keyword">val</span> log = leaderReplica.log.get       </span><br><span class="line">        <span class="keyword">val</span> info = log.append(messages, assignOffsets = <span class="literal">true</span>)</span><br><span class="line">        <span class="comment">// ② probably unblock some follower fetch requests since log end offset has been updated</span></span><br><span class="line">        replicaManager.tryCompleteDelayedFetch(<span class="keyword">new</span> <span class="type">TopicPartitionOperationKey</span>(<span class="keyword">this</span>.topic, <span class="keyword">this</span>.partitionId))</span><br><span class="line">        <span class="comment">// ③ we may need to increment high watermark since ISR could be down to 1</span></span><br><span class="line">        (info, maybeIncrementLeaderHW(leaderReplica))</span><br><span class="line">  &#125;     </span><br><span class="line">  <span class="comment">// some delayed operations may be unblocked after HW changed </span></span><br><span class="line">  <span class="comment">// ④ 如果HW改变了,则一些延迟的请求(针对消费者)需要被解锁.当然如果HW没有变化,就不需要通知了</span></span><br><span class="line">  <span class="keyword">if</span> (leaderHWIncremented) tryCompleteDelayedRequests()</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//*****ReplicationManager.scala*****</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">appendMessages</span></span>(timeout: <span class="type">Long</span>, ... )&#123;</span><br><span class="line">    <span class="keyword">val</span> localProduceResults = appendToLocalLog(internalTopicsAllowed, messagesPerPartition, requiredAcks)</span><br><span class="line">    <span class="keyword">val</span> produceStatus = localProduceResults.map &#123; <span class="keyword">case</span> (topicAndPartition, result) =&gt;</span><br><span class="line">      topicAndPartition -&gt; <span class="type">ProducePartitionStatus</span>(result.info.lastOffset + <span class="number">1</span>, <span class="type">ProducerResponseStatus</span>(result.errorCode, result.info.firstOffset)) <span class="comment">// required offset, response status</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (delayedRequestRequired(requiredAcks, messagesPerPartition, localProduceResults)) &#123;</span><br><span class="line">      <span class="comment">// ⑤ create delayed produce operation 创建延迟的Produce操作</span></span><br><span class="line">      <span class="keyword">val</span> produceMetadata = <span class="type">ProduceMetadata</span>(requiredAcks, produceStatus)</span><br><span class="line">      <span class="keyword">val</span> delayedProduce = <span class="keyword">new</span> <span class="type">DelayedProduce</span>(timeout, produceMetadata, <span class="keyword">this</span>, responseCallback)</span><br><span class="line">      <span class="comment">// create a list of (topic, partition) pairs to use as keys for this delayed produce operation</span></span><br><span class="line">      <span class="keyword">val</span> producerRequestKeys = messagesPerPartition.keys.map(<span class="keyword">new</span> <span class="type">TopicPartitionOperationKey</span>(_)).toSeq</span><br><span class="line">      <span class="comment">// ⑥ try to complete the request immediately, otherwise put it into the purgatory 尝试立即完成请求,否则放入十八层地狱中炼狱一番(实际可以看做是缓存)</span></span><br><span class="line">      <span class="comment">// this is because while the delayed produce operation is being created, new requests may arrive and hence make this operation completable.</span></span><br><span class="line">      delayedProducePurgatory.tryCompleteElseWatch(delayedProduce, producerRequestKeys)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// ⑦ we can respond immediately 如果不需要等待ISR同步数据,在成功写到Leader之后,就可以返回响应给Producer了</span></span><br><span class="line">      <span class="keyword">val</span> produceResponseStatus = produceStatus.mapValues(status =&gt; status.responseStatus)</span><br><span class="line">      responseCallback(produceResponseStatus)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>①-④ 添加到Leader的本地日志后,要解锁follower的fetch,这样ISR中的follower才能尽快地同步新增的消息.<br>⑤-⑥ 如果需要ISR中的follower replicas同步数据,则需要创建延迟的ProducerRequest(生产请求),并交给专门的Purgatory处理<br>⑦ 不需要等待ISR的数据同步,在成功写到Leader之后,就可以返回响应给Producer了</p>
+<p>注意这里创建的DelayedProduce和Producer相关的几个对象的关系.  </p>
+<ul>
+<li>produceStatus: 生产者的状态, 主要是TopicAndPartition和ProducePartitionStatus的映射. 会有多个Partition对应自己的状态</li>
+<li>produceMetadata: 包含了上面的生产者状态, 以及requiredAcks来自Producer的acks设置</li>
+<li>responseCallback: 回到函数, 来自于appendMessages外面传入的(来源于KafkaApis定义的回调函数&lt;–客户端回调)</li>
+<li>produceResponseStatus: 最终返回给客户端的响应信息, 在请求完成时, 会把响应状态传给回调函数,然后调用回调函数,完成客户端的回调</li>
+</ul>
+<h2 id="ReplicaManager-&gt;DelayOperation">ReplicaManager-&gt;DelayOperation</h2><blockquote>
+<p>这里先简单看下生产请求需要被延迟的场景,后面一篇专门讲为什么需要延迟(以及使用缓存来保存和移除操作)  </p>
+</blockquote>
+<p><strong>delayedRequestRequired</strong>  </p>
+<p>在appendToLocalLog后,满足下面的所有条件时,将会产生一个延迟的Produce请求,并且等待replication完成:  </p>
+<ul>
+<li>required acks = -1 : Producer需要等待所有ISR接收数据(这个最重要了,不过由客户端指定的)</li>
+<li>there is data to append : 有数据(废话,没数据怎么叫生产消息)</li>
+<li>at least one partition append was successful 至少一个Partition追加成功(一次请求有多个Partition)</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">delayedRequestRequired</span></span>(requiredAcks: <span class="type">Short</span>, messagesPerPartition: <span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">MessageSet</span>], localProduceResults: <span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">LogAppendResult</span>]): <span class="type">Boolean</span> = &#123;</span><br><span class="line">  requiredAcks == <span class="number">-1</span> &amp;&amp; messagesPerPartition.size &gt; <span class="number">0</span> &amp;&amp; localProduceResults.values.count(_.error.isDefined) &lt; messagesPerPartition.size</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>DelayedProduce</strong>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">localProduceResults -&gt; (TopicAndPartition,LogAppendResult) -&gt; ProducePartitionStatus -&gt; ProduceMetadata -&gt; DelayedProduce</span><br><span class="line">本地(Leader)的生产结果 -&gt;           日志追加结果               -&gt; Produce的Partition状态  -&gt; Produce的元数据  -&gt; 延迟的Produce操作</span><br></pre></td></tr></table></figure>
+<p>延迟的Produce操作会被ReplicaManager创建(<code>new DelayedProduce</code>),并被ProduceOperationPurgatory监视.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A delayed produce operation that can be created by the replica manager and watched in the produce operation purgatory</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DelayedProduce</span>(<span class="params">delayMs: <span class="type">Long</span>, produceMetadata: <span class="type">ProduceMetadata</span>, replicaManager: <span class="type">ReplicaManager</span>, </span></span></span><br><span class="line"><span class="class"><span class="params">                     responseCallback: <span class="type">Map</span>[<span class="type">TopicAndPartition</span>, <span class="type">ProducerResponseStatus</span>] =&gt; <span class="type">Unit</span></span>) <span class="keyword">extends</span> <span class="title">DelayedOperation</span>(<span class="params">delayMs</span>) </span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">abstract</span> <span class="title">class</span> <span class="title">DelayedOperation</span>(<span class="params">delayMs: <span class="type">Long</span></span>) <span class="keyword">extends</span> <span class="title">TimerTask</span> <span class="keyword">with</span> <span class="title">Logging</span> </span>&#123;</span><br><span class="line">  <span class="keyword">override</span> <span class="keyword">val</span> expirationMs = delayMs + <span class="type">System</span>.currentTimeMillis()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>DelayedProduce的<code>delayMs</code>以及<code>acks</code>源头来自于KafkaApis.handleProducerRequest的ProduceRequest:  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">replicaManager.appendMessages(produceRequest.ackTimeoutMs.toLong, produceRequest.requiredAcks, internalTopicsAllowed, authorizedRequestInfo, sendResponseCallback)</span><br></pre></td></tr></table></figure>
+<h2 id="DelayedOperationPurgatory">DelayedOperationPurgatory</h2><p>ReplicaManager的append操作出现了三个tryCompleteXXX(Fetch,Request,ElseWath)都是交给DelayedOperationPurgatory炼狱工厂.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ReplicaManager</span></span>:  </span><br><span class="line">  <span class="keyword">val</span> delayedProducePurgatory = <span class="keyword">new</span> <span class="type">DelayedOperationPurgatory</span>[<span class="type">DelayedProduce</span>](purgatoryName = <span class="string">"Produce"</span>, config.brokerId, config.producerPurgatoryPurgeIntervalRequests)</span><br><span class="line">  <span class="keyword">val</span> delayedFetchPurgatory = <span class="keyword">new</span> <span class="type">DelayedOperationPurgatory</span>[<span class="type">DelayedFetch</span>](purgatoryName = <span class="string">"Fetch"</span>, config.brokerId, config.fetchPurgatoryPurgeIntervalRequests)</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">tryCompleteDelayedFetch</span></span>(key: <span class="type">DelayedOperationKey</span>)   &#123; <span class="keyword">val</span> completed = delayedFetchPurgatory.checkAndComplete(key) &#125;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">tryCompleteDelayedProduce</span></span>(key: <span class="type">DelayedOperationKey</span>) &#123; <span class="keyword">val</span> completed = delayedProducePurgatory.checkAndComplete(key) &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// A helper purgatory class for bookkeeping delayed operations with a timeout, and expiring timed out operations.</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DelayedOperationPurgatory</span>[<span class="type">T</span> &lt;: <span class="type">DelayedOperation</span>](<span class="params">purgatoryName: <span class="type">String</span>, brokerId: <span class="type">Int</span> = 0, purgeInterval: <span class="type">Int</span> = 1000</span>)</span></span><br></pre></td></tr></table></figure>
+<p>A.尝试完成<code>延迟的fetch请求</code>的触发条件:  </p>
+<ul>
+<li>A.1 <code>Partition的HW发生变化</code> (正常的fetch–即consumer的fetch,因为HW是针对消费者而言,消费者最多只能到HW)</li>
+<li>A.2 新的MessageSet追加到本地日志 (follower的fetch, 新的MessageSet有新的LEO, 而follower是跟踪LEO的)</li>
+</ul>
+<p>B.尝试完成<code>延迟的Produce请求</code>的触发条件:  </p>
+<ul>
+<li>B.1 <code>Partition的HW发生变化</code> (对于acks=-1的情况)</li>
+<li>B.2 收到了一个follower副本的fetch操作 (对于acks&gt;1的情况? acks不是只有-1,0,1三个值吗?)</li>
+</ul>
+<h2 id="Partition-&gt;IncrementLeaderHW">Partition-&gt;IncrementLeaderHW</h2><blockquote>
+<p>HW表示的是所有ISR中的节点都已经复制完的消息.也是消费者所能获取到的消息的最大offset,所以叫做high watermark.<br>注意Leader Partition保存了ISR信息.所以可以看到maybeIncrementLeaderHW()是在appendToLocalLog()内一起执行的</p>
+</blockquote>
+<p>C.增加(Leader)Partition的Hight Watermark(HW)的触发条件:  </p>
+<ul>
+<li>C.1 <code>(Leader)Partition的ISR发生变化</code> (假设某个很慢的节点落后很多从ISR中移除,而其他节点大部分都catch-up,就可以更新HW)</li>
+<li>C.2 <code>任何Replication的LEO</code>发生变化 (ISR中的followers有任何一个节点LEO改变,看看所有ISR是否都复制了,然后更新HW)</li>
+</ul>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">maybeIncrementLeaderHW</span></span>(leaderReplica: <span class="type">Replica</span>): <span class="type">Boolean</span> = &#123;</span><br><span class="line">  <span class="comment">// 所有inSync副本中最小的LEO(因为每个follower的LEO都可能不一样), 表示的是最新的hw</span></span><br><span class="line">  <span class="keyword">val</span> allLogEndOffsets = inSyncReplicas.map(_.logEndOffset)</span><br><span class="line">  <span class="keyword">val</span> newHighWatermark = allLogEndOffsets.min(<span class="keyword">new</span> <span class="type">LogOffsetMetadata</span>.<span class="type">OffsetOrdering</span>)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Leader本身的hw, 是旧的</span></span><br><span class="line">  <span class="keyword">val</span> oldHighWatermark = leaderReplica.highWatermark  <span class="comment">// 是一个LogOffsetMetadata</span></span><br><span class="line">  <span class="keyword">if</span>(oldHighWatermark.precedes(newHighWatermark)) &#123;   <span class="comment">// 比较Leader的messageOffset是否小于ISR的</span></span><br><span class="line">    leaderReplica.highWatermark = newHighWatermark    <span class="comment">// Leader小于ISR, 更新Leader为ISR中最小的</span></span><br><span class="line">    <span class="literal">true</span>      </span><br><span class="line">  &#125;<span class="keyword">else</span> <span class="literal">false</span>     <span class="comment">// Returns true if the HW was incremented, and false otherwise.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在Log中append的updateLogEndOffset(LogAppendInfo.lastOffset+1)更新的是LogOffsetMetadata的messageOffset<br>而这里的oldHighWatermark和newHighWatermark也都是LogOffsetMetadata(最重要的就是messageOffset字段了)!<br>所以实际比较的是两个LogOffsetMetadata的messageOffset, 只有<code>Leader的HW</code>小于<code>ISR最小的LEO</code>,才更新Leader的HW.  </p>
+<ul>
+<li><code>leaderReplica</code>是Partition的Leader副本,一个Partition只有一个Leader,读写都发生在Leader上</li>
+<li><code>inSyncReplicas</code>是Partition的follower中追赶上Leader的副本(并不是所有Follower都是InSync)  </li>
+</ul>
+<blockquote>
+<p>这两个属性都是Partiton级别的,即Partiton要知道它的leader是哪个,以及这个leader管理的isr列表是什么.  </p>
+</blockquote>
+<h2 id="其他">其他</h2><p><strong>delay operation complete</strong></p>
+<p>触发条件(延迟请求以及增加HW)中关于ISR的部分都是环环相扣的:  </p>
+<ul>
+<li>leader有新消息写到本地日志(生产者写新数据) –&gt; A.2 –&gt; DelayedFetch</li>
+<li>leader replication的LEO发生变化(追加了新消息) –&gt; C.2 –&gt; HW</li>
+<li>follower向Leader发起fetch请求(ISR的follower会和Leader保持同步) –&gt; B.2  –&gt; DelayedProduce</li>
+<li>follower所在replication的LEO发生变化(拉取了新消息到本地)  –&gt; C.2 –&gt; HW</li>
+<li>所有replication的LEO发生变化,Leader的HW也会变化(成功提交了消息) –&gt; C.2 –&gt; HW</li>
+<li>consumer读取至多Leader的HW,HW变化了,解锁consumer –&gt; A.1 –&gt; DelayedFetch</li>
+<li>producer等待ISR都同步成功,导致HW变化,就可以返回响应 –&gt; B.1 –&gt; DelayedProduce</li>
+</ul>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160117162956999" alt="k_trigger"></p>
+<p><strong>Partition and Replica Creation</strong></p>
+<p>ReplicaManager负责管理Partiton, 所以是在ReplicaManager创建Partition的: getOrCreatePartition<br>Partition负责管理Replica, 所以是在Partition中创建Replica的: getOrCreateReplica  </p>
+<p>ReplicaManager要管理Broker上的所有Partition, allPartitions: Pool[(String, Int), Partition]<br>Partition也要管理分配的所有Replica,还有Leader Replica和ISR.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20160117163023129" alt="k_replica_comps"></p>
+<hr>
+<h2 id="结语">结语</h2><ul>
+<li>Partition副本由Leader和follower组成,只有ISR列表中的副本是仅仅跟着Leader的</li>
+<li>Leader管理了ISR列表,只有ISR列表中的所有副本都复制了消息,才能认为这条消息是提交的</li>
+<li>Leader和follower副本都叫做Replica,同一个Partition的不同副本分布在不同Broker上</li>
+<li>Replica很重要的两个信息是HighWatermark(HW)和LogEndOffset(LEO)  </li>
+<li>只有Leader Partition负责客户端的读写,follower从Leader同步数据</li>
+<li>所有Replica都会对HW做checkpoint,Leader会在follower的拉取请求时广播HW给follower</li>
+</ul>
+<h2 id="Ref">Ref</h2><ul>
+<li><a href="http://www.jasongj.com/2015/04/24/KafkaColumn2/" target="_blank" rel="noopener">http://www.jasongj.com/2015/04/24/KafkaColumn2/</a></li>
+<li><a href="https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Replication" target="_blank" rel="noopener">https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Replication</a></li>
+</ul>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/01/14/2016-01-14-Kafka-ISR/">Kafka源码分析 ISR和Replica</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年01月14日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/01/14/2016-01-14-Kafka-ISR/" title="Kafka源码分析 ISR和Replica">http://github.com/zqhxuyuan/2016/01/14/2016-01-14-Kafka-ISR/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/01/14/2016-01-14-Kafka-ISR/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/01/15/2016-01-15-Kafka-Delay/">
+        Kafka源码分析 DelayOperation
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/01/13/2016-01-13-Kafka-Picture/">
+        译：Kafka图文详解
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Partition_&_Replica"><span class="toc-number">1.</span> <span class="toc-text">Partition &amp; Replica</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ReplicaManager->OffsetCheckpoint"><span class="toc-number">1.1.</span> <span class="toc-text">ReplicaManager-&gt;OffsetCheckpoint</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ReplicaManager-allPartitions"><span class="toc-number">1.2.</span> <span class="toc-text">ReplicaManager.allPartitions</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ReplicaManager-appendMessages"><span class="toc-number">2.</span> <span class="toc-text">ReplicaManager.appendMessages</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ReplicaManager->DelayOperation"><span class="toc-number">3.</span> <span class="toc-text">ReplicaManager-&gt;DelayOperation</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DelayedOperationPurgatory"><span class="toc-number">4.</span> <span class="toc-text">DelayedOperationPurgatory</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Partition->IncrementLeaderHW"><span class="toc-number">5.</span> <span class="toc-text">Partition-&gt;IncrementLeaderHW</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他"><span class="toc-number">6.</span> <span class="toc-text">其他</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#结语"><span class="toc-number">7.</span> <span class="toc-text">结语</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ref"><span class="toc-number">8.</span> <span class="toc-text">Ref</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/01/14/2016-01-14-Kafka-ISR/" data-title="Kafka源码分析 ISR和Replica" data-url="http://github.com/zqhxuyuan/2016/01/14/2016-01-14-Kafka-ISR/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/01/15/2016-01-15-Kafka-Delay/" title="上一篇: Kafka源码分析 DelayOperation">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/01/13/2016-01-13-Kafka-Picture/" title="下一篇: 译：Kafka图文详解">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

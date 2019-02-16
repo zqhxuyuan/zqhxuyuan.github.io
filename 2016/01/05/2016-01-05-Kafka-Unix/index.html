@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>译：Kafka和Unix管道的示例 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="原文:http://logallthethings.com/2015/09/15/kafka-by-example-kafka-as-unix-pipes/">
+<meta name="keywords" content="kafka">
+<meta property="og:type" content="article">
+<meta property="og:title" content="译：Kafka和Unix管道的示例">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2016/01/05/2016-01-05-Kafka-Unix/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="原文:http://logallthethings.com/2015/09/15/kafka-by-example-kafka-as-unix-pipes/">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://logallthethings.files.wordpress.com/2015/09/fan-in3.png?w=920">
+<meta property="og:image" content="https://logallthethings.files.wordpress.com/2015/09/fan-out.png?w=920">
+<meta property="og:image" content="https://logallthethings.files.wordpress.com/2015/09/detect-hacks-better.png?w=920">
+<meta property="og:image" content="https://logallthethings.files.wordpress.com/2015/09/detect-hacks-better-in-prod.png?w=920">
+<meta property="og:image" content="https://logallthethings.files.wordpress.com/2015/09/remove-old-detect-hackers.png?w=920">
+<meta property="og:image" content="https://logallthethings.files.wordpress.com/2015/09/geoip-serial.png?w=920">
+<meta property="og:image" content="https://logallthethings.files.wordpress.com/2015/09/geoip-parallel2.png?w=920">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.223Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="译：Kafka和Unix管道的示例">
+<meta name="twitter:description" content="原文:http://logallthethings.com/2015/09/15/kafka-by-example-kafka-as-unix-pipes/">
+<meta name="twitter:image" content="https://logallthethings.files.wordpress.com/2015/09/fan-in3.png?w=920">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2016-01-05-Kafka-Unix" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/01/05/2016-01-05-Kafka-Unix/" class="article-date">
+  	<time datetime="2016-01-04T16:00:00.000Z" itemprop="datePublished">2016-01-05</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      译：Kafka和Unix管道的示例
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/mq/">mq</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kafka/">kafka</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>原文:<a href="http://logallthethings.com/2015/09/15/kafka-by-example-kafka-as-unix-pipes/" target="_blank" rel="noopener">http://logallthethings.com/2015/09/15/kafka-by-example-kafka-as-unix-pipes/</a><br><a id="more"></a></p>
+<h2 id="什么是Kafka">什么是Kafka</h2><p>想象下有这样的对话. </p>
+<p>你: 什么是Apache Kafka?<br>我: Apache Kafka是发布-订阅消息系统,分布式的提交日志<br>你: …什么?<br>我: 是的,它是一个分布式的,分区的,复制的提交日志服务<br>你: 你到底在说什么?</p>
+<p>上面的描述(我)是正确的. 你只需要知道这些术语是什么意思, 但是如果<strong>你</strong>不知道这些术语,就会感到很困惑.  </p>
+<p>那就让我们以另外一种方式来解释吧. 我喜欢通过例子来学习, 并且在学习的时候通过和我已经知道的东西互相比较,<br>我发现这种学习方式非常有帮助. 那么我们就以这种举例子,并且比较的方式来描述什么是Kafka吧.  </p>
+<h2 id="Kafka就像Unix的管道">Kafka就像Unix的管道</h2><p>我会给一些例子来说明Kafka能干什么, 比较的对象是很多人都熟悉的: 命令行的Unix管道</p>
+<p>看一个简单的例子:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ cat *.txt | tr A-Z a-z | grep hello</span><br></pre></td></tr></table></figure>
+<p>这段脚本找出以.txt结尾的文件中所有包含单词”hello”的行.它包含了三个步骤/阶段:  </p>
+<ol>
+<li>从所有文件中输出所有行</li>
+<li>将所有文本转换为小写</li>
+<li>找出含有”hello”单词的行</li>
+</ol>
+<p>所有这些步骤的每一个都写到标准输出流,后面的阶段会从标准的输入流中读取.</p>
+<p>最简单的来看, Kafka就像一个Unix的管道: 你将数据写到它的一端, 然后数据从另一端出来.<br>(严格来说,你写的数据会通过网络传输,你读取的数据也是通过网络,不过现在我们暂时忽略这些.)</p>
+<p>如果这就是Kafka所能做的,那有什么了不起的,对吧?实际上Kafka还有一些额外的特征,带来新的能力.  </p>
+<h2 id="结构化数据">结构化数据</h2><p>Unix的管道在文本数据行之间流动,通常是以新的一行为结束(这条管道). 这些行可以很长,但是工作单元仍然是一行文本.<br>如果你处理的不是ASCII数据,或者你处理的数据不能以一一行来表示就会有点麻烦. 而Kafka支持任意的格式和任意大小.<br>这就允许你可以存储任何数据到Kafka中: 文本,CSV,二进制数据,自定义编码数据等等. 对于Kafka而言,它只是一系列的<br>消息,其中每条消息都是一系列的字节. 比如可以(模拟)写一个Kafka的”命令行”:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ TwitterFeed | filter_tweets From @apachekafka</span><br></pre></td></tr></table></figure>
+<p>这里的filter_tweets命令可能不是一个简单的基于字符串的grep,而是一种能够理解从TwitterFeed输出的数据格式.<br>比如TwitterFeed可能输出JSON,则filter_tweets需要做些JSON的处理.TwitterFeed如果返回的是二进制数据,<br>则filter_tweets需要知道二进制的格式/协议. 这种灵活性可以让Kafka成为一种发送任何数据类型的Unix管道.  </p>
+<h2 id="数据持久化">数据持久化</h2><p>我们可能有一个复杂的会花费一些时间才能跑完的命令.如果只运行一次,你可能不关心.但是如果你要多次迭代运行,<br>你可能会会将输出结果先写到一个文件中, 这样之后的阶段可以更快地迭代,而不需要重新多次运行很慢的那部分命令.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ find . -type f | grep \.java &gt; javafiles.txt</span><br><span class="line">$ cat javafiles.txt | xargs grep ClassName</span><br></pre></td></tr></table></figure>
+<p>这个模式工作的很好,但是这意味着你需要提前计划去做(先写文件). 如果管道自身能够做这件时间就方便多了.  </p>
+<p>Kafka会持久化你发送的所有数据到磁盘上.持久化非常方便,不仅节省了你的一些时间,它还允许你能做之前不能做的一些事情.<br>就像上面的命令行一样,每个阶段的输出都被保存下来. 由于第一个阶段的输出被保存了,第二个阶段甚至不要求正在运行.<br>这种方式, Kafka作为生产者数据和消费者数据之间的缓冲区. 它保持了数据,允许消费者可用并且准备好的时候才读取数据.  </p>
+<p>Kafka是高性能的,它甚至可以运行在多台机器上,并且可以复制统一分数据到多台机器防止数据丢失造成的风险.<br>三个Kafka节点组成的集群能够处理每秒钟两百万的写入, 并能使网卡饱和.  </p>
+<p>由于数据被持久化到了Kafka中,并没有要求消费者要多快去读取数据.消费者可以想多快就多快,想多慢就多慢地读取数据.<br>因此它允许一个高性能的生产者, 并不会因为一个很慢的消费者而江堤生产者的性能. 看一个很慢的消费者的例子.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ produceNumbers &gt; numbers.txt</span><br><span class="line">$ cat numbers.txt | xargs findPrimeFactorization</span><br></pre></td></tr></table></figure>
+<p>从密码学我们知道,将一个数字因式分解成质数是很慢的.假设我们分解了100万个数字,程序挂掉了.<br>当下次重启程序的时候如果能够从上次离开位置的那个点继续处理,而不是重复很多工作,那就很友好了.<br>以这个例子中,我期望的是从numbers.txt中的第一百万零一行开始继续处理.  </p>
+<p>Kafka有类似的概念叫做”offset”.Kafka中的每条记录都被分配了有序的offset,消费者可以选择在指定的offset重新开始.  </p>
+<p>数据持久化和offsets这两个特性,允许你构建一个消费者数据和生产者数据分开的系统.<br>数据持久化–非常快的数据持久化–意味着它能很快地吸收大批量的数据.<br>它允许消费者按照它能够读取的任何速度读取数据.它允许持久化数据, 即使消费者挂掉了.<br>offsets允许消费者继续执行, 无论它上次在什么地方退出,而不会重复工作.<br>在某种情况下,这是很有意义的: 你并不想在一次汇款中从银行账号中扣了两次钱.<br>另一方面,这是出于效率方面考虑的: 你并不想重新对已经处理的数字重新进行因式分解.<br>无论哪种情况, 这两个特性都允许你做传统的Unix管道所不能做的事情.  </p>
+<h2 id="流数据">流数据</h2><p>再看下第一个例子:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ cat *.txt | tr A-Z a-z | grep hello</span><br></pre></td></tr></table></figure>
+<p>在这里例子中,第一个阶段(cat)输出所有的行然后就结束了. 整个管道会找到所有包含单词”hello”的行最后命令结束.<br>和下面的命令进行比较:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ tail -F *.txt | tr A-Z a-z | grep hello</span><br></pre></td></tr></table></figure>
+<p>这个命令不会结束, 第一个阶段(tail)输出一些行,但是仍然保持着监听更多的数据.<br>如果你在之后往其中的一个添加了一行,tail命令会输出这个新行, 然后接下来的命令会处理它.  </p>
+<p>Kafka支持相同的概念.数据写到到Kafka并且被消费者读取可以看做一个流.<br>如果消费者到达数据的末尾, 它会继续等待即将到来的更多的数据. 当新的数据写入到Kafka,它会很快地被发送到消费者.<br>我在之前说过数据流进Kafka是很快的, 实际上数据从Kafka流出也是很快的.<br>一条记录被添加到Kafka后,能够在20ms之内发送给一个正在等待的消费者.  </p>
+<p>现在我们知道Kafka除了支持数据持久化,也支持流数据. 我们复习下之前的例子</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ produceNumbers &gt; numbers.txt</span><br><span class="line">$ cat numbers.txt | xargs findPrimeFactorization</span><br></pre></td></tr></table></figure>
+<p>上面的命令看起来向上一种批处理模式,因为produceNumbers最终会结束的.<br>但是数字是无限的,它永远不会结束, 所以实际上看起来应该是这样的:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ produceNumbers |* findPrimeFactorization</span><br></pre></td></tr></table></figure>
+<p>这里我自己造了一个语法: <code>|*</code>表示这是一个Kafka管道.它能够归档所有东西到磁盘,并且发送流式的更新.  </p>
+<blockquote>
+<p>streaming updates流式更新, 数据是流式传入的,下游的方法基于最新的流数据做更新操作. 即对流数据更新操作 </p>
+</blockquote>
+<p>这种流式的数据允许你创建一个实时的管道,这里有个例子:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ tail -F /var/log/httpd/access_log |* grep index.html |* get_load_time |* make_fancy_graph</span><br></pre></td></tr></table></figure>
+<p>这个管道会查询你的web服务器日志. 它会提取主页的所有pageload,获取出页面加载的时间,创建一个可视化的图,并及时更新.<br>太棒了,你刚刚创建了一台服务器的监控面板. 如果页面加载时间抖动,你可以在几秒内从图中观察到.<br>所有的这些Kafka管道(每个<code>|*</code>)都会持久化和缓冲数据. 管道中的任何一个阶段都可能出错,并在任何时候重启,<br>并且可以在它们上次离开的地方继续. 它们可以处理的很慢,或者一直紧紧跟着(上一个阶段).<br>或者如果它们落后的太多,可以被停止,并移到新拥有更快CPU的服务器上,也能够从上一次作业离开的地方继续.  </p>
+<p>你还可以创建一些其他类型的实时管道:  </p>
+<ul>
+<li>在黑色星期五这天实时更新你的店铺的销量.你不仅能够实时获知哪些物品的销量,还能实时地响应:对畅销品订阅更多的库存. </li>
+<li>实时收集登陆次数,并注入到指令监测系统用来检查正在进行的攻击,并且能够屏蔽欺诈的IP地址</li>
+<li>实时更新交通速度传感器,你能够分析交通模式,并控制交通灯的时间</li>
+</ul>
+<h2 id="Fan_in">Fan in</h2><p>Kafka同时也支持多个生产者往相同的地方写数据. 想象下前面的场景,但现在从多个服务器上收集web服务器日志.  </p>
+<p><img src="https://logallthethings.files.wordpress.com/2015/09/fan-in3.png?w=920" alt="fan-in"></p>
+<p>所有的服务器以漏斗形式的数据流入到Kafka管道. 你只有一个grep的进程在运行, 获取加载时间的进程在运行,<br>只有一个绘图的进程在运行. 但是它们是基于所有web服务器的输出日志的聚合.恭喜你,现在创建了一个数据中心的监控面板.  </p>
+<p>这里的好处是你可以从很多的地方收集数据, 但是只在一个中央的地方存储并处理所有这些收集到的数据.<br>Kafka可以成为你的公司中所有数据的中心收集节点. 将分散在各个服务器上的数据都收集到统一一个节点.   </p>
+<h2 id="Fan_out">Fan out</h2><p>Kafka不仅支持多个生产者写到同一个地方,也支持多个消费者从相同的地方读取数据.  </p>
+<p><img src="https://logallthethings.files.wordpress.com/2015/09/fan-out.png?w=920" alt="fan-out"></p>
+<p>再强调一次,Kafka在多个阶段之间能够缓冲数据. 上面的三个管道:<code>find_ip_address</code>, <code>grep index.html</code>,<br><code>get_login_attempts</code>–都能够按照自己的步伐(消费速度)从access_log这个Kafka管道中读取数据.<br>前面两个看起来会相当快,但是第三个可能会慢点.但是没关系,Kafka会保持这些数据(不会因为其他消费者消费了就删除数据)  </p>
+<p>这样的好处是一个单一的数据源可能用不同的方式处理,每种使用方式都和其他方式都是独立的,并且不会相互影响.<br>假设我们找到了一种检测黑客的方式. 我们可以将<code>detect_hackers</code>实例部署在已有的实例旁(共存),然后一起测试.<br>对于相同的输入,看看他们都有什么不同的表现(验证我们的新的检测方式是否达到了预期的效果).   </p>
+<p><img src="https://logallthethings.files.wordpress.com/2015/09/detect-hacks-better.png?w=920" alt="detect_hacker"></p>
+<p>一旦我们决定选择使用新的方式会更好点,我们会通知下游的<code>notify_security</code>作业监听更好的检测方式.  </p>
+<p><img src="https://logallthethings.files.wordpress.com/2015/09/detect-hacks-better-in-prod.png?w=920" alt="hacker_new"></p>
+<p>并且新的方式真的很稳定了,我们可以将老的检测方式移除掉.  </p>
+<p><img src="https://logallthethings.files.wordpress.com/2015/09/remove-old-detect-hackers.png?w=920" alt="delete_old"></p>
+<p>看看我们都做了什么?</p>
+<ul>
+<li>1.我们在生产环境的数据上直接运用新的算法,并做了真实的测试</li>
+<li>2.对相同的数据,将新的算法和旧的算法一起测试</li>
+<li>3.仅仅使用了一个开关就更改了notify_security作业的输入</li>
+<li>4.保持旧的算法继续运行,以防需要切回去(上面的场景实际是将旧的算法删除了)</li>
+</ul>
+<p>这个特性使得Kafka带给我们的威力非常大.通过将同一份数据分散到多个地方,我们可以从数据中获得多个分组的能力.<br>每个管道的工作都是独立的并且都是以自己的消费速度进行的. 并且让我们在开发新的功能时能够重用已经存在的数据.  </p>
+<h2 id="并行">并行</h2><p>让我们专注于上面多个管道中的其中一个.  </p>
+<p><img src="https://logallthethings.files.wordpress.com/2015/09/geoip-serial.png?w=920" alt="parallelism"></p>
+<p>假设geoip(地理位置)数据库是非常慢的. Kafka会在这个阶段之前缓冲所有的数据,所以即使很慢,也不会丢失任何数据.<br>但是查询geoip会拖慢整个管道的速度. 所以你会部署一个很快速的geoip数据库. 但是这并不能帮你太多, 因为你每次<br>都是从find_ip_address的输出结果中一条接着一条地查询. 你真正需要的是并行!  </p>
+<p>Kafka支持在你的Kafka管道中添加子管道(sub-pipes). 你可以将所有以1结束的IP地址发送到第一个子管道,将所有以<br>2结束的IP地址发送到第二个管道,等等. 现在你的请求能够通过round-robin的方式发送到数据库中. 看起来是这样的:  </p>
+<p><img src="https://logallthethings.files.wordpress.com/2015/09/geoip-parallel2.png?w=920" alt="para2"></p>
+<p>Kafka管道中的数字0到9表示所有以这个数字结束的IP地址,会被放到相同的管道中(图中每个geoip_lookup都是一个子管道)<br>每个geoip_lookup作业都只会从find_ip_address管道中读取一部分数据,可以允许你以并行的方式查询:一次10个线程.<br>这种方式应该能满足你在geoip阶段快速地在地球图形上绘点, 这下你满意了吧!  </p>
+<p>Kafka称所有的这些是<code>partitions</code>. 它允许你将数据以逻辑的分组方式分到多个通道中,但是每个函数都是独立的.  </p>
+<blockquote>
+<p>一批数据会分散到多个节点, 每个节点之间都做同样的工作. 但是它们之间不会相互影响的.  </p>
+</blockquote>
+<h2 id="Kafka和Unix哲学">Kafka和Unix哲学</h2><p>仔细看看上面的例子,你会发现Kafka的管道这个角色是很小的.Kafka管道并不会做过滤IP地址的工作,不会做查询IP地址的工作,<br>也不会对很大的数字做因式分解. 这都取决于你. Kafka做的事情是将你的所有工具都联系在一起.这样看来它就像胶水/粘合物.<br>但是它这个粘合物能够让你构建出很多有趣的东西. Kafka负责很多平凡的事情,而这些是作为事情的解决者的你并不愿意去做的.<br>它能够帮你保存数据,能在任何一个点开始读取数据,可以从多个数据源聚合数据,并将数据同时发送给多个目标.  </p>
+<p>Kafka这种能力让你重新思考解决问题的方式. 将一个问题分解成多个阶段,每个阶段可以单独开发实现,并独立地测试.<br>这一切都是基于Kafka能将所有的组件都粘合在一起. 而且Kafka可以在网络之间完成这些事情, 所以你甚至可以将你的计算组件<br>分布在多个节点, 也就有了水平扩展, 分布式处理, 高可用性等特点.  </p>
+<p>这种将一个大问题分解成多个小问题的思想和Unix的哲学是一致的. 实际上Unix管道的发明人Doug McIlroy这么说过:  </p>
+<blockquote>
+<p>This is the Unix philosophy: Write programs that do one thing and do it well.<br>Write programs to work together. Write programs to handle text streams,<br>because that is a universal interface. </p>
+</blockquote>
+<p>Kafka允许你将Unix哲学运用到工程师急待解决的大数据量,低延迟,网络之间的问题.  </p>
+<h2 id="声明">声明</h2><p>在这篇文章中,我简化了一些事情,现在我们解释下之前遗留的东西.  </p>
+<ol>
+<li>Kafka是一个软件,你能够通过网络和它对话. 它有自己定制的网络协议,但有客户端库帮你做这些事情了.  </li>
+<li>有方便的命令行kafka-console-producer.sh读取标准输入流写到Kafka中.<br>kafka-console-consumer.sh可以从Kafka中读取输出,输出到标准输出流.你可以使用他们实现上面的命令.  </li>
+<li>Kafka客户端使得你能够从Kafka中读写数据构建自己的应用程序</li>
+<li>Kafka的管道实际上是叫做”topics”  </li>
+<li>Kafka的topic都有名称. 每个topic的数据集和其他topic都是分开的. </li>
+</ol>
+<p>EOF.</p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2016/01/05/2016-01-05-Kafka-Unix/">译：Kafka和Unix管道的示例</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2016年01月05日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2016/01/05/2016-01-05-Kafka-Unix/" title="译：Kafka和Unix管道的示例">http://github.com/zqhxuyuan/2016/01/05/2016-01-05-Kafka-Unix/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/01/05/2016-01-05-Kafka-Unix/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2016/01/05/Note_Clojure_macro/">
+        Clojure宏剖析
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2016/01/04/BookNote_Scala_doc/">
+        Scala Documentation
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#什么是Kafka"><span class="toc-number">1.</span> <span class="toc-text">什么是Kafka</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kafka就像Unix的管道"><span class="toc-number">2.</span> <span class="toc-text">Kafka就像Unix的管道</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#结构化数据"><span class="toc-number">3.</span> <span class="toc-text">结构化数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数据持久化"><span class="toc-number">4.</span> <span class="toc-text">数据持久化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#流数据"><span class="toc-number">5.</span> <span class="toc-text">流数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Fan_in"><span class="toc-number">6.</span> <span class="toc-text">Fan in</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Fan_out"><span class="toc-number">7.</span> <span class="toc-text">Fan out</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#并行"><span class="toc-number">8.</span> <span class="toc-text">并行</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kafka和Unix哲学"><span class="toc-number">9.</span> <span class="toc-text">Kafka和Unix哲学</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#声明"><span class="toc-number">10.</span> <span class="toc-text">声明</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2016/01/05/2016-01-05-Kafka-Unix/" data-title="译：Kafka和Unix管道的示例" data-url="http://github.com/zqhxuyuan/2016/01/05/2016-01-05-Kafka-Unix/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2016/01/05/Note_Clojure_macro/" title="上一篇: Clojure宏剖析">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2016/01/04/BookNote_Scala_doc/" title="下一篇: Scala Documentation">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

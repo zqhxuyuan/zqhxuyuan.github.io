@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>HBase-RDD | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="HBASE-RDD批量导入RDD数据到HBase中">
+<meta name="keywords" content="hbase">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HBase-RDD">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/12/18/2015-12-18-Spark-HBase-RDD/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="HBASE-RDD批量导入RDD数据到HBase中">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151218125857176">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151218173053065">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151218173330343">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171111110452505">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171111110508148">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171111110520321">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171111110851253">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171111110532742">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171111110545554">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171111111655342">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.213Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HBase-RDD">
+<meta name="twitter:description" content="HBASE-RDD批量导入RDD数据到HBase中">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151218125857176">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-12-18-Spark-HBase-RDD" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/12/18/2015-12-18-Spark-HBase-RDD/" class="article-date">
+  	<time datetime="2015-12-17T16:00:00.000Z" itemprop="datePublished">2015-12-18</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      HBase-RDD
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/bigdata/">bigdata</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hbase/">hbase</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>HBASE-RDD批量导入RDD数据到HBase中<br><a id="more"></a></p>
+<h2 id="HBase-RDD">HBase-RDD</h2><h3 id="IDE本地运行(√)">IDE本地运行(√)</h3><ul>
+<li>本机不需要启动HBase,为了能连接到测试的HBase集群,拷贝测试HBase集群的hbase-site.xml,测试Hadoop集群的core-site.xml, hdfs-site.xml到classpath下.</li>
+<li>设置SparkApplication的.setMaster(“local[2]”),本机不需要启动Spark,因为使用的是本地模式</li>
+</ul>
+<p>在本地运行时,没有添加Master,会报错需要设置master:   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">15/12/18 16:43:06 ERROR SparkContext: Error initializing SparkContext.</span><br><span class="line">org.apache.spark.SparkException: A master URL must be set in your configuration</span><br><span class="line">  at org.apache.spark.SparkContext.&lt;init&gt;(SparkContext.scala:394)</span><br><span class="line">  at cn.fraudmetrix.hbase.HBaseRDD$.&lt;init&gt;(HBaseRDD.scala:21)</span><br><span class="line">  at cn.fraudmetrix.hbase.HBaseRDD$.&lt;clinit&gt;(HBaseRDD.scala)</span><br><span class="line">  at cn.fraudmetrix.hbase.HBaseRDD.main(HBaseRDD.scala)</span><br><span class="line">  at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)</span><br><span class="line">  at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)</span><br><span class="line">  at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)</span><br><span class="line">  at java.lang.reflect.Method.invoke(Method.java:497)</span><br><span class="line">  at com.intellij.rt.execution.application.AppMain.main(AppMain.java:144)</span><br><span class="line">15/12/18 16:43:06 INFO SparkContext: Successfully stopped SparkContext</span><br><span class="line">Exception in thread &quot;main&quot; java.lang.ExceptionInInitializerError</span><br><span class="line">  at cn.fraudmetrix.hbase.HBaseRDD.main(HBaseRDD.scala)</span><br><span class="line">  at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)</span><br><span class="line">  at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)</span><br><span class="line">  at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)</span><br><span class="line">  at java.lang.reflect.Method.invoke(Method.java:497)</span><br><span class="line">  at com.intellij.rt.execution.application.AppMain.main(AppMain.java:144)</span><br><span class="line">Caused by: org.apache.spark.SparkException: A master URL must be set in your configuration</span><br><span class="line">  at org.apache.spark.SparkContext.&lt;init&gt;(SparkContext.scala:394)</span><br><span class="line">  at cn.fraudmetrix.hbase.HBaseRDD$.&lt;init&gt;(HBaseRDD.scala:21)</span><br><span class="line">  at cn.fraudmetrix.hbase.HBaseRDD$.&lt;clinit&gt;(HBaseRDD.scala)</span><br><span class="line">  ... 6 more</span><br></pre></td></tr></table></figure>
+<h3 id="远程Spark-Shell提交运行(√)">远程Spark-Shell提交运行(√)</h3><p>应用程序打包时需要把测试环境的hbase-site.xml等删除掉,使用远程hbase集群的配置.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151218125857176" alt="hbase_res"></p>
+<p>上传依赖包和应用程序jar包到远程机器:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">cd hbase-rdd</span><br><span class="line">sbt package</span><br><span class="line">scp target/scala-2.10/hbase-rdd_2.10-0.7.0.jar qihuang.zheng@fort.tongdun.cn:192.168.47.211/admin/tmp</span><br><span class="line"></span><br><span class="line">cd tongdun-app</span><br><span class="line">mvn clean package -DskipTests &amp;&amp; scp target/spark-app-1.1-SNAPSHOT.jar qihuang.zheng@fort.tongdun.cn:192.168.47.211/admin/tmp</span><br><span class="line"></span><br><span class="line">sudo mv /tmp/hbase-rdd_2.10-0.7.0.jar ~/ &amp;&amp; sudo chown qihuang.zheng:users hbase-rdd_2.10-0.7.0.jar</span><br><span class="line">sudo mv /tmp/spark-app-1.1-SNAPSHOT.jar ~/ &amp;&amp; sudo chown qihuang.zheng:users spark-app-1.1-SNAPSHOT.jar</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>关于依赖包的打包,CLASSPATH:<br>在Spark-ES中,因为依赖包比较少,直接加到–jars中. 而HBase的依赖包比较多需要把lib下的都加入到SPARK_CLASSPATH下.<br>在Spark-Cassandra中,打的包是assembly,所以–jars只需要一个spark-cassandra-connector-assembly-1.4.0-SNAPSHOT.jar.<br>hbase-rdd依赖的包除了spark,json4s外就是hbase了. 使用sbt package并不会将hbase打成assembly.需要外部自己提供.  </p>
+</blockquote>
+<blockquote>
+<p>通常应用程序代码不会打assembly包,因为一个应用会用到很多组件,比如spark-es, spark-cassandra, hbase-rdd.<br>而这些组件本身自己也会依赖第三方包.如果应用依赖的组件打成了assembly包,则–jars只要一个assembly包就可以比如spark-cassandra.<br>如果组件没有打assembly包,则–jars除了这个组件外,还需要添加组件依赖的第三方包,比如spark-es依赖了json4s.<br>这里的hbase-rdd也一样,没有对hbase-rdd打assembly包, 而他依赖了hbase,所以需要添加hbase到–jars中.  </p>
+</blockquote>
+<blockquote>
+<p>由于spark-shell的–jars不能指定目录,可以在提交任务的节点添加目录到spark-env.sh的SPARK_CLASSPATH.<br>提交任务的节点并不会作为Spark集群的节点,所以并不需要重启Spark集群.<br>不幸的是shell都启动不起来.估计hbase的版本和spark的一些包有冲突(比如thrift).  </p>
+</blockquote>
+<h4 id="解决依赖包冲突">解决依赖包冲突</h4><p>由于hbase的依赖包比较多,所以考虑直接用文件夹</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#添加到SPARK_CLASSPATH,并不会添加到Driver中</span></span><br><span class="line"><span class="built_in">export</span> SPARK_CLASSPATH=<span class="variable">$SPARK_CLASSPATH</span>:/home/qihuang.zheng/hbase-1.0.2/lib/*</span><br><span class="line"><span class="comment">#依赖包最好通过--jars手动添加</span></span><br><span class="line"><span class="comment">#export SPARK_CLASSPATH=$SPARK_CLASSPATH:/home/qihuang.zheng/json4s-ast_2.10-3.2.11.jar:/home/qihuang.zheng/json4s-core_2.10-3.2.11.jar:/home/qihuang.zheng/json4s-jackson_2.10-3.2.11.jar:/home/qihuang.zheng/json4s-native_2.10-3.2.11.jar</span></span><br><span class="line"><span class="comment">#配置文件在这里不起作用的</span></span><br><span class="line"><span class="comment">#export SPARK_CLASSPATH=$SPARK_CLASSPATH:/home/qihuang.zheng/hbase-1.0.2/conf/core-site.xml:/home/qihuang.zheng/hbase-1.0.2/conf/hdfs-site.xml:/home/qihuang.zheng/hbase-1.0.2/conf/hbase-site.xml</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#hbase-rdd依赖了hbase的client,common,server.但是hbase还依赖了其他包.</span></span><br><span class="line"><span class="comment">#/home/qihuang.zheng/hbase-1.0.2/lib/hbase-client-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib/hbase-common-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib/hbase-server-1.0.2.jar</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#在spark-env.sh中配置了hbase以及依赖包,就不需要添加--jars了. 但是启动出错:  </span></span><br><span class="line">/usr/install/spark-1.5.2-bin-hadoop2.4/bin/spark-shell \</span><br><span class="line">  --jars /home/qihuang.zheng/hbase-rdd_2.10-0.7.0.jar,/home/qihuang.zheng/json4s-ast_2.10-3.2.11.jar,/home/qihuang.zheng/json4s-core_2.10-3.2.11.jar,/home/qihuang.zheng/json4s-jackson_2.10-3.2.11.jar,/home/qihuang.zheng/json4s-native_2.10-3.2.11.jar \</span><br><span class="line">  --master spark://192.168.47.213:7077 \</span><br><span class="line">  --executor-memory 4g --total-executor-cores 30 --driver-memory 8g</span><br></pre></td></tr></table></figure>
+<p>但是启动spark-shell就报错,通常是hbase的jar包与系统已有的jar包冲突(比如hive)  </p>
+<ul>
+<li>拷贝hive的libthrift到hbase/lib下, 删除hbase的libthrift</li>
+<li>删除hbase/lib下的netty-3.2.4.Final.jar</li>
+</ul>
+<blockquote>
+<p>上面的spark-shell可以先不用跟上任何–jars,直接使用SPARK_CLASSPATH设置hbase/lib/*,验证能够成功启动.  </p>
+</blockquote>
+<h4 id="spark-shell测试读写HBase集群">spark-shell测试读写HBase集群</h4><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.hadoop.conf.<span class="type">Configuration</span></span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.filter.<span class="type">PrefixFilter</span></span><br><span class="line"><span class="keyword">import</span> org.apache.hadoop.hbase.util.<span class="type">Bytes</span></span><br><span class="line"><span class="keyword">import</span> org.apache.spark.rdd.<span class="type">RDD</span></span><br><span class="line"><span class="keyword">import</span> org.apache.spark.&#123;<span class="type">SparkConf</span>, <span class="type">SparkContext</span>&#125;</span><br><span class="line"><span class="keyword">import</span> unicredit.spark.hbase._</span><br><span class="line"></span><br><span class="line"><span class="keyword">implicit</span> <span class="keyword">val</span> config = <span class="type">HBaseConfig</span>(</span><br><span class="line">  <span class="string">"hbase.rootdir"</span> -&gt; <span class="string">"hdfs://tdhdfs/hbase"</span>,</span><br><span class="line">  <span class="string">"hbase.zookeeper.quorum"</span> -&gt; <span class="string">"192.168.47.83,192.168.47.84,192.168.47.86"</span>,</span><br><span class="line">  <span class="string">"hbase.master"</span> -&gt; <span class="string">"192.168.47.213:60000"</span>,</span><br><span class="line">  <span class="string">"hbase.cluster.distributed"</span> -&gt; <span class="string">"true"</span>,</span><br><span class="line">  <span class="string">"hbase.zookeeper.property.dataDir"</span> -&gt; <span class="string">"/home/qihuang.zheng/data"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> table = <span class="string">"data.md5_id"</span></span><br><span class="line"><span class="keyword">val</span> cf = <span class="string">"id"</span></span><br><span class="line"><span class="keyword">val</span> column = <span class="string">"id"</span></span><br><span class="line"><span class="keyword">val</span> families = <span class="type">Set</span>(<span class="string">"id"</span>) </span><br><span class="line"></span><br><span class="line"><span class="keyword">val</span> r1 = (<span class="string">"T9f4b08fd176e54151708c15aa625ff3"</span>, <span class="type">Map</span>(column -&gt; <span class="string">"052900195501010003"</span>))</span><br><span class="line"><span class="keyword">val</span> r2 = (<span class="string">"T9f4b08fd176e54151708c15aa625ff4"</span>, <span class="type">Map</span>(column -&gt; <span class="string">"052900195501010004"</span>))</span><br><span class="line"><span class="keyword">val</span> rdd: <span class="type">RDD</span>[(<span class="type">String</span>, <span class="type">Map</span>[<span class="type">String</span>, <span class="type">String</span>])] = sc.parallelize(<span class="type">Array</span>(r1, r2))</span><br><span class="line">rdd.toHBase(table, cf)</span><br></pre></td></tr></table></figure>
+<p>注意: HBaseConfig必须命名为config, 否则会报错找不到隐式参数config.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;console&gt;:42: error: could not find implicit value for parameter config: unicredit.spark.hbase.HBaseConfig</span><br><span class="line">              rdd.toHBase(table, cf)</span><br><span class="line">                         ^</span><br></pre></td></tr></table></figure>
+<p>修改HBaseConfig的变量名称为config后, 执行任务时还是报错:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">15/12/18 14:40:42 WARN scheduler.TaskSetManager: Lost task 0.0 in stage 0.0 (TID 0, spark047243): java.lang.NoClassDefFoundError: org/apache/hadoop/hbase/client/Put</span><br></pre></td></tr></table></figure>
+<p>添加hbase的client,common,server包后:   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">15/12/18 14:45:12 WARN scheduler.TaskSetManager: Lost task 4.0 in stage 0.0 (TID 4, spark047216): java.lang.NoClassDefFoundError: org/apache/hadoop/hbase/protobuf/generated/MasterProtos$MasterService$BlockingInterface</span><br></pre></td></tr></table></figure>
+<p>必须使用hbase全部的jar包,生成逗号分隔的jar包方式(MD,之前用过ls直接拼接,可是一下子又搜不到了):  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/sh</span><br><span class="line">for loop in `ls *.jar`;do</span><br><span class="line">   result=&quot;/home/qihuang.zheng/hbase-1.0.2/lib2/$loop,$result&quot;</span><br><span class="line">done</span><br><span class="line">echo $result</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>既然手动添加到–jars中,就不再需要往spark-env.sh中添加hbase/lib/*了.  </p>
+</blockquote>
+<p>现在把所有的依赖包都加进来了就没有问题了:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/usr/install/spark-1.5.2-bin-hadoop2.4/bin/spark-shell \</span><br><span class="line">  --master spark://192.168.47.213:7077 \</span><br><span class="line">  --executor-memory 6g --total-executor-cores 40 --driver-memory 8g \</span><br><span class="line">  --jars /home/qihuang.zheng/hbase-rdd_2.10-0.7.0.jar,/home/qihuang.zheng/json4s-ast_2.10-3.2.11.jar,/home/qihuang.zheng/json4s-core_2.10-3.2.11.jar,/home/qihuang.zheng/json4s-jackson_2.10-3.2.11.jar,/home/qihuang.zheng/json4s-native_2.10-3.2.11.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/zookeeper-3.4.6.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/xz-1.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/xmlenc-0.52.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/snappy-java-1.0.4.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/protobuf-java-2.5.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/paranamer-2.3.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/netty-all-4.0.23.Final.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/metrics-core-2.2.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/log4j-1.2.17.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/libthrift-0.9.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/leveldbjni-all-1.8.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jsr305-1.3.9.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jsch-0.1.42.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/joni-2.1.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jettison-1.3.3.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jets3t-0.9.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jcodings-1.0.8.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jaxb-impl-2.2.3-1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jaxb-api-2.2.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/java-xmlbuilder-0.4.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/javax.inject-1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jasper-runtime-5.5.23.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jasper-compiler-5.5.23.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jamon-runtime-2.3.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jackson-xc-1.8.8.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jackson-mapper-asl-1.8.8.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jackson-jaxrs-1.8.8.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jackson-core-asl-1.8.8.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/httpcore-4.1.3.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/httpclient-4.2.5.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/htrace-core-3.1.0-incubating.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-thrift-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-testing-util-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-shell-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-server-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-rest-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-resource-bundle-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-protocol-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-prefix-tree-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-it-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-hadoop-compat-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-hadoop2-compat-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-common-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-client-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-checkstyle-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-annotations-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/guice-servlet-3.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/guice-3.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/guava-12.0.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/findbugs-annotations-1.3.9-1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/disruptor-3.3.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-net-3.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-math3-3.1.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-math-2.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-logging-1.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-lang-2.6.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-io-2.4.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-httpclient-3.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-el-1.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-digester-1.8.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-daemon-1.0.13.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-configuration-1.6.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-compress-1.4.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-collections-3.2.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-codec-1.9.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-cli-1.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-beanutils-core-1.8.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-beanutils-1.7.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/avro-1.7.4.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/asm-3.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/api-util-1.0.0-M20.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/api-asn1-api-1.0.0-M20.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/apacheds-kerberos-codec-2.0.0-M15.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/apacheds-i18n-2.0.0-M15.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/aopalliance-1.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/activation-1.1.jar</span><br></pre></td></tr></table></figure>
+<p>验证记录写入到了HBase中:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hbase(main):002:0&gt; scan &quot;data.md5_id&quot;</span><br><span class="line">ROW                                                COLUMN+CELL</span><br><span class="line"> T9f4b08fd176e54151708c15aa625ff3                  column=id:id, timestamp=1450425601427, value=052900195501010003</span><br><span class="line"> T9f4b08fd176e54151708c15aa625ff4                  column=id:id, timestamp=1450425601427, value=052900195501010004</span><br><span class="line">2 row(s) in 0.1110 seconds</span><br></pre></td></tr></table></figure>
+<h3 id="远程Spark-Submit提交执行(×)">远程Spark-Submit提交执行(×)</h3><h4 id="无法连接到HBase的ZK集群">无法连接到HBase的ZK集群</h4><p>上面的spark-shell的HBaseConfig使用的是直接在代码中写死. 通常配置信息是由hbase-site.xml提供.<br>如果应用程序没法找到hbase-site.xml, 会默认连接本地的ZK.显然应该连接的是hbase-site.xml中配置的ZK集群.<br>尝试了把hbase-site.xml加入到SPARK_CLASSPATH中也不行.<br>虽然打包的应用程序中也有hbase-site.xml,但是貌似应用程序没有读到!   </p>
+<p>解决方式: 利用Hadoop Configuration的添加资源方法手动添加hbase-site.xml</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//1.配置文件放到classpath下(本地可以直接运行)</span></span><br><span class="line"><span class="keyword">val</span> sparkConf = <span class="keyword">new</span> <span class="type">SparkConf</span>().setAppName(<span class="string">"HBaseTest"</span>)<span class="comment">//.setMaster(Constant.localMaster)</span></span><br><span class="line"><span class="keyword">val</span> sc = <span class="keyword">new</span> <span class="type">SparkContext</span>(sparkConf)</span><br><span class="line"></span><br><span class="line"><span class="comment">//确保hbase-site.xml在classpath下</span></span><br><span class="line"><span class="comment">//implicit val config = HBaseConfig()</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//2.手动添加资源(否则远程执行时无法找到配置文件,而且hbase-site.xml也是在classpath下)</span></span><br><span class="line"><span class="keyword">val</span> hadoopConf : <span class="type">Configuration</span> = <span class="keyword">new</span> <span class="type">Configuration</span>()</span><br><span class="line">hadoopConf.addResource(<span class="string">"hbase-site.xml"</span>)</span><br><span class="line"><span class="keyword">implicit</span> <span class="keyword">val</span> config = <span class="type">HBaseConfig</span>(hadoopConf)</span><br></pre></td></tr></table></figure>
+<h4 id="运行任务">运行任务</h4><p>和spark-shell一样,必须要添加所有的hbase依赖包到<code>--jars</code>中. 否则在运行时会报错找不到HBase的相关类.<br><code>--</code>jars指定的会被加入到Driver中. 但是SPARK_CLASSPATH配置的<code>hbase/lib/*</code>下的jar包并没有被加到Driver中.<br>而Driver将应用分发给Worker节点执行时, 由于Worker没有HBase的相关jar包,导致任务出错.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">15/12/18 13:26:11 INFO spark.SparkContext: Added JAR file:/home/qihuang.zheng/hbase-rdd_2.10-0.7.0.jar at http://192.168.47.211:43695/jars/hbase-rdd_2.10-0.7.0.jar with timestamp 1450416371356</span><br><span class="line">15/12/18 13:26:11 INFO spark.SparkContext: Added JAR file:/home/qihuang.zheng/json4s-ast_2.10-3.2.11.jar at http://192.168.47.211:43695/jars/json4s-ast_2.10-3.2.11.jar with timestamp 1450416371359</span><br><span class="line">15/12/18 13:26:11 INFO spark.SparkContext: Added JAR file:/home/qihuang.zheng/json4s-core_2.10-3.2.11.jar at http://192.168.47.211:43695/jars/json4s-core_2.10-3.2.11.jar with timestamp 1450416371362</span><br><span class="line">15/12/18 13:26:11 INFO spark.SparkContext: Added JAR file:/home/qihuang.zheng/json4s-jackson_2.10-3.2.11.jar at http://192.168.47.211:43695/jars/json4s-jackson_2.10-3.2.11.jar with timestamp 1450416371362</span><br><span class="line">15/12/18 13:26:11 INFO spark.SparkContext: Added JAR file:/home/qihuang.zheng/json4s-native_2.10-3.2.11.jar at http://192.168.47.211:43695/jars/json4s-native_2.10-3.2.11.jar with timestamp 1450416371363</span><br><span class="line">15/12/18 13:26:11 INFO spark.SparkContext: Added JAR file:/home/qihuang.zheng/spark-app-1.1-SNAPSHOT.jar at http://192.168.47.211:43695/jars/spark-app-1.1-SNAPSHOT.jar with timestamp 1450416371370</span><br><span class="line"></span><br><span class="line">15/12/18 14:17:09 WARN spark.SparkConf: Setting &apos;spark.executor.extraClassPath&apos; to &apos;/usr/install/spark/lib/mysql-connector-java-5.1.34.jar:/home/qihuang.zheng/hbase-1.0.2/lib/*&apos; as a work-around</span><br><span class="line"></span><br><span class="line">15/12/18 13:26:18 WARN scheduler.TaskSetManager: Lost task 5.0 in stage 0.0 (TID 6, spark047217): java.lang.NoClassDefFoundError: org/apache/hadoop/hbase/client/Table</span><br><span class="line">15/12/18 13:26:18 WARN scheduler.TaskSetManager: Lost task 7.0 in stage 0.0 (TID 11, spark047218): java.lang.NoClassDefFoundError: org/apache/hadoop/hbase/client/RegionLocator</span><br></pre></td></tr></table></figure>
+<p>spark-submit提交任务:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/usr/install/spark-1.5.2-bin-hadoop2.4/bin/spark-submit --master spark://192.168.47.213:7077,192.168.47.214:7077 \</span><br><span class="line">  --executor-memory 6g --total-executor-cores 40 --driver-memory 8g  \</span><br><span class="line">  --jars /home/qihuang.zheng/hbase-rdd_2.10-0.7.0.jar,/home/qihuang.zheng/json4s-ast_2.10-3.2.11.jar,/home/qihuang.zheng/json4s-core_2.10-3.2.11.jar,/home/qihuang.zheng/json4s-jackson_2.10-3.2.11.jar,/home/qihuang.zheng/json4s-native_2.10-3.2.11.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/zookeeper-3.4.6.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/xz-1.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/xmlenc-0.52.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/snappy-java-1.0.4.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/protobuf-java-2.5.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/paranamer-2.3.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/netty-all-4.0.23.Final.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/metrics-core-2.2.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/log4j-1.2.17.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/libthrift-0.9.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/leveldbjni-all-1.8.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jsr305-1.3.9.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jsch-0.1.42.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/joni-2.1.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jettison-1.3.3.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jets3t-0.9.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jcodings-1.0.8.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jaxb-impl-2.2.3-1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jaxb-api-2.2.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/java-xmlbuilder-0.4.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/javax.inject-1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jasper-runtime-5.5.23.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jasper-compiler-5.5.23.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jamon-runtime-2.3.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jackson-xc-1.8.8.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jackson-mapper-asl-1.8.8.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jackson-jaxrs-1.8.8.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/jackson-core-asl-1.8.8.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/httpcore-4.1.3.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/httpclient-4.2.5.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/htrace-core-3.1.0-incubating.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-thrift-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-testing-util-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-shell-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-server-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-rest-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-resource-bundle-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-protocol-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-prefix-tree-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-it-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-hadoop-compat-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-hadoop2-compat-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-common-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-client-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-checkstyle-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/hbase-annotations-1.0.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/guice-servlet-3.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/guice-3.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/guava-12.0.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/findbugs-annotations-1.3.9-1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/disruptor-3.3.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-net-3.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-math3-3.1.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-math-2.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-logging-1.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-lang-2.6.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-io-2.4.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-httpclient-3.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-el-1.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-digester-1.8.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-daemon-1.0.13.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-configuration-1.6.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-compress-1.4.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-collections-3.2.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-codec-1.9.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-cli-1.2.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-beanutils-core-1.8.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/commons-beanutils-1.7.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/avro-1.7.4.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/asm-3.1.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/api-util-1.0.0-M20.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/api-asn1-api-1.0.0-M20.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/apacheds-kerberos-codec-2.0.0-M15.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/apacheds-i18n-2.0.0-M15.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/aopalliance-1.0.jar,/home/qihuang.zheng/hbase-1.0.2/lib2/activation-1.1.jar  \</span><br><span class="line">  --class cn.fraudmetrix.hbase.HBaseRDD spark-app-1.1-SNAPSHOT.jar /user/tongdun/id_mdf_tmp1/1</span><br></pre></td></tr></table></figure>
+<p>明明指定了–master,为什么还会报错<code>A master URL must be set in your configuration</code>. ES2HDFS中也遇到这个错误.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">15/12/18 16:20:39 WARN scheduler.TaskSetManager: Lost task 20.0 in stage 0.0 (TID 30, spark047244): java.lang.ExceptionInInitializerError</span><br><span class="line">  at cn.fraudmetrix.hbase.HBaseRDD$$anonfun$1.apply(HBaseRDD.scala:85)</span><br><span class="line">  at cn.fraudmetrix.hbase.HBaseRDD$$anonfun$1.apply(HBaseRDD.scala:83)</span><br><span class="line">Caused by: org.apache.spark.SparkException: A master URL must be set in your configuration</span><br><span class="line">..</span><br><span class="line">15/12/18 16:20:39 WARN scheduler.TaskSetManager: Lost task 10.0 in stage 0.0 (TID 11, spark047244): java.lang.NoClassDefFoundError: Could not initialize class cn.fraudmetrix.hbase.HBaseRDD$</span><br></pre></td></tr></table></figure>
+<p>这个错误和在本地运行时没有指定master的错误是一样的. 难道要在代码中写死远程Spark集群的master?  </p>
+<p>代码中手动指定master后,出现了一个更离奇的现象,虽然启动一个任务,但是后台突然间又会启动多个相同的任务.  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151218173053065" alt="master2"></p>
+<p>这个问题在ES2HDFS时也碰到过.而且同样会以admin用户开启了多个任务. </p>
+<p>而且后台还报错:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">15/12/18 17:21:49 INFO storage.BlockManagerInfo: Added broadcast_1_piece0 in memory on spark047223:39784 (size: 2.7 KB, free: 1589.8 MB)</span><br><span class="line">15/12/18 17:21:49 INFO storage.BlockManagerInfo: Added broadcast_1_piece0 in memory on spark047245:48421 (size: 2.7 KB, free: 1589.8 MB)</span><br><span class="line">15/12/18 17:21:50 INFO storage.BlockManagerInfo: Added broadcast_0_piece0 in memory on spark047223:58559 (size: 18.4 KB, free: 1589.7 MB)</span><br><span class="line">15/12/18 17:21:50 INFO storage.BlockManagerInfo: Added broadcast_0_piece0 in memory on spark047223:39784 (size: 18.4 KB, free: 1589.7 MB)</span><br><span class="line">15/12/18 17:21:51 INFO storage.BlockManagerInfo: Added broadcast_0_piece0 in memory on spark047245:48421 (size: 18.4 KB, free: 1589.7 MB)</span><br><span class="line">15/12/18 17:21:55 INFO scheduler.TaskSetManager: Starting task 39.0 in stage 0.0 (TID 40, spark047216, NODE_LOCAL, 7511 bytes)</span><br><span class="line">15/12/18 17:21:55 INFO scheduler.TaskSetManager: Starting task 41.0 in stage 0.0 (TID 41, spark047216, NODE_LOCAL, 7511 bytes)</span><br><span class="line">15/12/18 17:21:55 INFO scheduler.TaskSetManager: Finished task 23.0 in stage 0.0 (TID 21) in 20735 ms on spark047216 (1/209)</span><br><span class="line">15/12/18 17:21:55 INFO scheduler.TaskSetManager: Starting task 48.0 in stage 0.0 (TID 42, spark047216, NODE_LOCAL, 7511 bytes)</span><br><span class="line">15/12/18 17:21:55 WARN scheduler.TaskSetManager: Lost task 41.0 in stage 0.0 (TID 41, spark047216): java.io.IOException: org.apache.spark.SparkException: Failed to get broadcast_1_piece0 of broadcast_1</span><br></pre></td></tr></table></figure>
+<p>如果在代码中去掉指定master, 就只会有一个任务!  </p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151218173330343" alt="master1"></p>
+<h3 id="sbt_assembly_fat_jar">sbt assembly fat jar</h3><blockquote>
+<p>实际上可以使用maven工程的mvn assembly plugin同样可以打fat jar(而且也可以是scala代码,比如tongdun-app).  </p>
+</blockquote>
+<p><a href="https://github.com/unicredit/hbase-rdd-examples">https://github.com/unicredit/hbase-rdd-examples</a>是hbase-rdd的示例工程. 可以将业务代码写在这个工程里.<br>设置spark为provided, 其他依赖包都会被打进assembly中. 这样就避免了上面的传入很长一串hbase依赖包的问题.<br>设置hbase-rdd打进assembly,这样连hbase-rdd.jar都不需要了.直接一个包含了hbase和hbase-rdd的fat jar就可以.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">libraryDependencies ++= Seq(</span><br><span class="line">  &quot;org.apache.spark&quot; %% &quot;spark-core&quot; % &quot;1.5.0&quot; % &quot;provided&quot;,</span><br><span class="line">  &quot;org.apache.spark&quot; %% &quot;spark-streaming&quot; % &quot;1.5.0&quot; % &quot;provided&quot;,</span><br><span class="line">  &quot;org.apache.hbase&quot; % &quot;hbase-common&quot; % &quot;1.0.2&quot;,</span><br><span class="line">  &quot;org.apache.hbase&quot; % &quot;hbase-client&quot; % &quot;1.0.2&quot;,</span><br><span class="line">  &quot;org.apache.hbase&quot; % &quot;hbase-server&quot; % &quot;1.0.2&quot;,</span><br><span class="line">  &quot;eu.unicredit&quot; %% &quot;hbase-rdd&quot; % &quot;0.7.0&quot;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>打包出错,两个jar包的配置文件有冲突:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">➜  hbase-rdd-examples git:(master) ✗ sbt clean assembly</span><br><span class="line">[error] (*:assembly) deduplicate: different file contents found in the following:</span><br><span class="line">[error] /Users/zhengqh/.ivy2/cache/commons-logging/commons-logging/jars/commons-logging-1.2.jar:META-INF/maven/commons-logging/commons-logging/pom.properties</span><br><span class="line">[error] /Users/zhengqh/.ivy2/cache/org.apache.htrace/htrace-core/jars/htrace-core-3.1.0-incubating.jar:META-INF/maven/commons-logging/commons-logging/pom.properties</span><br><span class="line">[error] Total time: 295 s, completed 2015-12-18 20:43:29</span><br></pre></td></tr></table></figure>
+<p><a href="http://blog.csdn.net/oopsoom/article/details/41318599" target="_blank" rel="noopener">http://blog.csdn.net/oopsoom/article/details/41318599</a><br><a href="https://github.com/luohuazju/sillycat-graph/blob/master/project/Build.scala">https://github.com/luohuazju/sillycat-graph/blob/master/project/Build.scala</a>  </p>
+<p>参考了第二篇,添加了很复杂的mergeStrategy合并策略. 实际中冲突的会有pom.properties,pom.xml,servlet,jsp等.最后成功编译.    </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[info] SHA-1: d5f9eda520e927bd52d2f9d5f9b29d3e117a3f4f</span><br><span class="line">[info] Packaging /Users/zhengqh/Github/_example/hbase-rdd-examples/target/scala-2.10/hbase-rdd-examples-assembly-0.7.0.jar ...</span><br><span class="line">[info] Done packaging.</span><br><span class="line">[success] Total time: 259 s, completed 2015-12-18 21:24:54</span><br></pre></td></tr></table></figure>
+<h2 id="Spark手动操作HBase">Spark手动操作HBase</h2><p>在每个Partition中创建HBase连接，最后关闭HTable，看起来没有问题。但是注意：这里没有关闭Connection和Admin，后面会看到这是有问题的。</p>
+<p>你可能会问什么不把HBaseConfiguration的创建放在外面，这是因为会存在序列化的异常，需要特殊处理才可以使用。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">df.foreachPartition(partition=&gt;&#123;</span><br><span class="line">  val config = HBaseConfiguration.create()</span><br><span class="line">  if(!zk.equals(&quot;&quot;)) config.set(&quot;hbase.zookeeper.quorum&quot;, zk)</span><br><span class="line">  config.set(&quot;hbase.zookeeper.property.clientPort&quot;, zkPort)</span><br><span class="line">  val conn = ConnectionFactory.createConnection(config)</span><br><span class="line">  val admin = conn.getAdmin</span><br><span class="line">  val userTable = TableName.valueOf(tableName)</span><br><span class="line">  val myTable = conn.getTable(userTable)</span><br><span class="line">  myTable.close()</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>项目的基本流程是：SparkStreaming读取Kafka数据，写入HBase，HBase的逻辑如上。但是经过一段时间后，消息堆积报警，任务不消费，停在了某个时间段。</p>
+<p>排查步骤：去mesos页面找到这个任务，这里我们的Kafka有3个分区，流程序设置了两个Executor，即两台机器如何分配3个分区的任务。<br>那么其中一台负责一个分区，另外一台负责两个分区。但并不是说Task只有两个。真正的Spark Task数量还是3个。<br>验证方式是df.foreachPartition在一次streaming batch中会输出三条信息（在一台机器上输出一条，另外一台机器会输出两条）</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171111110452505" alt="1"></p>
+<p>然后去对应的机器执行jstack查看能否发现可疑的线程</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171111110508148" alt="2"></p>
+<p>发现ZooKeeper的很多线程都在RUNNABLE状态下。正常来说，我们建立ZooKeeper的连接只有每个Partition才有的。<br>但是我们的Kafka只有3个分区，也就是说最多只会有3个ZK的连接（如果三个任务都分配到一台机器的话，实际上3个任务分两台机器执行，所以不会超过2个ZK连接）<br>那么是不是ZK的连接没有释放呢！！！</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171111110520321" alt="3"></p>
+<p>为了验证我们的结论，重启流程序，然后观察每次Batch执行完成后的ZK连接。下面的高亮点是重启的时刻，可以看到在这之前，流程序没有消费，停在了1:50分</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171111110851253" alt="6"></p>
+<p>下面以最近一次的输出为例，可以看到以前的ZK连接还在，并且多了两个连接</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171111110532742" alt="4"></p>
+<p>如果去另外一台机器上看，会发现多了一个连接</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171111110545554" alt="5"></p>
+<p>至此，可以验证SparkStreaming在每次Batch处理完成后，并没有释放掉ZK的连接。导致在运行一段时间后，<br>ZK的连接数会一直上升，比如到200~300的时候，程序就hang住不消费了。这是因为ZK的连接数太多了。</p>
+<p>换成官方的hbase写，连接ZK交给内部处理，多次运行netstat，会发现连接ZK的端口号都没有变化。<br>下面的实验换了一个流处理程序，不过对我们的观察结果没有影响。</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171111111655342" alt="5"></p>
+<p>这里还会发现不管streaming的batch多少次，连接ZK的端口号一直没有变化，它没有释放的过程，<br>因为这个连接是全局的，在流处理程序开始的时候就创建了ZK连接，在这之后，所以的batch都使用同一个ZK连接。</p>
+<p>总结下排查步骤：</p>
+<ol>
+<li>根据任务找到执行的机器</li>
+<li>找到进程执行jstack</li>
+<li>观察jstack中的RUNNABLE线程</li>
+<li>找出异常或有规律的线程，比如很多ZK都在运行</li>
+<li>看代码中相关的处理逻辑，比如ZK创建和连接是怎么做的</li>
+<li>如果是连接问题,利用工具netstat查看ZK的端口</li>
+<li>重启程序,观察每次运行的结果，并找出本次结果与上一次结果的对比和差异</li>
+<li>比如ZK连接没有释放的话，每次运行完之后，旧的连接还在</li>
+<li>那么基本可以断定出来ZK连接没有释放造成ZK连接数最终耗尽，导致问题出现</li>
+</ol>
+<p>修复：</p>
+<p>关闭HBase连接仅仅是关闭HTable是不够的，还要关闭Connection和Admin。<br>这就好比数据库中关闭ResultSet是不够的，也要关闭Statement和Connection。</p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/12/18/2015-12-18-Spark-HBase-RDD/">HBase-RDD</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年12月18日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/12/18/2015-12-18-Spark-HBase-RDD/" title="HBase-RDD">http://github.com/zqhxuyuan/2015/12/18/2015-12-18-Spark-HBase-RDD/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/12/18/2015-12-18-Spark-HBase-RDD/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/12/19/2015-12-19-HBase-BulkLoad/">
+        HBase BulkLoad
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/12/17/Billion-KV/">
+        千亿KV数据存储和查询方案
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#HBase-RDD"><span class="toc-number">1.</span> <span class="toc-text">HBase-RDD</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#IDE本地运行(√)"><span class="toc-number">1.1.</span> <span class="toc-text">IDE本地运行(√)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#远程Spark-Shell提交运行(√)"><span class="toc-number">1.2.</span> <span class="toc-text">远程Spark-Shell提交运行(√)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#解决依赖包冲突"><span class="toc-number">1.2.1.</span> <span class="toc-text">解决依赖包冲突</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#spark-shell测试读写HBase集群"><span class="toc-number">1.2.2.</span> <span class="toc-text">spark-shell测试读写HBase集群</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#远程Spark-Submit提交执行(×)"><span class="toc-number">1.3.</span> <span class="toc-text">远程Spark-Submit提交执行(×)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#无法连接到HBase的ZK集群"><span class="toc-number">1.3.1.</span> <span class="toc-text">无法连接到HBase的ZK集群</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#运行任务"><span class="toc-number">1.3.2.</span> <span class="toc-text">运行任务</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sbt_assembly_fat_jar"><span class="toc-number">1.4.</span> <span class="toc-text">sbt assembly fat jar</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Spark手动操作HBase"><span class="toc-number">2.</span> <span class="toc-text">Spark手动操作HBase</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/12/18/2015-12-18-Spark-HBase-RDD/" data-title="HBase-RDD" data-url="http://github.com/zqhxuyuan/2015/12/18/2015-12-18-Spark-HBase-RDD/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/12/19/2015-12-19-HBase-BulkLoad/" title="上一篇: HBase BulkLoad">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/12/17/Billion-KV/" title="下一篇: 千亿KV数据存储和查询方案">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

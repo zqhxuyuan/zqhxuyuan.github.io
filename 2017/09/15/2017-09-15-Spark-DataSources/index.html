@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Spark DataSources Implementation | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Spark数据源扩展与实践(40行代码实现一个自定义的DataSource)">
+<meta name="keywords" content="hadoop">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark DataSources Implementation">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2017/09/15/2017-09-15-Spark-DataSources/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Spark数据源扩展与实践(40行代码实现一个自定义的DataSource)">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171019193301335">
+<meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171019193323001">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.260Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spark DataSources Implementation">
+<meta name="twitter:description" content="Spark数据源扩展与实践(40行代码实现一个自定义的DataSource)">
+<meta name="twitter:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171019193301335">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2017-09-15-Spark-DataSources" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2017/09/15/2017-09-15-Spark-DataSources/" class="article-date">
+  	<time datetime="2017-09-14T16:00:00.000Z" itemprop="datePublished">2017-09-15</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Spark DataSources Implementation
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/spark/">spark</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hadoop/">hadoop</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Spark数据源扩展与实践(40行代码实现一个自定义的DataSource)<br><a id="more"></a></p>
+<h2 id="简单示例">简单示例</h2><p>Spark的DataSource API可以方便地扩展。如果没有使用META-INFO这种ServiceLocator机制，则自定义的数据源名称必须是DefaultSource.<br>并且必须实现RelationProvider接口。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">class DefaultSource extends RelationProvider &#123;</span><br><span class="line">  override def createRelation(sqlContext: SQLContext,</span><br><span class="line">                              parameters: Map[String, String]): BaseRelation = &#123;</span><br><span class="line">    ???</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通常自定义数据源都有不同的配置文件，所以我们也要实现自己的BaseRelation</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">class DefaultSource extends RelationProvider&#123;</span><br><span class="line">  override def createRelation(sqlContext: SQLContext, parameters: Map[String, String]): BaseRelation = &#123;</span><br><span class="line">    EmptyRelation()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">case class EmptyRelation() extends BaseRelation &#123;</span><br><span class="line">  override def sqlContext: SQLContext = ???</span><br><span class="line">  override def schema: StructType = ???</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>主要的起始还是BaseRelation的实现类，但是这里怎么获取schema和SQLContext呢。由于DefaultSource的createRelation方法中已经有SQLContext。所以我们可以改成</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">class DefaultSource extends RelationProvider&#123;</span><br><span class="line">  override def createRelation(sqlContext: SQLContext, parameters: Map[String, String]): BaseRelation = &#123;</span><br><span class="line">    EmptyRelation()(sqlContext)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">case class EmptyRelation()(@transient val sc: SQLContext) extends BaseRelation &#123;</span><br><span class="line">  override def sqlContext: SQLContext = sc</span><br><span class="line"></span><br><span class="line">  override def schema: StructType = ???</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>那么Schema怎么确定呢？通常它需要从DefaultSource的createRelation方法的parameters确定。<br>所以通常我们会给自定义的BaseRelation加上一个参数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">class DefaultSource extends RelationProvider&#123;</span><br><span class="line">  override def createRelation(sqlContext: SQLContext, parameters: Map[String, String]): BaseRelation = &#123;</span><br><span class="line">    EmptyRelation(parameters)(sqlContext)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">case class EmptyRelation(parameters: Map[String, String])(@transient val sc: SQLContext) extends BaseRelation &#123;</span><br><span class="line">  override def sqlContext: SQLContext = sc</span><br><span class="line"></span><br><span class="line">  override def schema: StructType = ???</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个schema的具体实现必须依赖于如何读取数据源。所以EmptyRelation还需要实现另外一个接口：TableScan</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">case class EmptyRelation(parameters: Map[String, String])</span><br><span class="line">                        (@transient val sc: SQLContext) </span><br><span class="line">  extends BaseRelation with TableScan&#123;</span><br><span class="line">  override def sqlContext: SQLContext = sc</span><br><span class="line"></span><br><span class="line">  override def schema: StructType = ???</span><br><span class="line"></span><br><span class="line">  override def buildScan(): RDD[Row] = ???</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在有两个方法需要我们自己实现。buildScan表示如何读取数据源，并生成<code>RDD[ROW]</code>。<br>下面以一个简单的示例入门：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">case class EmptyRelation(parameters: Map[String, String])</span><br><span class="line">                        (@transient val sc: SQLContext) </span><br><span class="line">  extends BaseRelation with TableScan&#123;</span><br><span class="line">  override def sqlContext: SQLContext = sc</span><br><span class="line"></span><br><span class="line">  override def schema: StructType = &#123;</span><br><span class="line">    StructType(List(</span><br><span class="line">      StructField(&quot;id&quot;, IntegerType), </span><br><span class="line">      StructField(&quot;name&quot;, StringType),</span><br><span class="line">      StructField(&quot;age&quot;, IntegerType)</span><br><span class="line">    ))</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  override def buildScan(): RDD[Row] = &#123;</span><br><span class="line">    val rdd = sqlContext.sparkContext.parallelize(</span><br><span class="line">      List(</span><br><span class="line">        (1, &quot;A&quot;, 20),</span><br><span class="line">        (2, &quot;B&quot;, 25)</span><br><span class="line">      )</span><br><span class="line">    )</span><br><span class="line">    rdd.map(row =&gt; Row.fromSeq(Seq(row._1, row._2, row._3)))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接下来就可以运行测试例子了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">object TestExample &#123;</span><br><span class="line"></span><br><span class="line">  def main(args: Array[String]) &#123;</span><br><span class="line">    val spark = SparkSession.builder().master(&quot;local&quot;).getOrCreate()</span><br><span class="line">    val df = spark.read.format(&quot;com.zqh.spark.connectors.test.empty&quot;).load()</span><br><span class="line">    df.printSchema()</span><br><span class="line">    df.show()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>什么，只有40行代码，就实现了自定义的DataSource!!!</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">root</span><br><span class="line"> |-- id: integer (nullable = true)</span><br><span class="line"> |-- name: string (nullable = true)</span><br><span class="line"> |-- age: integer (nullable = true)</span><br><span class="line"></span><br><span class="line">+---+----+---+</span><br><span class="line">| id|name|age|</span><br><span class="line">+---+----+---+</span><br><span class="line">|  1|   A| 20|</span><br><span class="line">+---+----+---+</span><br></pre></td></tr></table></figure>
+<p>上面示例EmptyRelation中，schema方法和buildScan方法有如下特点：</p>
+<ul>
+<li>schema定义了三个字段，则buildScan中每一行Row都必须有三个元素</li>
+<li>RDD的每一行Row是数据，而schema对应了数据的元数据，schema可以任意指定</li>
+</ul>
+<p>总结下自定义数据源相关的类：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">RelationProvider                  BaseRelation    TableScan</span><br><span class="line">       /|\                            /|\            /|\                   spark</span><br><span class="line">        |                              |              |        ------------------</span><br><span class="line">        |                              |              |                    user</span><br><span class="line">        |                           schema()     buildScan()    </span><br><span class="line">DefaultSource                          |              |</span><br><span class="line">        |                              |              |</span><br><span class="line">        |                              |              |</span><br><span class="line">        ·                              |              |</span><br><span class="line">createRelation()  --------------------&gt; EmptyRelation</span><br></pre></td></tr></table></figure>
+<h2 id="JDBC_DataSource">JDBC DataSource</h2><p>开启mysql的查询日志，对应的日志文件是<code>/usr/local/var/mysql/zqhmac.log</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; set GLOBAL general_log = on;</span><br><span class="line">Query OK, 0 rows affected (0.08 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; show VARIABLES like &apos;%general_log%&apos;;</span><br><span class="line">+------------------+---------------------------------+</span><br><span class="line">| Variable_name    | Value                           |</span><br><span class="line">+------------------+---------------------------------+</span><br><span class="line">| general_log      | ON                              |</span><br><span class="line">| general_log_file | /usr/local/var/mysql/zqhmac.log |</span><br><span class="line">+------------------+---------------------------------+</span><br></pre></td></tr></table></figure>
+<p>spark读取jdbc有多种方式：</p>
+<h3 id="1-_全量读取，只有一个分区">1. 全量读取，只有一个分区</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">val url = &quot;jdbc:mysql://localhost/test&quot;</span><br><span class="line">val table = &quot;test&quot;</span><br><span class="line">val properties = new java.util.Properties</span><br><span class="line">properties.put(&quot;user&quot;, &quot;root&quot;)</span><br><span class="line">properties.put(&quot;password&quot;, &quot;root&quot;)</span><br><span class="line"></span><br><span class="line">val df = spark.read.jdbc(url, table, properties)</span><br><span class="line"></span><br><span class="line">df.rdd.partitions.size # 1</span><br></pre></td></tr></table></figure>
+<p>后台日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2008 Query SELECT `id`,`name`,`total` FROM test</span><br></pre></td></tr></table></figure>
+<p>Spark UI上可以看到只有一个Executor和一个Task：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171019193301335" alt="jdbc spark"></p>
+<p>如果数据量太大，就会报错OOM：</p>
+<p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20171019193323001" alt="oom"></p>
+<h3 id="2-_指定上下界，自动分片">2. 指定上下界，自动分片</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">val columnName = &quot;id&quot;</span><br><span class="line">val lowerBound = 1</span><br><span class="line">val upperBound = 1000</span><br><span class="line">val numPartitions = 5</span><br><span class="line"></span><br><span class="line">val df = spark.read.jdbc(url,table,columnName,lowerBound,upperBound,numPartitions,properties)</span><br><span class="line"></span><br><span class="line">df.rdd.partitions.size # 指定的分区数量</span><br></pre></td></tr></table></figure>
+<p>指定上下界有个限制条件是分区字段必须是整数类型：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">def jdbc(</span><br><span class="line">    url: String,</span><br><span class="line">    table: String,</span><br><span class="line">    columnName: String,</span><br><span class="line">    lowerBound: Long,</span><br><span class="line">    upperBound: Long,</span><br><span class="line">    numPartitions: Int,</span><br><span class="line">    connectionProperties: Properties): DataFrame = &#123;</span><br><span class="line">  // columnName, lowerBound, upperBound and numPartitions override settings in extraOptions.</span><br><span class="line">  this.extraOptions ++= Map(</span><br><span class="line">    JDBCOptions.JDBC_PARTITION_COLUMN -&gt; columnName,</span><br><span class="line">    JDBCOptions.JDBC_LOWER_BOUND -&gt; lowerBound.toString,</span><br><span class="line">    JDBCOptions.JDBC_UPPER_BOUND -&gt; upperBound.toString,</span><br><span class="line">    JDBCOptions.JDBC_NUM_PARTITIONS -&gt; numPartitions.toString)</span><br><span class="line">  jdbc(url, table, connectionProperties)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>spark的做法是根据上下界，分区个数，自动切分。这种场景主要针对数据库的主键是自增字段（当然是整数了）。</p>
+<p>因为自增的数字分布很均匀，所以给定上下界和分区的数量，每个分区拉取的数据也是很均匀的。</p>
+<p>后台日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">2010 Query SELECT `id`,`name`,`total` FROM test WHERE id &lt; 201 or id is null</span><br><span class="line">2011 Query SELECT `id`,`name`,`total` FROM test WHERE id &gt;= 201 AND id &lt; 401</span><br><span class="line">2012 Query SELECT `id`,`name`,`total` FROM test WHERE id &gt;= 401 AND id &lt; 601</span><br><span class="line">2013 Query SELECT `id`,`name`,`total` FROM test WHERE id &gt;= 601 AND id &lt; 801</span><br><span class="line">2014 Query SELECT `id`,`name`,`total` FROM test WHERE id &gt;= 801</span><br></pre></td></tr></table></figure>
+<h3 id="3-_手动构造predicates">3. 手动构造predicates</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">val predicates = Array(</span><br><span class="line">  &quot;id&gt;=0 and id&lt;10&quot;,</span><br><span class="line">  &quot;id&gt;=10 and id&lt;100&quot;,</span><br><span class="line">  &quot;id&gt;=100 and id&lt;1000&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">val df = spark.read.jdbc(url, table, predicates, properties)</span><br><span class="line"></span><br><span class="line">df.rdd.partitions.size # 3，predicates数组有几个，对应几个分区</span><br></pre></td></tr></table></figure>
+<p>后台日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">2016 Query SELECT `id`,`name`,`total` FROM test WHERE id&gt;=0 and id&lt;10</span><br><span class="line">2017 Query SELECT `id`,`name`,`total` FROM test WHERE id&gt;=10 and id&lt;100</span><br><span class="line">2018 Query SELECT `id`,`name`,`total` FROM test WHERE id&gt;=100 and id&lt;1000</span><br></pre></td></tr></table></figure>
+<p>如果数据分布不均匀，可以采用这种方式，而且这种方式不限于主键、整数类型，可以是任意类型，任意字段。</p>
+<p>比如我们的测试mysql表数据如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from test;</span><br><span class="line">+-----+------+-------+</span><br><span class="line">| id  | name | total |</span><br><span class="line">+-----+------+-------+</span><br><span class="line">|   1 | A    |     1 |</span><br><span class="line">|   2 | B    |     2 |</span><br><span class="line">|   3 | C    |     3 |</span><br><span class="line">|  11 | A    |    12 |</span><br><span class="line">|  12 | B    |    12 |</span><br><span class="line">|  13 | C    |    12 |</span><br><span class="line">| 100 | 1    |     0 |</span><br><span class="line">| 101 | 2    |     1 |</span><br><span class="line">| 102 | 2    |     1 |</span><br><span class="line">+-----+------+-------+</span><br></pre></td></tr></table></figure>
+<p>现在要根据name列进行手动指定查询方式:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">val predicates = Array(</span><br><span class="line">  &quot;name = &apos;A&apos;&quot;,</span><br><span class="line">  &quot;name = &apos;B&apos;&quot;,</span><br><span class="line">  &quot;name = &apos;C&apos;&quot;,</span><br><span class="line">  &quot;name in(&apos;1&apos;,&apos;2&apos;)&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">val df = spark.read.jdbc(url, table, predicates, properties)</span><br><span class="line"></span><br><span class="line">df.show</span><br></pre></td></tr></table></figure>
+<p>后台日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">2020 Query SELECT `id`,`name`,`total` FROM test WHERE name = &apos;A&apos;</span><br><span class="line">2022 Query SELECT `id`,`name`,`total` FROM test WHERE name = &apos;C&apos;</span><br><span class="line">2023 Query SELECT `id`,`name`,`total` FROM test WHERE name = &apos;B&apos;</span><br><span class="line">2021 Query SELECT `id`,`name`,`total` FROM test WHERE name in(&apos;1&apos;,&apos;2&apos;)</span><br></pre></td></tr></table></figure>
+<p>由于是自定义查询条件，所以我们可以使用任何方式，比如limit方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">val predicates = Array(</span><br><span class="line">  &quot;1=1 order by name limit 3 offset 0&quot;,</span><br><span class="line">  &quot;1=1 order by name limit 3 offset 3&quot;,</span><br><span class="line">  &quot;1=1 order by name limit 3 offset 6&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">val df = spark.read.jdbc(url, table, predicates, properties)</span><br><span class="line">df.count</span><br></pre></td></tr></table></figure>
+<p>后台日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">2025 Query SELECT 1 FROM test WHERE 1=1 order by name limit 3 offset 3</span><br><span class="line">2026 Query SELECT 1 FROM test WHERE 1=1 order by name limit 3 offset 6</span><br><span class="line">2027 Query SELECT 1 FROM test WHERE 1=1 order by name limit 3 offset 0</span><br></pre></td></tr></table></figure>
+<p>动态指定排序字段和个数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">val orderByColumn = &quot;name&quot;</span><br><span class="line">val limitCount = 3</span><br><span class="line">val predicates = Array(</span><br><span class="line">  s&quot;1=1 order by $orderByColumn limit $limitCount offset 0&quot;,</span><br><span class="line">  s&quot;1=1 order by $orderByColumn limit $limitCount offset $&#123;limitCount&#125;&quot;,</span><br><span class="line">  s&quot;1=1 order by $orderByColumn limit $limitCount offset $&#123;limitCount*2&#125;&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">val df = spark.read.jdbc(url, table, predicates, properties)</span><br><span class="line">df.count</span><br></pre></td></tr></table></figure>
+<p>后台日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">2030 Query SELECT 1 FROM test WHERE 1=1 order by name limit 3 offset 3</span><br><span class="line">2029 Query SELECT 1 FROM test WHERE 1=1 order by name limit 3 offset 0</span><br><span class="line">2031 Query SELECT 1 FROM test WHERE 1=1 order by name limit 3 offset 6</span><br></pre></td></tr></table></figure>
+<p>当然上面的predicates还是不够智能，正确的做法是先查询总数，然后根据limitCount构造predicates数组。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">val orderByColumn = &quot;name&quot;</span><br><span class="line">val limitCount = 3</span><br><span class="line">//val totalCount = spark.read.jdbc(url, table, properties).count  // 日志：SELECT 1 FROM test</span><br><span class="line">val countDF = spark.read.jdbc(url, s&quot;(select count(*) from $table) tmp&quot;, properties) // SELECT * FROM (select count(*) from test) tmp WHERE 1=0</span><br><span class="line">val totalCount = countDF.take(1)(0).getAs[Long](0) // SELECT `count(*)` FROM (select count(*) from test) tmp</span><br><span class="line"></span><br><span class="line">val split = totalCount / limitCount</span><br><span class="line">val predicates = for(i &lt;- 0l to split) yield s&quot;1=1 order by $orderByColumn limit $limitCount offset $&#123;limitCount * i&#125;&quot;</span><br><span class="line">val df = spark.read.jdbc(url, table, predicates.toArray, properties)</span><br><span class="line">df.count</span><br></pre></td></tr></table></figure>
+<p>后台日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">2050 Query SELECT 1 FROM test WHERE 1=1 order by name limit 3 offset 0</span><br><span class="line">2051 Query SELECT 1 FROM test WHERE 1=1 order by name limit 3 offset 6</span><br><span class="line">2052 Query SELECT 1 FROM test WHERE 1=1 order by name limit 3 offset 3</span><br><span class="line">2053 Query SELECT 1 FROM test WHERE 1=1 order by name limit 3 offset 9</span><br></pre></td></tr></table></figure>
+<h2 id="JDBC实现">JDBC实现</h2><p>spark.read.jdbc进入DataFrameReader，真正执行在load()方法中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">def load(paths: String*): DataFrame = &#123;</span><br><span class="line">  sparkSession.baseRelationToDataFrame(</span><br><span class="line">    DataSource.apply(</span><br><span class="line">      sparkSession,</span><br><span class="line">      paths = paths,</span><br><span class="line">      userSpecifiedSchema = userSpecifiedSchema,</span><br><span class="line">      className = source,</span><br><span class="line">      options = extraOptions.toMap).resolveRelation())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>JDBC格式对应的Provider就定义在DataSource中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">object DataSource extends Logging &#123;</span><br><span class="line">  private val backwardCompatibilityMap: Map[String, String] = &#123;</span><br><span class="line">    val jdbc = classOf[JdbcRelationProvider].getCanonicalName</span><br><span class="line">    val json = classOf[JsonFileFormat].getCanonicalName</span><br><span class="line">    val csv = classOf[CSVFileFormat].getCanonicalName</span><br><span class="line">    Map(</span><br><span class="line">      &quot;org.apache.spark.sql.jdbc&quot; -&gt; jdbc,</span><br><span class="line">      &quot;org.apache.spark.sql.json&quot; -&gt; json,</span><br><span class="line">      &quot;com.databricks.spark.csv&quot; -&gt; csv</span><br><span class="line">    )</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>jdbc数据源的定义类是：JdbcRelationProvider</p>
+<h2 id="JDBC扩展">JDBC扩展</h2><p>参考: <a href="http://blog.csdn.net/cjuexuan/article/details/52333970" target="_blank" rel="noopener">http://blog.csdn.net/cjuexuan/article/details/52333970</a></p>
+<p>category是唯一键，存在则更新num，不存在则插入category,num。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO ip_category_count</span><br><span class="line">(category,num,createTime)</span><br><span class="line">VALUES(?,?,CURRENT_TIMESTAMP)</span><br><span class="line">ON DUPLICATE KEY UPDATE</span><br><span class="line">num=?,updateTime=CURRENT_TIMESTAMP</span><br></pre></td></tr></table></figure>
+<p>对应的Statemen写法， set时从1开始，get时从0开始：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ps.setInt(1, row.getInt(0))</span><br><span class="line">ps.setLong(2, row.getLong(1))</span><br><span class="line">ps.setLong(3, row.getLong(1))</span><br><span class="line">ps.executeUpdate()</span><br></pre></td></tr></table></figure>
+<p>假设有下面的SQL：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO test_1 (`id`,`year`,count`) VALUES (?,?,?)</span><br><span class="line">ON DUPLICATE KEY UPDATE `id`=?,`year`=?,`count`=?</span><br></pre></td></tr></table></figure>
+<p>对应的写法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ps.setInt(1, row.getInt(0))</span><br><span class="line">ps.setString(2, row.getLong(1))</span><br><span class="line">ps.setLong(3, row.getLong(2))</span><br><span class="line">-------------------------------</span><br><span class="line">ps.setInt(4, row.getInt(0))</span><br><span class="line">ps.setString(5, row.getLong(1))</span><br><span class="line">ps.setLong(6, row.getLong(2))</span><br></pre></td></tr></table></figure>
+<p>总结出来的规则：<code>stmt.setInt(pos + 1, row.getInt(pos - offset))</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1. i&lt;midField,  position=i, offset=0        =&gt; stmt.setInt(i + 1, row.getInt(i - 0))</span><br><span class="line">2. i&gt;=midField, position=i, offset=midField =&gt; stmt.setInt(i + 1, row.getInt(i - midField))</span><br></pre></td></tr></table></figure>
+<p>以3个字段为例，当<code>i&lt;midField</code>时：</p>
+<ul>
+<li>i=0: stmt.setInt(0 + 1, row.getInt(0 - 0)), stmt.setInt(1, row.getInt(0))</li>
+<li>i=1: stmt.setInt(1 + 1, row.getInt(1 - 0)), stmt.setInt(2, row.getInt(1))</li>
+<li>i=2: stmt.setInt(2 + 1, row.getInt(2 - 0)), stmt.setInt(3, row.getInt(2))</li>
+</ul>
+<p>当<code>i&gt;=midField</code>时：</p>
+<ul>
+<li>i=3: stmt.setInt(3 + 1, row.getInt(3 - 3)), stmt.setInt(3, row.getInt(0))</li>
+<li>i=4: stmt.setInt(4 + 1, row.getInt(4 - 3)), stmt.setInt(4, row.getInt(1))</li>
+<li>i=5: stmt.setInt(5 + 1, row.getInt(5 - 3)), stmt.setInt(5, row.getInt(2))</li>
+</ul>
+<p>setter方法的第一个参数：index of setter，第二个参数：index of row。<br>比如对于i小于midField而言，get的位置等于索引减去0；i大于midField而言，get的位置等于索引减去3。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">row[1,2,3]</span><br><span class="line">setter(0)    =》 set(0+1, get(0-0))    =》 set(1, get(0))</span><br><span class="line">setter(1)    =》 set(1+1, get(1-0))    =》 set(2, get(1))</span><br><span class="line">setter(2)    =》 set(2+1, get(2-0))    =》 set(3, get(2))</span><br><span class="line">--------------------------------------------------------</span><br><span class="line">setter(3)    =》 set(3+1, get(3-3))    =》 set(4, get(0))</span><br><span class="line">setter(4)    =》 set(4+1, get(4-3))    =》 set(5, get(1))</span><br><span class="line">setter(5)    =》 set(5+1, get(5-3))    =》 set(6, get(2))</span><br></pre></td></tr></table></figure>
+<p>代码：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> length = rddSchema.fields.length</span><br><span class="line"><span class="keyword">val</span> numFields = <span class="keyword">if</span> (isUpdateMode) length * <span class="number">2</span> <span class="keyword">else</span> length <span class="comment">// real num Field length</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> i = <span class="number">0</span></span><br><span class="line"><span class="keyword">val</span> midField = numFields / <span class="number">2</span></span><br><span class="line"><span class="keyword">while</span> (i &lt; numFields) &#123;</span><br><span class="line">  <span class="comment">//if duplicate ,'?' size = 2 * row.field.length</span></span><br><span class="line">  <span class="keyword">if</span> (isUpdateMode) &#123; <span class="comment">// 更新模式</span></span><br><span class="line">    i &lt; midField <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="comment">// check midField &gt; i ,if midFiled &gt;i ,rowIndex is setterIndex - (setterIndex/2) + 1</span></span><br><span class="line">      <span class="keyword">case</span> <span class="literal">true</span> ⇒ <span class="comment">// insert部分</span></span><br><span class="line">        <span class="keyword">if</span> (row.isNullAt(i)) &#123;</span><br><span class="line">          stmt.setNull(i + <span class="number">1</span>, nullTypes(i))</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          setters(i).apply(stmt, row, i, <span class="number">0</span>)</span><br><span class="line">        &#125;</span><br><span class="line">      <span class="keyword">case</span> <span class="literal">false</span> ⇒ <span class="comment">// update部分</span></span><br><span class="line">        <span class="keyword">if</span> (row.isNullAt(i - midField)) &#123;</span><br><span class="line">          stmt.setNull(i + <span class="number">1</span>, nullTypes(i - midField))</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          setters(i).apply(stmt, row, i, midField)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;  <span class="comment">// 直接插入</span></span><br><span class="line">    <span class="keyword">if</span> (row.isNullAt(i)) &#123;</span><br><span class="line">      stmt.setNull(i + <span class="number">1</span>, nullTypes(i))</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      setters(i).apply(stmt, row, i, <span class="number">0</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  i = i + <span class="number">1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>总结下对应关系：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">setter[i]:  | 0 | 1 | 2 | 3 | 4 | 5 |</span><br><span class="line">position:   | 0 | 1 | 2 | 3 | 4 | 5 |</span><br><span class="line">offset:     | 0 | 0 | 0 | 3 | 3 | 3 |</span><br><span class="line">setXXX:     | 1 | 2 | 3 | 4 | 5 | 6 |   i+1</span><br><span class="line">getXXX:     | 0 | 1 | 2 | 0 | 1 | 2 |   position-offset</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2017/09/15/2017-09-15-Spark-DataSources/">Spark DataSources Implementation</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2017年09月15日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2017/09/15/2017-09-15-Spark-DataSources/" title="Spark DataSources Implementation">http://github.com/zqhxuyuan/2017/09/15/2017-09-15-Spark-DataSources/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2017/09/15/2017-09-15-Spark-DataSources/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2017/10/10/Midd-canal/">
+        深入解析中间件之-Canal
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2017/09/04/2017-09-04-StreamingPro/">
+        StreamingPro
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#简单示例"><span class="toc-number">1.</span> <span class="toc-text">简单示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JDBC_DataSource"><span class="toc-number">2.</span> <span class="toc-text">JDBC DataSource</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-_全量读取，只有一个分区"><span class="toc-number">2.1.</span> <span class="toc-text">1. 全量读取，只有一个分区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-_指定上下界，自动分片"><span class="toc-number">2.2.</span> <span class="toc-text">2. 指定上下界，自动分片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-_手动构造predicates"><span class="toc-number">2.3.</span> <span class="toc-text">3. 手动构造predicates</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JDBC实现"><span class="toc-number">3.</span> <span class="toc-text">JDBC实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JDBC扩展"><span class="toc-number">4.</span> <span class="toc-text">JDBC扩展</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2017/09/15/2017-09-15-Spark-DataSources/" data-title="Spark DataSources Implementation" data-url="http://github.com/zqhxuyuan/2017/09/15/2017-09-15-Spark-DataSources/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2017/10/10/Midd-canal/" title="上一篇: 深入解析中间件之-Canal">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2017/09/04/2017-09-04-StreamingPro/" title="下一篇: StreamingPro">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

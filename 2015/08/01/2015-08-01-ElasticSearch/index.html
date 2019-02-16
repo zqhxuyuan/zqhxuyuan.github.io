@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>ElasticSearch入门 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="You Know, For Search">
+<meta name="keywords" content="elasticsearch">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ElasticSearch入门">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/08/01/2015-08-01-ElasticSearch/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="You Know, For Search">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.180Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ElasticSearch入门">
+<meta name="twitter:description" content="You Know, For Search">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-08-01-ElasticSearch" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/08/01/2015-08-01-ElasticSearch/" class="article-date">
+  	<time datetime="2015-07-31T16:00:00.000Z" itemprop="datePublished">2015-08-01</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      ElasticSearch入门
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/bigdata/">bigdata</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/elasticsearch/">elasticsearch</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>You Know, For Search</p>
+<a id="more"></a>
+<h2 id="You_Know,_For_Search">You Know, For Search</h2><p>启动ES: </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin/elasticsearch</span><br></pre></td></tr></table></figure>
+<p>Hello CRUD: </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">//索引. 数据库为twitter,表名为user,主键为kimchy,字段name值为Shay Banon</span><br><span class="line">$ curl -XPUT http://localhost:9200/twitter/user/kimchy -d &apos;&#123;</span><br><span class="line">    &quot;name&quot; : &quot;Shay Banon&quot;</span><br><span class="line">&#125;&apos;</span><br><span class="line"></span><br><span class="line">//索引，多个field. 主键为1,tweet表有三个字段:user,post_date,message</span><br><span class="line">$ curl -XPUT http://localhost:9200/twitter/tweet/1 -d &apos;&#123;</span><br><span class="line">    &quot;user&quot;: &quot;kimchy&quot;,</span><br><span class="line">    &quot;post_date&quot;: &quot;2009-11-15T13:12:00&quot;,</span><br><span class="line">    &quot;message&quot;: &quot;Trying out elasticsearch, so far so good?&quot;</span><br><span class="line">&#125;&apos;</span><br><span class="line"></span><br><span class="line">//索引，注意url里面的id是不一样的哦. 主键为2,另一条记录</span><br><span class="line">$ curl -XPUT http://localhost:9200/twitter/tweet/2 -d &apos;&#123;</span><br><span class="line">    &quot;user&quot;: &quot;kimchy&quot;,</span><br><span class="line">    &quot;post_date&quot;: &quot;2009-11-15T14:12:12&quot;,</span><br><span class="line">    &quot;message&quot;: &quot;You know, for Search&quot;</span><br><span class="line">&#125;&apos;</span><br><span class="line"></span><br><span class="line">//索引, 同一个id再次put相当于更新,version+1</span><br><span class="line">$ curl -XPUT http://localhost:9200/twitter/tweet/2 -d &apos;&#123;</span><br><span class="line">    &quot;user&quot;: &quot;kimchy&quot;,</span><br><span class="line">    &quot;post_date&quot;: &quot;2009-11-15T14:12:12&quot;,</span><br><span class="line">    &quot;message&quot;: &quot;You know, for Search&quot;</span><br><span class="line">&#125;&apos;</span><br><span class="line"></span><br><span class="line">//获取: 获取twitter数据库中tweet表主键为2的记录</span><br><span class="line">$ curl -XGET http://localhost:9200/twitter/tweet/2</span><br><span class="line"></span><br><span class="line">//lucene语法方式的查询, 查询tweet表中user字段=kimchy的记录</span><br><span class="line">$ curl -XGET http://localhost:9200/twitter/tweet/_search?q=user:kimchy</span><br><span class="line"></span><br><span class="line">//query DSL方式查询, 同上</span><br><span class="line">$ curl -XGET http://localhost:9200/twitter/tweet/_search -d &apos;&#123;</span><br><span class="line">    &quot;query&quot; : &#123;</span><br><span class="line">        &quot;term&quot; : &#123; &quot;user&quot;: &quot;kimchy&quot; &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;&apos;</span><br><span class="line"></span><br><span class="line">//query DSL方式查询, 查询post_date在指定范围内的记录集</span><br><span class="line">$ curl -XGET http://localhost:9200/twitter/_search?pretty=true -d &apos;&#123;</span><br><span class="line">    &quot;query&quot; : &#123;</span><br><span class="line">        &quot;range&quot; : &#123;</span><br><span class="line">            &quot;post_date&quot; : &#123;</span><br><span class="line">                &quot;from&quot; : &quot;2009-11-15T13:00:00&quot;,</span><br><span class="line">                &quot;to&quot; : &quot;2009-11-15T14:30:00&quot;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;&apos;</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>Exampel</th>
+<th>ElasticSearch</th>
+<th>DataBases</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 twitter</td>
+<td>Index 👉</td>
+<td>DataBase</td>
+</tr>
+<tr>
+<td>2 tweet</td>
+<td>Type 👉</td>
+<td>Table</td>
+</tr>
+<tr>
+<td>3 user,post_date,message</td>
+<td>-</td>
+<td>Field</td>
+</tr>
+</tbody>
+</table>
+<p>对应的结构Mapping: <strong> <a href="http://localhost:9200/_all?pretty" target="_blank" rel="noopener">http://localhost:9200/_all?pretty</a> </strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">&quot;twitter&quot; : &#123;							    1</span><br><span class="line">    &quot;aliases&quot; : &#123; &#125;,</span><br><span class="line">    &quot;mappings&quot; : &#123;</span><br><span class="line">      &quot;user&quot; : &#123;						  2</span><br><span class="line">        &quot;properties&quot; : &#123;</span><br><span class="line">          &quot;name&quot; : &#123;					3️</span><br><span class="line">            &quot;type&quot; : &quot;string&quot;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;tweet&quot; : &#123;					    2</span><br><span class="line">        &quot;properties&quot; : &#123;</span><br><span class="line">          &quot;message&quot; : &#123;				3</span><br><span class="line">            &quot;type&quot; : &quot;string&quot;</span><br><span class="line">          &#125;,</span><br><span class="line">          &quot;post_date&quot; : &#123;			3</span><br><span class="line">            &quot;type&quot; : &quot;date&quot;,</span><br><span class="line">            &quot;format&quot; : &quot;dateOptionalTime&quot;</span><br><span class="line">          &#125;,</span><br><span class="line">          &quot;user&quot; : &#123;					3</span><br><span class="line">            &quot;type&quot; : &quot;string&quot;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;settings&quot; : &#123;</span><br><span class="line">      &quot;index&quot; : &#123;</span><br><span class="line">        &quot;creation_date&quot; : &quot;1435222918809&quot;,</span><br><span class="line">        &quot;number_of_shards&quot; : &quot;5&quot;,</span><br><span class="line">        &quot;number_of_replicas&quot; : &quot;1&quot;,</span><br><span class="line">        &quot;version&quot; : &#123;</span><br><span class="line">          &quot;created&quot; : &quot;1060099&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;uuid&quot; : &quot;jk1_iEyvTaibjDyLymZO5g&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;warmers&quot; : &#123; &#125;</span><br><span class="line">  &#125;,</span><br></pre></td></tr></table></figure>
+<p>日志信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">➜  elasticsearch-1.6.0  bin/elasticsearch</span><br><span class="line">[2015-06-25 17:01:05,297][INFO ][node                     ] [Y&apos;Garon] version[1.6.0], pid[5619], build[cdd3ac4/2015-06-09T13:36:34Z]</span><br><span class="line">[2015-06-25 17:01:05,298][INFO ][node                     ] [Y&apos;Garon] initializing ...</span><br><span class="line">[2015-06-25 17:01:05,313][INFO ][plugins                  ] [Y&apos;Garon] loaded [], sites []</span><br><span class="line">[2015-06-25 17:01:05,517][INFO ][env                      ] [Y&apos;Garon] using [1] data paths, mounts [[/ (/dev/disk1)]], net usable_space [61.3gb], net total_space [111.8gb], types [hfs]</span><br><span class="line">[2015-06-25 17:01:13,075][INFO ][node                     ] [Y&apos;Garon] initialized</span><br><span class="line">[2015-06-25 17:01:13,078][INFO ][node                     ] [Y&apos;Garon] starting ...</span><br><span class="line">[2015-06-25 17:01:13,457][INFO ][transport                ] [Y&apos;Garon] bound_address &#123;inet[/0:0:0:0:0:0:0:0:9300]&#125;, publish_address &#123;inet[/192.168.7.130:9300]&#125;</span><br><span class="line">[2015-06-25 17:01:13,532][INFO ][discovery                ] [Y&apos;Garon] elasticsearch/5K_ytFi9QfGnt0aPACBo-A</span><br><span class="line">[2015-06-25 17:01:17,368][INFO ][cluster.service          ] [Y&apos;Garon] new_master [Y&apos;Garon][5K_ytFi9QfGnt0aPACBo-A][zqhmac][inet[/192.168.7.130:9300]], reason: zen-disco-join (elected_as_master)</span><br><span class="line">[2015-06-25 17:01:17,399][INFO ][http                     ] [Y&apos;Garon] bound_address &#123;inet[/0:0:0:0:0:0:0:0:9200]&#125;, publish_address &#123;inet[/192.168.7.130:9200]&#125;</span><br><span class="line">[2015-06-25 17:01:17,399][INFO ][node                     ] [Y&apos;Garon] started</span><br><span class="line">[2015-06-25 17:01:17,419][INFO ][gateway                  ] [Y&apos;Garon] recovered [0] indices into cluster_state</span><br><span class="line">[2015-06-25 17:01:59,932][INFO ][cluster.metadata         ] [Y&apos;Garon] [twitter] creating index, cause [auto(index api)], templates [], shards [5]/[1], mappings [tweet]</span><br><span class="line">[2015-06-25 17:02:00,497][INFO ][cluster.metadata         ] [Y&apos;Garon] [twitter] update_mapping [tweet] (dynamic)</span><br><span class="line">[2015-06-25 17:05:01,428][INFO ][cluster.metadata         ] [Y&apos;Garon] [spark] creating index, cause [api], templates [], shards [5]/[1], mappings []</span><br><span class="line">[2015-06-25 17:05:02,010][INFO ][cluster.metadata         ] [Y&apos;Garon] [spark] update_mapping [docs] (dynamic)</span><br><span class="line">[2015-06-25 17:05:03,284][INFO ][cluster.metadata         ] [Y&apos;Garon] [spark] update_mapping [docs] (dynamic)</span><br><span class="line">[2015-06-25 17:05:03,402][INFO ][cluster.metadata         ] [Y&apos;Garon] [spark] update_mapping [json-trips] (dynamic)</span><br><span class="line">[2015-06-25 17:17:11,309][INFO ][cluster.metadata         ] [Y&apos;Garon] [twitter] update_mapping [user] (dynamic)</span><br><span class="line">[2015-06-25 17:25:32,611][INFO ][cluster.metadata         ] [Y&apos;Garon] [my-collection] creating index, cause [auto(bulk api)], templates [], shards [5]/[1], mappings [game, music, book]</span><br><span class="line">[2015-06-25 17:25:32,800][INFO ][cluster.metadata         ] [Y&apos;Garon] [my-collection] update_mapping [music] (dynamic)</span><br><span class="line">[2015-06-25 17:25:32,811][INFO ][cluster.metadata         ] [Y&apos;Garon] [my-collection] update_mapping [book] (dynamic)</span><br><span class="line">[2015-06-25 17:25:32,819][INFO ][cluster.metadata         ] [Y&apos;Garon] [my-collection] update_mapping [game] (dynamic)</span><br><span class="line">[2015-06-25 18:04:25,860][INFO ][cluster.metadata         ] [Y&apos;Garon] [airports] creating index, cause [api], templates [], shards [5]/[1], mappings []</span><br><span class="line">[2015-06-25 18:04:26,148][INFO ][cluster.metadata         ] [Y&apos;Garon] [airports] update_mapping [2015] (dynamic)</span><br></pre></td></tr></table></figure>
+<h3 id="基本查询API">基本查询API</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br></pre></td><td class="code"><pre><span class="line">👉 1.查询所有数据库所有的记录数</span><br><span class="line">➜  ~  curl http://localhost:9200/_count</span><br><span class="line">&#123;&quot;count&quot;:9,&quot;_shards&quot;:&#123;&quot;total&quot;:10,&quot;successful&quot;:10,&quot;failed&quot;:0&#125;&#125;%</span><br><span class="line"></span><br><span class="line">➜  ~  curl http://localhost:9200/_cat/count</span><br><span class="line">1435224149 17:22:29 9</span><br><span class="line"></span><br><span class="line">👉 2.查询根路径下都有哪些REST服务</span><br><span class="line">➜  ~  curl http://localhost:9200/_cat</span><br><span class="line">=^.^=</span><br><span class="line">/_cat/allocation</span><br><span class="line">/_cat/shards</span><br><span class="line">/_cat/shards/&#123;index&#125;</span><br><span class="line">/_cat/master</span><br><span class="line">/_cat/nodes</span><br><span class="line">/_cat/indices</span><br><span class="line">/_cat/indices/&#123;index&#125;</span><br><span class="line">/_cat/segments</span><br><span class="line">/_cat/segments/&#123;index&#125;</span><br><span class="line">/_cat/count</span><br><span class="line">/_cat/count/&#123;index&#125;</span><br><span class="line">/_cat/recovery</span><br><span class="line">/_cat/recovery/&#123;index&#125;</span><br><span class="line">/_cat/health</span><br><span class="line">/_cat/pending_tasks</span><br><span class="line">/_cat/aliases</span><br><span class="line">/_cat/aliases/&#123;alias&#125;</span><br><span class="line">/_cat/thread_pool</span><br><span class="line">/_cat/plugins</span><br><span class="line">/_cat/fielddata</span><br><span class="line">/_cat/fielddata/&#123;fields&#125;</span><br><span class="line"></span><br><span class="line">👉 3.ES所有信息</span><br><span class="line">➜  ~  curl http://localhost:9200/_all</span><br><span class="line"></span><br><span class="line">👉 4.查询都有哪些数据库. 其中index对应了DB</span><br><span class="line">➜  ~  curl http://localhost:9200/_cat/indices</span><br><span class="line">yellow open spark   5 1 6 0  16kb  16kb</span><br><span class="line">yellow open twitter 5 1 3 0 8.7kb 8.7kb</span><br><span class="line"></span><br><span class="line">👉 5.查询数据库下有哪些表</span><br><span class="line">➜  ~  curl http://localhost:9200/spark</span><br><span class="line"></span><br><span class="line">👉 6.查询数据库的记录数</span><br><span class="line">➜  ~  curl http://localhost:9200/spark/_count</span><br><span class="line">&#123;&quot;count&quot;:6,&quot;_shards&quot;:&#123;&quot;total&quot;:5,&quot;successful&quot;:5,&quot;failed&quot;:0&#125;&#125;</span><br><span class="line"></span><br><span class="line">👉 7.查询数据库下某张表的记录数, 表的信息从5.中得到</span><br><span class="line">➜  ~  curl http://localhost:9200/spark/people/_count</span><br><span class="line"></span><br><span class="line">👉 8.查询数据库某张表的所有记录</span><br><span class="line">➜  ~  curl http://localhost:9200/spark/people/_search?q=*&amp;pretty</span><br><span class="line">➜  ~  curl http://localhost:9200/spark/people/_search?petty</span><br><span class="line">&#123;</span><br><span class="line">  &quot;took&quot; : 9,</span><br><span class="line">  &quot;timed_out&quot; : false,</span><br><span class="line">  &quot;_shards&quot; : &#123;</span><br><span class="line">    &quot;total&quot; : 5,</span><br><span class="line">    &quot;successful&quot; : 5,</span><br><span class="line">    &quot;failed&quot; : 0</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;hits&quot; : &#123;</span><br><span class="line">    &quot;total&quot; : 3,</span><br><span class="line">    &quot;max_score&quot; : 1.0,</span><br><span class="line">    &quot;hits&quot; : [ &#123;</span><br><span class="line">      &quot;_index&quot; : &quot;spark&quot;,</span><br><span class="line">      &quot;_type&quot; : &quot;people&quot;,</span><br><span class="line">      &quot;_id&quot; : &quot;AU4tjNnbu9a9LJalW5X9&quot;,</span><br><span class="line">      &quot;_score&quot; : 1.0,</span><br><span class="line">      &quot;_source&quot;:&#123;&quot;name&quot;:&quot;Andy&quot;,&quot;surname&quot;:&quot;Feng&quot;,&quot;age&quot;:30&#125;</span><br><span class="line">    &#125;, &#123;</span><br><span class="line">      &quot;_index&quot; : &quot;spark&quot;,</span><br><span class="line">      &quot;_type&quot; : &quot;people&quot;,</span><br><span class="line">      &quot;_id&quot; : &quot;AU4tjNnbu9a9LJalW5X8&quot;,</span><br><span class="line">      &quot;_score&quot; : 1.0,</span><br><span class="line">      &quot;_source&quot;:&#123;&quot;name&quot;:&quot;Michael&quot;,&quot;surname&quot;:&quot;Jackson&quot;,&quot;age&quot;:29&#125;</span><br><span class="line">    &#125;, &#123;</span><br><span class="line">      &quot;_index&quot; : &quot;spark&quot;,</span><br><span class="line">      &quot;_type&quot; : &quot;people&quot;,</span><br><span class="line">      &quot;_id&quot; : &quot;AU4tjNnbu9a9LJalW5X-&quot;,</span><br><span class="line">      &quot;_score&quot; : 1.0,</span><br><span class="line">      &quot;_source&quot;:&#123;&quot;name&quot;:&quot;Justin&quot;,&quot;surname&quot;:&quot;Beeper&quot;,&quot;age&quot;:19&#125;</span><br><span class="line">    &#125; ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">👉 查询某张表所有字段的某个值</span><br><span class="line">➜  ~  curl http://localhost:9200/spark/people/_search?q=*s*</span><br><span class="line">&#123;</span><br><span class="line">  &quot;took&quot; : 12,</span><br><span class="line">  &quot;timed_out&quot; : false,</span><br><span class="line">  &quot;_shards&quot; : &#123;</span><br><span class="line">    &quot;total&quot; : 5,</span><br><span class="line">    &quot;successful&quot; : 5,</span><br><span class="line">    &quot;failed&quot; : 0</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;hits&quot; : &#123;</span><br><span class="line">    &quot;total&quot; : 2,</span><br><span class="line">    &quot;max_score&quot; : 1.0,</span><br><span class="line">    &quot;hits&quot; : [ &#123;</span><br><span class="line">      &quot;_index&quot; : &quot;spark&quot;,</span><br><span class="line">      &quot;_type&quot; : &quot;people&quot;,</span><br><span class="line">      &quot;_id&quot; : &quot;AU4tjNnbu9a9LJalW5X8&quot;,</span><br><span class="line">      &quot;_score&quot; : 1.0,</span><br><span class="line">      &quot;_source&quot;:&#123;&quot;name&quot;:&quot;Michael&quot;,&quot;surname&quot;:&quot;Jackson&quot;,&quot;age&quot;:29&#125;</span><br><span class="line">    &#125;, &#123;</span><br><span class="line">      &quot;_index&quot; : &quot;spark&quot;,</span><br><span class="line">      &quot;_type&quot; : &quot;people&quot;,</span><br><span class="line">      &quot;_id&quot; : &quot;AU4tjNnbu9a9LJalW5X-&quot;,</span><br><span class="line">      &quot;_score&quot; : 1.0,</span><br><span class="line">      &quot;_source&quot;:&#123;&quot;name&quot;:&quot;Justin&quot;,&quot;surname&quot;:&quot;Beeper&quot;,&quot;age&quot;:19&#125;</span><br><span class="line">    &#125; ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">👉 查询某张表某个字段的值</span><br><span class="line">➜  ~  curl http://localhost:9200/spark/people/_search?q=name:*ch*&amp;pretty</span><br><span class="line">&#123;</span><br><span class="line">  &quot;took&quot; : 14,</span><br><span class="line">  &quot;timed_out&quot; : false,</span><br><span class="line">  &quot;_shards&quot; : &#123;</span><br><span class="line">    &quot;total&quot; : 5,</span><br><span class="line">    &quot;successful&quot; : 5,</span><br><span class="line">    &quot;failed&quot; : 0</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;hits&quot; : &#123;</span><br><span class="line">    &quot;total&quot; : 1,</span><br><span class="line">    &quot;max_score&quot; : 1.0,</span><br><span class="line">    &quot;hits&quot; : [ &#123;</span><br><span class="line">      &quot;_index&quot; : &quot;spark&quot;,</span><br><span class="line">      &quot;_type&quot; : &quot;people&quot;,</span><br><span class="line">      &quot;_id&quot; : &quot;AU4tjNnbu9a9LJalW5X8&quot;,</span><br><span class="line">      &quot;_score&quot; : 1.0,</span><br><span class="line">      &quot;_source&quot;:&#123;&quot;name&quot;:&quot;Michael&quot;,&quot;surname&quot;:&quot;Jackson&quot;,&quot;age&quot;:29&#125;</span><br><span class="line">    &#125; ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Tips</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="http://localhost:9200" target="_blank" rel="noopener">http://localhost:9200</a></td>
+<td>验证安装成功</td>
+</tr>
+<tr>
+<td><a href="http://localhost:9200/_count" target="_blank" rel="noopener">http://localhost:9200/_count</a></td>
+<td>ES所有记录数</td>
+</tr>
+<tr>
+<td><a href="http://localhost:9200/_cat" target="_blank" rel="noopener">http://localhost:9200/_cat</a></td>
+<td>REST服务</td>
+</tr>
+<tr>
+<td><a href="http://localhost:9200/_cat/indices" target="_blank" rel="noopener">http://localhost:9200/_cat/indices</a></td>
+<td>ES所有数据库概览</td>
+</tr>
+<tr>
+<td><a href="http://localhost:9200/spark" target="_blank" rel="noopener">http://localhost:9200/spark</a></td>
+<td>指定数据库spark</td>
+</tr>
+<tr>
+<td><a href="http://localhost:9200/spark/_count" target="_blank" rel="noopener">http://localhost:9200/spark/_count</a></td>
+<td>指定数据库spark的记录数</td>
+</tr>
+<tr>
+<td><a href="http://localhost:9200/spark/people/_count" target="_blank" rel="noopener">http://localhost:9200/spark/people/_count</a></td>
+<td>指定数据库spark指定表people的记录数</td>
+</tr>
+<tr>
+<td><a href="http://localhost:9200/spark/people/_search" target="_blank" rel="noopener">http://localhost:9200/spark/people/_search</a></td>
+<td>查询指定数据库指定表的所有记录</td>
+</tr>
+<tr>
+<td><a href="http://localhost:9200/spark/people/_search/q=*" target="_blank" rel="noopener">http://localhost:9200/spark/people/_search/q=*</a></td>
+<td>查询指定数据库指定表的所有记录</td>
+</tr>
+<tr>
+<td><a href="http://localhost:9200/spark/people/_search/q=name:*a*" target="_blank" rel="noopener">http://localhost:9200/spark/people/_search/q=name:*a*</a></td>
+<td>查询某张表name字段匹配<em>a</em>的记录</td>
+</tr>
+</tbody>
+</table>
+<h2 id="spark-es-hdfs">spark-es-hdfs</h2><p><a href="http://chenlinux.com/2014/09/04/spark-to-elasticsearch/" target="_blank" rel="noopener">http://chenlinux.com/2014/09/04/spark-to-elasticsearch/</a></p>
+<h3 id="1-_How_to_Get_the_Schema_when_only_get_the_ES_IP">1. How to Get the Schema when only get the ES IP</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">查询都有哪些数据库</span><br><span class="line">➜  ~  curl http://localhost:9200/_cat/indices</span><br><span class="line">green forseti-20140526 2 1    30056      6 125.6mb  62.7mb</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">查询总的记录数</span><br><span class="line">➜  ~  curl http://localhost:9200/_count</span><br><span class="line">&#123;&quot;count&quot;:631463275,&quot;_shards&quot;:&#123;&quot;total&quot;:201,&quot;successful&quot;:201,&quot;failed&quot;:0&#125;&#125;%</span><br><span class="line"></span><br><span class="line">选出其中一个数据库比如forseti-20140417</span><br><span class="line">➜  ~  curl http://localhost:9200/forseti-20140407</span><br><span class="line"></span><br><span class="line">获取这个数据库表activity的记录数,表名可以从上一步得到</span><br><span class="line">➜  ~  curl http://localhost:9200/forseti-20140407/activity/_count</span><br><span class="line">&#123;&quot;count&quot;:118,&quot;_shards&quot;:&#123;&quot;total&quot;:2,&quot;successful&quot;:2,&quot;failed&quot;:0&#125;&#125;%</span><br><span class="line"></span><br><span class="line">查询这个数据库的全部数据, 只关心hits.hits.source, 就是文档的表结构</span><br><span class="line">➜  ~  curl http://localhost:9200/forseti-20140407/activity/_search\?pretty</span><br><span class="line">&quot;_source&quot;: &#123;</span><br><span class="line">  &quot;geo&quot;: &#123;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;device&quot;: &#123;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Python_ES">Python ES</h3><p>1.Build an Elasticsearch Index with Python:<br><a href="http://blog.qbox.io/building-an-elasticsearch-index-with-python" target="_blank" rel="noopener">http://blog.qbox.io/building-an-elasticsearch-index-with-python</a>  </p>
+<p>2.Elasticsearch in Apache Spark with Python:<br><a href="http://blog.qbox.io/elasticsearch-in-apache-spark-python" target="_blank" rel="noopener">http://blog.qbox.io/elasticsearch-in-apache-spark-python</a>  </p>
+<p>3.Deploying Elasticsearch and Apache Spark to the Cloud:<br><a href="http://blog.qbox.io/deploy-elasticsearch-and-apache-spark-to-the-cloud" target="_blank" rel="noopener">http://blog.qbox.io/deploy-elasticsearch-and-apache-spark-to-the-cloud</a>  </p>
+<p>4.Sparse Matrix Multiplication with Elasticsearch and Apache Spark:<br><a href="http://blog.qbox.io/sparse-matrix-multiplication-elasticsearch-apache-spark" target="_blank" rel="noopener">http://blog.qbox.io/sparse-matrix-multiplication-elasticsearch-apache-spark</a>  </p>
+<p>5.Rectangular Matrix Multiplication with Elasticsearch and Apache Spark:<br><a href="http://blog.qbox.io/rectangular-matrix-multiplication-elasticsearch-apache-spark" target="_blank" rel="noopener">http://blog.qbox.io/rectangular-matrix-multiplication-elasticsearch-apache-spark</a>  </p>
+<p>6.Running Asynchronous Apache Spark Jobs from a Web App with Flask, Celery, &amp; Elasticsearch:<br><a href="http://blog.qbox.io/asynchronous-apache-spark-flask-celery-elasticsearch" target="_blank" rel="noopener">http://blog.qbox.io/asynchronous-apache-spark-flask-celery-elasticsearch</a> </p>
+<p>导入JSON数据:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">➜  ~  curl -XPOST &apos;http://192.168.6.140:9200/forseti-201501/activity/&apos; -d @/Users/zhengqh/data/koudai_201501.json</span><br><span class="line">&#123;&quot;_index&quot;:&quot;forseti-201501&quot;,&quot;_type&quot;:&quot;activity&quot;,&quot;_id&quot;:&quot;AU4&quot;,&quot;_version&quot;:1,&quot;created&quot;:true&#125;%                                                                                             </span><br><span class="line">➜  ~  curl -XDELETE &apos;http://192.168.6.140:9200/forseti-201501/activity/&apos;</span><br><span class="line">&#123;&quot;acknowledged&quot;:true&#125;%</span><br></pre></td></tr></table></figure>
+<h3 id="2-_Spark-ES_Demo">2. Spark-ES Demo</h3><p>spark-shell方式:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">➜  spark-1.4.0-bin-hadoop2.6  bin/spark-shell --master local[2] \</span><br><span class="line">   --jars /Users/zhengqh/Downloads/bigdata/elasticsearch-hadoop-2.1.0.rc1.jar</span><br><span class="line"></span><br><span class="line">15/06/29 11:17:16 INFO spark.SparkContext: Added JAR file:/Users/zhengqh/Downloads/bigdata/elasticsearch-hadoop-2.1.0.rc1.jar at http://192.168.6.140:52359/jars/elasticsearch-hadoop-2.1.0.rc1.jar with timestamp 1435547836823</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/08/01/2015-08-01-ElasticSearch/">ElasticSearch入门</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年08月01日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/08/01/2015-08-01-ElasticSearch/" title="ElasticSearch入门">http://github.com/zqhxuyuan/2015/08/01/2015-08-01-ElasticSearch/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/08/01/2015-08-01-ElasticSearch/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/08/25/2015-08-25-Cassandra-Architecture/">
+        Apache Cassandra架构理解
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/07/26/2015-07-26-drill-fragment-execute/">
+        Apache Drill源码阅读(6) execute
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#You_Know,_For_Search"><span class="toc-number">1.</span> <span class="toc-text">You Know, For Search</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#基本查询API"><span class="toc-number">1.1.</span> <span class="toc-text">基本查询API</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#spark-es-hdfs"><span class="toc-number">2.</span> <span class="toc-text">spark-es-hdfs</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-_How_to_Get_the_Schema_when_only_get_the_ES_IP"><span class="toc-number">2.1.</span> <span class="toc-text">1. How to Get the Schema when only get the ES IP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Python_ES"><span class="toc-number">2.2.</span> <span class="toc-text">Python ES</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-_Spark-ES_Demo"><span class="toc-number">2.3.</span> <span class="toc-text">2. Spark-ES Demo</span></a></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/08/01/2015-08-01-ElasticSearch/" data-title="ElasticSearch入门" data-url="http://github.com/zqhxuyuan/2015/08/01/2015-08-01-ElasticSearch/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/08/25/2015-08-25-Cassandra-Architecture/" title="上一篇: Apache Cassandra架构理解">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/07/26/2015-07-26-drill-fragment-execute/" title="下一篇: Apache Drill源码阅读(6) execute">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

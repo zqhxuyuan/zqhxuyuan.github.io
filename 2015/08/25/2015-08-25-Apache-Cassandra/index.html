@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Apache Cassandra入门 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Hello Cassandra">
+<meta name="keywords" content="cassandra">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Apache Cassandra入门">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/08/25/2015-08-25-Apache-Cassandra/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Hello Cassandra">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.182Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Apache Cassandra入门">
+<meta name="twitter:description" content="Hello Cassandra">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2015-08-25-Apache-Cassandra" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/08/25/2015-08-25-Apache-Cassandra/" class="article-date">
+  	<time datetime="2015-08-24T16:00:00.000Z" itemprop="datePublished">2015-08-25</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Apache Cassandra入门
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/bigdata/">bigdata</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cassandra/">cassandra</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Hello Cassandra</p>
+<a id="more"></a>
+<h2 id="Hello_Cassandra(单机模式)">Hello Cassandra(单机模式)</h2><p><a href="http://wiki.apache.org/cassandra/GettingStarted" target="_blank" rel="noopener">http://wiki.apache.org/cassandra/GettingStarted</a></p>
+<p>添加环境变量并source生效,使得可以在任意位置执行cassandra/bin安装目录下的命令  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export CASSANDRA_HOME=&quot;/Users/zhengqh/Soft/apache-cassandra-2.0.16&quot;</span><br><span class="line">export PATH=&quot;$CASSANDRA_HOME/bin:$PATH&quot;</span><br></pre></td></tr></table></figure>
+<p>前台启动Cassandra进程, <strong><code>sudo cassandra -f</code></strong></p>
+<p>日志输出: 创建了一些系统目录,并监听了thrift</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">INFO 09:24:50,569 Starting listening for CQL clients on localhost/127.0.0.1:9042...</span><br><span class="line">INFO 09:24:50,691 Using TFramedTransport with a max frame size of 15728640 bytes.</span><br><span class="line">INFO 09:24:50,693 Binding thrift service to localhost/127.0.0.1:9160</span><br><span class="line">INFO 09:24:50,727 Using synchronous/threadpool thrift server on localhost : 9160</span><br><span class="line">INFO 09:24:50,727 Listening for thrift clients...</span><br></pre></td></tr></table></figure>
+<p>启动一个新的终端, 启动客户端查询: <strong><code>cqlsh</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">CREATE KEYSPACE mykeyspace  </span><br><span class="line">WITH REPLICATION = &#123; &apos;class&apos; : &apos;SimpleStrategy&apos;, &apos;replication_factor&apos; : 1 &#125;;</span><br><span class="line"></span><br><span class="line">USE mykeyspace;  </span><br><span class="line">CREATE TABLE users (</span><br><span class="line">  user_id int PRIMARY KEY,</span><br><span class="line">  fname text,</span><br><span class="line">  lname text</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">INSERT INTO users (user_id,  fname, lname) VALUES (1745, &apos;john&apos;, &apos;smith&apos;);  </span><br><span class="line">INSERT INTO users (user_id,  fname, lname) VALUES (1744, &apos;john&apos;, &apos;doe&apos;);  </span><br><span class="line">INSERT INTO users (user_id,  fname, lname) VALUES (1746, &apos;john&apos;, &apos;smith&apos;);</span><br><span class="line"></span><br><span class="line">CREATE INDEX ON users (lname);  </span><br><span class="line">SELECT * FROM users WHERE lname = &apos;smith&apos;;</span><br></pre></td></tr></table></figure>
+<p>下面是详细的步骤和输出:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">$ cqlsh</span><br><span class="line">Connected to Test Cluster at localhost:9160.</span><br><span class="line">[cqlsh 4.1.1 | Cassandra 2.0.16 | CQL spec 3.1.1 | Thrift protocol 19.39.0]</span><br><span class="line">Use HELP for help.</span><br><span class="line">cqlsh&gt; CREATE KEYSPACE mykeyspace</span><br><span class="line">   ... WITH REPLICATION = &#123; &apos;class&apos; : &apos;SimpleStrategy&apos;, &apos;replication_factor&apos; : 1 &#125;;</span><br><span class="line">cqlsh&gt; USE mykeyspace;</span><br><span class="line">cqlsh:mykeyspace&gt;</span><br><span class="line">cqlsh:mykeyspace&gt; CREATE TABLE users (</span><br><span class="line">              ...   user_id int PRIMARY KEY,</span><br><span class="line">              ...   fname text,</span><br><span class="line">              ...   lname text</span><br><span class="line">              ... );</span><br><span class="line">cqlsh:mykeyspace&gt; INSERT INTO users (user_id,  fname, lname) VALUES (1745, &apos;john&apos;, &apos;smith&apos;);</span><br><span class="line">cqlsh:mykeyspace&gt; INSERT INTO users (user_id,  fname, lname) VALUES (1744, &apos;john&apos;, &apos;doe&apos;);</span><br><span class="line">cqlsh:mykeyspace&gt; INSERT INTO users (user_id,  fname, lname) VALUES (1746, &apos;john&apos;, &apos;smith&apos;);</span><br><span class="line">cqlsh:mykeyspace&gt; SELECT * FROM users;</span><br><span class="line"></span><br><span class="line"> user_id | fname | lname</span><br><span class="line">---------+-------+-------</span><br><span class="line">    1745 |  john | smith</span><br><span class="line">    1744 |  john |   doe</span><br><span class="line">    1746 |  john | smith</span><br><span class="line"></span><br><span class="line">cqlsh:mykeyspace&gt; SELECT * FROM users WHERE lname = &apos;smith&apos;;</span><br><span class="line">Bad Request: No indexed columns present in by-columns clause with Equal operator</span><br><span class="line">cqlsh:mykeyspace&gt; CREATE INDEX ON users (lname);</span><br><span class="line">cqlsh:mykeyspace&gt; SELECT * FROM users WHERE lname = &apos;smith&apos;;</span><br><span class="line"></span><br><span class="line"> user_id | fname | lname</span><br><span class="line">---------+-------+-------</span><br><span class="line">    1745 |  john | smith</span><br><span class="line">    1746 |  john | smith</span><br></pre></td></tr></table></figure>
+<p>观察服务端的输出: 分别创建了keyspace,table,index. keyspace可以理解为DataBase.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">INFO 09:29:21,981 Create new Keyspace: mykeyspace, rep strategy:SimpleStrategy&#123;&#125;, strategy_options: &#123;replication_factor=1&#125;, durable_writes: true</span><br><span class="line">INFO 09:29:45,822 Initializing mykeyspace.users</span><br><span class="line">INFO 09:31:21,102 Initializing mykeyspace.users.users_lname_idx</span><br><span class="line">INFO 09:31:21,230 Index build of users.users_lname_idx complete</span><br></pre></td></tr></table></figure>
+<p>使用nodetool工具查看集群状态: <strong><code>nodetool -h localhost -p 7199 status</code></strong>,或者直接<strong><code>bin/nodetool status</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Note: Ownership information does not include topology; for complete information, specify a keyspace</span><br><span class="line">Datacenter: datacenter1</span><br><span class="line">=======================</span><br><span class="line">Status=Up/Down</span><br><span class="line">|/ State=Normal/Leaving/Joining/Moving</span><br><span class="line">--  Address    Load       Tokens  Owns   Host ID                               Rack</span><br><span class="line">UN  127.0.0.1  77.2 KB    256     100.0%  9605a4d0-99ca-4582-8a7d-49a7cb9bd942  rack1</span><br></pre></td></tr></table></figure>
+<p>由于我们在$CASSANDRA_HOME/conf/cassandra.yaml中修改了data路径<br>可以看到在cql中创建的keyspace,table,index都对应了本地的目录和文件.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">➜  ~  cd data/cassandra</span><br><span class="line">➜  cassandra  ll</span><br><span class="line">drwxr-xr-x   4 root  staff   136B  6 25 09:24 commitlog</span><br><span class="line">drwxr-xr-x   3 root  staff   102B  6 25 09:29 mykeyspace</span><br><span class="line">drwxr-xr-x  18 root  staff   612B  6 25 09:24 system</span><br><span class="line">drwxr-xr-x   4 root  staff   136B  6 25 09:24 system_traces</span><br><span class="line">➜  cassandra  ll mykeyspace</span><br><span class="line">drwxr-xr-x  16 root  staff   544B  6 25 09:31 users</span><br><span class="line">➜  cassandra  ll mykeyspace/users</span><br><span class="line">-rw-r--r--  1 root  staff    43B  6 25 09:31 mykeyspace-users-jb-1-CompressionInfo.db</span><br><span class="line">-rw-r--r--  1 root  staff   134B  6 25 09:31 mykeyspace-users-jb-1-Data.db</span><br><span class="line">-rw-r--r--  1 root  staff    16B  6 25 09:31 mykeyspace-users-jb-1-Filter.db</span><br><span class="line">-rw-r--r--  1 root  staff    54B  6 25 09:31 mykeyspace-users-jb-1-Index.db</span><br><span class="line">-rw-r--r--  1 root  staff   4.3K  6 25 09:31 mykeyspace-users-jb-1-Statistics.db</span><br><span class="line">-rw-r--r--  1 root  staff    80B  6 25 09:31 mykeyspace-users-jb-1-Summary.db</span><br><span class="line">-rw-r--r--  1 root  staff    79B  6 25 09:31 mykeyspace-users-jb-1-TOC.txt</span><br><span class="line">-rw-r--r--  1 root  staff    43B  6 25 09:31 mykeyspace-users.users_lname_idx-jb-1-CompressionInfo.db</span><br><span class="line">-rw-r--r--  1 root  staff    80B  6 25 09:31 mykeyspace-users.users_lname_idx-jb-1-Data.db</span><br><span class="line">-rw-r--r--  1 root  staff    16B  6 25 09:31 mykeyspace-users.users_lname_idx-jb-1-Filter.db</span><br><span class="line">-rw-r--r--  1 root  staff    36B  6 25 09:31 mykeyspace-users.users_lname_idx-jb-1-Index.db</span><br><span class="line">-rw-r--r--  1 root  staff   4.3K  6 25 09:31 mykeyspace-users.users_lname_idx-jb-1-Statistics.db</span><br><span class="line">-rw-r--r--  1 root  staff    79B  6 25 09:31 mykeyspace-users.users_lname_idx-jb-1-Summary.db</span><br><span class="line">-rw-r--r--  1 root  staff    79B  6 25 09:31 mykeyspace-users.users_lname_idx-jb-1-TOC.txt</span><br></pre></td></tr></table></figure>
+<p>kill cassandra:  </p>
+<p><strong><code>pkill -f CassandraDaemon</code></strong><br><strong><code>ps -ef | grep CassandraDeameon</code></strong>后<strong><code>sudo kill -9 pid</code></strong></p>
+<p>终端Ctrl+C中断进程输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">^C INFO 09:48:33,868 Stop listening to thrift clients</span><br><span class="line"> INFO 09:48:33,909 Stop listening for CQL clients</span><br><span class="line"> INFO 09:48:33,911 Announcing shutdown</span><br><span class="line"> INFO 09:48:33,912 Node localhost/127.0.0.1 state jump to normal</span><br><span class="line"> INFO 09:48:35,952 Waiting for messaging service to quiesce</span><br><span class="line"> INFO 09:48:35,956 MessagingService has terminated the accept() thread</span><br></pre></td></tr></table></figure>
+<h3 id="配置文件默认值">配置文件默认值</h3><table>
+<thead>
+<tr>
+<th>配置项</th>
+<th>说明</th>
+<th>默认值</th>
+<th>配置文件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>data_file_directories</td>
+<td>数据</td>
+<td>/var/lib/cassandra/data</td>
+<td>cassandra.yaml</td>
+</tr>
+<tr>
+<td>commitlog_directory</td>
+<td>提交日志</td>
+<td>/var/lib/cassandra/commitlog</td>
+<td>cassandra.yaml</td>
+</tr>
+<tr>
+<td>saved_caches_directory</td>
+<td>缓存</td>
+<td>/var/lib/cassandra/saved_caches</td>
+<td>cassandra.yaml</td>
+</tr>
+<tr>
+<td>log4j.appender.R.File</td>
+<td>日志</td>
+<td>/var/log/cassandra</td>
+<td>log4j-server.properties</td>
+</tr>
+</tbody>
+</table>
+<h2 id="Cassandra_Cluster">Cassandra Cluster</h2><p><a href="http://blog.csdn.net/rzliuwei/article/details/40430031" target="_blank" rel="noopener">http://blog.csdn.net/rzliuwei/article/details/40430031</a></p>
+<p><strong>vi cassandra.yaml</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">seed_provider:</span><br><span class="line">    - class_name: org.apache.cassandra.locator.SimpleSeedProvider</span><br><span class="line">      parameters:</span><br><span class="line">          - seeds: &quot;192.168.6.52,192.168.6.53&quot;</span><br><span class="line"></span><br><span class="line">listen_address: 192.168.6.52</span><br><span class="line"></span><br><span class="line">rpc_address:</span><br></pre></td></tr></table></figure>
+<p>注意:</p>
+<blockquote>
+<ol>
+<li>seeds 可以选择集群中比较稳定的机器, 不需要写下所有的节点.  </li>
+<li>listen_address在每台机器上都要修改成自己本机的IP地址.  </li>
+<li>rpc_address修改为空,或者跟listen_address一样,为本机IP.</li>
+</ol>
+</blockquote>
+<p>将cassandra整个目录都分发到集群中(更改目录权限,建立软链接,创建日志目录,更改日志目录权限).</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">scp -r apache-cassandra-2.0.16 qihuang.zheng@192.168.6.52:/usr/install </span><br><span class="line">sudo chown admin:admin -R /usr/install/apache-cassandra-2.0.16</span><br><span class="line">sudo -u admin ln -s /usr/install/apache-cassandra-2.0.16 /usr/install/cassandra</span><br><span class="line">sudo mkdir /var/log/cassandra</span><br><span class="line">sudo chown admin:admin -R /var/log/cassandra</span><br></pre></td></tr></table></figure>
+<p>在每个节点都启动Cassandra服务: 先启动seeds,然后启动其他节点</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo -u admin /usr/install/cassandra/bin/cassandra</span><br></pre></td></tr></table></figure>
+<p>随便在某一台机器安装了cassandra的节点查看整个集群所有节点的状态:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0652 apache-cassandra-2.0.16]$ bin/nodetool status</span><br><span class="line">Datacenter: datacenter1</span><br><span class="line">=======================</span><br><span class="line">Status=Up/Down</span><br><span class="line">|/ State=Normal/Leaving/Joining/Moving</span><br><span class="line">--  Address       Load       Tokens  Owns (effective)  Host ID                               Rack</span><br><span class="line">UN  192.168.6.52  46.21 KB   256     41.9%             69d3a2ab-cad8-4fdc-b609-7b9c0ce3243a  rack1</span><br><span class="line">UN  192.168.6.53  62.46 KB   256     40.7%             dc884efd-5f26-4746-b5c6-73ac7d446796  rack1</span><br><span class="line">UN  192.168.6.55  76.73 KB   256     37.9%             180e65c1-7ac1-4a2c-b8a6-c9ae3dc08de1  rack1</span><br><span class="line">UN  192.168.6.56  14.21 KB   256     40.9%             6a1a7d22-ffdf-4598-8402-fe0ffa62663d  rack1</span><br><span class="line">UN  192.168.6.57  14.21 KB   256     38.6%             d35ceda3-f8b2-49a6-98fd-390b2341481c  rack1</span><br></pre></td></tr></table></figure>
+<p>下面是依次启动52~57, 在seeds节点52可以看到下面的输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">ERROR 10:18:22,502 Directory /var/lib/cassandra/data doesn&apos;t exist</span><br><span class="line">ERROR 10:18:22,509 Directory /var/lib/cassandra/commitlog doesn&apos;t exist</span><br><span class="line">ERROR 10:18:22,510 Directory /var/lib/cassandra/saved_caches doesn&apos;t exist</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"> INFO 10:18:25,654 Node /192.168.6.52 state jump to normal</span><br><span class="line"> INFO 10:18:25,761 Waiting for gossip to settle before accepting client requests...</span><br><span class="line"> INFO 10:18:25,791 Compacted 4 sstables to [/var/lib/cassandra/data/system/local/system-local-jb-5,].  5,935 bytes to 5,784 (~97% of original) in 187ms = 0.029498MB/s.  4 total partitions merged to 1.  Partition merge counts were &#123;4:1, &#125;</span><br><span class="line"> INFO 10:18:33,763 No gossip backlog; proceeding</span><br><span class="line"> INFO 10:18:33,930 Starting listening for CQL clients on /192.168.6.52:9042...</span><br><span class="line"> INFO 10:18:34,015 Using TFramedTransport with a max frame size of 15728640 bytes.</span><br><span class="line"> INFO 10:18:34,017 Binding thrift service to /192.168.6.52:9160</span><br><span class="line"> INFO 10:18:34,031 Using synchronous/threadpool thrift server on dp0652 : 9160</span><br><span class="line"> INFO 10:18:34,032 Listening for thrift clients...</span><br><span class="line"> INFO 10:19:59,689 Handshaking version with /192.168.6.53</span><br><span class="line"> INFO 10:20:00,551 Node /192.168.6.53 is now part of the cluster</span><br><span class="line"> INFO 10:20:00,557 InetAddress /192.168.6.53 is now UP</span><br><span class="line"></span><br><span class="line"> INFO 10:21:29,743 Handshaking version with /192.168.6.55</span><br><span class="line"> INFO 10:21:32,596 Node /192.168.6.55 is now part of the cluster</span><br><span class="line"> INFO 10:21:32,599 InetAddress /192.168.6.55 is now UP</span><br><span class="line"> INFO 10:22:06,329 [Stream #f921b340-1ae0-11e5-ab43-1146c6cf1690] Received streaming plan for Bootstrap</span><br><span class="line"> INFO 10:22:06,505 [Stream #f921b340-1ae0-11e5-ab43-1146c6cf1690] Session with /192.168.6.55 is complete</span><br><span class="line"> INFO 10:22:06,512 [Stream #f921b340-1ae0-11e5-ab43-1146c6cf1690] All sessions completed</span><br><span class="line"></span><br><span class="line"> INFO 10:22:32,683 Handshaking version with /192.168.6.56</span><br><span class="line"> INFO 10:22:34,681 Node /192.168.6.56 is now part of the cluster</span><br><span class="line"> INFO 10:22:34,684 InetAddress /192.168.6.56 is now UP</span><br><span class="line"> INFO 10:22:42,996 Handshaking version with /192.168.6.57</span><br><span class="line"> INFO 10:22:45,688 Node /192.168.6.57 is now part of the cluster</span><br><span class="line"> INFO 10:22:45,697 InetAddress /192.168.6.57 is now UP</span><br><span class="line"> INFO 10:23:07,647 [Stream #1db71650-1ae1-11e5-bd7c-33c4208ae8ae] Received streaming plan for Bootstrap</span><br><span class="line"> INFO 10:23:07,795 [Stream #1db71650-1ae1-11e5-bd7c-33c4208ae8ae] Session with /192.168.6.56 is complete</span><br><span class="line"> INFO 10:23:07,796 [Stream #1db71650-1ae1-11e5-bd7c-33c4208ae8ae] All sessions completed</span><br><span class="line"> INFO 10:23:20,299 [Stream #253d8260-1ae1-11e5-8387-4d9d1ede5533] Received streaming plan for Bootstrap</span><br><span class="line"> INFO 10:23:20,415 [Stream #253d8260-1ae1-11e5-8387-4d9d1ede5533] Session with /192.168.6.57 is complete</span><br><span class="line"> INFO 10:23:20,416 [Stream #253d8260-1ae1-11e5-8387-4d9d1ede5533] All sessions completed</span><br></pre></td></tr></table></figure>
+<p>seed节点53的输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">INFO 10:20:09,212 Listening for thrift clients...</span><br><span class="line">INFO 10:21:29,678 Handshaking version with /192.168.6.55</span><br><span class="line">INFO 10:21:31,965 Node /192.168.6.55 is now part of the cluster</span><br><span class="line">INFO 10:21:31,968 InetAddress /192.168.6.55 is now UP</span><br><span class="line">INFO 10:22:32,618 Handshaking version with /192.168.6.56</span><br><span class="line">INFO 10:22:36,055 Node /192.168.6.56 is now part of the cluster</span><br><span class="line">INFO 10:22:36,058 InetAddress /192.168.6.56 is now UP</span><br><span class="line">INFO 10:22:42,930 Handshaking version with /192.168.6.57</span><br><span class="line">INFO 10:22:44,965 Node /192.168.6.57 is now part of the cluster</span><br><span class="line">INFO 10:22:44,967 InetAddress /192.168.6.57 is now UP</span><br><span class="line">INFO 10:23:07,611 [Stream #1db71650-1ae1-11e5-bd7c-33c4208ae8ae] Received streaming plan for Bootstrap</span><br><span class="line">INFO 10:23:07,684 [Stream #1db71650-1ae1-11e5-bd7c-33c4208ae8ae] Session with /192.168.6.56 is complete</span><br><span class="line">INFO 10:23:07,691 [Stream #1db71650-1ae1-11e5-bd7c-33c4208ae8ae] All sessions completed</span><br><span class="line">INFO 10:23:20,230 [Stream #253d8260-1ae1-11e5-8387-4d9d1ede5533] Received streaming plan for Bootstrap</span><br><span class="line">INFO 10:23:20,312 [Stream #253d8260-1ae1-11e5-8387-4d9d1ede5533] Session with /192.168.6.57 is complete</span><br><span class="line">INFO 10:23:20,313 [Stream #253d8260-1ae1-11e5-8387-4d9d1ede5533] All sessions completed</span><br></pre></td></tr></table></figure>
+<p>由于前面两个seeds节点我们采用了-f启动, 所以我们关掉53节点, 在52上观测到53当掉了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INFO 10:37:19,533 InetAddress /192.168.6.53 is now DOWN</span><br><span class="line">INFO 10:37:20,001 Handshaking version with /192.168.6.53</span><br><span class="line">INFO 10:37:28,042 GC for ParNew: 316 ms for 1 collections, 201429600 used; max is 8375238656</span><br></pre></td></tr></table></figure>
+<p>此时再观察集群的状态, 53的第一列状态为DN(DownNode)  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">--  Address       Load       Tokens  Owns (effective)  Host ID                               Rack</span><br><span class="line">UN  192.168.6.52  46.21 KB   256     41.9%             69d3a2ab-cad8-4fdc-b609-7b9c0ce3243a  rack1</span><br><span class="line">DN  192.168.6.53  62.46 KB   256     40.7%             dc884efd-5f26-4746-b5c6-73ac7d446796  rack1</span><br><span class="line">UN  192.168.6.55  76.73 KB   256     37.9%             180e65c1-7ac1-4a2c-b8a6-c9ae3dc08de1  rack1</span><br><span class="line">UN  192.168.6.56  96.73 KB   256     40.9%             6a1a7d22-ffdf-4598-8402-fe0ffa62663d  rack1</span><br><span class="line">UN  192.168.6.57  97.07 KB   256     38.6%             d35ceda3-f8b2-49a6-98fd-390b2341481c  rack1</span><br></pre></td></tr></table></figure>
+<p>在集群中任意一个节点建表和插入数据, 注意不同的是副本因子<code>replication_factor=3</code>  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">CREATE KEYSPACE mykeyspace</span><br><span class="line">WITH REPLICATION = &#123; &apos;class&apos; : &apos;SimpleStrategy&apos;, &apos;replication_factor&apos; : 3 &#125;;</span><br><span class="line"></span><br><span class="line">USE mykeyspace;</span><br><span class="line">CREATE TABLE users ( user_id int PRIMARY KEY, fname text, lname text );</span><br><span class="line"></span><br><span class="line">INSERT INTO users (user_id, fname, lname) VALUES (1745, &apos;john&apos;, &apos;smith&apos;);</span><br><span class="line">INSERT INTO users (user_id, fname, lname) VALUES (1744, &apos;john&apos;, &apos;doe&apos;);</span><br><span class="line">INSERT INTO users (user_id, fname, lname) VALUES (1746, &apos;john&apos;, &apos;smith&apos;);</span><br><span class="line"></span><br><span class="line">CREATE INDEX ON users (lname);</span><br><span class="line">SELECT * FROM users WHERE lname = &apos;smith&apos;;</span><br></pre></td></tr></table></figure>
+<p>在另外的节点上查看数据,注意cqlsh要加上host地址,随便集群中的哪个节点都可以,但不能都不跟.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@dp0655 apache-cassandra-2.0.16]$ bin/cqlsh 192.168.6.55</span><br><span class="line">Connected to Test Cluster at 192.168.6.55:9160.</span><br><span class="line">cqlsh&gt; use mykeyspace;</span><br><span class="line">cqlsh:mykeyspace&gt; SELECT * FROM users WHERE lname = &apos;smith&apos;;</span><br><span class="line"> user_id | fname | lname</span><br><span class="line">---------+-------+-------</span><br><span class="line">    1745 |  john | smith</span><br><span class="line">    1746 |  john | smith</span><br></pre></td></tr></table></figure>
+<h2 id="PrimaryKey">PrimaryKey</h2><p>Primary Key包含了Partition Key和Cluster Key两种类型.  </p>
+<blockquote>
+<p><strong>Partition Key</strong>: <code>controls how the data is spread around the cluster</code><br><strong>Cluster Key</strong>: <code>controls how the data is sorted on disk</code></p>
+</blockquote>
+<p>Rows are spread around the cluster based on a hash of the partition key, which is the first element of the PRIMARY KEY<br>每一行数据分散在集群中, 根据的是partition-key的hash值. partition-key指的是primary-key的第一个字段(第一部分,可能不止一个字段哦).  </p>
+<p>Primary keys can be composite; the first part of the primary key is the partition key and determines the primary node for the partition<br>主键可以是复合的, 主键的第一部分是分区键,决定了分区的主节点.   </p>
+<h3 id="单一主键">单一主键</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE users(</span><br><span class="line">  username varchar,</span><br><span class="line">  email varchar,</span><br><span class="line">  birth timestamp,</span><br><span class="line">  PRIMARY KEY(username)</span><br><span class="line">);</span><br><span class="line">INSERT INTO users(username,email,birth)VALUES(&apos;john.doe&apos;,&apos;johndoe@gmail.com&apos;,&apos;1970-01-01&apos;);</span><br><span class="line">select * from users;</span><br><span class="line"> username | birth                    | email</span><br><span class="line">----------+--------------------------+-------------------</span><br><span class="line"> john.doe | 1970-01-01 01:00:00+0800 | johndoe@gmail.com</span><br></pre></td></tr></table></figure>
+<h3 id="复合主键(Composite_Primary_Key)">复合主键(Composite Primary Key)</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE user_attr(</span><br><span class="line">  username varchar,</span><br><span class="line">  key varchar,</span><br><span class="line">  value varchar,</span><br><span class="line">  PRIMARY KEY(username,key)</span><br><span class="line">);</span><br><span class="line">INSERT INTO user_attr(username,key,value)VALUES(&apos;john.doe&apos;,&apos;married_to&apos;,&apos;janedoe&apos;);</span><br><span class="line">INSERT INTO user_attr(username,key,value)VALUES(&apos;john.doe&apos;,&apos;last_login&apos;,&apos;2014-01-04T12:00:00&apos;);</span><br><span class="line">INSERT INTO user_attr(username,key,value)VALUES(&apos;anna&apos;,&apos;last_login&apos;,&apos;2014-04-03T13:00:00&apos;);</span><br><span class="line"></span><br><span class="line">select * from user_attr;</span><br><span class="line"> username | key        | value</span><br><span class="line">----------+------------+---------------------</span><br><span class="line">     anna | last_login | 2014-04-03T13:00:00</span><br><span class="line"> john.doe | last_login | 2014-01-04T12:00:00</span><br><span class="line"> john.doe | married_to |             janedoe</span><br></pre></td></tr></table></figure>
+<p>复合主键示例中, username是Partition Key, key是Clustering Columns.<br>PartitionKey是未排序的, 而Clustering Columns是会进行排序的.<br>比如相同partition-key的username=john.doe,其中clustring columns的顺序是last_login先于married_to.因为字母表中l在m前面.  </p>
+<p>Note that the PRIMARY KEY has two components: username, which is the partitioning key, and key, which is called the clustering key.<br>This will give us <code>one partition per username每个用户只有一个分区</code>. Within a particular partition (user), rows will be ordered by key.   </p>
+<p>复合主键在磁盘上的Partition Layout(cluster column1到2分别根据cluster column进行排序):  </p>
+<table>
+<thead>
+<tr>
+<th>primary key</th>
+<th>cluster column 1</th>
+<th>cluster column 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>username</code>:anna</td>
+<td><code>last_login</code>:2014-04-03T13:00:00</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>username</code>:john.doe</td>
+<td><code>last_login</code>:2014-01-04T12:00:00</td>
+<td><code>married_to</code>:janedoe</td>
+</tr>
+</tbody>
+</table>
+<h3 id="复合分区键(Compound_Partition_Key,随机)">复合分区键(Compound Partition Key,随机)</h3><p>If we have thousands or millions of small groups with hundreds of users each, we’ll get a pretty even spread(分区键很多,聚合键数量少).<br>But if there’s one group with millions of users in it(聚合键数量很多), the entire burden will be shouldered by one node (or one set of replicas)<br>The basic technique is to add another column to the PRIMARY KEY to form a <code>compound partition key</code>.    </p>
+<p>上面的表结构对于一个用户有较少的字段,并且用户数很多的情况下, 可以均衡地在集群中分布数据. 但是如果有一个用户字段数(key)非常多,则节点的负载会很重.<br>可以给partition-key添加一个字段组成复合primary-key,就可以比较均衡地分布数据. 但是这种代价是读取时由于一个username由多个分区组成,读负载会增大.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE groups (</span><br><span class="line">    groupname text,</span><br><span class="line">    username text,</span><br><span class="line">    email text,</span><br><span class="line">    age int,</span><br><span class="line">    hash_prefix int,</span><br><span class="line">    PRIMARY KEY ((groupname, hash_prefix), username)</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>The new column hash_prefix, holds a prefix of a hash of the username. For example, it could be the first byte of the hash modulo four.<br>Together with groupname, these two columns form the compound partition key. Instead of <code>a group residing on one partition</code>,<br>it’s <code>now spread across four partitions</code>. Our data is more evenly spread out, but we now have to <code>read four times as many partitions</code>.  </p>
+<h3 id="根据时间范围组合分区键求TopN">根据时间范围组合分区键求TopN</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE group_join_dates (</span><br><span class="line">    groupname text,</span><br><span class="line">    joined timeuuid,</span><br><span class="line">    join_date text,</span><br><span class="line">    username text,</span><br><span class="line">    email text,</span><br><span class="line">    age int,</span><br><span class="line">    PRIMARY KEY ((groupname, join_date), joined)</span><br><span class="line">) WITH CLUSTERING ORDER BY (joined DESC)</span><br></pre></td></tr></table></figure>
+<p>Each day, a new partition will start. When querying the X newest users, we will first query today’s partition,<br>then yesterday’s, and so on, until we have X users. </p>
+<h3 id="参考文档">参考文档</h3><p>数据模型的基本规则: <a href="http://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling" target="_blank" rel="noopener">http://www.datastax.com/dev/blog/basic-rules-of-cassandra-data-modeling</a></p>
+<p><strong>Query Performance</strong></p>
+<ul>
+<li>Single-partition queries are fast!</li>
+<li>Queries for ranges on clustering columns are fast! </li>
+<li>Queries for multiple partitions are slow</li>
+<li>Use secondary indexes with caution</li>
+</ul>
+<h3 id="twissandra_:_Twitter_with_Cassandra_Backend_Demo">twissandra : Twitter with Cassandra Backend Demo</h3><p><a href="https://github.com/twissandra/twissandra">https://github.com/twissandra/twissandra</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE users (</span><br><span class="line">    username text PRIMARY KEY,</span><br><span class="line">    password text</span><br><span class="line">);</span><br><span class="line">CREATE TABLE friends (</span><br><span class="line">    username text,</span><br><span class="line">    friend text,</span><br><span class="line">    since timestamp,</span><br><span class="line">    PRIMARY KEY (username, friend)</span><br><span class="line">);</span><br><span class="line">CREATE TABLE followers (</span><br><span class="line">    username text,</span><br><span class="line">    follower text,</span><br><span class="line">    since timestamp,</span><br><span class="line">    PRIMARY KEY (username, follower)</span><br><span class="line">);</span><br><span class="line">CREATE TABLE tweets (</span><br><span class="line">    tweet_id uuid PRIMARY KEY,</span><br><span class="line">    username text,</span><br><span class="line">    body text</span><br><span class="line">);</span><br><span class="line">CREATE TABLE userline (</span><br><span class="line">    username text,</span><br><span class="line">    time timeuuid,</span><br><span class="line">    tweet_id uuid,</span><br><span class="line">    PRIMARY KEY (username, time)</span><br><span class="line">) WITH CLUSTERING ORDER BY (time DESC);</span><br><span class="line">CREATE TABLE timeline (</span><br><span class="line">    username text,</span><br><span class="line">    time timeuuid,</span><br><span class="line">    tweet_id uuid,</span><br><span class="line">    PRIMARY KEY (username, time)</span><br><span class="line">) WITH CLUSTERING ORDER BY (time DESC);</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>用户表users的主键是username<br>朋友friends和粉丝followers的主键是自己的username加上对方的username<br>推文的主键是UUID<br>用户的时间线userline和所有的时间线timeline的主键是用户名username和创建时间<br>时间线的cluster key是time字段,两个时间线的表的排序字段都是desc,因为最新的推文要排列在前面  </p>
+</blockquote>
+<h2 id="CQL:TTL_&amp;_Delete">CQL:TTL &amp; Delete</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE emp (</span><br><span class="line">  empID int,</span><br><span class="line">  deptID int,</span><br><span class="line">  first_name varchar,</span><br><span class="line">  last_name varchar,</span><br><span class="line">  PRIMARY KEY (empID, deptID));</span><br><span class="line"></span><br><span class="line">插入数据,第二条指定了过去时间=60秒</span><br><span class="line">INSERT INTO emp (empID, deptID, first_name, last_name) VALUES (104, 15, &apos;jane&apos;, &apos;smith&apos;);</span><br><span class="line">INSERT INTO emp (empID, deptID, first_name, last_name) VALUES (105, 17, &apos;jane&apos;, &apos;smith&apos;) USING TTL 60;</span><br><span class="line"></span><br><span class="line">cqlsh:mykeyspace&gt; SELECT empid,WRITETIME(first_name),TTL(last_name) from emp;</span><br><span class="line"> empid | ttl(last_name)</span><br><span class="line">-------+----------------</span><br><span class="line">   105 |            35</span><br><span class="line">   104 |           null</span><br><span class="line">过了60秒之后, 再次查询, 只有一条记录104. 105因为60秒过去了,所以被删除. </span><br><span class="line"></span><br><span class="line">更新过期时间, 可以在上面60秒还没有过期的时候执行(如果已经过期了不在了,效果跟上面的一样,那就是插入了)</span><br><span class="line">INSERT INTO emp (empID, deptID, first_name, last_name) VALUES (105, 17, &apos;miaomiao&apos;, &apos;han&apos;) USING TTL 600;</span><br><span class="line">cqlsh:mykeyspace&gt; SELECT empid,TTL(last_name) from emp;</span><br><span class="line"> empid | ttl(last_name)</span><br><span class="line">-------+----------------</span><br><span class="line">   105 |            345</span><br><span class="line">   104 |           null</span><br><span class="line"></span><br><span class="line">删除一行记录, 并不会真正删除,查询时,还在!</span><br><span class="line">cqlsh:mykeyspace&gt; delete from emp where empid=104 and deptid=105;</span><br><span class="line">cqlsh:mykeyspace&gt; select * from emp;</span><br><span class="line"> empid | deptid | first_name | last_name</span><br><span class="line">-------+--------+------------+-----------</span><br><span class="line">   105 |     17 |   miaomiao |       han</span><br><span class="line">   104 |     15 |       jane |     smith</span><br><span class="line"></span><br><span class="line">删除一列,这一列为null. 但是不能删除主键.</span><br><span class="line">cqlsh:mykeyspace&gt; DELETE last_name FROM emp WHERE empid=104 and deptid=15;</span><br><span class="line">cqlsh:mykeyspace&gt; </span><br><span class="line">cqlsh:mykeyspace&gt; select * from emp;</span><br><span class="line"> empid | deptid | first_name | last_name</span><br><span class="line">-------+--------+------------+-----------</span><br><span class="line">   105 |     17 |   miaomiao |       han</span><br><span class="line">   104 |     15 |       jane |      null</span><br></pre></td></tr></table></figure>
+<p>上面是对一行数据的所有列都设置了TTL(当然除了primary-key外), 还可以针对一些列设置TTL.  </p>
+<p><a href="http://cjwebb.github.io/blog/2015/03/02/cassandra-ttl-is-per-column/" target="_blank" rel="noopener">http://cjwebb.github.io/blog/2015/03/02/cassandra-ttl-is-per-column/</a></p>
+<h2 id="CQL_Collection">CQL Collection</h2><p><a href="http://www.datastax.com/dev/blog/cql3_collections" target="_blank" rel="noopener">http://www.datastax.com/dev/blog/cql3_collections</a>  </p>
+<p>集合Set:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE users (</span><br><span class="line">  user_id text PRIMARY KEY,</span><br><span class="line">  first_name text,</span><br><span class="line">  last_name text,</span><br><span class="line">  emails set&lt;text&gt;</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">列的顺序并不一定是插入的顺序. 而是按照字母顺序, 比如e,f,l.  集合set中的元素顺序也是字母顺序.</span><br><span class="line">插入的是f先于baggins, 而显示时因为字母表中b在f之前, 所以为baggins,f.</span><br><span class="line">cqlsh:test&gt; INSERT INTO users (user_id, first_name, last_name, emails) VALUES(&apos;frodo&apos;,&apos;Frodo&apos;, &apos;Baggins&apos;, &#123;&apos;f@baggins.com&apos;, &apos;baggins@gmail.com&apos;&#125;);</span><br><span class="line">cqlsh:test&gt; select * from users;</span><br><span class="line"> user_id | emails                                 | first_name | last_name</span><br><span class="line">---------+----------------------------------------+------------+-----------</span><br><span class="line">   frodo | &#123;&apos;baggins@gmail.com&apos;, &apos;f@baggins.com&apos;&#125; |      Frodo |   Baggins</span><br><span class="line"></span><br><span class="line">添加一个元素, fb因为在所有集合元素中的字母顺序最后, 所以显示在集合最后</span><br><span class="line">cqlsh:test&gt; UPDATE users SET emails = emails + &#123;&apos;fb@friendsofmordor.org&apos;&#125; WHERE user_id = &apos;frodo&apos;;</span><br><span class="line">cqlsh:test&gt; select * from users;</span><br><span class="line"> user_id | emails                                                           | first_name | last_name</span><br><span class="line">---------+------------------------------------------------------------------+------------+-----------</span><br><span class="line">   frodo | &#123;&apos;baggins@gmail.com&apos;, &apos;f@baggins.com&apos;, &apos;fb@friendsofmordor.org&apos;&#125; |      Frodo |   Baggins</span><br><span class="line"></span><br><span class="line">添加一个ab,在字母表最前面, 所以显示在集合的第一个: </span><br><span class="line">cqlsh:test&gt; UPDATE users SET emails = emails + &#123;&apos;ab@friendsofmordor.org&apos;&#125; WHERE user_id = &apos;frodo&apos;;</span><br><span class="line">cqlsh:test&gt; select * from users;</span><br><span class="line"> user_id | emails                                                                                     | first_name | last_name</span><br><span class="line">---------+--------------------------------------------------------------------------------------------+------------+-----------</span><br><span class="line">   frodo | &#123;&apos;ab@friendsofmordor.org&apos;, &apos;baggins@gmail.com&apos;, &apos;f@baggins.com&apos;, &apos;fb@friendsofmordor.org&apos;&#125; |      Frodo |   Baggins</span><br><span class="line"></span><br><span class="line">设置为空和删除列都会使得该列数据为null, delete并不会把列真正删掉.</span><br><span class="line">cqlsh:test&gt; UPDATE users SET emails = &#123;&#125; WHERE user_id = &apos;frodo&apos;;</span><br><span class="line">cqlsh:test&gt; select * from users;</span><br><span class="line"> user_id | emails | first_name | last_name</span><br><span class="line">---------+--------+------------+-----------</span><br><span class="line">   frodo |   null |      Frodo |   Baggins</span><br><span class="line"></span><br><span class="line">cqlsh:test&gt; DELETE emails FROM users WHERE user_id = &apos;frodo&apos;;</span><br><span class="line">cqlsh:test&gt; select * from users;</span><br><span class="line"> user_id | emails | first_name | last_name</span><br><span class="line">---------+--------+------------+-----------</span><br><span class="line">   frodo |   null |      Frodo |   Baggins</span><br></pre></td></tr></table></figure>
+<p>列表List: </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">在已有的表结构上添加一列</span><br><span class="line">cqlsh:test&gt;   ALTER TABLE users ADD top_places list&lt;text&gt;;</span><br><span class="line">cqlsh:test&gt; UPDATE users SET top_places = [ &apos;rivendell&apos;, &apos;rohan&apos; ] WHERE user_id= &apos;frodo&apos;;</span><br><span class="line">cqlsh:test&gt; select * from users;</span><br><span class="line"> user_id | emails | first_name | last_name | top_places</span><br><span class="line">---------+--------+------------+-----------+------------------------</span><br><span class="line">   frodo |   null |      Frodo |   Baggins | [&apos;rivendell&apos;, &apos;rohan&apos;]</span><br><span class="line">   </span><br><span class="line">在列表头部添加元素</span><br><span class="line">cqlsh:test&gt; UPDATE users SET top_places = [ &apos;home&apos; ] + top_places WHERE user_id = &apos;frodo&apos;;</span><br><span class="line">cqlsh:test&gt; select * from users;</span><br><span class="line"> user_id | emails | first_name | last_name | top_places</span><br><span class="line">---------+--------+------------+-----------+--------------------------------</span><br><span class="line">   frodo |   null |      Frodo |   Baggins | [&apos;home&apos;, &apos;rivendell&apos;, &apos;rohan&apos;]</span><br><span class="line"></span><br><span class="line">在列表尾部添加元素</span><br><span class="line">cqlsh:test&gt; UPDATE users SET top_places = top_places + [ &apos;mordor&apos; ] WHERE user_id = &apos;frodo&apos;;</span><br><span class="line">cqlsh:test&gt; select * from users;</span><br><span class="line"> user_id | emails | first_name | last_name | top_places</span><br><span class="line">---------+--------+------------+-----------+------------------------------------------</span><br><span class="line">   frodo |   null |      Frodo |   Baggins | [&apos;home&apos;, &apos;rivendell&apos;, &apos;rohan&apos;, &apos;mordor&apos;]</span><br><span class="line"></span><br><span class="line">更新元素: 索引从0开始, 下面的意思是更新列表的第三个元素的值. 问题是能不能在指定位置插入元素?</span><br><span class="line">cqlsh:test&gt; UPDATE users SET top_places[2] = &apos;riddermark&apos; WHERE user_id =&apos;frodo&apos;;</span><br><span class="line">cqlsh:test&gt; select * from users;</span><br><span class="line"> user_id | emails | first_name | last_name | top_places</span><br><span class="line">---------+--------+------------+-----------+-----------------------------------------------</span><br><span class="line">   frodo |   null |      Frodo |   Baggins | [&apos;home&apos;, &apos;rivendell&apos;, &apos;riddermark&apos;, &apos;mordor&apos;]</span><br><span class="line"></span><br><span class="line">根据索引删除列表某个元素, 索引也是从0开始. 下面表示删除列表第四个元素.  注意用的是delete</span><br><span class="line">cqlsh:test&gt; DELETE top_places[3] FROM users WHERE user_id = &apos;frodo&apos;;</span><br><span class="line">cqlsh:test&gt; select * from users;</span><br><span class="line"> user_id | emails | first_name | last_name | top_places</span><br><span class="line">---------+--------+------------+-----------+-------------------------------------</span><br><span class="line">   frodo |   null |      Frodo |   Baggins | [&apos;home&apos;, &apos;rivendell&apos;, &apos;riddermark&apos;]</span><br><span class="line"></span><br><span class="line">根据内容删除指定的元素.  注意用的是update更新操作</span><br><span class="line">cqlsh:test&gt; UPDATE users SET top_places = top_places - [&apos;rivendell&apos;] WHERE user_id = &apos;frodo&apos;;</span><br><span class="line">cqlsh:test&gt; select * from users;</span><br><span class="line"> user_id | emails | first_name | last_name | top_places</span><br><span class="line">---------+--------+------------+-----------+------------------------</span><br><span class="line">   frodo |   null |      Frodo |   Baggins | [&apos;home&apos;, &apos;riddermark&apos;]</span><br></pre></td></tr></table></figure>
+<p>映射Map:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">添加Map数据结构, key为timestamp,value为文本</span><br><span class="line">cqlsh:test&gt; ALTER TABLE users ADD todo map&lt;timestamp, text&gt;;</span><br><span class="line"></span><br><span class="line">没有存在,则插入</span><br><span class="line">cqlsh:test&gt; UPDATE users SET todo =  &#123; &apos;2012-9-24&apos; : &apos;entermordor&apos;, &apos;2012-10-2 12:00&apos; : &apos;throwring into mount doom&apos; &#125; WHERE user_id = &apos;frodo&apos;;</span><br><span class="line">cqlsh:test&gt; select * from users;</span><br><span class="line"> user_id | emails | first_name | last_name | todo                                                                                                 | top_places</span><br><span class="line">---------+--------+------------+-----------+------------------------------------------------------------------------------------------------------+------------------------</span><br><span class="line">   frodo |   null |      Frodo |   Baggins | &#123;&apos;2012-09-24 00:00:00+0800&apos;: &apos;entermordor&apos;, &apos;2012-10-02 12:00:00+0800&apos;: &apos;throwring into mount doom&apos;&#125; | [&apos;home&apos;, &apos;riddermark&apos;]</span><br><span class="line"></span><br><span class="line">已经存在,则更新</span><br><span class="line">cqlsh:test&gt; UPDATE users SET todo[&apos;2012-10-2 12:00&apos;] = &apos;throw my precious intomount doom&apos; WHERE user_id = &apos;frodo&apos;;</span><br><span class="line">cqlsh:test&gt; select * from users;</span><br><span class="line"> user_id | emails | first_name | last_name | todo                                                                                                        | top_places</span><br><span class="line">---------+--------+------------+-----------+-------------------------------------------------------------------------------------------------------------+------------------------</span><br><span class="line">   frodo |   null |      Frodo |   Baggins | &#123;&apos;2012-09-24 00:00:00+0800&apos;: &apos;entermordor&apos;, &apos;2012-10-02 12:00:00+0800&apos;: &apos;throw my precious intomount doom&apos;&#125; | [&apos;home&apos;, &apos;riddermark&apos;]</span><br><span class="line"></span><br><span class="line">插入一条新记录</span><br><span class="line">cqlsh:test&gt; INSERT INTO users (user_id,todo)  VALUES (&apos;miaohan&apos;, &#123; &apos;2013-9-22 12:01&apos; : &apos;birthday wishes to Bilbo&apos;,  &apos;2013-10-1 18:00&apos; : &apos;Check into Inn of Prancing Pony&apos; &#125;);</span><br><span class="line">cqlsh:test&gt; select * from users;</span><br><span class="line"> user_id | emails | first_name | last_name | todo                                                                                                                    | top_places</span><br><span class="line">---------+--------+------------+-----------+-------------------------------------------------------------------------------------------------------------------------+------------------------</span><br><span class="line"> miaohan |   null |       null |      null | &#123;&apos;2013-09-22 12:01:00+0800&apos;: &apos;birthday wishes to Bilbo&apos;, &apos;2013-10-01 18:00:00+0800&apos;: &apos;Check into Inn of Prancing Pony&apos;&#125; |                   null</span><br><span class="line">   frodo |   null |      Frodo |   Baggins |             &#123;&apos;2012-09-24 00:00:00+0800&apos;: &apos;entermordor&apos;, &apos;2012-10-02 12:00:00+0800&apos;: &apos;throw my precious intomount doom&apos;&#125; | [&apos;home&apos;, &apos;riddermark&apos;]</span><br><span class="line"></span><br><span class="line">删除Map中的一个键值对</span><br><span class="line">cqlsh:test&gt; DELETE todo[&apos;2012-9-24&apos;] FROM users WHERE user_id = &apos;frodo&apos;;</span><br><span class="line">cqlsh:test&gt; select * from users;</span><br><span class="line"> user_id | emails | first_name | last_name | todo                                                                                                                    | top_places</span><br><span class="line">---------+--------+------------+-----------+-------------------------------------------------------------------------------------------------------------------------+------------------------</span><br><span class="line"> miaohan |   null |       null |      null | &#123;&apos;2013-09-22 12:01:00+0800&apos;: &apos;birthday wishes to Bilbo&apos;, &apos;2013-10-01 18:00:00+0800&apos;: &apos;Check into Inn of Prancing Pony&apos;&#125; |                   null</span><br><span class="line">   frodo |   null |      Frodo |   Baggins |                                                        &#123;&apos;2012-10-02 12:00:00+0800&apos;: &apos;throw my precious intomount doom&apos;&#125; | [&apos;home&apos;, &apos;riddermark&apos;]</span><br><span class="line"></span><br><span class="line">插入(没有存在时)或更新(已经存在时), 同时设置ttl失效时间. 在ttl时间后, 这个键值对会从Map中删除</span><br><span class="line">cqlsh:test&gt; UPDATE users USING TTL 60 SET todo[&apos;2012-10-1&apos;] = &apos;find water&apos; WHERE user_id = &apos;frodo&apos;;</span><br><span class="line">cqlsh:test&gt; select * from users;</span><br><span class="line"> user_id | emails | first_name | last_name | todo                                                                                                                    | top_places</span><br><span class="line">---------+--------+------------+-----------+-------------------------------------------------------------------------------------------------------------------------+------------------------</span><br><span class="line"> miaohan |   null |       null |      null | &#123;&apos;2013-09-22 12:01:00+0800&apos;: &apos;birthday wishes to Bilbo&apos;, &apos;2013-10-01 18:00:00+0800&apos;: &apos;Check into Inn of Prancing Pony&apos;&#125; |                   null</span><br><span class="line">   frodo |   null |      Frodo |   Baggins |              &#123;&apos;2012-10-01 00:00:00+0800&apos;: &apos;find water&apos;, &apos;2012-10-02 12:00:00+0800&apos;: &apos;throw my precious intomount doom&apos;&#125; | [&apos;home&apos;, &apos;riddermark&apos;]</span><br><span class="line"></span><br><span class="line">过了60秒后, todo[&apos;2012-10-1&apos;] 的记录会从Map中删除掉</span><br><span class="line">cqlsh:test&gt; select * from users;</span><br><span class="line"> user_id | emails | first_name | last_name | todo                                                                                                                    | top_places</span><br><span class="line">---------+--------+------------+-----------+-------------------------------------------------------------------------------------------------------------------------+------------------------</span><br><span class="line"> miaohan |   null |       null |      null | &#123;&apos;2013-09-22 12:01:00+0800&apos;: &apos;birthday wishes to Bilbo&apos;, &apos;2013-10-01 18:00:00+0800&apos;: &apos;Check into Inn of Prancing Pony&apos;&#125; |                   null</span><br><span class="line">   frodo |   null |      Frodo |   Baggins |                                                        &#123;&apos;2012-10-02 12:00:00+0800&apos;: &apos;throw my precious intomount doom&apos;&#125; | [&apos;home&apos;, &apos;riddermark&apos;]</span><br></pre></td></tr></table></figure>
+<h2 id="Best_Practice">Best Practice</h2><h3 id="DataModel">DataModel</h3><h4 id="拼接字符串成主键">拼接字符串成主键</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE metrics_1 (</span><br><span class="line">  id text,</span><br><span class="line">  type text,</span><br><span class="line">  value text,</span><br><span class="line">  PRIMARY KEY (id,type)</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">insert into metrics_1(id,type,value) values(&apos;12345_cnt&apos;, &apos;idNumber&apos;, &apos;2&apos;);</span><br><span class="line">insert into metrics_1(id,type,value) values(&apos;12345_max&apos;, &apos;idNumber&apos;, &apos;10&apos;);</span><br><span class="line">insert into metrics_1(id,type,value) values(&apos;12345_sum&apos;, &apos;idNumber&apos;, &apos;15&apos;);</span><br><span class="line">insert into metrics_1(id,type,value) values(&apos;12345_avg&apos;, &apos;idNumber&apos;, &apos;7.5&apos;);</span><br><span class="line">insert into metrics_1(id,type,value) values(&apos;12345_dist&apos;, &apos;idNumber&apos;, &apos;2&apos;);</span><br><span class="line"></span><br><span class="line">insert into metrics_1(id,type,value) values(&apos;12346_cnt&apos;, &apos;idNumber&apos;, &apos;2&apos;);</span><br><span class="line">insert into metrics_1(id,type,value) values(&apos;12346_max&apos;, &apos;idNumber&apos;, &apos;10&apos;);</span><br><span class="line">insert into metrics_1(id,type,value) values(&apos;12346_sum&apos;, &apos;idNumber&apos;, &apos;15&apos;);</span><br><span class="line">insert into metrics_1(id,type,value) values(&apos;12346_avg&apos;, &apos;idNumber&apos;, &apos;7.5&apos;);</span><br><span class="line">insert into metrics_1(id,type,value) values(&apos;12346_dist&apos;, &apos;idNumber&apos;, &apos;2&apos;);</span><br><span class="line"></span><br><span class="line">select * from metrics_1 where id = &apos;12345_cnt&apos; and type=&apos;idNumber&apos;;</span><br><span class="line"></span><br><span class="line"> id        | type     | value</span><br><span class="line">-----------+----------+-------</span><br><span class="line"> 12345_cnt | idNumber |     2</span><br><span class="line"></span><br><span class="line"> activity                                                                                          | timestamp                  | source       | source_elapsed</span><br><span class="line">---------------------------------------------------------------------------------------------------+----------------------------+--------------+----------------</span><br><span class="line">                                                                                Execute CQL3 query | 2017-06-15 10:55:58.455000 | 192.168.6.70 |              0</span><br><span class="line"> Parsing select * from metrics_1 where id = &apos;12345_cnt&apos; and type=&apos;idNumber&apos;; [SharedPool-Worker-1] | 2017-06-15 10:55:58.455000 | 192.168.6.70 |            194</span><br><span class="line">                                                         Preparing statement [SharedPool-Worker-1] | 2017-06-15 10:55:58.455000 | 192.168.6.70 |            332</span><br><span class="line">                               Executing single-partition query on metrics_1 [SharedPool-Worker-2] | 2017-06-15 10:55:58.456000 | 192.168.6.70 |           1074</span><br><span class="line">                                                Acquiring sstable references [SharedPool-Worker-2] | 2017-06-15 10:55:58.456000 | 192.168.6.70 |           1109</span><br><span class="line">                                                 Merging memtable tombstones [SharedPool-Worker-2] | 2017-06-15 10:55:58.456000 | 192.168.6.70 |           1134</span><br><span class="line">   Skipped 0/0 non-slice-intersecting sstables, included 0 due to tombstones [SharedPool-Worker-2] | 2017-06-15 10:55:58.456000 | 192.168.6.70 |           1173</span><br><span class="line">                                  Merging data from memtables and 0 sstables [SharedPool-Worker-2] | 2017-06-15 10:55:58.456000 | 192.168.6.70 |           1190</span><br><span class="line">                                           Read 1 live and 0 tombstone cells [SharedPool-Worker-2] | 2017-06-15 10:55:58.456000 | 192.168.6.70 |           1219</span><br><span class="line">                                                                                  Request complete | 2017-06-15 10:55:58.456821 | 192.168.6.70 |           1821</span><br><span class="line"></span><br><span class="line">select * from metrics_1 where id = &apos;12345_sum&apos; and type=&apos;idNumber&apos;;</span><br></pre></td></tr></table></figure>
+<p>查询同一个id的不同指标，使用rowkey的in</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">select * from metrics_1 where id in (&apos;12345_cnt&apos;,&apos;12345_sum&apos;) and type=&apos;idNumber&apos;;</span><br><span class="line"> id        | type     | value</span><br><span class="line">-----------+----------+-------</span><br><span class="line"> 12345_cnt | idNumber |     2</span><br><span class="line"> 12345_sum | idNumber |    15</span><br><span class="line"></span><br><span class="line"> activity                                                                                                         | timestamp                  | source       | source_elapsed</span><br><span class="line">------------------------------------------------------------------------------------------------------------------+----------------------------+--------------+----------------</span><br><span class="line">                                                                                               Execute CQL3 query | 2017-06-15 10:55:36.398000 | 192.168.6.70 |              0</span><br><span class="line"> Parsing select * from metrics_1 where id in (&apos;12345_cnt&apos;,&apos;12345_sum&apos;) and type=&apos;idNumber&apos;; [SharedPool-Worker-1] | 2017-06-15 10:55:36.398000 | 192.168.6.70 |            171</span><br><span class="line">                                                                        Preparing statement [SharedPool-Worker-1] | 2017-06-15 10:55:36.398000 | 192.168.6.70 |            312</span><br><span class="line">                                              Executing single-partition query on metrics_1 [SharedPool-Worker-3] | 2017-06-15 10:55:36.399000 | 192.168.6.70 |           1054</span><br><span class="line">                                                               Acquiring sstable references [SharedPool-Worker-3] | 2017-06-15 10:55:36.399000 | 192.168.6.70 |           1184</span><br><span class="line">                                                                Merging memtable tombstones [SharedPool-Worker-3] | 2017-06-15 10:55:36.399000 | 192.168.6.70 |           1230</span><br><span class="line">                  Skipped 0/0 non-slice-intersecting sstables, included 0 due to tombstones [SharedPool-Worker-3] | 2017-06-15 10:55:36.399000 | 192.168.6.70 |           1290</span><br><span class="line">                                                 Merging data from memtables and 0 sstables [SharedPool-Worker-3] | 2017-06-15 10:55:36.399000 | 192.168.6.70 |           1309</span><br><span class="line">                                                          Read 1 live and 0 tombstone cells [SharedPool-Worker-3] | 2017-06-15 10:55:36.399000 | 192.168.6.70 |           1338</span><br><span class="line">                                              Executing single-partition query on metrics_1 [SharedPool-Worker-2] | 2017-06-15 10:55:36.400000 | 192.168.6.70 |           2086</span><br><span class="line">                                                               Acquiring sstable references [SharedPool-Worker-2] | 2017-06-15 10:55:36.400000 | 192.168.6.70 |           2133</span><br><span class="line">                                                                Merging memtable tombstones [SharedPool-Worker-2] | 2017-06-15 10:55:36.400000 | 192.168.6.70 |           2169</span><br><span class="line">                  Skipped 0/0 non-slice-intersecting sstables, included 0 due to tombstones [SharedPool-Worker-2] | 2017-06-15 10:55:36.400000 | 192.168.6.70 |           2205</span><br><span class="line">                                                 Merging data from memtables and 0 sstables [SharedPool-Worker-2] | 2017-06-15 10:55:36.400000 | 192.168.6.70 |           2223</span><br><span class="line">                                                          Read 1 live and 0 tombstone cells [SharedPool-Worker-2] | 2017-06-15 10:55:36.400000 | 192.168.6.70 |           2248</span><br><span class="line">                                                                                                 Request complete | 2017-06-15 10:55:36.400743 | 192.168.6.70 |           2743</span><br></pre></td></tr></table></figure>
+<p>查询不同id的多个指标</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">select * from metrics_1 where id in (&apos;12345_cnt&apos;,&apos;12345_sum&apos;,&apos;12346_cnt&apos;,&apos;12346_sum&apos;) and type=&apos;idNumber&apos;;</span><br><span class="line"></span><br><span class="line"> id        | type     | value</span><br><span class="line">-----------+----------+-------</span><br><span class="line"> 12345_cnt | idNumber |     2</span><br><span class="line"> 12345_sum | idNumber |    15</span><br><span class="line"> 12346_cnt | idNumber |     2</span><br><span class="line"> 12346_sum | idNumber |    15</span><br><span class="line"></span><br><span class="line"> activity                                                                                                                                 | timestamp                  | source       | source_elapsed</span><br><span class="line">------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+--------------+----------------</span><br><span class="line">                                                                                                                       Execute CQL3 query | 2017-06-15 10:58:11.479000 | 192.168.6.70 |              0</span><br><span class="line"> Parsing select * from metrics_1 where id in (&apos;12345_cnt&apos;,&apos;12345_sum&apos;,&apos;12346_cnt&apos;,&apos;12346_sum&apos;) and type=&apos;idNumber&apos;; [SharedPool-Worker-1] | 2017-06-15 10:58:11.479000 | 192.168.6.70 |            152</span><br><span class="line">                                                                                                Preparing statement [SharedPool-Worker-1] | 2017-06-15 10:58:11.479000 | 192.168.6.70 |            294</span><br><span class="line">                                                                      Executing single-partition query on metrics_1 [SharedPool-Worker-2] | 2017-06-15 10:58:11.480000 | 192.168.6.70 |            908</span><br><span class="line">                                                                                       Acquiring sstable references [SharedPool-Worker-2] | 2017-06-15 10:58:11.480000 | 192.168.6.70 |            948</span><br><span class="line">                                                                                        Merging memtable tombstones [SharedPool-Worker-2] | 2017-06-15 10:58:11.480000 | 192.168.6.70 |            973</span><br><span class="line">                                          Skipped 0/0 non-slice-intersecting sstables, included 0 due to tombstones [SharedPool-Worker-2] | 2017-06-15 10:58:11.480000 | 192.168.6.70 |           1012</span><br><span class="line">                                                                         Merging data from memtables and 0 sstables [SharedPool-Worker-2] | 2017-06-15 10:58:11.480000 | 192.168.6.70 |           1030</span><br><span class="line">                                                                                  Read 1 live and 0 tombstone cells [SharedPool-Worker-2] | 2017-06-15 10:58:11.480000 | 192.168.6.70 |           1060</span><br><span class="line">                                                                      Executing single-partition query on metrics_1 [SharedPool-Worker-3] | 2017-06-15 10:58:11.481000 | 192.168.6.70 |           1750</span><br><span class="line">                                                                                       Acquiring sstable references [SharedPool-Worker-3] | 2017-06-15 10:58:11.481000 | 192.168.6.70 |           1792</span><br><span class="line">                                                                                        Merging memtable tombstones [SharedPool-Worker-3] | 2017-06-15 10:58:11.481000 | 192.168.6.70 |           1805</span><br><span class="line">                                          Skipped 0/0 non-slice-intersecting sstables, included 0 due to tombstones [SharedPool-Worker-3] | 2017-06-15 10:58:11.481000 | 192.168.6.70 |           1829</span><br><span class="line">                                                                         Merging data from memtables and 0 sstables [SharedPool-Worker-3] | 2017-06-15 10:58:11.481000 | 192.168.6.70 |           1839</span><br><span class="line">                                                                                  Read 1 live and 0 tombstone cells [SharedPool-Worker-3] | 2017-06-15 10:58:11.481000 | 192.168.6.70 |           1855</span><br><span class="line">                                                                      Executing single-partition query on metrics_1 [SharedPool-Worker-3] | 2017-06-15 10:58:11.481001 | 192.168.6.70 |           2458</span><br><span class="line">                                                                                       Acquiring sstable references [SharedPool-Worker-3] | 2017-06-15 10:58:11.481001 | 192.168.6.70 |           2469</span><br><span class="line">                                                                                        Merging memtable tombstones [SharedPool-Worker-3] | 2017-06-15 10:58:11.481001 | 192.168.6.70 |           2477</span><br><span class="line">                                          Skipped 0/0 non-slice-intersecting sstables, included 0 due to tombstones [SharedPool-Worker-3] | 2017-06-15 10:58:11.481001 | 192.168.6.70 |           2489</span><br><span class="line">                                                                         Merging data from memtables and 0 sstables [SharedPool-Worker-3] | 2017-06-15 10:58:11.481001 | 192.168.6.70 |           2495</span><br><span class="line">                                                                                  Read 1 live and 0 tombstone cells [SharedPool-Worker-3] | 2017-06-15 10:58:11.481001 | 192.168.6.70 |           2503</span><br><span class="line">                                                                      Executing single-partition query on metrics_1 [SharedPool-Worker-3] | 2017-06-15 10:58:11.482000 | 192.168.6.70 |           3018</span><br><span class="line">                                                                                       Acquiring sstable references [SharedPool-Worker-3] | 2017-06-15 10:58:11.482000 | 192.168.6.70 |           3029</span><br><span class="line">                                                                                        Merging memtable tombstones [SharedPool-Worker-3] | 2017-06-15 10:58:11.482000 | 192.168.6.70 |           3036</span><br><span class="line">                                          Skipped 0/0 non-slice-intersecting sstables, included 0 due to tombstones [SharedPool-Worker-3] | 2017-06-15 10:58:11.482000 | 192.168.6.70 |           3045</span><br><span class="line">                                                                         Merging data from memtables and 0 sstables [SharedPool-Worker-3] | 2017-06-15 10:58:11.482000 | 192.168.6.70 |           3052</span><br><span class="line">                                                                                  Read 1 live and 0 tombstone cells [SharedPool-Worker-3] | 2017-06-15 10:58:11.482000 | 192.168.6.70 |           3061</span><br><span class="line">                                                                                                                         Request complete | 2017-06-15 10:58:11.482477 | 192.168.6.70 |           3477</span><br></pre></td></tr></table></figure>
+<h4 id="动态列">动态列</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE metrics (</span><br><span class="line">  id text,</span><br><span class="line">  type text,</span><br><span class="line">  metric text,</span><br><span class="line">  value text,</span><br><span class="line">  PRIMARY KEY ((id,type), metric)</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">insert into metrics(id,type,metric,value) values(&apos;12345&apos;, &apos;idNumber&apos;, &apos;cnt&apos;, &apos;2&apos;);</span><br><span class="line">insert into metrics(id,type,metric,value) values(&apos;12345&apos;, &apos;idNumber&apos;, &apos;max&apos;, &apos;10&apos;);</span><br><span class="line">insert into metrics(id,type,metric,value) values(&apos;12345&apos;, &apos;idNumber&apos;, &apos;sum&apos;, &apos;15&apos;);</span><br><span class="line">insert into metrics(id,type,metric,value) values(&apos;12345&apos;, &apos;idNumber&apos;, &apos;avg&apos;, &apos;7.5&apos;);</span><br><span class="line">insert into metrics(id,type,metric,value) values(&apos;12345&apos;, &apos;idNumber&apos;, &apos;distinct&apos;, &apos;2&apos;);</span><br><span class="line"></span><br><span class="line">insert into metrics(id,type,metric,value) values(&apos;12346&apos;, &apos;idNumber&apos;, &apos;cnt&apos;, &apos;2&apos;);</span><br><span class="line">insert into metrics(id,type,metric,value) values(&apos;12346&apos;, &apos;idNumber&apos;, &apos;max&apos;, &apos;10&apos;);</span><br><span class="line">insert into metrics(id,type,metric,value) values(&apos;12346&apos;, &apos;idNumber&apos;, &apos;sum&apos;, &apos;15&apos;);</span><br><span class="line">insert into metrics(id,type,metric,value) values(&apos;12346&apos;, &apos;idNumber&apos;, &apos;avg&apos;, &apos;7.5&apos;);</span><br><span class="line">insert into metrics(id,type,metric,value) values(&apos;12346&apos;, &apos;idNumber&apos;, &apos;distinct&apos;, &apos;2&apos;);</span><br><span class="line"></span><br><span class="line">select * from metrics where id = &apos;12345&apos; and type=&apos;idNumber&apos;;</span><br><span class="line"></span><br><span class="line"> id    | type     | metric   | value</span><br><span class="line">-------+----------+----------+-------</span><br><span class="line"> 12345 | idNumber |      avg |   7.5</span><br><span class="line"> 12345 | idNumber |      cnt |     2</span><br><span class="line"> 12345 | idNumber | distinct |     2</span><br><span class="line"> 12345 | idNumber |      max |    10</span><br><span class="line"> 12345 | idNumber |      sum |    15</span><br><span class="line"></span><br><span class="line"> activity                                                                                        | timestamp                  | source       | source_elapsed</span><br><span class="line">-------------------------------------------------------------------------------------------------+----------------------------+--------------+----------------</span><br><span class="line">                                                                              Execute CQL3 query | 2017-06-15 10:51:48.365000 | 192.168.6.70 |              0</span><br><span class="line">     Parsing select * from metrics where id = &apos;12346&apos; and type=&apos;idNumber&apos;; [SharedPool-Worker-2] | 2017-06-15 10:51:48.366000 | 192.168.6.70 |            180</span><br><span class="line">                                                       Preparing statement [SharedPool-Worker-2] | 2017-06-15 10:51:48.366000 | 192.168.6.70 |            311</span><br><span class="line">                               Executing single-partition query on metrics [SharedPool-Worker-3] | 2017-06-15 10:51:48.366000 | 192.168.6.70 |            821</span><br><span class="line">                                              Acquiring sstable references [SharedPool-Worker-3] | 2017-06-15 10:51:48.366000 | 192.168.6.70 |            861</span><br><span class="line">                                               Merging memtable tombstones [SharedPool-Worker-3] | 2017-06-15 10:51:48.366000 | 192.168.6.70 |            896</span><br><span class="line"> Skipped 0/0 non-slice-intersecting sstables, included 0 due to tombstones [SharedPool-Worker-3] | 2017-06-15 10:51:48.366000 | 192.168.6.70 |            952</span><br><span class="line">                                Merging data from memtables and 0 sstables [SharedPool-Worker-3] | 2017-06-15 10:51:48.366001 | 192.168.6.70 |            970</span><br><span class="line">                                         Read 5 live and 0 tombstone cells [SharedPool-Worker-3] | 2017-06-15 10:51:48.366001 | 192.168.6.70 |           1007</span><br><span class="line">                                                                                Request complete | 2017-06-15 10:51:48.366564 | 192.168.6.70 |           1564</span><br></pre></td></tr></table></figure>
+<p>同一个rowkey， 查询不同的字段</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">select * from metrics where id = &apos;12345&apos; and type=&apos;idNumber&apos; and metric in(&apos;cnt&apos;,&apos;max&apos;);</span><br><span class="line"></span><br><span class="line"> id    | type     | metric | value</span><br><span class="line">-------+----------+--------+-------</span><br><span class="line"> 12345 | idNumber |    cnt |     2</span><br><span class="line"> 12345 | idNumber |    max |    10</span><br><span class="line"></span><br><span class="line"> activity                                                                                                               | timestamp                  | source       | source_elapsed</span><br><span class="line">------------------------------------------------------------------------------------------------------------------------+----------------------------+--------------+----------------</span><br><span class="line">                                                                                                     Execute CQL3 query | 2017-06-15 10:48:46.426000 | 192.168.6.70 |              0</span><br><span class="line"> Parsing select * from metrics where id = &apos;12345&apos; and type=&apos;idNumber&apos; and metric in(&apos;cnt&apos;,&apos;max&apos;); [SharedPool-Worker-1] | 2017-06-15 10:48:46.426000 | 192.168.6.70 |            355</span><br><span class="line">                                                                              Preparing statement [SharedPool-Worker-1] | 2017-06-15 10:48:46.426000 | 192.168.6.70 |            548</span><br><span class="line">                                                      Executing single-partition query on metrics [SharedPool-Worker-2] | 2017-06-15 10:48:46.426000 | 192.168.6.70 |           1157</span><br><span class="line">                                                                     Acquiring sstable references [SharedPool-Worker-2] | 2017-06-15 10:48:46.427000 | 192.168.6.70 |           1193</span><br><span class="line">                                                                      Merging memtable tombstones [SharedPool-Worker-2] | 2017-06-15 10:48:46.427000 | 192.168.6.70 |           1216</span><br><span class="line">                        Skipped 0/0 non-slice-intersecting sstables, included 0 due to tombstones [SharedPool-Worker-2] | 2017-06-15 10:48:46.427000 | 192.168.6.70 |           1341</span><br><span class="line">                                                       Merging data from memtables and 0 sstables [SharedPool-Worker-2] | 2017-06-15 10:48:46.427000 | 192.168.6.70 |           1366</span><br><span class="line">                                                                Read 2 live and 0 tombstone cells [SharedPool-Worker-2] | 2017-06-15 10:48:46.427000 | 192.168.6.70 |           1423</span><br><span class="line">                                                                                                       Request complete | 2017-06-15 10:48:46.427941 | 192.168.6.70 |           1941</span><br></pre></td></tr></table></figure>
+<p>不同的rowkey， 查询不同的字段</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">select * from metrics where id in(&apos;12345&apos;,&apos;12346&apos;) and type=&apos;idNumber&apos; and metric in(&apos;cnt&apos;,&apos;max&apos;);</span><br><span class="line"></span><br><span class="line"> id    | type     | metric | value</span><br><span class="line">-------+----------+--------+-------</span><br><span class="line"> 12345 | idNumber |    cnt |     2</span><br><span class="line"> 12345 | idNumber |    max |    10</span><br><span class="line"> 12346 | idNumber |    cnt |     2</span><br><span class="line"> 12346 | idNumber |    max |    10</span><br><span class="line"></span><br><span class="line"> activity                                                                                                                         | timestamp                  | source       | source_elapsed</span><br><span class="line">----------------------------------------------------------------------------------------------------------------------------------+----------------------------+--------------+----------------</span><br><span class="line">                                                                                                               Execute CQL3 query | 2017-06-15 10:50:20.151000 | 192.168.6.70 |              0</span><br><span class="line"> Parsing select * from metrics where id in(&apos;12345&apos;,&apos;12346&apos;) and type=&apos;idNumber&apos; and metric in(&apos;cnt&apos;,&apos;max&apos;); [SharedPool-Worker-1] | 2017-06-15 10:50:20.152000 | 192.168.6.70 |            200</span><br><span class="line">                                                                                        Preparing statement [SharedPool-Worker-1] | 2017-06-15 10:50:20.152000 | 192.168.6.70 |            377</span><br><span class="line">                                                                Executing single-partition query on metrics [SharedPool-Worker-2] | 2017-06-15 10:50:20.153000 | 192.168.6.70 |           1431</span><br><span class="line">                                                                               Acquiring sstable references [SharedPool-Worker-2] | 2017-06-15 10:50:20.153000 | 192.168.6.70 |           1464</span><br><span class="line">                                                                                Merging memtable tombstones [SharedPool-Worker-2] | 2017-06-15 10:50:20.153000 | 192.168.6.70 |           1488</span><br><span class="line">                                  Skipped 0/0 non-slice-intersecting sstables, included 0 due to tombstones [SharedPool-Worker-2] | 2017-06-15 10:50:20.153000 | 192.168.6.70 |           1605</span><br><span class="line">                                                                 Merging data from memtables and 0 sstables [SharedPool-Worker-2] | 2017-06-15 10:50:20.153000 | 192.168.6.70 |           1628</span><br><span class="line">                                                                          Read 2 live and 0 tombstone cells [SharedPool-Worker-2] | 2017-06-15 10:50:20.153000 | 192.168.6.70 |           1687</span><br><span class="line">                                                                Executing single-partition query on metrics [SharedPool-Worker-3] | 2017-06-15 10:50:20.154000 | 192.168.6.70 |           2481</span><br><span class="line">                                                                               Acquiring sstable references [SharedPool-Worker-3] | 2017-06-15 10:50:20.154000 | 192.168.6.70 |           2599</span><br><span class="line">                                                                                Merging memtable tombstones [SharedPool-Worker-3] | 2017-06-15 10:50:20.154000 | 192.168.6.70 |           2647</span><br><span class="line">                                  Skipped 0/0 non-slice-intersecting sstables, included 0 due to tombstones [SharedPool-Worker-3] | 2017-06-15 10:50:20.154000 | 192.168.6.70 |           2693</span><br><span class="line">                                                                 Merging data from memtables and 0 sstables [SharedPool-Worker-3] | 2017-06-15 10:50:20.154000 | 192.168.6.70 |           2711</span><br><span class="line">                                                                          Read 2 live and 0 tombstone cells [SharedPool-Worker-3] | 2017-06-15 10:50:20.154000 | 192.168.6.70 |           2753</span><br><span class="line">                                                                                                                 Request complete | 2017-06-15 10:50:20.154296 | 192.168.6.70 |           3296</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/08/25/2015-08-25-Apache-Cassandra/">Apache Cassandra入门</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年08月25日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/08/25/2015-08-25-Apache-Cassandra/" title="Apache Cassandra入门">http://github.com/zqhxuyuan/2015/08/25/2015-08-25-Apache-Cassandra/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/08/25/2015-08-25-Apache-Cassandra/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/09/10/2015-09-10-Storm-Window/">
+        Storm的滑动窗口
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/08/25/2015-08-25-Cassandra-Architecture/">
+        Apache Cassandra架构理解
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Hello_Cassandra(单机模式)"><span class="toc-number">1.</span> <span class="toc-text">Hello Cassandra(单机模式)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#配置文件默认值"><span class="toc-number">1.1.</span> <span class="toc-text">配置文件默认值</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Cassandra_Cluster"><span class="toc-number">2.</span> <span class="toc-text">Cassandra Cluster</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PrimaryKey"><span class="toc-number">3.</span> <span class="toc-text">PrimaryKey</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#单一主键"><span class="toc-number">3.1.</span> <span class="toc-text">单一主键</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#复合主键(Composite_Primary_Key)"><span class="toc-number">3.2.</span> <span class="toc-text">复合主键(Composite Primary Key)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#复合分区键(Compound_Partition_Key,随机)"><span class="toc-number">3.3.</span> <span class="toc-text">复合分区键(Compound Partition Key,随机)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#根据时间范围组合分区键求TopN"><span class="toc-number">3.4.</span> <span class="toc-text">根据时间范围组合分区键求TopN</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#参考文档"><span class="toc-number">3.5.</span> <span class="toc-text">参考文档</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#twissandra_:_Twitter_with_Cassandra_Backend_Demo"><span class="toc-number">3.6.</span> <span class="toc-text">twissandra : Twitter with Cassandra Backend Demo</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CQL:TTL_&_Delete"><span class="toc-number">4.</span> <span class="toc-text">CQL:TTL &amp; Delete</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CQL_Collection"><span class="toc-number">5.</span> <span class="toc-text">CQL Collection</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Best_Practice"><span class="toc-number">6.</span> <span class="toc-text">Best Practice</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#DataModel"><span class="toc-number">6.1.</span> <span class="toc-text">DataModel</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#拼接字符串成主键"><span class="toc-number">6.1.1.</span> <span class="toc-text">拼接字符串成主键</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#动态列"><span class="toc-number">6.1.2.</span> <span class="toc-text">动态列</span></a></li></ol></li></ol></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/08/25/2015-08-25-Apache-Cassandra/" data-title="Apache Cassandra入门" data-url="http://github.com/zqhxuyuan/2015/08/25/2015-08-25-Apache-Cassandra/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/09/10/2015-09-10-Storm-Window/" title="上一篇: Storm的滑动窗口">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/08/25/2015-08-25-Cassandra-Architecture/" title="下一篇: Apache Cassandra架构理解">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>

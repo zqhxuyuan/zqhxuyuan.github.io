@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  <title>Cassandra陷阱 | zqhxuyuan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Cassandra的一些陷阱   Count查询 删除数据库 drop keyspace Truncate清空表 Query查询的限制 where fetchSize和limit   二级索引的删除 重命名表 query">
+<meta name="keywords" content="cassandra">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cassandra陷阱">
+<meta property="og:url" content="http://github.com/zqhxuyuan/2015/10/15/Cassandra-hole/index.html">
+<meta property="og:site_name" content="zqhxuyuan">
+<meta property="og:description" content="Cassandra的一些陷阱   Count查询 删除数据库 drop keyspace Truncate清空表 Query查询的限制 where fetchSize和limit   二级索引的删除 重命名表 query">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-02-14T13:42:29.312Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cassandra陷阱">
+<meta name="twitter:description" content="Cassandra的一些陷阱   Count查询 删除数据库 drop keyspace Truncate清空表 Query查询的限制 where fetchSize和limit   二级索引的删除 重命名表 query">
+  
+    <link rel="alternative" href="/atom.xml" title="zqhxuyuan" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/font-awesome/css/font-awesome.min.css">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">任何忧伤,都抵不过世界的美丽</a></h1>
+		</hgroup>
+
+		
+				
+
+
+		
+			<div id="switch-btn" class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div id="switch-area" class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives/">归档</a></li>
+				        
+							<li><a href="/tags/">标签</a></li>
+				        
+							<li><a href="/about/">关于</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/apex/" style="font-size: 10px;">apex</a> <a href="/tags/bigdata/" style="font-size: 10px;">bigdata</a> <a href="/tags/book/" style="font-size: 10px;">book</a> <a href="/tags/cassandra/" style="font-size: 18.89px;">cassandra</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/drill/" style="font-size: 16.67px;">drill</a> <a href="/tags/druid/" style="font-size: 13.33px;">druid</a> <a href="/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/tags/elasticsearch/" style="font-size: 10px;">elasticsearch</a> <a href="/tags/etl/" style="font-size: 10px;">etl</a> <a href="/tags/geode/" style="font-size: 10px;">geode</a> <a href="/tags/graph/" style="font-size: 12.22px;">graph</a> <a href="/tags/hadoop/" style="font-size: 11.11px;">hadoop</a> <a href="/tags/hbase/" style="font-size: 15.56px;">hbase</a> <a href="/tags/ignite/" style="font-size: 10px;">ignite</a> <a href="/tags/java/" style="font-size: 10px;">java</a> <a href="/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/tags/kafka/" style="font-size: 20px;">kafka</a> <a href="/tags/midd/" style="font-size: 10px;">midd</a> <a href="/tags/ops/" style="font-size: 12.22px;">ops</a> <a href="/tags/redis/" style="font-size: 11.11px;">redis</a> <a href="/tags/rocketmq/" style="font-size: 10px;">rocketmq</a> <a href="/tags/scala/" style="font-size: 13.33px;">scala</a> <a href="/tags/spark/" style="font-size: 17.78px;">spark</a> <a href="/tags/storm/" style="font-size: 17.78px;">storm</a> <a href="/tags/tcc/" style="font-size: 10px;">tcc</a> <a href="/tags/timeseries/" style="font-size: 12.22px;">timeseries</a> <a href="/tags/work/" style="font-size: 14.44px;">work</a> <a href="/tags/流处理/" style="font-size: 11.11px;">流处理</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+				
+				<section class="switch-part switch-part3">
+				
+					<div id="js-aboutme">BIG(DATA)</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<a href="/" class="profilepic">
+				<img lazy-src="https://avatars1.githubusercontent.com/u/1088525?v=3&amp;s=180" class="js-avatar">
+			</a>
+			<hgroup>
+			  <h1 class="header-author"><a href="/" title="回到主页">任何忧伤,都抵不过世界的美丽</a></h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives/">归档</a></li>
+		        
+					<li><a href="/tags/">标签</a></li>
+		        
+					<li><a href="/about/">关于</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+						<ul class="social">
+							
+								<li id="新浪微博"><a class="新浪微博" target="_blank" href="http://weibo.com/xuyuantree" title="新浪微博"></a></li>
+					        
+								<li id="GitHub"><a class="GitHub" target="_blank" href="http://github.com/zqhxuyuan" title="GitHub"></a></li>
+					        
+								<li id="RSS"><a class="RSS" target="_blank" href="/atom.xml" title="RSS"></a></li>
+					        
+						</ul>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Cassandra-hole" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/10/15/Cassandra-hole/" class="article-date">
+  	<time datetime="2015-10-14T16:00:00.000Z" itemprop="datePublished">2015-10-15</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Cassandra陷阱
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/work/">work</a>
+	</div>
+
+
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cassandra/">cassandra</a></li></ul>
+	</div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+        <p>Cassandra的一些陷阱</p>
+<!-- MarkdownTOC -->
+<ul>
+<li>Count查询</li>
+<li>删除数据库 drop keyspace</li>
+<li>Truncate清空表</li>
+<li>Query查询的限制<ul>
+<li>where</li>
+<li>fetchSize和limit</li>
+</ul>
+</li>
+<li>二级索引的删除</li>
+<li>重命名表</li>
+<li>query</li>
+</ul>
+<!-- /MarkdownTOC -->
+<a id="more"></a>
+<h2 id="Count查询">Count查询</h2><p>CQL默认显示10万条数据. 如果真正的数量不多, 可以增大limit值.   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cqlsh:forseti&gt; select count(*) from velocity_app limit 100000000;</span><br><span class="line"> count</span><br><span class="line">--------</span><br><span class="line"> 983872</span><br></pre></td></tr></table></figure>
+<p>但是如果数据很多, 增大limit也会导致超时, 因为默认的range query时间是15秒.    </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cqlsh:forseti&gt; select count(*) from velocity limit 10000000;</span><br><span class="line">Request did not complete within rpc_timeout.</span><br></pre></td></tr></table></figure>
+<p>用CQL查询的count有98万, 但是预估的keys只有600多条. 这是因为keys是统计partiton key的数量.<br>而CQL中的count是统计columns的: 即一个partiton key有多个column, 每个column都算一条!   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">➜  ~  nodetool cfstats forseti.velocity_app -h 192.168.6.52</span><br><span class="line">Keyspace: forseti</span><br><span class="line">  Pending Tasks: 0</span><br><span class="line">    Table: velocity_app</span><br><span class="line">    SSTable count: 1</span><br><span class="line">    SSTables in each level: [1, 0, 0, 0, 0, 0, 0, 0, 0]</span><br><span class="line">    Space used (live), bytes: 13401166</span><br><span class="line">    Space used (total), bytes: 13401166</span><br><span class="line">    Off heap memory used (total), bytes: 6548</span><br><span class="line">    SSTable Compression Ratio: 0.27455019357879173</span><br><span class="line">    👉Number of keys (estimate): 640</span><br><span class="line">    👉Memtable cell count: 393345</span><br><span class="line">    Memtable data size, bytes: 60653197</span><br><span class="line">    Memtable switch count: 4</span><br><span class="line">    Compression metadata off heap memory used, bytes: 5912</span><br><span class="line">    Compacted partition minimum bytes: 17085</span><br><span class="line">    Compacted partition maximum bytes: 785939</span><br><span class="line">    Compacted partition mean bytes: 91169</span><br><span class="line">    👉Average live cells per slice (last five minutes): 918.0</span><br></pre></td></tr></table></figure>
+<p>每个slice切片的存活cells都近1000个, cell认为是column, slice认为是row. 所以columns = 600*1000=600000=60万.<br>注意还要加上Memtable的cell count近40万, 这样60万+40万看来跟CQL查询的90万就差不多了.   </p>
+<h2 id="删除数据库_drop_keyspace">删除数据库 drop keyspace</h2><p>drop keyspace后keyspace对应的文件夹仍然存在。要物理删除，必须到每个节点手动rm -rf删除文件夹。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">cqlsh&gt; desc keyspaces;</span><br><span class="line"></span><br><span class="line">forseti_velocity  system       stresscql      forseti</span><br><span class="line">quote             &quot;OpsCenter&quot;  wuzei          velocityrealtime</span><br><span class="line">volecityrealtime  forseti_fp   system_traces  forseti_old</span><br><span class="line"></span><br><span class="line">cqlsh&gt; use data</span><br><span class="line">cqlsh:data&gt; drop keyspace data;</span><br><span class="line">OperationTimedOut: errors=&#123;&#125;, last_host=192.168.47.202   #出现这个错误，一定要再执行一次</span><br><span class="line">cqlsh:data&gt; drop keyspace data;</span><br><span class="line">cqlsh:data&gt; </span><br><span class="line">CREATE KEYSPACE data WITH replication = &#123;</span><br><span class="line">  &apos;class&apos;: &apos;NetworkTopologyStrategy&apos;,</span><br><span class="line">  &apos;DC2&apos;: &apos;1&apos;,</span><br><span class="line">  &apos;DC1&apos;: &apos;1&apos;</span><br><span class="line">&#125;;</span><br><span class="line">AlreadyExists: Keyspace &apos;data&apos; already exists</span><br><span class="line">cqlsh:data&gt; </span><br><span class="line">CREATE TABLE md5_id (</span><br><span class="line">  md5 text,</span><br><span class="line">  id text,</span><br><span class="line">  PRIMARY KEY (md5)</span><br><span class="line">);</span><br><span class="line">ServerError: &lt;ErrorMessage code=0000 [Server error] message=&quot;java.lang.RuntimeException: java.util.concurrent.ExecutionException: </span><br><span class="line">java.lang.RuntimeException: javax.management.d: org.apache.cassandra.db:type=ColumnFamilies,keyspace=data,columnfamily=md5_id&quot;&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="Truncate清空表">Truncate清空表</h2><p>在CQL中truncate表数据后, df -h对应的空间并没有减少. 虽然表目录下没有数据文件了, 但是实际上它会<code>生成快照</code>.<br>所以要彻底删除表和数据, 最后对所有节点执行: <code>nodetool clearsnapshot -h  192.168.47...</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[qihuang.zheng@cass047221 forseti]$ cd /home/admin/cassandra/data/forseti &amp;&amp; for i in $(ls -l |grep &apos;^d&apos; |du -s * |sort -nr|awk &apos;&#123;print $2&#125;&apos;);do du -sh $i;done | head -10</span><br><span class="line">590G  activity_detail</span><br><span class="line">391G  velocity</span><br><span class="line">62G account_association_info</span><br><span class="line">8.1G  account_attached_ip</span><br><span class="line">7.7G  account_binded_property</span><br><span class="line">[qihuang.zheng@cass047221 forseti]$ ll activity_detail/</span><br><span class="line">drwxr-xr-x. 3 admin admin 4096 10月 20 15:07 snapshots     ⬅️ 生成快照文件夹, 执行clearsnapshot会删除这个文件夹</span><br></pre></td></tr></table></figure>
+<p>超时</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;stdin&gt;:1:OperationTimedOut: errors=&#123;&#125;, last_host=192.168.47.202</span><br></pre></td></tr></table></figure>
+<p>问题： truncate后需要执行flush吗？  </p>
+<h2 id="Query查询的限制">Query查询的限制</h2><blockquote>
+<p>通常的TimeSeries的DataModel的设计是: 相同的partition key会有很多记录. 比如weather_station_id.<br>一个气象站点每分钟一条数据, 则主键设计为: PRIMARY KEY(station_id, occur_min).<br>或者设计成compound partition key: PRIMARY KEY((station_id, day), occur_min)  </p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">desc table activity_detail;</span><br><span class="line">CREATE TABLE activity_detail (</span><br><span class="line">  sequence_id text,</span><br><span class="line">  occur_time bigint,</span><br><span class="line">  activity_map map&lt;text, text&gt;,</span><br><span class="line">  ...</span><br><span class="line">  PRIMARY KEY ((sequence_id), occur_time)</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>查询时可以只能是partiton key,不能单单根据cluster column(allow filtering除外):   </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">--非partition key查询(虽然occur_time也是primary key的一部分),需要跟上allow filtering,但是会慢点</span><br><span class="line">select * from activity_detail where occur_time=1432292854170;</span><br><span class="line">select * from activity_detail where occur_time &lt;1398873600000 limit 1;</span><br><span class="line">Bad Request: Cannot execute this query as it might involve data filtering and thus may have unpredictable performance. </span><br><span class="line">If you want to execute this query despite the performance unpredictability, use ALLOW FILTERING</span><br><span class="line"></span><br><span class="line">select * from activity_detail where occur_time &lt;1398873600000 limit 1 ALLOW FILTERING;</span><br><span class="line">select count(*) from activity_detail where occur_time &lt;1398873600000 ALLOW FILTERING;</span><br></pre></td></tr></table></figure>
+<p>更新时必须跟上所有primary key:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">--不支持子查询!</span><br><span class="line">UPDATE activity_detail USING TTL 10 </span><br><span class="line">SET occur_time=(select occur_time from activity_detail where sequence_id=&apos;1415881081492-08553997&apos;)</span><br><span class="line">where sequence_id=&apos;1415881081492-08553997&apos;;</span><br><span class="line"></span><br><span class="line">--Bad Request: PRIMARY KEY part occur_time found in SET part 不允许更新primary key!</span><br><span class="line">UPDATE activity_detail USING TTL 10 SET occur_time=1415881081493 </span><br><span class="line">where sequence_id=&apos;1415881081492-08553997&apos;;</span><br><span class="line"></span><br><span class="line">--Bad Request: Missing mandatory PRIMARY KEY part occur_time 需要跟上所有primary key字段</span><br><span class="line">UPDATE activity_detail USING TTL 30 SET geo_map=&#123;&apos;test&apos;:&apos;test&apos;&#125;</span><br><span class="line">where sequence_id=&apos;1415881081492-08553997&apos;;</span><br><span class="line"></span><br><span class="line">--OK,but TTL don&apos;t really work as expected! 注意要同时跟上primary key的所有字段!</span><br><span class="line">UPDATE activity_detail USING TTL 30 SET geo_map=&#123;&apos;test&apos;:&apos;test&apos;&#125;</span><br><span class="line">where sequence_id=&apos;1415881081492-08553997&apos; and occur_time=1415881081493;</span><br><span class="line"></span><br><span class="line">--Bad Request: Cannot use selection function ttl on collections</span><br><span class="line">select ttl(geo_map) from activity_detail where sequence_id=&apos;1415881081492-08553997&apos; ;</span><br><span class="line"></span><br><span class="line">--Bad Request: Cannot use selection function ttl on PRIMARY KEY part occur_time</span><br><span class="line">select ttl(occur_time) from activity_detail where sequence_id=&apos;1415881081492-08553997&apos; ;</span><br></pre></td></tr></table></figure>
+<p><strong>null与删除:</strong><br>更新一个字段时指定TTL,TTL后字段值为null;<br>插入一条记录时指定TTL,TTL后这条记录消失;<br>DELETE删除一条记录,这条记录消失.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">--数据仍然存在,只不过值为null. </span><br><span class="line">select geo_map from activity_detail where sequence_id=&apos;1415881081492-08553997&apos; ;</span><br><span class="line"> geo_map</span><br><span class="line">---------</span><br><span class="line">    null</span><br><span class="line"></span><br><span class="line">--使用DELETE FROM可以成功删除! </span><br><span class="line">DELETE FROM activity_detail where sequence_id=&apos;1415881081492-08553997&apos;;</span><br><span class="line">select * from activity_detail where sequence_id=&apos;1415881081492-08553997&apos; ;</span><br><span class="line">(0 rows)</span><br></pre></td></tr></table></figure>
+<h3 id="where">where</h3><p><a href="http://www.datastax.com/dev/blog/a-deep-look-to-the-cql-where-clause" target="_blank" rel="noopener">http://www.datastax.com/dev/blog/a-deep-look-to-the-cql-where-clause</a></p>
+<h3 id="fetchSize和limit">fetchSize和limit</h3><p><a href="http://docs.datastax.com/en/developer/java-driver/2.1/java-driver/jd-faq.html" target="_blank" rel="noopener">http://docs.datastax.com/en/developer/java-driver/2.1/java-driver/jd-faq.html</a><br><a href="http://stackoverflow.com/questions/22854558/datastax-driver-limit-option" target="_blank" rel="noopener">http://stackoverflow.com/questions/22854558/datastax-driver-limit-option</a>  </p>
+<blockquote>
+<p>What’s the difference between using setFetchSize() and LIMIT?<br>Basically, LIMIT controls the maximum number of results done on the Cassandra side, 在服务端限制<br>while the setFetchSize() method controls the amount of data transferred between Cassandra and the client.</p>
+</blockquote>
+<p>假设一条row有5000个column, 如果只是设置fetchSize=1000, 则第一次返回1000行, 还有剩余的4000行, 会在什么时候返回?  </p>
+<h2 id="二级索引的删除">二级索引的删除</h2><p>1.不支持根据二级索引删除  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">CREATE INDEX ON velocity_app (sequence_id);</span><br><span class="line"></span><br><span class="line">根据二级索引查询都是OK的:  </span><br><span class="line">select * from velocity_app where sequence_id=&apos;1439981942982-51788461&apos;;</span><br><span class="line">select * from velocity_app where attribute=&apos;229.195.196.98&apos; and partner_code=&apos;demo&apos; and app_name=&apos;autoTest&apos; and type=&apos;ipAddress&apos;;</span><br><span class="line">select * from velocity_app where attribute=&apos;229.195.196.98&apos; and partner_code=&apos;demo&apos; and app_name=&apos;autoTest&apos; and type=&apos;ipAddress&apos; </span><br><span class="line">  and sequence_id=&apos;1439981942982-51788461&apos;;</span><br><span class="line">select * from velocity_app where attribute=&apos;229.195.196.98&apos; and partner_code=&apos;demo&apos; and app_name=&apos;autoTest&apos; and type=&apos;ipAddress&apos; </span><br><span class="line">  and timestamp=1439981942982 and sequence_id=&apos;1439981942982-51788461&apos;;</span><br><span class="line"></span><br><span class="line">但是不支持二级索引的删除:  </span><br><span class="line">🈲 delete from velocity_app where sequence_id=&apos;1439981942982-51788461&apos;;</span><br><span class="line">🈲 delete from velocity_app where attribute=&apos;229.195.196.98&apos; and sequence_id=&apos;1439981942982-51788461&apos;;</span><br><span class="line">🈲 delete from velocity_app where attribute=&apos;229.195.196.98&apos; and partner_code=&apos;demo&apos; and app_name=&apos;autoTest&apos; and type=&apos;ipAddress&apos; and sequence_id=&apos;1439981942982-51788461&apos;;</span><br><span class="line">&gt;Bad Request: Non PRIMARY KEY sequence_id found in where clause</span><br><span class="line"></span><br><span class="line">必须这样子删除:  </span><br><span class="line">✅ delete from velocity_app where attribute=&apos;229.195.196.98&apos; and partner_code=&apos;demo&apos; and app_name=&apos;autoTest&apos; and type=&apos;ipAddress&apos;;</span><br></pre></td></tr></table></figure>
+<p>上面的删除并没有sequence_id的限制条件. 为了能根据sequence_id删除记录,需要把sequence_id作为cluster key.  </p>
+<p>2.把sequence_id作为唯一的cluster key: 👈 We Choose This!!  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE velocity_seq (</span><br><span class="line">  attribute text,</span><br><span class="line">  partner_code text,</span><br><span class="line">  app_name text,</span><br><span class="line">  type text,</span><br><span class="line">  &quot;timestamp&quot; bigint,</span><br><span class="line">  event text,</span><br><span class="line">  sequence_id text,</span><br><span class="line">  PRIMARY KEY ((attribute, partner_code, app_name, type), sequence_id)</span><br><span class="line">)WITH CLUSTERING ORDER BY (sequence_id DESC)</span><br><span class="line"></span><br><span class="line">insert into velocity_seq(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,12345,&apos;event1&apos;,&apos;12345&apos;);</span><br><span class="line">insert into velocity_seq(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,12346,&apos;event2&apos;,&apos;12346&apos;);</span><br><span class="line">insert into velocity_seq(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,12347,&apos;event1&apos;,&apos;12347&apos;);</span><br><span class="line">insert into velocity_seq(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,12348,&apos;event1&apos;,&apos;12348&apos;);</span><br><span class="line"></span><br><span class="line">✅ delete from velocity_seq where attribute=&apos;test001&apos; and partner_code=&apos;test001&apos; and app_name=&apos;test001&apos; and type=&apos;test001&apos; and sequence_id=&apos;12345&apos;;</span><br><span class="line"></span><br><span class="line">允许最后一个cluster key进行范围查询:  </span><br><span class="line">✅ select * from velocity_seq where attribute=&apos;test001&apos; and partner_code=&apos;test001&apos; and app_name=&apos;test001&apos; and type=&apos;test001&apos; and sequence_id&gt;=&apos;1234&apos; and sequence_id&lt;=&apos;1235&apos;;</span><br></pre></td></tr></table></figure>
+<p>原先使用timestamp作为cluster key作为cluster key, 不仅仅是为了按照时间倒序排列, 也可以作为TTL查询的限制条件避免查询tombstone: where timestamp&gt;=currentTime-3M<br>因为sequence_id本身就有timestamp的业务意义, 所以也可以使用sequence_id来代替timestamp的限制来避免查询tombstone:  where sequence_id&gt;=’currentTime-3M’</p>
+<p>假设timestamp=1439981914929, sequence_id=’1439981914929-81748374’, 假设currentTime-3M=1439981914930.<br>where timestamp&gt;=1439981914930可以过滤这条数据.  where sequence_id&gt;=’1439981914930’也能过滤: 因为’1439981914930’ &gt; ‘1439981914929-81748374’</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">insert into velocity_seq(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,1439981914929,&apos;event1&apos;,&apos;1439981914929-81748374&apos;);</span><br><span class="line">insert into velocity_seq(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,1439981914920,&apos;event1&apos;,&apos;1439981914920-81748374&apos;);</span><br><span class="line">insert into velocity_seq(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,1439981914940,&apos;event1&apos;,&apos;1439981914940-81748374&apos;);</span><br><span class="line">insert into velocity_seq(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,1439981914920,&apos;event1&apos;,&apos;1439981914920-81748375&apos;);</span><br><span class="line"></span><br><span class="line"> attribute | partner_code | app_name | type    | sequence_id            | event  | timestamp</span><br><span class="line">-----------+--------------+----------+---------+------------------------+--------+---------------</span><br><span class="line">   test001 |      test001 |  test001 | test001 | 1439981914940-81748374 | event1 | 1439981914940</span><br><span class="line">   test001 |      test001 |  test001 | test001 | 1439981914929-81748374 | event1 | 1439981914929</span><br><span class="line">   test001 |      test001 |  test001 | test001 | 1439981914920-81748375 | event1 | 1439981914920</span><br><span class="line">   test001 |      test001 |  test001 | test001 | 1439981914920-81748374 | event1 | 1439981914920</span><br><span class="line"></span><br><span class="line">✅ select * from velocity_seq where attribute=&apos;test001&apos; and partner_code=&apos;test001&apos; and app_name=&apos;test001&apos; and type=&apos;test001&apos; and sequence_id&gt;=&apos;1439981914930&apos;;</span><br></pre></td></tr></table></figure>
+<p>3.原先就存在cluster key:timestamp, 删除时必须指定全部的primary key:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE velocity_tseq (</span><br><span class="line">  attribute text,</span><br><span class="line">  partner_code text,</span><br><span class="line">  app_name text,</span><br><span class="line">  type text,</span><br><span class="line">  &quot;timestamp&quot; bigint,</span><br><span class="line">  event text,</span><br><span class="line">  sequence_id text,</span><br><span class="line">  PRIMARY KEY ((attribute, partner_code, app_name, type), &quot;timestamp&quot;,sequence_id)</span><br><span class="line">)WITH CLUSTERING ORDER BY (&quot;timestamp&quot; desc,sequence_id DESC);</span><br><span class="line"></span><br><span class="line">insert into velocity_tseq(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,12345,&apos;event1&apos;,&apos;12345&apos;);</span><br><span class="line">insert into velocity_tseq(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,12346,&apos;event2&apos;,&apos;12346&apos;);</span><br><span class="line"></span><br><span class="line">🈲 delete from velocity_tseq where attribute=&apos;test001&apos; and partner_code=&apos;test001&apos; and app_name=&apos;test001&apos; and type=&apos;test001&apos; and sequence_id=&apos;12345&apos;;</span><br><span class="line">Bad Request: Missing PRIMARY KEY part timestamp since sequence_id is set</span><br><span class="line"></span><br><span class="line">✅ delete from velocity_tseq where attribute=&apos;test001&apos; and partner_code=&apos;test001&apos; and app_name=&apos;test001&apos; and type=&apos;test001&apos; and timestamp=12345 and sequence_id=&apos;12345&apos;;</span><br></pre></td></tr></table></figure>
+<p>指定sequence_id, 对timestamp采用范围查询, 失败!    </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">insert into velocity_tseq(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,12345,&apos;event1&apos;,&apos;12345&apos;);</span><br><span class="line">insert into velocity_tseq(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,12346,&apos;event1&apos;,&apos;12346&apos;);</span><br><span class="line">insert into velocity_tseq(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,12347,&apos;event1&apos;,&apos;12347&apos;);</span><br><span class="line">insert into velocity_tseq(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,12348,&apos;event1&apos;,&apos;12348&apos;);</span><br><span class="line"></span><br><span class="line">不能跳过timestamp直接查询sequence_id:  </span><br><span class="line">🈲 select * from velocity_tseq where attribute=&apos;test001&apos; and partner_code=&apos;test001&apos; and app_name=&apos;test001&apos; and type=&apos;test001&apos; and sequence_id=&apos;12345&apos;;</span><br><span class="line"></span><br><span class="line">指定sequence_id,不能对timestamp进行范围查询:  </span><br><span class="line">🈲 select * from velocity_tseq where attribute=&apos;test001&apos; and partner_code=&apos;test001&apos; and app_name=&apos;test001&apos; and type=&apos;test001&apos; and timestamp&gt;=12346 and timestamp&lt;=12347 and sequence_id=&apos;12345&apos;;</span><br><span class="line">Bad Request: PRIMARY KEY column &quot;sequence_id&quot; cannot be restricted (preceding column &quot;timestamp&quot; is restricted by a non-EQ relation)</span><br><span class="line"></span><br><span class="line">查询不行, 删除当然也不行了:  </span><br><span class="line">🈲 delete from velocity_tseq where attribute=&apos;test001&apos; and partner_code=&apos;test001&apos; and app_name=&apos;test001&apos; and type=&apos;test001&apos; and timestamp&gt;=12346 and timestamp&lt;=12347 and sequence_id=&apos;12345&apos;;</span><br><span class="line">Bad Request: Invalid operator &gt;= for PRIMARY KEY part timestamp</span><br></pre></td></tr></table></figure>
+<p><a href="http://www.datastax.com/dev/blog/a-deep-look-to-the-cql-where-clause" target="_blank" rel="noopener">http://www.datastax.com/dev/blog/a-deep-look-to-the-cql-where-clause</a><br>这里说对2.2以前的版本, 只能对cluster keys的最后一个column进行范围查询. 下面的表结构sequence_id用等号查询, timestamp用范围限定, 貌似能够符合.  </p>
+<p>4.调换sequence_id和timestamp, 指定sequence_id, 并对timstamp进行范围查询:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE velocity_seqt (</span><br><span class="line">  attribute text,</span><br><span class="line">  partner_code text,</span><br><span class="line">  app_name text,</span><br><span class="line">  type text,</span><br><span class="line">  &quot;timestamp&quot; bigint,</span><br><span class="line">  event text,</span><br><span class="line">  sequence_id text,</span><br><span class="line">  PRIMARY KEY ((attribute, partner_code, app_name, type), sequence_id, &quot;timestamp&quot;)</span><br><span class="line">)WITH CLUSTERING ORDER BY (sequence_id DESC, &quot;timestamp&quot; desc);</span><br><span class="line"></span><br><span class="line">insert into velocity_seqt(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,12345,&apos;event1&apos;,&apos;12345&apos;);</span><br><span class="line">insert into velocity_seqt(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,12346,&apos;event1&apos;,&apos;12346&apos;);</span><br><span class="line">insert into velocity_seqt(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,12347,&apos;event1&apos;,&apos;12347&apos;);</span><br><span class="line">insert into velocity_seqt(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,12348,&apos;event1&apos;,&apos;12348&apos;);</span><br><span class="line"></span><br><span class="line">查询时不指定cluster key, 但必须指定所有的partition key: </span><br><span class="line">✅ select * from velocity_seqt where attribute=&apos;test001&apos; and partner_code=&apos;test001&apos; and app_name=&apos;test001&apos; and type=&apos;test001&apos;;</span><br><span class="line">指定第一个cluster key:  </span><br><span class="line">✅ select * from velocity_seqt where attribute=&apos;test001&apos; and partner_code=&apos;test001&apos; and app_name=&apos;test001&apos; and type=&apos;test001&apos; and sequence_id=&apos;12345&apos;;</span><br><span class="line">指定所有的cluser key:  </span><br><span class="line">✅ select * from velocity_seqt where attribute=&apos;test001&apos; and partner_code=&apos;test001&apos; and app_name=&apos;test001&apos; and type=&apos;test001&apos; and sequence_id=&apos;12345&apos; and timestamp=12345;</span><br><span class="line">但是不能跳过前面的cluser key, 直接使用后面的cluser key:  </span><br><span class="line">🈲 select * from velocity_seqt where attribute=&apos;test001&apos; and partner_code=&apos;test001&apos; and app_name=&apos;test001&apos; and type=&apos;test001&apos; and timestamp=12345;</span><br><span class="line"></span><br><span class="line">对最后一个cluser key查询范围也是没有问题的: </span><br><span class="line">✅ select * from velocity_seqt where attribute=&apos;test001&apos; and partner_code=&apos;test001&apos; and app_name=&apos;test001&apos; and type=&apos;test001&apos; and sequence_id=&apos;12345&apos; and timestamp&gt;=12345;</span><br><span class="line">✅ select * from velocity_seqt where attribute=&apos;test001&apos; and partner_code=&apos;test001&apos; and app_name=&apos;test001&apos; and type=&apos;test001&apos; and sequence_id=&apos;12345&apos; and timestamp&gt;=12345 and timestamp&lt;=12347;</span><br><span class="line"></span><br><span class="line">查询没问题, 并不等于删除没问题: 只能用等号删除, 不能用&gt;=范围删除.  </span><br><span class="line">🈲 delete from velocity_seqt where attribute=&apos;test001&apos; and partner_code=&apos;test001&apos; and app_name=&apos;test001&apos; and type=&apos;test001&apos; and sequence_id=&apos;12345&apos; and timestamp&gt;=12345 and timestamp&lt;=12347;</span><br><span class="line">Bad Request: Invalid operator &gt;= for PRIMARY KEY part timestamp</span><br><span class="line"></span><br><span class="line">delete from velocity_seqt where attribute=&apos;test001&apos; and partner_code=&apos;test001&apos; and app_name=&apos;test001&apos; and type=&apos;test001&apos; and sequence_id=&apos;12345&apos;;</span><br></pre></td></tr></table></figure>
+<h2 id="重命名表">重命名表</h2><p><a href="https://issues.apache.org/jira/browse/CASSANDRA-1585" target="_blank" rel="noopener">https://issues.apache.org/jira/browse/CASSANDRA-1585</a><br><a href="http://stackoverflow.com/questions/18112384/how-to-rename-table-in-cassandra-cql3" target="_blank" rel="noopener">http://stackoverflow.com/questions/18112384/how-to-rename-table-in-cassandra-cql3</a></p>
+<p><strong>实验1：PK相同</strong>  </p>
+<pre><code><span class="operator"><span class="keyword">create</span> <span class="keyword">table</span> fun(<span class="keyword">k</span> <span class="built_in">int</span>, v <span class="built_in">int</span>, primary <span class="keyword">key</span>((<span class="keyword">k</span>)));</span>
+<span class="operator"><span class="keyword">create</span> <span class="keyword">table</span> fun2(<span class="keyword">k</span> <span class="built_in">int</span>, v <span class="built_in">int</span>, primary <span class="keyword">key</span>((<span class="keyword">k</span>)));</span>
+
+<span class="operator"><span class="keyword">insert</span> <span class="keyword">into</span> fun(<span class="keyword">k</span>,v)<span class="keyword">values</span>(<span class="number">1</span>,<span class="number">1</span>);</span>
+<span class="operator"><span class="keyword">insert</span> <span class="keyword">into</span> fun2(<span class="keyword">k</span>,v)<span class="keyword">values</span>(<span class="number">3</span>,<span class="number">3</span>);</span>
+<span class="operator"><span class="keyword">insert</span> <span class="keyword">into</span> fun2(<span class="keyword">k</span>,v)<span class="keyword">values</span>(<span class="number">2</span>,<span class="number">2</span>);</span>
+
+<span class="operator"><span class="keyword">flush</span>,关闭集群，
+修改fun2的文件名称为fun
+删除fun,修改fun2为fun,
+重启集群，查询
+cd ~/ &amp;&amp; nodetool <span class="keyword">flush</span> &amp;&amp; sudo -u <span class="keyword">admin</span> <span class="keyword">kill</span> -<span class="number">9</span> <span class="string">`sudo -u admin jps | grep CassandraDaemon |awk '{print $1}'`</span>
+
+cqlsh:<span class="keyword">test</span>&gt; <span class="keyword">select</span> * <span class="keyword">from</span> fun;</span>
+ k | v
+<span class="comment">---+---</span>
+ 2 | 2
+ 3 | 3
+</code></pre><p><strong>实验2：PK相同，更改排序方式</strong>  </p>
+<pre><code><span class="operator"><span class="keyword">create</span> <span class="keyword">table</span> test1(<span class="keyword">k</span> <span class="built_in">int</span>, v <span class="built_in">int</span>, ts <span class="built_in">int</span>, primary <span class="keyword">key</span>((<span class="keyword">k</span>),ts));</span>
+<span class="operator"><span class="keyword">create</span> <span class="keyword">table</span> test2(<span class="keyword">k</span> <span class="built_in">int</span>, v <span class="built_in">int</span>, ts <span class="built_in">int</span>, primary <span class="keyword">key</span>((<span class="keyword">k</span>),ts)) <span class="keyword">WITH</span> <span class="keyword">CLUSTERING</span> <span class="keyword">ORDER</span> <span class="keyword">BY</span> (ts <span class="keyword">DESC</span>);</span>
+
+<span class="operator"><span class="keyword">insert</span> <span class="keyword">into</span> test1(<span class="keyword">k</span>,v,ts)<span class="keyword">values</span>(<span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>);</span>
+<span class="operator"><span class="keyword">insert</span> <span class="keyword">into</span> test1(<span class="keyword">k</span>,v,ts)<span class="keyword">values</span>(<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>);</span>
+<span class="operator"><span class="keyword">insert</span> <span class="keyword">into</span> test2(<span class="keyword">k</span>,v,ts)<span class="keyword">values</span>(<span class="number">3</span>,<span class="number">3</span>,<span class="number">3</span>);</span>
+<span class="operator"><span class="keyword">insert</span> <span class="keyword">into</span> test2(<span class="keyword">k</span>,v,ts)<span class="keyword">values</span>(<span class="number">4</span>,<span class="number">4</span>,<span class="number">4</span>);</span>
+
+cd ~/ &amp;&amp; nodetool <span class="operator"><span class="keyword">flush</span> &amp;&amp; sudo -u <span class="keyword">admin</span> <span class="keyword">kill</span> -<span class="number">9</span> <span class="string">`sudo -u admin jps | grep CassandraDaemon |awk '{print $1}'`</span>
+cd /home/<span class="keyword">admin</span>/cassandra/<span class="keyword">data</span>/<span class="keyword">test</span>
+sudo cp -r test1 test1_back
+sudo cp -r test2 test2_back
+sudo rm -r test1
+sudo mv test2 test1 &amp;&amp; cd test1
+sudo <span class="keyword">rename</span> test2 test1 *
+cqlsh <span class="number">192.168</span><span class="number">.6</span><span class="number">.52</span></span>
+</code></pre><p>由于没有删除表，所以test1仍然是升序，尽管数据是test2的，但那只是写到test2时的顺序</p>
+<pre><code><span class="function">insert into <span class="title">test1</span><span class="params">(k,v,ts)</span><span class="title">values</span><span class="params">(<span class="number">5</span>,<span class="number">5</span>,<span class="number">5</span>)</span></span>;
+cqlsh:test&gt; select * from test1;
+
+ k | ts | v
+---+----+---
+ <span class="number">5</span> |  <span class="number">5</span> | <span class="number">5</span>
+ <span class="number">4</span> |  <span class="number">4</span> | <span class="number">4</span>
+ <span class="number">3</span> |  <span class="number">3</span> | <span class="number">3</span>
+
+(<span class="number">3</span> rows)
+
+cqlsh:test&gt;     <span class="function">insert into <span class="title">test1</span><span class="params">(k,v,ts)</span><span class="title">values</span><span class="params">(<span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>)</span></span>;
+cqlsh:test&gt; select * from test1;
+
+ k | ts | v
+---+----+---
+ <span class="number">5</span> |  <span class="number">5</span> | <span class="number">5</span>
+ <span class="number">1</span> |  <span class="number">1</span> | <span class="number">1</span>
+ <span class="number">4</span> |  <span class="number">4</span> | <span class="number">4</span>
+ <span class="number">3</span> |  <span class="number">3</span> | <span class="number">3</span>
+</code></pre><p>那么就要修改Cassandra中system相关的表元数据才可以做到。</p>
+<p><strong>实验3：PK不同</strong>  </p>
+<p>1.准备两张表，表名以及PK不同</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE velocity_partner(</span><br><span class="line">  attribute text,       </span><br><span class="line">  partner_code text,    </span><br><span class="line">  app_name text,        </span><br><span class="line">  type text,            </span><br><span class="line">  &quot;timestamp&quot; bigint,   </span><br><span class="line">  event text,           </span><br><span class="line">  sequence_id text,     </span><br><span class="line">  PRIMARY KEY ((attribute, partner_code), sequence_id)</span><br><span class="line">) WITH CLUSTERING ORDER BY (sequence_id DESC);</span><br><span class="line"></span><br><span class="line">CREATE TABLE velocity_partner2(</span><br><span class="line">  attribute text,       </span><br><span class="line">  partner_code text,    </span><br><span class="line">  app_name text,        </span><br><span class="line">  type text,            </span><br><span class="line">  &quot;timestamp&quot; bigint,   </span><br><span class="line">  event text,           </span><br><span class="line">  sequence_id text,     </span><br><span class="line">  PRIMARY KEY ((attribute, partner_code, type), sequence_id)</span><br><span class="line">) WITH CLUSTERING ORDER BY (sequence_id DESC);</span><br><span class="line"></span><br><span class="line">insert into velocity_partner(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)</span><br><span class="line">values(&apos;test001&apos;,&apos;test001&apos;,&apos;test001&apos;,&apos;ip&apos;,123451,&apos;event1&apos;,&apos;12345-1&apos;);</span><br><span class="line">insert into velocity_partner(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)</span><br><span class="line">values(&apos;test002&apos;,&apos;test002&apos;,&apos;test002&apos;,&apos;account&apos;,123452,&apos;event1&apos;,&apos;12345-2&apos;);</span><br><span class="line"></span><br><span class="line">insert into velocity_partner2(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)</span><br><span class="line">values(&apos;test003&apos;,&apos;test003&apos;,&apos;test003&apos;,&apos;ip&apos;,123453,&apos;event1&apos;,&apos;12345-3&apos;);</span><br><span class="line">insert into velocity_partner2(attribute,partner_code,app_name,type,&quot;timestamp&quot;,event,sequence_id)</span><br><span class="line">values(&apos;test004&apos;,&apos;test004&apos;,&apos;test004&apos;,&apos;account&apos;,123454,&apos;event1&apos;,&apos;12345-4&apos;);</span><br><span class="line"></span><br><span class="line">select attribute,sequence_id,timestamp from velocity_partner;</span><br><span class="line">select attribute,sequence_id,timestamp from velocity_partner2;</span><br></pre></td></tr></table></figure>
+<p>2.nodetool flush</p>
+<p>3.关闭Cassandra</p>
+<p>4.删除velocity_partner文件夹，将velocity_partner2重命名为velocity_partner,并且更改文件名：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo rm -r velocity_partner</span><br><span class="line">sudo mv velocity_partner2 velocity_partner &amp;&amp; cd velocity_partner</span><br><span class="line">sudo rename partner2 partner *</span><br></pre></td></tr></table></figure>
+<p>5.重启Cassandra</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">cqlsh:test&gt; select * from velocity_partner;</span><br><span class="line">TSocket read 0 bytes</span><br><span class="line">cqlsh:test&gt; select * from velocity_partner2;</span><br><span class="line">TSocket read 0 bytes</span><br><span class="line">cqlsh:test&gt; desc table velocity_partner;</span><br><span class="line">[Errno 32] Broken pipe</span><br><span class="line">cqlsh:test&gt; desc table velocity_partner2;</span><br><span class="line">[Errno 32] Broken pipe</span><br></pre></td></tr></table></figure>
+<h2 id="query">query</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">WARN  [SharedPool-Worker-5] 2016-06-26 22:27:47,129 NoSpamLogger.java:94 - Unlogged batch covering 15 partitions detected against tables </span><br><span class="line">[forseti.account_attached_device, forseti.device_attached_ip, forseti.ip_attached_account, forseti.ip_attached_device, </span><br><span class="line">forseti.account_attached_ip, forseti.device_attached_account]. </span><br><span class="line">You should use a logged batch for atomicity, or asynchronous writes for performance.</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<div class="copyright">
+  <p><span>本文标题:</span><a href="/2015/10/15/Cassandra-hole/">Cassandra陷阱</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
+  <p><span>发布时间:</span>2015年10月15日 - 00时00分</p>
+  <p><span>最后更新:</span>2019年02月14日 - 21时42分</p>
+  <p>
+    <span>原始链接:</span><a href="/2015/10/15/Cassandra-hole/" title="Cassandra陷阱">http://github.com/zqhxuyuan/2015/10/15/Cassandra-hole/</a>
+    <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2015/10/15/Cassandra-hole/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
+        <i class="fa fa-clipboard"></i>
+    </span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn/" title="中国大陆 (CC BY-NC-SA 3.0 CN)">"署名-非商用-相同方式共享 3.0"</a> 转载请保留原文链接及作者。</p>
+  <script src="/js/clipboard.min.js"></script>
+  <script> var clipboard = new Clipboard('.btn'); </script>
+</div>
+<style type="text/css">
+  .copyright p .btn {
+    margin-left: 1em;
+  }
+  .copyright:hover p .btn::after {
+    content: "复制"
+  }
+  .copyright p .btn:hover {
+      color: gray;
+      cursor: pointer;
+    };
+</style>
+
+
+
+<nav id="article-nav">
+  
+    <div id="article-nav-newer" class="article-nav-title">
+      <a href="/2015/10/16/Cassandra-query/">
+        Cassandra查询
+      </a>
+    </div>
+  
+  
+    <div id="article-nav-older" class="article-nav-title">
+      <a href="/2015/10/15/Cassandra-Daily/">
+        Cassandra日常运维
+      </a>
+    </div>
+  
+</nav>
+
+  
+  
+    <div class="post-donate">
+	<br>
+	<p>
+    <div id="donate_board" class="donate_bar center">
+        <a id="btn_donate" class="btn_donate" href="javascript:;" title="打赏"></a>
+        <span class="donate_txt">
+           &uarr;<br>
+		   招人广告：对蚂蚁金服中间件感兴趣的可以发邮件到：qihuang.zqh@antfin.com
+        </span>
+        <br>
+    </div>  
+	<div id="donate_guide" class="donate_bar center hidden">
+		<img src="/img/zhifubao.png" alt="支付宝打赏"> 
+		<img src="/img/weixin.png" alt="微信打赏">  
+    </div>
+	<script type="text/javascript">
+		document.getElementById('btn_donate').onclick = function(){
+			$('#donate_board').addClass('hidden');
+			$('#donate_guide').removeClass('hidden');
+		}
+	</script>
+</p></div>
+  
+</article>
+
+<!-- 默认显示文章目录，在文章---前输入toc: false关闭目录 -->
+<!-- Show TOC and tocButton in default, Hide TOC via putting "toc: false" before "---" at [post].md -->
+<div id="toc" class="toc-article">
+<strong class="toc-title">文章目录</strong>
+<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Count查询"><span class="toc-number">1.</span> <span class="toc-text">Count查询</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#删除数据库_drop_keyspace"><span class="toc-number">2.</span> <span class="toc-text">删除数据库 drop keyspace</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Truncate清空表"><span class="toc-number">3.</span> <span class="toc-text">Truncate清空表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Query查询的限制"><span class="toc-number">4.</span> <span class="toc-text">Query查询的限制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#where"><span class="toc-number">4.1.</span> <span class="toc-text">where</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#fetchSize和limit"><span class="toc-number">4.2.</span> <span class="toc-text">fetchSize和limit</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#二级索引的删除"><span class="toc-number">5.</span> <span class="toc-text">二级索引的删除</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重命名表"><span class="toc-number">6.</span> <span class="toc-text">重命名表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#query"><span class="toc-number">7.</span> <span class="toc-text">query</span></a></li></ol>
+</div>
+<style type="text/css">
+  .left-col .switch-btn {
+    display: none;
+  }
+  .left-col .switch-area {
+    display: none;
+  }
+</style>
+
+<input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+<script type="text/javascript">
+  var toc_button= document.getElementById("tocButton");
+  var toc_div= document.getElementById("toc");
+  /* Show or hide toc when click on tocButton.
+  通过点击设置的按钮显示或者隐藏文章目录.*/
+  toc_button.onclick=function(){
+  if(toc_div.style.display=="none"){
+  toc_div.style.display="block";
+  toc_button.value="隐藏目录";
+  document.getElementById("switch-btn").style.display="none";
+  document.getElementById("switch-area").style.display="none";
+  }
+  else{
+  toc_div.style.display="none";
+  toc_button.value="显示目录";
+  document.getElementById("switch-btn").style.display="block";
+  document.getElementById("switch-area").style.display="block";
+  }
+  }
+    if ($(".toc").length < 1) {
+        $("#toc").css("display","none");
+        $("#tocButton").css("display","none");
+        $(".switch-btn").css("display","block");
+        $(".switch-area").css("display","block");
+    }
+</script>
+
+
+    <style>
+        .toc {
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $(".toc li a").mouseover(function() {
+                var title = $(this).attr('href');
+                $(this).attr("title", title);
+            });
+        })
+    </script>
+
+
+
+
+<div class="share">
+	<div class="bdsharebuttonbox">
+	<a href="#" class="bds_more" data-cmd="more"></a>
+	<a href="#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+	<a href="#" class="bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+	<a href="#" class="bds_copy" data-cmd="copy" title="复制网址"></a>
+	<a href="#" class="bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+	<a href="#" class="bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+	</div>
+	<script>
+	window._bd_share_config={
+		"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+	</script>
+</div>
+
+
+
+<div class="duoshuo" id="comments">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2015/10/15/Cassandra-hole/" data-title="Cassandra陷阱" data-url="http://github.com/zqhxuyuan/2015/10/15/Cassandra-hole/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zqhxuyuan"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+
+
+    <style type="text/css">
+    #scroll {
+      display: none;
+    }
+    </style>
+    <div class="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+    </div>
+
+
+  
+  
+    
+    <div class="post-nav-button">
+    <a href="/2015/10/16/Cassandra-query/" title="上一篇: Cassandra查询">
+    <i class="fa fa-angle-left"></i>
+    </a>
+    <a href="/2015/10/15/Cassandra-Daily/" title="下一篇: Cassandra日常运维">
+    <i class="fa fa-angle-right"></i>
+    </a>
+    </div>
+  
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+      <div class="footer-left">
+        &copy; 2019 任何忧伤,都抵不过世界的美丽
+      </div>
+        <div class="footer-right">
+          <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的静态博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减双栏 Hexo 博客主题">Yelee</a> by MOxFIVE
+        </div>
+    </div>
+    <div class="visit">
+      <span id="busuanzi_container_site_pv" style="display:none">
+        <span id="site-visit">本站到访数: 
+        <span id="busuanzi_value_site_uv"></span>
+        </span>
+      </span>
+      <span id="busuanzi_container_page_pv" style="display:none">
+        <span id="page-visit">, 本页阅读量: 
+        <span id="busuanzi_value_page_pv"></span>
+        </span>
+      </span>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  var backgroundnum = 5;
+  var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+
+  $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+</script>
+
+
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-80646710-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<div class="scroll" id="scroll">
+<a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+<a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>
