@@ -173,6 +173,90 @@
 </nav>
       <div class="body-wrap">
   
+    <article id="post-2015-11-27-StreamCQL-operator" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/11/27/2015-11-27-StreamCQL-operator/" class="article-date">
+  	<time datetime="2015-11-26T16:00:00.000Z" itemprop="datePublished">2015-11-27</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/11/27/2015-11-27-StreamCQL-operator/">StreamCQL源码阅读(3) 拆分组合算子</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>StreamCQL的算子组成了Application</p>
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Source/">Source</a>
+	</div>
+
+
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/storm/">storm</a></li></ul>
+	</div>
+
+      
+        <p class="article-more-link">
+          <a href="/2015/11/27/2015-11-27-StreamCQL-operator/#more">more >></a>
+        </p>
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: true,
+        isPost: false,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+
+  
     <article id="post-2015-11-26-StreamCQL-schema" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
@@ -716,10 +800,10 @@
         
 
   
-    <article id="post-Cassandra-hole" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Cassandra-Stress" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2015/10/15/Cassandra-hole/" class="article-date">
+      <a href="/2015/10/15/Cassandra-Stress/" class="article-date">
   	<time datetime="2015-10-14T16:00:00.000Z" itemprop="datePublished">2015-10-15</time>
 </a>
     </div>
@@ -733,7 +817,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2015/10/15/Cassandra-hole/">Cassandra陷阱</a>
+      <a class="article-title" href="/2015/10/15/Cassandra-Stress/">Cassandra压力测试</a>
     </h1>
   
 
@@ -742,20 +826,32 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Cassandra的一些陷阱</p>
-<!-- MarkdownTOC -->
+        <!-- MarkdownTOC -->
 <ul>
-<li>Count查询</li>
-<li>删除数据库 drop keyspace</li>
-<li>Truncate清空表</li>
-<li>Query查询的限制<ul>
-<li>where</li>
-<li>fetchSize和limit</li>
+<li>cassandra-stress<ul>
+<li>介绍</li>
+<li>单节点测试<ul>
+<li>写入测试</li>
+<li>采用cql3协议写入</li>
+<li>读取测试</li>
+<li>没有预热读取</li>
+<li>给定一段时间测试最大可以读取多少条记录</li>
+<li>混合模式读大于写</li>
+<li>混合模式写大于读</li>
 </ul>
 </li>
-<li>二级索引的删除</li>
-<li>重命名表</li>
-<li>query</li>
+<li>自定义schema<ul>
+<li>示例</li>
+<li>只有写入</li>
+<li>读写混合模式</li>
+<li>只有读取</li>
+</ul>
+</li>
+<li>G1测试</li>
+<li>集群测试</li>
+</ul>
+</li>
+<li>YCSB</li>
 </ul>
 <!-- /MarkdownTOC -->
       
@@ -776,7 +872,147 @@
 
       
         <p class="article-more-link">
-          <a href="/2015/10/15/Cassandra-hole/#more">more >></a>
+          <a href="/2015/10/15/Cassandra-Stress/#more">more >></a>
+        </p>
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: true,
+        isPost: false,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+
+  
+    <article id="post-Cassandra-Operation" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/10/15/Cassandra-Operation/" class="article-date">
+  	<time datetime="2015-10-14T16:00:00.000Z" itemprop="datePublished">2015-10-15</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/10/15/Cassandra-Operation/">Cassandra操作</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <!-- MarkdownTOC -->
+<ul>
+<li>优雅关闭节点</li>
+<li>不同集群数据同步<ul>
+<li>增量备份</li>
+<li>准备工作：新集群搭建和建表</li>
+<li>开始：先测试一张表的迁移</li>
+<li>整个集群做一次完整的快照迁移</li>
+<li>增量备份（需要多次执行）</li>
+<li>机房迁移<ul>
+<li>直接从当前集群同步到上海集群</li>
+<li>新集群安装</li>
+<li><ol>
+<li>表结构</li>
+</ol>
+</li>
+<li><ol start="2">
+<li>数据迁移</li>
+</ol>
+</li>
+<li><ol start="3">
+<li>增量数据迁移</li>
+</ol>
+</li>
+<li><ol start="4">
+<li>数据验证</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>nodetool工具<ul>
+<li>集群状态: nodetool decribecluster</li>
+<li>删除节点: removenode</li>
+<li>替换节点: replace_address</li>
+<li>重新加入</li>
+<li>网络状态netstats: 显示一个节点的Active Stream</li>
+<li>节点信息: nodetool info</li>
+<li>Gossip信息: nodetool gossipinfo</li>
+<li>表相关的信息:nodetool cfstats forseti.velocity</li>
+<li>compactionhistory</li>
+<li>节点sstable数量异常</li>
+</ul>
+</li>
+<li>tpstats</li>
+<li>sstable writer<ul>
+<li>文件数过多</li>
+<li>导入数据后，用refresh</li>
+<li>通过增大内存来增大sstable大小（内存不足）</li>
+<li>分表？</li>
+</ul>
+</li>
+<li>sstableloader</li>
+<li>jHiccup</li>
+</ul>
+<!-- /MarkdownTOC -->
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/work/">work</a>
+	</div>
+
+
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cassandra/">cassandra</a></li></ul>
+	</div>
+
+      
+        <p class="article-more-link">
+          <a href="/2015/10/15/Cassandra-Operation/#more">more >></a>
         </p>
       
       <div class="clearfix"></div>
@@ -992,146 +1228,6 @@
         
 
   
-    <article id="post-Cassandra-Operation" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2015/10/15/Cassandra-Operation/" class="article-date">
-  	<time datetime="2015-10-14T16:00:00.000Z" itemprop="datePublished">2015-10-15</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/10/15/Cassandra-Operation/">Cassandra操作</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <!-- MarkdownTOC -->
-<ul>
-<li>优雅关闭节点</li>
-<li>不同集群数据同步<ul>
-<li>增量备份</li>
-<li>准备工作：新集群搭建和建表</li>
-<li>开始：先测试一张表的迁移</li>
-<li>整个集群做一次完整的快照迁移</li>
-<li>增量备份（需要多次执行）</li>
-<li>机房迁移<ul>
-<li>直接从当前集群同步到上海集群</li>
-<li>新集群安装</li>
-<li><ol>
-<li>表结构</li>
-</ol>
-</li>
-<li><ol start="2">
-<li>数据迁移</li>
-</ol>
-</li>
-<li><ol start="3">
-<li>增量数据迁移</li>
-</ol>
-</li>
-<li><ol start="4">
-<li>数据验证</li>
-</ol>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>nodetool工具<ul>
-<li>集群状态: nodetool decribecluster</li>
-<li>删除节点: removenode</li>
-<li>替换节点: replace_address</li>
-<li>重新加入</li>
-<li>网络状态netstats: 显示一个节点的Active Stream</li>
-<li>节点信息: nodetool info</li>
-<li>Gossip信息: nodetool gossipinfo</li>
-<li>表相关的信息:nodetool cfstats forseti.velocity</li>
-<li>compactionhistory</li>
-<li>节点sstable数量异常</li>
-</ul>
-</li>
-<li>tpstats</li>
-<li>sstable writer<ul>
-<li>文件数过多</li>
-<li>导入数据后，用refresh</li>
-<li>通过增大内存来增大sstable大小（内存不足）</li>
-<li>分表？</li>
-</ul>
-</li>
-<li>sstableloader</li>
-<li>jHiccup</li>
-</ul>
-<!-- /MarkdownTOC -->
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/work/">work</a>
-	</div>
-
-
-      
-	<div class="article-tag tagcloud">
-		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cassandra/">cassandra</a></li></ul>
-	</div>
-
-      
-        <p class="article-more-link">
-          <a href="/2015/10/15/Cassandra-Operation/#more">more >></a>
-        </p>
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-  
-</article>
-
-
-
-
-
-
-
-
-
-
-
-    
-        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-        <script>
-        var yiliaConfig = {
-        fancybox: true,
-        mathjax: true,
-        animate: true,
-        isHome: true,
-        isPost: false,
-        isArchive: false,
-        isTag: false,
-        isCategory: false,
-        open_in_new: false
-        }
-        </script>
-        
-
-  
     <article id="post-Cassandra-exception" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
@@ -1239,10 +1335,10 @@
         
 
   
-    <article id="post-Cassandra-Stress" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Cassandra-hole" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2015/10/15/Cassandra-Stress/" class="article-date">
+      <a href="/2015/10/15/Cassandra-hole/" class="article-date">
   	<time datetime="2015-10-14T16:00:00.000Z" itemprop="datePublished">2015-10-15</time>
 </a>
     </div>
@@ -1256,7 +1352,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2015/10/15/Cassandra-Stress/">Cassandra压力测试</a>
+      <a class="article-title" href="/2015/10/15/Cassandra-hole/">Cassandra陷阱</a>
     </h1>
   
 
@@ -1265,32 +1361,20 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <!-- MarkdownTOC -->
+        <p>Cassandra的一些陷阱</p>
+<!-- MarkdownTOC -->
 <ul>
-<li>cassandra-stress<ul>
-<li>介绍</li>
-<li>单节点测试<ul>
-<li>写入测试</li>
-<li>采用cql3协议写入</li>
-<li>读取测试</li>
-<li>没有预热读取</li>
-<li>给定一段时间测试最大可以读取多少条记录</li>
-<li>混合模式读大于写</li>
-<li>混合模式写大于读</li>
+<li>Count查询</li>
+<li>删除数据库 drop keyspace</li>
+<li>Truncate清空表</li>
+<li>Query查询的限制<ul>
+<li>where</li>
+<li>fetchSize和limit</li>
 </ul>
 </li>
-<li>自定义schema<ul>
-<li>示例</li>
-<li>只有写入</li>
-<li>读写混合模式</li>
-<li>只有读取</li>
-</ul>
-</li>
-<li>G1测试</li>
-<li>集群测试</li>
-</ul>
-</li>
-<li>YCSB</li>
+<li>二级索引的删除</li>
+<li>重命名表</li>
+<li>query</li>
 </ul>
 <!-- /MarkdownTOC -->
       
@@ -1311,7 +1395,7 @@
 
       
         <p class="article-more-link">
-          <a href="/2015/10/15/Cassandra-Stress/#more">more >></a>
+          <a href="/2015/10/15/Cassandra-hole/#more">more >></a>
         </p>
       
       <div class="clearfix"></div>
@@ -1564,90 +1648,6 @@
       
         <p class="article-more-link">
           <a href="/2015/08/25/2015-08-25-Cassandra-Architecture/#more">more >></a>
-        </p>
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-  
-</article>
-
-
-
-
-
-
-
-
-
-
-
-    
-        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-        <script>
-        var yiliaConfig = {
-        fancybox: true,
-        mathjax: true,
-        animate: true,
-        isHome: true,
-        isPost: false,
-        isArchive: false,
-        isTag: false,
-        isCategory: false,
-        open_in_new: false
-        }
-        </script>
-        
-
-  
-    <article id="post-2015-08-01-ElasticSearch" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2015/08/01/2015-08-01-ElasticSearch/" class="article-date">
-  	<time datetime="2015-07-31T16:00:00.000Z" itemprop="datePublished">2015-08-01</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/08/01/2015-08-01-ElasticSearch/">ElasticSearch入门</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>You Know, For Search</p>
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/bigdata/">bigdata</a>
-	</div>
-
-
-      
-	<div class="article-tag tagcloud">
-		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/elasticsearch/">elasticsearch</a></li></ul>
-	</div>
-
-      
-        <p class="article-more-link">
-          <a href="/2015/08/01/2015-08-01-ElasticSearch/#more">more >></a>
         </p>
       
       <div class="clearfix"></div>
