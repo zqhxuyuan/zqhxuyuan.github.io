@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="zqhxuyuan">
 <meta property="og:description" content="https://cwiki.apache.org/confluence/display/KAFKA/KIP-227%3A+Introduce+Incremental+FetchRequests+to+Increase+Partition+Scalabilityhttps://www.cnblogs.com/huxi2b/p/9335064.html">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-03-07T14:27:21.858Z">
+<meta property="og:updated_time" content="2019-03-07T14:38:38.558Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Kafka消费者增量拉取">
 <meta name="twitter:description" content="https://cwiki.apache.org/confluence/display/KAFKA/KIP-227%3A+Introduce+Incremental+FetchRequests+to+Increase+Partition+Scalabilityhttps://www.cnblogs.com/huxi2b/p/9335064.html">
@@ -253,13 +253,13 @@
 <td>全量拉取（如果是新的会话，epoch从1开始）</td>
 </tr>
 <tr>
-<td>$ID</td>
+<td><code>$ID</code></td>
 <td>0</td>
-<td>关闭标识为$ID的增量拉取会话，并创建一个新的全量拉取</td>
+<td>关闭标识为<code>$ID</code>的增量拉取会话，并创建一个新的全量拉取</td>
 </tr>
 <tr>
-<td>$ID</td>
-<td>$EPOCH</td>
+<td><code>$ID</code></td>
+<td><code>$EPOCH</code></td>
 <td>创建增量拉取</td>
 </tr>
 </tbody>
@@ -284,8 +284,8 @@
 <td>之前没有创建过拉取回话</td>
 </tr>
 <tr>
-<td>$ID</td>
-<td>下一个请求会是增量的拉取请求，并且sessionId是$ID</td>
+<td><code>$ID</code></td>
+<td>下一个请求会是增量的拉取请求，并且sessionId是<code>$ID</code></td>
 </tr>
 </tbody>
 </table>
@@ -322,7 +322,7 @@
   <p><span>本文标题:</span><a href="/2019/03/07/2019-03-07-KafkaConsumer-IncrementalFetch/">Kafka消费者增量拉取</a></p>
   <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
   <p><span>发布时间:</span>2019年03月07日 - 00时00分</p>
-  <p><span>最后更新:</span>2019年03月07日 - 22时27分</p>
+  <p><span>最后更新:</span>2019年03月07日 - 22时38分</p>
   <p>
     <span>原始链接:</span><a href="/2019/03/07/2019-03-07-KafkaConsumer-IncrementalFetch/" title="Kafka消费者增量拉取">http://github.com/zqhxuyuan/2019/03/07/2019-03-07-KafkaConsumer-IncrementalFetch/</a>
     <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2019/03/07/2019-03-07-KafkaConsumer-IncrementalFetch/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">

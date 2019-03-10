@@ -800,6 +800,183 @@
         
 
   
+    <article id="post-Cassandra-Daily" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/10/15/Cassandra-Daily/" class="article-date">
+  	<time datetime="2015-10-14T16:00:00.000Z" itemprop="datePublished">2015-10-15</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/10/15/Cassandra-Daily/">Cassandra日常运维</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Cassandra日常运维, OpsCenter</p>
+<!-- MarkdownTOC -->
+<ul>
+<li>Cassandra日常运维<ul>
+<li>线上应急</li>
+<li>机器预估</li>
+<li>准备工作</li>
+<li>文件操作</li>
+<li>进程</li>
+</ul>
+</li>
+<li>Cassandra使用<ul>
+<li>CQL查询客户端</li>
+</ul>
+</li>
+<li>集群维护<ul>
+<li>删除/下线节点</li>
+<li>集群拷贝数据</li>
+<li>节点上线、扩容<ul>
+<li>初始化一个新的集群</li>
+<li>添加新节点</li>
+<li>替换节点<ul>
+<li>旧节点当掉</li>
+<li>旧节点正在运行</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Streaming</li>
+</ul>
+</li>
+<li>疑难问题<ul>
+<li>GC</li>
+</ul>
+</li>
+<li>升级<ul>
+<li>2.0升级到2.1</li>
+<li>2.1升级到2.2</li>
+<li>2.2升级到3.10</li>
+<li>授权访问</li>
+</ul>
+</li>
+<li>监控<ul>
+<li>安装opscenter</li>
+<li>创建集群和安装agent</li>
+<li>修改agent配置</li>
+<li>堡垒机无法查看opscenter</li>
+<li>Loading OpsCenter..</li>
+<li>手动安装agent</li>
+<li>rolling restart</li>
+</ul>
+</li>
+<li>nodetool常用工具(cfstats,cfhistograms,compactionstats,tpstats)</li>
+<li>日志分析<ul>
+<li>GC长时间</li>
+<li>ParNew统计</li>
+<li>tombstone与GC的比较</li>
+<li>cfstats和cfhistograms统计</li>
+<li>large partition<ul>
+<li>2.2</li>
+<li>3.10</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>性能调优<ul>
+<li>服务端配置指南<ul>
+<li>读写配置</li>
+<li>JVM配置</li>
+<li>从CMS更改为G1 GC<ul>
+<li>G1 GC LOG</li>
+</ul>
+</li>
+<li>Memtable</li>
+<li>KeyCache</li>
+<li>RowCache</li>
+<li>compaction</li>
+</ul>
+</li>
+<li>commit log</li>
+<li>JavaDriver配置<ul>
+<li>Partitioner</li>
+</ul>
+</li>
+<li>Internal<ul>
+<li>Partitioner</li>
+<li>Memory</li>
+</ul>
+</li>
+<li>Ref</li>
+</ul>
+</li>
+</ul>
+<!-- /MarkdownTOC -->
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/work/">work</a>
+	</div>
+
+
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cassandra/">cassandra</a></li></ul>
+	</div>
+
+      
+        <p class="article-more-link">
+          <a href="/2015/10/15/Cassandra-Daily/#more">more >></a>
+        </p>
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: true,
+        isPost: false,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+
+  
     <article id="post-Cassandra-Stress" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
@@ -1051,10 +1228,10 @@
         
 
   
-    <article id="post-Cassandra-Daily" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Cassandra-hole" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2015/10/15/Cassandra-Daily/" class="article-date">
+      <a href="/2015/10/15/Cassandra-hole/" class="article-date">
   	<time datetime="2015-10-14T16:00:00.000Z" itemprop="datePublished">2015-10-15</time>
 </a>
     </div>
@@ -1068,7 +1245,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2015/10/15/Cassandra-Daily/">Cassandra日常运维</a>
+      <a class="article-title" href="/2015/10/15/Cassandra-hole/">Cassandra陷阱</a>
     </h1>
   
 
@@ -1077,98 +1254,20 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Cassandra日常运维, OpsCenter</p>
+        <p>Cassandra的一些陷阱</p>
 <!-- MarkdownTOC -->
 <ul>
-<li>Cassandra日常运维<ul>
-<li>线上应急</li>
-<li>机器预估</li>
-<li>准备工作</li>
-<li>文件操作</li>
-<li>进程</li>
+<li>Count查询</li>
+<li>删除数据库 drop keyspace</li>
+<li>Truncate清空表</li>
+<li>Query查询的限制<ul>
+<li>where</li>
+<li>fetchSize和limit</li>
 </ul>
 </li>
-<li>Cassandra使用<ul>
-<li>CQL查询客户端</li>
-</ul>
-</li>
-<li>集群维护<ul>
-<li>删除/下线节点</li>
-<li>集群拷贝数据</li>
-<li>节点上线、扩容<ul>
-<li>初始化一个新的集群</li>
-<li>添加新节点</li>
-<li>替换节点<ul>
-<li>旧节点当掉</li>
-<li>旧节点正在运行</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>Streaming</li>
-</ul>
-</li>
-<li>疑难问题<ul>
-<li>GC</li>
-</ul>
-</li>
-<li>升级<ul>
-<li>2.0升级到2.1</li>
-<li>2.1升级到2.2</li>
-<li>2.2升级到3.10</li>
-<li>授权访问</li>
-</ul>
-</li>
-<li>监控<ul>
-<li>安装opscenter</li>
-<li>创建集群和安装agent</li>
-<li>修改agent配置</li>
-<li>堡垒机无法查看opscenter</li>
-<li>Loading OpsCenter..</li>
-<li>手动安装agent</li>
-<li>rolling restart</li>
-</ul>
-</li>
-<li>nodetool常用工具(cfstats,cfhistograms,compactionstats,tpstats)</li>
-<li>日志分析<ul>
-<li>GC长时间</li>
-<li>ParNew统计</li>
-<li>tombstone与GC的比较</li>
-<li>cfstats和cfhistograms统计</li>
-<li>large partition<ul>
-<li>2.2</li>
-<li>3.10</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>性能调优<ul>
-<li>服务端配置指南<ul>
-<li>读写配置</li>
-<li>JVM配置</li>
-<li>从CMS更改为G1 GC<ul>
-<li>G1 GC LOG</li>
-</ul>
-</li>
-<li>Memtable</li>
-<li>KeyCache</li>
-<li>RowCache</li>
-<li>compaction</li>
-</ul>
-</li>
-<li>commit log</li>
-<li>JavaDriver配置<ul>
-<li>Partitioner</li>
-</ul>
-</li>
-<li>Internal<ul>
-<li>Partitioner</li>
-<li>Memory</li>
-</ul>
-</li>
-<li>Ref</li>
-</ul>
-</li>
+<li>二级索引的删除</li>
+<li>重命名表</li>
+<li>query</li>
 </ul>
 <!-- /MarkdownTOC -->
       
@@ -1189,7 +1288,7 @@
 
       
         <p class="article-more-link">
-          <a href="/2015/10/15/Cassandra-Daily/#more">more >></a>
+          <a href="/2015/10/15/Cassandra-hole/#more">more >></a>
         </p>
       
       <div class="clearfix"></div>
@@ -1335,105 +1434,6 @@
         
 
   
-    <article id="post-Cassandra-hole" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2015/10/15/Cassandra-hole/" class="article-date">
-  	<time datetime="2015-10-14T16:00:00.000Z" itemprop="datePublished">2015-10-15</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/10/15/Cassandra-hole/">Cassandra陷阱</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Cassandra的一些陷阱</p>
-<!-- MarkdownTOC -->
-<ul>
-<li>Count查询</li>
-<li>删除数据库 drop keyspace</li>
-<li>Truncate清空表</li>
-<li>Query查询的限制<ul>
-<li>where</li>
-<li>fetchSize和limit</li>
-</ul>
-</li>
-<li>二级索引的删除</li>
-<li>重命名表</li>
-<li>query</li>
-</ul>
-<!-- /MarkdownTOC -->
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/work/">work</a>
-	</div>
-
-
-      
-	<div class="article-tag tagcloud">
-		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cassandra/">cassandra</a></li></ul>
-	</div>
-
-      
-        <p class="article-more-link">
-          <a href="/2015/10/15/Cassandra-hole/#more">more >></a>
-        </p>
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-  
-</article>
-
-
-
-
-
-
-
-
-
-
-
-    
-        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-        <script>
-        var yiliaConfig = {
-        fancybox: true,
-        mathjax: true,
-        animate: true,
-        isHome: true,
-        isPost: false,
-        isArchive: false,
-        isTag: false,
-        isCategory: false,
-        open_in_new: false
-        }
-        </script>
-        
-
-  
     <article id="post-2015-09-10-Storm-Window" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
@@ -1518,90 +1518,6 @@
         
 
   
-    <article id="post-2015-08-25-Apache-Cassandra" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2015/08/25/2015-08-25-Apache-Cassandra/" class="article-date">
-  	<time datetime="2015-08-24T16:00:00.000Z" itemprop="datePublished">2015-08-25</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/08/25/2015-08-25-Apache-Cassandra/">Apache Cassandra入门</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Hello Cassandra</p>
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/bigdata/">bigdata</a>
-	</div>
-
-
-      
-	<div class="article-tag tagcloud">
-		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cassandra/">cassandra</a></li></ul>
-	</div>
-
-      
-        <p class="article-more-link">
-          <a href="/2015/08/25/2015-08-25-Apache-Cassandra/#more">more >></a>
-        </p>
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-  
-</article>
-
-
-
-
-
-
-
-
-
-
-
-    
-        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-        <script>
-        var yiliaConfig = {
-        fancybox: true,
-        mathjax: true,
-        animate: true,
-        isHome: true,
-        isPost: false,
-        isArchive: false,
-        isTag: false,
-        isCategory: false,
-        open_in_new: false
-        }
-        </script>
-        
-
-  
     <article id="post-2015-08-25-Cassandra-Architecture" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
@@ -1648,6 +1564,90 @@
       
         <p class="article-more-link">
           <a href="/2015/08/25/2015-08-25-Cassandra-Architecture/#more">more >></a>
+        </p>
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+  
+</article>
+
+
+
+
+
+
+
+
+
+
+
+    
+        <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+        <script>
+        var yiliaConfig = {
+        fancybox: true,
+        mathjax: true,
+        animate: true,
+        isHome: true,
+        isPost: false,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        open_in_new: false
+        }
+        </script>
+        
+
+  
+    <article id="post-2015-08-25-Apache-Cassandra" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/08/25/2015-08-25-Apache-Cassandra/" class="article-date">
+  	<time datetime="2015-08-24T16:00:00.000Z" itemprop="datePublished">2015-08-25</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/08/25/2015-08-25-Apache-Cassandra/">Apache Cassandra入门</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Hello Cassandra</p>
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/bigdata/">bigdata</a>
+	</div>
+
+
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cassandra/">cassandra</a></li></ul>
+	</div>
+
+      
+        <p class="article-more-link">
+          <a href="/2015/08/25/2015-08-25-Apache-Cassandra/#more">more >></a>
         </p>
       
       <div class="clearfix"></div>
