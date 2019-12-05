@@ -16,7 +16,7 @@
 <meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20151114125939707">
 <meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161221111359916">
 <meta property="og:image" content="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161222135615298">
-<meta property="og:updated_time" content="2019-04-23T12:16:47.251Z">
+<meta property="og:updated_time" content="2019-11-26T14:26:57.079Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Daily Work">
 <meta name="twitter:description" content="日常工作常用命令（Linux、Mac）">
@@ -492,6 +492,15 @@
 <p>CLASSPATH=$(echo /xxx/libs/*.jar | tr ‘ ‘ ‘:’)</p>
 <p>jmap -dump:live,format=b,file=<filename>.hprof <pid></pid></filename></p>
 <p>jstats -gc <pid></pid></p>
+<p>远程Debug:</p>
+<ol>
+<li>启动脚本中添加：JAVA_OPTS=”$JAVA_OPTS -Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=8000,suspend=n”</li>
+<li>启动远程服务器</li>
+<li>IDEA启动方式用Remoting，设置远程服务器的Host和Port</li>
+<li>IDEA中打断点</li>
+<li>打开浏览器，访问页面</li>
+<li>进入断点</li>
+</ol>
 <p>mat命令行：<a href="http://www.techpaste.com/2015/07/how-to-analyse-large-heap-dumps/" target="_blank" rel="noopener">http://www.techpaste.com/2015/07/how-to-analyse-large-heap-dumps/</a>  </p>
 <p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161221111359916" alt="mat"></p>
 <p><img src="https://images.weserv.nl/?url=http://img.blog.csdn.net/20161222135615298" alt="mat"></p>
@@ -707,7 +716,7 @@
   <p><span>本文标题:</span><a href="/2016/12/31/Daily/">Daily Work</a></p>
   <p><span>文章作者:</span><a href="/" title="访问 任何忧伤,都抵不过世界的美丽 的个人博客">任何忧伤,都抵不过世界的美丽</a></p>
   <p><span>发布时间:</span>2016年12月31日 - 00时00分</p>
-  <p><span>最后更新:</span>2019年04月23日 - 20时16分</p>
+  <p><span>最后更新:</span>2019年11月26日 - 22时26分</p>
   <p>
     <span>原始链接:</span><a href="/2016/12/31/Daily/" title="Daily Work">http://github.com/zqhxuyuan/2016/12/31/Daily/</a>
     <span class="btn" data-clipboard-text="原文: http://github.com/zqhxuyuan/2016/12/31/Daily/　　作者: 任何忧伤,都抵不过世界的美丽" title="点击复制文章链接">
